@@ -1,0 +1,84 @@
+{
+  "root": true,
+  "extends": [
+    "plugin:react/recommended"
+  ],
+  "parser": "babel-eslint",
+  "settings": {
+    "react": {
+      "createClass": "createReactClass",
+      "pragma": "React",
+      "version": "16.8.6"
+    },
+    "propWrapperFunctions": [
+      "forbidExtraProps",
+      {
+        "property": "freeze",
+        "object": "Object"
+      },
+      {
+        "property": "myFavoriteWrapper"
+      }
+    ],
+    "linkComponents": [
+      "Hyperlink",
+      {
+        "name": "Link",
+        "linkAttribute": "to"
+      }
+    ]
+  },
+  "plugins": [
+    "react",
+    "prettier"
+  ],
+  "rules": {
+    "no-console": 0,
+    "linebreak-style": "warn",
+    "comma-dangle": "off",
+    "semi": "off",
+    "no-unused-vars": [
+      "error",
+      {
+        "ignoreRestSiblings": true
+      }
+    ],
+    "comma-style": "warn",
+    "react/prop-types": "off",
+    "react/no-access-state-in-setstate": "warn",
+    "react/sort-comp": "warn",
+    "no-undefined": 2,
+    "react/display-name": "off",
+    "line-comment-position": "off",
+    "radix": "off",
+    "no-undef": 1,
+    "class-methods-use-this": 1,
+    "no-param-reassign": 1,
+    "multiline-ternary": "off",
+    "consistent-return": "warn",
+    "no-var": 2,
+    "block-scoped-var": "warn",
+    "array-callback-return": "warn",
+    "vars-on-top": "warn",
+    "no-empty": "warn",
+    "no-namespaces": 0,
+    "no-use-before-define": "off",
+    "arrow-parens": "warn",
+    "object-shorthand": "warn",
+    "dot-notation": "warn",
+    "prefer-const": "warn",
+    "arrow-body-style": "off",
+    "no-self-assign": "warn",
+    "prefer-template": "warn",
+    "no-mixed-operators": "off",
+    "no-else-return": "warn",
+    "prefer-destructuring": "warn",
+    "no-prototype-builtins": "warn",
+    "no-ternary": "off",
+    "no-nested-ternary": "off"
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  }
+}

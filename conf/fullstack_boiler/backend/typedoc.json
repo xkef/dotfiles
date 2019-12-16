@@ -1,0 +1,61 @@
+{
+    "out": "docs",
+    "name": "sti api server",
+    "theme": "node_modules/typedoc-neo-theme/bin/default",
+    "readme": "README.md",
+    "tsconfig": "tsconfig.json",
+    "target": "ES6",
+    "module": "commonjs",
+    "ignoreCompilerErrors": false,
+    "disableOutputCheck": false,
+    "excludeNotExported": false,
+    "excludeExternals": true,
+    "excludeProtected": false,
+    "excludePrivate": false,
+    "hideGenerator": true,
+    "includeDeclarations": true,
+    "listInvalidSymbolLinks": true,
+    "links": [
+        {
+            "label": "Apollo",
+            "url": "https://www.apollographql.com/docs/"
+        },
+        {
+            "label": "Sequelize",
+            "url": "https://sequelize.org/master/manual/getting-started.html"
+        },
+        {
+            "label": "PostgreSQL 11",
+            "url": "https://www.postgresql.org/docs/11/"
+        },
+        {
+            "label": "JWT",
+            "url": "https://jwt.io/"
+        }
+    ],
+    "outline": [
+        {
+            "Server": {
+                "main": "modules/_server_",
+                "Resolvers": "modules/_resolvers_index_",
+                "Schema": "modules/_schema_index_",
+                "sequelize": "modules/_utils_sequelize_",
+                "config": "modules/_utils_config_",
+                "helper": "modules/_utils_helper_",
+                "loaders": "modules/_utils_loaders_",
+                "passwordAnalytics": "modules/_utils_passwordanalytics_",
+                "increment": "modules/_utils_increment_"
+            },
+            "Aux": {
+                "Hash": "classes/_models_hash_.hash",
+                "Settings": "classes/_models_settings_.settings"
+            }
+        }
+    ],
+    "source": [
+        {
+            "path": "https://github.com/xkef/...",
+            "line": "L"
+        }
+    ]
+}

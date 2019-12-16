@@ -1,0 +1,125 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "../"
+        }
+    ],
+    "settings": {
+        "files.watcherExclude": {
+            "**/.git/objects/**": true,
+            "**/.git/subtree-cache/**": true,
+            "**/node_modules/*/**": true
+        },
+        "[javascript]": {
+            "editor.insertSpaces": true,
+            "editor.codeLens": true,
+            "editor.hover.enabled": true,
+            "editor.autoIndent": true,
+            "editor.quickSuggestions": {
+                "other": true,
+                "comments": true,
+                "strings": true
+            },
+            "editor.tabCompletion": "on",
+            "editor.rulers": [
+                100,
+                120
+            ],
+            "editor.tabSize": 4
+        },
+        "breadcrumbs.enabled": true,
+        "css.lint.propertyIgnoredDueToDisplay": "ignore",
+        "editor.detectIndentation": true,
+        "editor.find.autoFindInSelection": true,
+        "editor.fontSize": 16,
+        "editor.fontWeight": "400",
+        "editor.formatOnPaste": true,
+        "editor.formatOnSave": true,
+        "editor.insertSpaces": true,
+        "editor.minimap.enabled": false,
+        "editor.minimap.maxColumn": 300,
+        "editor.quickSuggestionsDelay": 0,
+        "editor.renderControlCharacters": true,
+        "editor.renderWhitespace": "all",
+        "editor.smoothScrolling": true,
+        "editor.tabCompletion": "on",
+        "editor.tabSize": 4,
+        "editor.wordWrap": "on",
+        "explorer.confirmDelete": false,
+        "explorer.confirmDragAndDrop": false,
+        "explorer.sortOrder": "type",
+        "files.autoSave": "onFocusChange",
+        "files.insertFinalNewline": true,
+        "files.trimTrailingWhitespace": true,
+        "git.enableSmartCommit": true,
+        "gitlens.currentLine.enabled": false,
+        "gitlens.hovers.currentLine.over": "line",
+        "less.lint.propertyIgnoredDueToDisplay": "ignore",
+        "search.quickOpen.includeSymbols": true,
+        "sync.gist": "ae592b74d5568bb144287b25214d56e3",
+        "terminal.integrated.fontWeightBold": "400",
+        "terminal.integrated.scrollback": 10000,
+        "workbench.activityBar.visible": true,
+        // "workbench.colorCustomizations": {
+        //   "breadcrumb.activeSelectionForeground": "#2979FF",
+        //   "editorSuggestWidget.highlightForeground": "#2979FF",
+        //   "editorWidget.border": "#2979FF",
+        //   "editorWidget.resizeBorder": "#2979FF",
+        //   "list.activeSelectionForeground": "#2979FF",
+        //   "list.highlightForeground": "#2979FF",
+        //   "list.inactiveSelectionForeground": "#2979FF",
+        //   "menu.selectionForeground": "#2979FF",
+        //   "menubar.selectionForeground": "#2979FF",
+        //   "notificationLink.foreground": "#2979FF",
+        //   "panelTitle.activeBorder": "#2979FF",
+        //   "pickerGroup.foreground": "#2979FF",
+        //   "progressBar.background": "#2979FF",
+        //   "scrollbarSlider.activeBackground": "#2979FF50",
+        //   "settings.headerForeground": "#2979FF",
+        //   "settings.modifiedItemIndicator": "#2979FF",
+        //   "textLink.foreground": "#2979FF"
+        // },
+        "workbench.colorTheme": "Ayu Mirage",
+        "workbench.editor.highlightModifiedTabs": true,
+        "workbench.iconTheme": "material-icon-theme",
+        "workbench.panel.defaultLocation": "bottom",
+        "workbench.tree.indent": 10,
+        "editor.find.addExtraSpaceOnTop": false,
+        "markdown.preview.fontFamily": "",
+        "editor.formatOnType": true,
+        "markdown.preview.fontSize": 16,
+        "javascript.format.enable": false,
+        "javascript.autoClosingTags": false,
+        "javascript.updateImportsOnFileMove.enabled": "always",
+        "javascript.validate.enable": true,
+        "javascript.suggest.paths": true,
+        "javascript.suggestionActions.enabled": true,
+        "prettier.eslintIntegration": false,
+        //"prettier.tslintIntegration": true,
+        //"prettier.printWidth": 100,
+        // "importCost.bundleSizeDecoration": "both",
+        // "importCost.largePackageColor": "#44EE40",
+        // "importCost.smallPackageColor": "#EEFFFF",
+        "editor.fontLigatures": true,
+        "vim.easymotion": true,
+        "vim.highlightedyank.enable": true,
+        "editor.fontFamily": "SauceCodePro Nerd Font",
+        "terminal.integrated.fontFamily": "SauceCodePro Nerd Font",
+        "typescript.tsdk": "backend/node_modules/typescript/lib",
+        "debug.allowBreakpointsEverywhere": true,
+        "debug.console.fontFamily": "SauceCodePro Nerd Font",
+        "debug.toolBarLocation": "docked"
+        /* --- */
+        // Enable/disable default JavaScript formatter (For Prettier)
+        /* --- */
+        // "python.linting.enabled": true,
+        // "python.linting.flake8Enabled": false,
+        // "python.linting.pep8Enabled": false,
+        // "python.linting.pydocstyleEnabled": true,
+        // "python.linting.pylintEnabled": false,
+        // "python.pythonPath": "/usr/bin/python3",
+    }
+}

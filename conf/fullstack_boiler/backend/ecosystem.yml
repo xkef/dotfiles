@@ -1,0 +1,13 @@
+apps:
+  - name: "backend"
+    script: "./dist/src/server.js"
+    instances: 4
+    exec_mode: cluster
+    watch: false
+    watch_options:
+      followSymlinks: false
+      ignore_watch:
+        - ./node_modules
+        - ./logs
+    env:
+      NODE_ENV: production

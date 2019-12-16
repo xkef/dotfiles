@@ -1,0 +1,17 @@
+[Unit]
+Description=PostgreSQL 11 database server
+Documentation=man:postgres(1)
+
+[Service]
+Type=notify
+User=postgres
+ExecStart=/opt/pgsql/bin/postgres -D /opt/pgsql/data -c config_file=/opt/postgresql.conf
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGINT
+TimeoutSec=0
+MemoryAccounting=yes
+CPUAccounting=yes
+
+[Install]
+WantedBy=multi-user.target

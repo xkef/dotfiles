@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "backend debugger",
+      "type": "node",
+      "env": {},
+      "request": "launch",
+      "program": "${workspaceFolder}/src/server.ts",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": ["${workspaceFolder}/dist/src/**/*.js"]
+    },
+    {
+      "name": "frontend debugger",
+      "sourceMaps": true,
+      "disableNetworkCache": true,
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceRoot}/src"
+    }
+  ]
+}

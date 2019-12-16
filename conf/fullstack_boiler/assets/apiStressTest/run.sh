@@ -1,0 +1,1 @@
+wrk -t1 -c5 -d30s -s req.lua $API_ENDPOINT

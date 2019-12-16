@@ -1,0 +1,171 @@
+{
+    "[typescript]": {
+        "editor.insertSpaces": true,
+        "editor.codeLens": true,
+        "editor.hover.enabled": true,
+        "editor.autoIndent": true,
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": true,
+            "strings": true,
+        },
+        "editor.tabCompletion": "on",
+        "editor.rulers": [
+            120
+        ],
+        "editor.tabSize": 2
+    },
+    "editor.formatOnSave": true,
+    "breadcrumbs.enabled": true,
+    "css.lint.propertyIgnoredDueToDisplay": "ignore",
+    "editor.detectIndentation": true,
+    "editor.find.autoFindInSelection": true,
+    "editor.fontSize": 16,
+    "editor.formatOnPaste": true,
+    "editor.insertSpaces": true,
+    "editor.minimap.maxColumn": 300,
+    "editor.quickSuggestionsDelay": 0,
+    "editor.renderControlCharacters": true,
+    "editor.renderWhitespace": "all",
+    "editor.smoothScrolling": true,
+    "editor.tabCompletion": "on",
+    "editor.tabSize": 4,
+    "editor.wordWrap": "on",
+    "editor.fontFamily": "SauceCodePro Nerd Font",
+    "editor.find.addExtraSpaceOnTop": false,
+    "editor.formatOnType": true,
+    "debug.allowBreakpointsEverywhere": true,
+    "javascript.implicitProjectConfig.experimentalDecorators": true,
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+    "explorer.sortOrder": "type",
+    "files.autoSave": "onFocusChange",
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+    "git.enableSmartCommit": true,
+    "gitlens.currentLine.enabled": false,
+    "gitlens.hovers.currentLine.over": "line",
+    "less.lint.propertyIgnoredDueToDisplay": "ignore",
+    "search.quickOpen.includeSymbols": true,
+    "sync.gist": "faffc3458b51df31233bbf1fcad0228c",
+    "terminal.integrated.fontWeightBold": "300",
+    "terminal.integrated.scrollback": 100000,
+    "window.zoomLevel": 1,
+    "workbench.colorCustomizations": {
+        "breadcrumb.activeSelectionForeground": "#2979FF",
+        "editorSuggestWidget.highlightForeground": "#2979FF",
+        "editorWidget.border": "#2979FF",
+        "editorWidget.resizeBorder": "#2979FF",
+        "list.activeSelectionForeground": "#2979FF",
+        "list.highlightForeground": "#2979FF",
+        "list.inactiveSelectionForeground": "#2979FF",
+        "menu.selectionForeground": "#2979FF",
+        "menubar.selectionForeground": "#2979FF",
+        "notificationLink.foreground": "#2979FF",
+        "panelTitle.activeBorder": "#2979FF",
+        "pickerGroup.foreground": "#2979FF",
+        "progressBar.background": "#2979FF",
+        "scrollbarSlider.activeBackground": "#2979FF50",
+        "settings.headerForeground": "#2979FF",
+        "settings.modifiedItemIndicator": "#2979FF",
+        "textLink.foreground": "#2979FF"
+    },
+    "workbench.colorTheme": "Ayu Mirage",
+    "workbench.editor.highlightModifiedTabs": true,
+    "workbench.iconTheme": "ayu",
+    "workbench.panel.defaultLocation": "bottom",
+    "workbench.tree.indent": 20,
+    "markdown.preview.fontFamily": "",
+    "markdown.preview.fontSize": 16,
+    "tslint.configFile": "./tslint.json",
+    "terminal.integrated.cursorBlinking": true,
+    "terminal.integrated.fontWeight": "500",
+    "npm.autoDetect": "on",
+    "debug.node.autoAttach": "off",
+    "debug.toolBarLocation": "docked",
+    "debug.inlineValues": true,
+    "typescript.implementationsCodeLens.enabled": true,
+    "typescript.suggest.completeFunctionCalls": true,
+    "typescript.tsserver.log": "terse",
+    "typescript.tsserver.trace": "messages",
+    "typescript.suggest.autoImports": true,
+    "typescript.suggest.completeJSDocs": true,
+    "typescript.suggest.paths": true,
+    "typescript.tsdk": "backend/node_modules/typescript/lib",
+    "terminal.integrated.fontSize": 18,
+    "terminal.integrated.experimentalRefreshOnResume": true,
+    "workbench.tree.renderIndentGuides": "always",
+    "debug.enableAllHovers": true,
+    "tslint.packageManager": "yarn",
+    "workbench.enableExperiments": false,
+    "workbench.view.alwaysShowHeaderActions": true,
+    "terminal.integrated.fontFamily": "VictorMono-Regular",
+    "peacock.favoriteColors": [
+        {
+            "name": "Angular Red",
+            "value": "#b52e31"
+        },
+        {
+            "name": "Auth0 Orange",
+            "value": "#eb5424"
+        },
+        {
+            "name": "Azure Blue",
+            "value": "#007fff"
+        },
+        {
+            "name": "C# Purple",
+            "value": "#68217A"
+        },
+        {
+            "name": "Gatsby Purple",
+            "value": "#639"
+        },
+        {
+            "name": "Go Cyan",
+            "value": "#5dc9e2"
+        },
+        {
+            "name": "Java Blue-Gray",
+            "value": "#557c9b"
+        },
+        {
+            "name": "JavaScript Yellow",
+            "value": "#f9e64f"
+        },
+        {
+            "name": "Mandalorian Blue",
+            "value": "#1857a4"
+        },
+        {
+            "name": "Node Green",
+            "value": "#215732"
+        },
+        {
+            "name": "React Blue",
+            "value": "#00b3e6"
+        },
+        {
+            "name": "Something Different",
+            "value": "#832561"
+        },
+        {
+            "name": "Vue Green",
+            "value": "#42b883"
+        }
+    ],
+    "[yaml]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+    "[dockerfile]": {
+        "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "editor.fontLigatures": true,
+    "team.showWelcomeMessage": false
+}

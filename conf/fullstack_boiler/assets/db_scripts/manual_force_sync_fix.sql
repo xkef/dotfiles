@@ -1,0 +1,80 @@
+SELECT
+  setval(
+    '"colleague_id_seq"',
+    (
+      SELECT
+        MAX(id)
+      FROM
+        colleague
+    )
+  );
+SELECT
+  setval(
+    '"nonFinancial_id_seq"',
+    (
+      SELECT
+        MAX(id)
+      FROM
+        "nonFinancial"
+    )
+  );
+SELECT
+  setval(
+    '"unit_id_seq"',
+    (
+      SELECT
+        MAX(id)
+      FROM
+        "unit"
+    )
+  );
+SELECT
+  setval(
+    '"country_id_seq"',
+    (
+      SELECT
+        MAX(id)
+      FROM
+        "country"
+    )
+  );
+SELECT
+  setval(
+    '"businessLine_id_seq"',
+    (
+      SELECT
+        MAX(id)
+      FROM
+        "businessLine"
+    )
+  );
+SELECT
+  setval(
+    '"user_id_seq"',
+    (
+      SELECT
+        MAX(id)
+      FROM
+        "user"
+    )
+  );
+SELECT
+  setval(
+    '"role_id_seq"',
+    (
+      SELECT
+        MAX(id)
+      FROM
+        "role"
+    )
+  );
+SELECT
+  setval(
+    '"nonFinancialACT_id_seq"',
+    (
+      SELECT
+        MAX(id)
+      FROM
+        "nonFinancialACT"
+    )
+  );

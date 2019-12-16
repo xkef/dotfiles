@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "tslint-config-prettier",
+    "tslint-config-airbnb"
+  ],
+  "rules": {
+    "max-line-length": false,
+    "align": false,
+    "trailing-comma": false,
+    "prefer-template": false,
+    "ter-indent": false,
+    "arrow-parens": false,
+    "ter-arrow-parens": false
+  }
+}

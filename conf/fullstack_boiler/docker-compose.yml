@@ -1,0 +1,81 @@
+version: "3.7"
+services:
+  database_node:
+    build: ./db
+    restart: on-failure
+    ports:
+      - "5432:5432"
+    volumes:
+      - database_data:/var/lib/postgresql
+
+  backend_node:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    # ports:               # scale to three nodes
+    #   - "8000-8003:8000" #  -> change nginx.conf!
+    depends_on:
+      - database_node
+    restart: on-failure
+    volumes:
+      - backend_data:/sti
+
+  frontend_node:
+    build: ./frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: always
+    depends_on:
+      - database_node
+      - backend_node
+    volumes:
+      - frontend_data:/etc/nginx
+      - frontend_data:/var/logs/nginx
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/root/.pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: admin
+
+  portainer:
+    image: portainer/portainer
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+
+  vscode:
+    build: .
+    restart: always
+    ports:
+      - "8080:8080"
+      - "3000-3010:3000-3010"
+      - "8001-8010:8001-8010"
+    volumes:
+      - dev1_data:/home/coder/dev1
+      - dev2_data:/home/coder/dev2
+      - dev3_data:/home/coder/dev3
+      - database_data:/home/coder/database
+      - backend_data:/home/coder/backend
+      - frontend_data:/home/coder/frontend
+      - portainer_data:/home/coder/container_data/portainer
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  dev1_data:
+  dev2_data:
+  dev3_data:
+  database_data:
+  backend_data:
+  frontend_data:
+  pgadmin_data:
+  portainer_data:
