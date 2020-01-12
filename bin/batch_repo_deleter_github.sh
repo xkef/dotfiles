@@ -23,7 +23,7 @@ EOF
 }
 function git_repo_delete() {
     curl -vL \
-        -H "Authorization: token 6ad10b150efaf2235fdb886963e4ffa2bb703194" \
+        -H "Authorization: token xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
         -H "Content-Type: application/json" \
         -X DELETE https://api.github.com/repos/$1 |
         jq .
