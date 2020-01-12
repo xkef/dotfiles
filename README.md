@@ -1,5 +1,7 @@
 # dotfiles
 
+mostly stolen from wincent/wincent, amazing work!!
+
 ## folder structure
 
 ```sh
