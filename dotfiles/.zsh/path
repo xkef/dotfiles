@@ -5,6 +5,7 @@ unset PATH
 PATH=$HOME/bin
 PATH=$PATH:$HOME/.zsh/bin
 PATH=$PATH:$HOME/code/go/bin
+PATH=$PATH:$HOME/.local/.flutter/bin
 PATH=$PATH:$HOME/.vim/pack/bundle/opt/vcs-jump/bin
 
 test -n "$N_PREFIX" && PATH=$PATH:$N_PREFIX/bin

@@ -1,0 +1,16 @@
+### Flare log file
+
+ERROR: '-psn_0_2294320' is not a valid command line option. Try '--help' for a list of valid options.
+INFO: Platform: Using Mac OS .app prefix for PATH_DATA
+INFO: Flare 1.0 (Mac OS X)
+INFO: Active mods: default
+INFO: MessageEngine: Using language 'en'
+INFO: InputState: No joysticks were found.
+ERROR: Settings: save_prefix not found in engine/misc.txt, setting to 'default'. This may cause save file conflicts between games that have no save_prefix.
+ERROR: FileParser: engine/loot.txt: Could not open text file: No such file or directory!
+INFO: Using Render Device: SDLHardwareRenderDevice (hardware, SDL 2, cocoa)
+INFO: RenderDevice: 1 display(s), using display 0 (3840x2160 @ 60hz)
+INFO: RenderDevice: Window size is 640x480
+INFO: RenderDevice: Fullscreen=0, Hardward surfaces=1, Vsync=1, Texture Filter=1
+INFO: SoundManager: Using SDLSoundManager (SDL2, coreaudio)
+INFO: GameStateCutscene: Loading cutscene 'cutscenes/intro.txt'

@@ -4,10 +4,10 @@
 
 # Create a hash table for globally stashing variables without polluting main
 # scope with a bunch of identifiers.
-typeset -A __XKEF
+typeset -A __WINCENT
 
-__XKEF[ITALIC_ON]=$'\e[3m'
-__XKEF[ITALIC_OFF]=$'\e[23m'
+__WINCENT[ITALIC_ON]=$'\e[3m'
+__WINCENT[ITALIC_OFF]=$'\e[23m'
 
 #
 # Teh H4xx
@@ -82,7 +82,7 @@ zstyle ':completion:*:complete:(cd|pushd):*' tag-order 'local-directories named-
 
 # Categorize completion suggestions with headings:
 zstyle ':completion:*' group-name ''
-zstyle ':completion:*:descriptions' format %F{default}%B%{$__XKEF[ITALIC_ON]%}--- %d ---%{$__XKEF[ITALIC_OFF]%}%b%f
+zstyle ':completion:*:descriptions' format %F{default}%B%{$__WINCENT[ITALIC_ON]%}--- %d ---%{$__WINCENT[ITALIC_OFF]%}%b%f
 
 # Enable keyboard navigation of completions in menu
 # (not just tab/shift-tab but cursor keys as well):
@@ -375,7 +375,7 @@ function -report-start-time() {
       SECS="$((~~$SECS))s"
     fi
     ELAPSED="${ELAPSED}${SECS}"
-    export RPROMPT="%F{cyan}%{$__XKEF[ITALIC_ON]%}${ELAPSED}%{$__XKEF[ITALIC_OFF]%}%f $RPROMPT_BASE"
+    export RPROMPT="%F{cyan}%{$__WINCENT[ITALIC_ON]%}${ELAPSED}%{$__WINCENT[ITALIC_OFF]%}%f $RPROMPT_BASE"
     unset ZSH_START_TIME
   else
     export RPROMPT="$RPROMPT_BASE"
@@ -397,17 +397,17 @@ add-zsh-hook chpwd -auto-ls-after-cd
 
 # Remember each command we run.
 function -record-command() {
-  __XKEF[LAST_COMMAND]="$2"
+  __WINCENT[LAST_COMMAND]="$2"
 }
 add-zsh-hook preexec -record-command
 
 # Update vcs_info (slow) after any command that probably changed it.
 function -maybe-show-vcs-info() {
-  local LAST="$__XKEF[LAST_COMMAND]"
+  local LAST="$__WINCENT[LAST_COMMAND]"
 
   # In case user just hit enter, overwrite LAST_COMMAND, because preexec
   # won't run and it will otherwise linger.
-  __XKEF[LAST_COMMAND]="<unset>"
+  __WINCENT[LAST_COMMAND]="<unset>"
 
   # Check first word; via:
   # http://tim.vanwerkhoven.org/post/2012/10/28/ZSH/Bash-string-manipulation
@@ -449,52 +449,28 @@ ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=59'
 # Uncomment this to get syntax highlighting:
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
-###-begin-pm2-completion-###
-### credits to npm for the completion file model
-#
-# Installation: pm2 completion >> ~/.bashrc  (or ~/.zshrc)
-#
+# #
+# # /etc/motd
+# #
+# 
+# if [ -e /etc/motd ]; then
+#   if ! cmp -s $HOME/.hushlogin /etc/motd; then
+#     tee $HOME/.hushlogin < /etc/motd
+#   fi
+# fi
+
 COMP_WORDBREAKS=${COMP_WORDBREAKS/=/}
 COMP_WORDBREAKS=${COMP_WORDBREAKS/@/}
 export COMP_WORDBREAKS
 
-if type complete &>/dev/null; then
-  _pm2_completion () {
-    local si="$IFS"
-    IFS=$'\n' COMPREPLY=($(COMP_CWORD="$COMP_CWORD" \
-                           COMP_LINE="$COMP_LINE" \
-                           COMP_POINT="$COMP_POINT" \
-                           pm2 completion -- "${COMP_WORDS[@]}" \
-                           2>/dev/null)) || return $?
-    IFS="$si"
-  }
-  complete -o default -F _pm2_completion pm2
-elif type compctl &>/dev/null; then
-  _pm2_completion () {
-    local cword line point words si
-    read -Ac words
-    read -cn cword
-    let cword-=1
-    read -l line
-    read -ln point
-    si="$IFS"
-    IFS=$'\n' reply=($(COMP_CWORD="$cword" \
-                       COMP_LINE="$line" \
-                       COMP_POINT="$point" \
-                       pm2 completion -- "${words[@]}" \
-                       2>/dev/null)) || return $?
-    IFS="$si"
-  }
-  compctl -K _pm2_completion + -f + pm2
-fi
 ###-end-pm2-completion-###
-
 alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
 
-export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
-export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
-# export NVM_DIR="$HOME/.nvm"
-# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 export PATH="/usr/local/opt/curl/bin:$PATH"
 export PATH="/usr/local/opt/ruby/bin:$PATH"
+fpath+=~/.zfunc
+
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"
+export PATH="/usr/local/opt/openssl@1.1/bin:$PATH"
