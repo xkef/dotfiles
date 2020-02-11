@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>AMApplicationBuild</key>
-	<string>444.39</string>
+	<string>492</string>
 	<key>AMApplicationVersion</key>
-	<string>2.9</string>
+	<string>2.10</string>
 	<key>AMDocumentVersion</key>
 	<string>2</string>
 	<key>actions</key>
@@ -62,7 +62,7 @@
 						<string>~</string>
 					</array>
 					<key>temporary items path</key>
-					<string>/var/folders/mv/b4thm3x17t3bth97y80fngzc0000gn/T/6614DA58-F1C6-421F-A11A-C7AC8E3CA97F/1/com.apple.Automator.SpecifiedFiles</string>
+					<string>/var/folders/my/jtthp1c149196kd73g2hrn7w0000gn/T/E12D9B9D-A07A-4F54-BF36-4A3639EE41E4/1/com.apple.Automator.SpecifiedFiles</string>
 				</dict>
 				<key>BundleIdentifier</key>
 				<string>com.apple.Automator.SpecifiedFiles</string>
@@ -116,7 +116,7 @@
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
-				<string>272.500000:239.000000</string>
+				<string>309.000000:239.000000</string>
 				<key>nibPath</key>
 				<string>/System/Library/Automator/Get Specified Finder Items.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>
@@ -381,7 +381,7 @@
 					<key>sidebarWidth</key>
 					<integer>100</integer>
 					<key>temporary items path</key>
-					<string>/var/folders/mv/b4thm3x17t3bth97y80fngzc0000gn/T/6614DA58-F1C6-421F-A11A-C7AC8E3CA97F/1/com.apple.Automator.FolderViews</string>
+					<string>/var/folders/my/jtthp1c149196kd73g2hrn7w0000gn/T/E12D9B9D-A07A-4F54-BF36-4A3639EE41E4/1/com.apple.Automator.FolderViews</string>
 					<key>viewModeIndicator</key>
 					<string>1</string>
 				</dict>
@@ -883,7 +883,7 @@
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
-				<string>272.500000:578.000000</string>
+				<string>309.000000:578.000000</string>
 				<key>nibPath</key>
 				<string>/System/Library/Automator/Set Folder Views.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>
@@ -893,7 +893,7 @@
 	</array>
 	<key>connectors</key>
 	<dict>
-		<key>0C1012A8-59CA-4313-9611-25A32D9DC2B0</key>
+		<key>F91A90C7-9355-4027-B492-DC489B828509</key>
 		<dict>
 			<key>from</key>
 			<string>77456CA2-D262-46BD-8C18-897EC40236FB - 77456CA2-D262-46BD-8C18-897EC40236FB</string>
