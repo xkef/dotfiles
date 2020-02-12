@@ -1,8 +1,23 @@
-!#/bin/sh
+#!/bin/bash
+
+set -e
 
 BASE="/Users/xkef/__dotfiles__"
 PACK="/Users/xkef/__dotfiles__/dotfiles/.vim/pack/bundle/opt"
 ZSH_MODS="/Users/xkef/__dotfiles__/dotfiles/.zsh/"
+
+# get homebrew
+
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew bundle assets/macos/Brewfile
+
+# get rvm
+gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+curl -sSL https://get.rvm.io | bash
+rvm install ruby-2.6.3
+rvm use 2.6.3
+
+# install vim
 npm i -g neovim
 pip3 install --upgrade pynvim
 gem install neovim
@@ -45,3 +60,22 @@ git submodule add https://github.com/zsh-users/zsh-autosuggestions "$ZSH_MODS"
 git submodule add https://github.com/chriskempson/base16-shell/ "$ZSH_MODS"
 
 cd "$BASE" && git submodule update --init --recursive
+
+# language client build
+./"$PACK"/LanguageClient-neovim/install.sh
+go get -u github.com/sourcegraph/go-langserver
+pip3 install python-language-server
+npm i -g javascript-typescript-langserver
+
+# command-t build
+cd /"$PACK"/command-t/ruby/command-t/ext/command-t && ruby extconf.rb && make
+
+############################
+for DOTFILE in $(find $BASE/dotfiles -maxdepth 1 -name '.*' | tail -n +2); do
+    ln -sf "$BASE"/dotfiles/.* "$HOME"
+done
+
+vim +'UpdateRemotePlugins'
+vim +'checkhealth'
+
+exit 0

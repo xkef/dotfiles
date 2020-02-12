@@ -5,11 +5,9 @@ mostly stolen from wincent/wincent, amazing work!!
 ## folder structure
 
 ```sh
-./bin           -> custom bash scripts
+./assets          -> macos, vscode, firefox, ...
 
-./conf          -> macos, vscode, firefox, ...
-
-./dotfiles      -> zsh, tmux, vim
+./dotfiles      -> zsh, tmux, vim, scripts
 ```
 
 ![iterm2](./assets/scrot.png)

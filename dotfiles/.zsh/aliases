@@ -66,3 +66,7 @@ alias -g R=";clear;test -n "$TMUX" && tmux clear-history;"
 
 # Mnemonic: "[W]c"
 alias -g W="|wc -l"
+
+
+### chrome ##
+alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"

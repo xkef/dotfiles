@@ -2,10 +2,9 @@ SYSTEM_PATH=$PATH
 unset PATH
 
 # keep these on separate lines to make changing their order easier
-PATH=$HOME/bin
+PATH=$PATH:$HOME/.bin
 PATH=$PATH:$HOME/.zsh/bin
 PATH=$PATH:$HOME/code/go/bin
-PATH=$PATH:$HOME/.local/.flutter/bin
 PATH=$PATH:$HOME/.vim/pack/bundle/opt/vcs-jump/bin
 
 test -n "$N_PREFIX" && PATH=$PATH:$N_PREFIX/bin
@@ -13,5 +12,7 @@ PATH=$PATH:$HOME/.cargo/bin
 PATH=$PATH:/usr/local/bin
 PATH=$PATH:/usr/local/sbin
 PATH=$PATH:$SYSTEM_PATH
+PATH=$PATH:$HOME/.rvm/gems/ruby-2.6.3/bin
+PATH="/usr/local/opt/curl/bin:$PATH"
 PATH=$PATH:$HOME/.local/bin
 export PATH

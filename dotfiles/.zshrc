@@ -4,10 +4,10 @@
 
 # Create a hash table for globally stashing variables without polluting main
 # scope with a bunch of identifiers.
-typeset -A __WINCENT
+typeset -A __XKEF
 
-__WINCENT[ITALIC_ON]=$'\e[3m'
-__WINCENT[ITALIC_OFF]=$'\e[23m'
+__XKEF[ITALIC_ON]=$'\e[3m'
+__XKEF[ITALIC_OFF]=$'\e[23m'
 
 #
 # Teh H4xx
@@ -82,7 +82,7 @@ zstyle ':completion:*:complete:(cd|pushd):*' tag-order 'local-directories named-
 
 # Categorize completion suggestions with headings:
 zstyle ':completion:*' group-name ''
-zstyle ':completion:*:descriptions' format %F{default}%B%{$__WINCENT[ITALIC_ON]%}--- %d ---%{$__WINCENT[ITALIC_OFF]%}%b%f
+zstyle ':completion:*:descriptions' format %F{default}%B%{$__XKEF[ITALIC_ON]%}--- %d ---%{$__XKEF[ITALIC_OFF]%}%b%f
 
 # Enable keyboard navigation of completions in menu
 # (not just tab/shift-tab but cursor keys as well):
@@ -271,17 +271,8 @@ source $HOME/.zsh/common
 source $HOME/.zsh/colors
 source $HOME/.zsh/exports
 source $HOME/.zsh/functions
-source $HOME/.zsh/hash
 source $HOME/.zsh/path
 source $HOME/.zsh/vars
-
-#
-# Third-party
-#
-
-# CHRUBY=/usr/local/share/chruby
-# test -e "$CHRUBY/chruby.sh" && source "$CHRUBY/chruby.sh"
-# test -e "$CHRUBY/auto.sh" && source "$CHRUBY/auto.sh"
 
 # Skim
 
@@ -375,7 +366,7 @@ function -report-start-time() {
       SECS="$((~~$SECS))s"
     fi
     ELAPSED="${ELAPSED}${SECS}"
-    export RPROMPT="%F{cyan}%{$__WINCENT[ITALIC_ON]%}${ELAPSED}%{$__WINCENT[ITALIC_OFF]%}%f $RPROMPT_BASE"
+    export RPROMPT="%F{cyan}%{$__XKEF[ITALIC_ON]%}${ELAPSED}%{$__XKEF[ITALIC_OFF]%}%f $RPROMPT_BASE"
     unset ZSH_START_TIME
   else
     export RPROMPT="$RPROMPT_BASE"
@@ -397,17 +388,17 @@ add-zsh-hook chpwd -auto-ls-after-cd
 
 # Remember each command we run.
 function -record-command() {
-  __WINCENT[LAST_COMMAND]="$2"
+  __XKEF[LAST_COMMAND]="$2"
 }
 add-zsh-hook preexec -record-command
 
 # Update vcs_info (slow) after any command that probably changed it.
 function -maybe-show-vcs-info() {
-  local LAST="$__WINCENT[LAST_COMMAND]"
+  local LAST="$__XKEF[LAST_COMMAND]"
 
   # In case user just hit enter, overwrite LAST_COMMAND, because preexec
   # won't run and it will otherwise linger.
-  __WINCENT[LAST_COMMAND]="<unset>"
+  __XKEF[LAST_COMMAND]="<unset>"
 
   # Check first word; via:
   # http://tim.vanwerkhoven.org/post/2012/10/28/ZSH/Bash-string-manipulation
@@ -446,31 +437,13 @@ test -f $HOST_RC && source $HOST_RC
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=59'
 
-# Uncomment this to get syntax highlighting:
 source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
-# #
-# # /etc/motd
-# #
-# 
-# if [ -e /etc/motd ]; then
-#   if ! cmp -s $HOME/.hushlogin /etc/motd; then
-#     tee $HOME/.hushlogin < /etc/motd
-#   fi
-# fi
 
 COMP_WORDBREAKS=${COMP_WORDBREAKS/=/}
 COMP_WORDBREAKS=${COMP_WORDBREAKS/@/}
 export COMP_WORDBREAKS
 
-###-end-pm2-completion-###
-alias chrome="/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome"
 
-
-export PATH="/usr/local/opt/curl/bin:$PATH"
-export PATH="/usr/local/opt/ruby/bin:$PATH"
 fpath+=~/.zfunc
 
-# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$PATH:$HOME/.rvm/bin"
-export PATH="/usr/local/opt/openssl@1.1/bin:$PATH"
+
