@@ -11,8 +11,7 @@ test -n "$N_PREFIX" && PATH=$PATH:$N_PREFIX/bin
 PATH=$PATH:$HOME/.cargo/bin
 PATH=$PATH:/usr/local/bin
 PATH=$PATH:/usr/local/sbin
-PATH=$PATH:$SYSTEM_PATH
-PATH=$PATH:$HOME/.rvm/gems/ruby-2.6.3/bin
 PATH="/usr/local/opt/curl/bin:$PATH"
+PATH=$PATH:$SYSTEM_PATH
 PATH=$PATH:$HOME/.local/bin
 export PATH
