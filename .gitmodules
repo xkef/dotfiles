@@ -1,105 +1,114 @@
 [submodule "dotfiles/.vim/pack/bundle/opt/loupe"]
-	path = dotfiles/.vim/pack/bundle/opt/loupe
-	url = https://github.com/wincent/loupe
+path = dotfiles/.vim/pack/bundle/opt/loupe
+url = https://github.com/wincent/loupe
+[submodule "dotfiles/.vim/pack/bundle/opt/deoplete"]
+	path = dotfiles/.vim/pack/bundle/opt/deoplete
+	url = https://github.com/Shougo/deoplete.nvim
 [submodule "dotfiles/.vim/pack/bundle/opt/neco-ghc"]
-	path = dotfiles/.vim/pack/bundle/opt/neco-ghc
-	url = https://github.com/eagletmt/neco-ghc
+path = dotfiles/.vim/pack/bundle/opt/neco-ghc
+url = https://github.com/eagletmt/neco-ghc
 [submodule "dotfiles/.vim/pack/bundle/opt/nerdtree"]
-	path = dotfiles/.vim/pack/bundle/opt/nerdtree
-	url = https://github.com/preservim/nerdtree
+path = dotfiles/.vim/pack/bundle/opt/nerdtree
+url = https://github.com/preservim/nerdtree
 [submodule "dotfiles/.vim/pack/bundle/opt/pinnacle"]
-	path = dotfiles/.vim/pack/bundle/opt/pinnacle
-	url = https://github.com/wincent/pinnacle.git
+path = dotfiles/.vim/pack/bundle/opt/pinnacle
+url = https://github.com/wincent/pinnacle.git
 [submodule "dotfiles/.vim/pack/bundle/opt/tcomment_vim"]
-	path = dotfiles/.vim/pack/bundle/opt/tcomment_vim
-	url = https://github.com/tomtom/tcomment_vim
+path = dotfiles/.vim/pack/bundle/opt/tcomment_vim
+url = https://github.com/tomtom/tcomment_vim
 [submodule "dotfiles/.vim/pack/bundle/opt/terminus"]
-	path = dotfiles/.vim/pack/bundle/opt/terminus
-	url = https://github.com/wincent/terminus
+path = dotfiles/.vim/pack/bundle/opt/terminus
+url = https://github.com/wincent/terminus
 [submodule "dotfiles/.vim/pack/bundle/opt/typescript-vim"]
-	path = dotfiles/.vim/pack/bundle/opt/typescript-vim
-	url = https://github.com/leafgarland/typescript-vim
+path = dotfiles/.vim/pack/bundle/opt/typescript-vim
+url = https://github.com/leafgarland/typescript-vim
 [submodule "dotfiles/.vim/pack/bundle/opt/replay"]
-	path = dotfiles/.vim/pack/bundle/opt/replay
-	url = https://github.com/wincent/replay
+path = dotfiles/.vim/pack/bundle/opt/replay
+url = https://github.com/wincent/replay
 [submodule "dotfiles/.vim/pack/bundle/opt/ultisnips"]
-	path = dotfiles/.vim/pack/bundle/opt/ultisnips
-	url = https://github.com/SirVer/ultisnips
+path = dotfiles/.vim/pack/bundle/opt/ultisnips
+url = https://github.com/SirVer/ultisnips
 [submodule "dotfiles/.vim/pack/bundle/opt/undotree"]
-	path = dotfiles/.vim/pack/bundle/opt/undotree
-	url = https://github.com/mbbill/undotree
+path = dotfiles/.vim/pack/bundle/opt/undotree
+url = https://github.com/mbbill/undotree
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-clipper"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-clipper
-	url = https://github.com/wincent/vim-clipper
+path = dotfiles/.vim/pack/bundle/opt/vim-clipper
+url = https://github.com/wincent/vim-clipper
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-dispatch"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-dispatch
-	url = https://github.com/tpope/vim-dispatch
+path = dotfiles/.vim/pack/bundle/opt/vim-dispatch
+url = https://github.com/tpope/vim-dispatch
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-docvim"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-docvim
-	url = https://github.com/wincent/vim-docvim
+path = dotfiles/.vim/pack/bundle/opt/vim-docvim
+url = https://github.com/wincent/vim-docvim
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-abolish"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-abolish
-	url = https://github.com/tpope/vim-abolish
+path = dotfiles/.vim/pack/bundle/opt/vim-abolish
+url = https://github.com/tpope/vim-abolish
 [submodule "dotfiles/.vim/pack/bundle/opt/vcs-jump"]
-	path = dotfiles/.vim/pack/bundle/opt/vcs-jump
-	url = https://github.com/wincent/vcs-jump
+path = dotfiles/.vim/pack/bundle/opt/vcs-jump
+url = https://github.com/wincent/vcs-jump
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-fugitive"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-fugitive
-	url = https://github.com/tpope/vim-fugitive
+path = dotfiles/.vim/pack/bundle/opt/vim-fugitive
+url = https://github.com/tpope/vim-fugitive
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-git"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-git
-	url = https://github.com/tpope/vim-git
+path = dotfiles/.vim/pack/bundle/opt/vim-git
+url = https://github.com/tpope/vim-git
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-javascript"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-javascript
-	url = https://github.com/pangloss/vim-javascript
+path = dotfiles/.vim/pack/bundle/opt/vim-javascript
+url = https://github.com/pangloss/vim-javascript
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-markdown"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-markdown
-	url = https://github.com/plasticboy/vim-markdown
+path = dotfiles/.vim/pack/bundle/opt/vim-markdown
+url = https://github.com/plasticboy/vim-markdown
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-jsx"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-jsx
-	url = https://github.com/mxw/vim-jsx
+path = dotfiles/.vim/pack/bundle/opt/vim-jsx
+url = https://github.com/mxw/vim-jsx
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-json"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-json
-	url = https://github.com/elzr/vim-json
+path = dotfiles/.vim/pack/bundle/opt/vim-json
+url = https://github.com/elzr/vim-json
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-pathogen"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-pathogen
-	url = https://github.com/tpope/vim-pathogen
+path = dotfiles/.vim/pack/bundle/opt/vim-pathogen
+url = https://github.com/tpope/vim-pathogen
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-projectionist"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-projectionist
-	url = https://github.com/tpope/vim-projectionist
+path = dotfiles/.vim/pack/bundle/opt/vim-projectionist
+url = https://github.com/tpope/vim-projectionist
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-slime"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-slime
-	url = https://github.com/jpalardy/vim-slime
+path = dotfiles/.vim/pack/bundle/opt/vim-slime
+url = https://github.com/jpalardy/vim-slime
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-soy"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-soy
-	url = https://github.com/duganchen/vim-soy
+path = dotfiles/.vim/pack/bundle/opt/vim-soy
+url = https://github.com/duganchen/vim-soy
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-speeddating"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-speeddating
-	url = https://github.com/tpope/vim-speeddating
+path = dotfiles/.vim/pack/bundle/opt/vim-speeddating
+url = https://github.com/tpope/vim-speeddating
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-surround"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-surround
-	url = https://github.com/tpope/vim-surround
+path = dotfiles/.vim/pack/bundle/opt/vim-surround
+url = https://github.com/tpope/vim-surround
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-textobj-comment"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-textobj-comment
-	url = https://github.com/glts/vim-textobj-comment
+path = dotfiles/.vim/pack/bundle/opt/vim-textobj-comment
+url = https://github.com/glts/vim-textobj-comment
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-textobj-user"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-textobj-user
-	url = https://github.com/kana/vim-textobj-user
+path = dotfiles/.vim/pack/bundle/opt/vim-textobj-user
+url = https://github.com/kana/vim-textobj-user
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-zsh"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-zsh
-	url = https://github.com/chrisbra/vim-zsh
+path = dotfiles/.vim/pack/bundle/opt/vim-zsh
+url = https://github.com/chrisbra/vim-zsh
 [submodule "dotfiles/.vim/pack/bundle/opt/vim-lion"]
-	path = dotfiles/.vim/pack/bundle/opt/vim-lion
-	url = https://github.com/tommcdo/vim-lion
+path = dotfiles/.vim/pack/bundle/opt/vim-lion
+url = https://github.com/tommcdo/vim-lion
 [submodule "dotfiles/.zsh/zsh-syntax-highlighting"]
-	path = dotfiles/.zsh/zsh-syntax-highlighting
-	url = https://github.com/zsh-users/zsh-syntax-highlighting
+path = dotfiles/.zsh/zsh-syntax-highlighting
+url = https://github.com/zsh-users/zsh-syntax-highlighting
 [submodule "dotfiles/.zsh/zsh-autosuggestions"]
-	path = dotfiles/.zsh/zsh-autosuggestions
-	url = https://github.com/zsh-users/zsh-autosuggestions
+path = dotfiles/.zsh/zsh-autosuggestions
+url = https://github.com/zsh-users/zsh-autosuggestions
 [submodule "dotfiles/.zsh/base16-shell"]
-	path = dotfiles/.zsh/base16-shell
-	url = https://github.com/chriskempson/base16-shell/
+path = dotfiles/.zsh/base16-shell
+url = https://github.com/chriskempson/base16-shell/
 [submodule "dotfiles/.zsh/skim"]
-	path = dotfiles/.zsh/skim
-	url = https://github.com/lotabout/skim
+path = dotfiles/.zsh/skim
+url = https://github.com/lotabout/skim
+[submodule "dotfiles/.vim/pack/bundle/opt/LanguageClient-neovim"]
+	path = dotfiles/.vim/pack/bundle/opt/LanguageClient-neovim
+	url = https://github.com/autozimu/LanguageClient-neovim
+[submodule "dotfiles/.vim/pack/bundle/opt/scalpel"]
+	path = dotfiles/.vim/pack/bundle/opt/scalpel
+	url = https://github.com/wincent/scalpel

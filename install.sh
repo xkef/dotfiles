@@ -21,13 +21,15 @@ rvm use 2.6.3
 npm i -g neovim
 pip3 install --upgrade pynvim
 gem install neovim
-
+git submodule add https://github.com/wincent/scalpel "$PACK"
+git submodule add https://github.com/Shougo/deoplete.nvim "$PACK"/deoplete
+git submodule add https://github.com/autozimu/LanguageClient-neovim "$PACK"
 git submodule add https://github.com/wincent/vim-docvim "$PACK"
 git submodule add https://github.com/wincent/vim-clipper "$PACK"
 git submodule add https://github.com/wincent/vcs-jump "$PACK"
 git submodule add https://github.com/wincent/terminus "$PACK"
 git submodule add https://github.com/wincent/replay "$PACK"
-git submodule add https://github.com/wincent/pinnacle.git "$PACK"
+git submodule add https://github.com/wincent/pinnacle "$PACK"
 git submodule add https://github.com/wincent/loupe "$PACK"
 git submodule add https://github.com/tpope/vim-surround "$PACK"
 git submodule add https://github.com/tpope/vim-speeddating "$PACK"
@@ -74,6 +76,9 @@ cd /"$PACK"/command-t/ruby/command-t/ext/command-t && ruby extconf.rb && make
 for DOTFILE in $(find $BASE/dotfiles -maxdepth 1 -name '.*' | tail -n +2); do
     ln -sf "$BASE"/dotfiles/.* "$HOME"
 done
+
+mkdir -p "$HOME"/.config/
+ln -sf "$HOME"/.vim "$HOME"/.config/nvim
 
 vim +'UpdateRemotePlugins'
 vim +'checkhealth'
