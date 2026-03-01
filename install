@@ -194,7 +194,7 @@ def ensure_dir(path: Path) -> None:
 
 
 def setup_plugins() -> None:
-    """Clone zinit (zsh) and TPM (tmux) if not already present."""
+    """Clone zinit (zsh plugin manager) if not already present."""
     xdg_data = Path(os.environ.get("XDG_DATA_HOME", HOME / ".local/share"))
 
     zinit = xdg_data / "zinit/zinit.git"
@@ -202,12 +202,6 @@ def setup_plugins() -> None:
         log("Cloning zinit...")
         ensure_dir(zinit.parent)
         run(f"git clone --quiet https://github.com/zdharma-continuum/zinit.git {zinit}")
-
-    tpm = HOME / ".config/tmux/plugins/tpm"
-    if not tpm.exists():
-        log("Cloning TPM...")
-        ensure_dir(tpm.parent)
-        run(f"git clone --quiet https://github.com/tmux-plugins/tpm {tpm}")
 
 
 def install_ghostty_terminfo() -> None:
@@ -250,7 +244,7 @@ def main() -> None:
     install_ghostty_terminfo()
     set_default_shell()
 
-    print("\n  Done! Run `exec zsh` to reload, `prefix+I` in tmux to install plugins.\n")
+    print("\n  Done! Run `exec zsh` to reload.\n")
 
 
 if __name__ == "__main__":

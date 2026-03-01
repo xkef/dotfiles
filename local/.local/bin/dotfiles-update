@@ -35,12 +35,6 @@ done
 info "Updating zinit plugins..."
 zsh -ic 'zinit update --all 2>/dev/null; exit' 2>/dev/null || true
 
-# Update tmux plugins
-if [ -x "$HOME/.config/tmux/plugins/tpm/bin/update_plugins" ]; then
-  info "Updating tmux plugins..."
-  "$HOME/.config/tmux/plugins/tpm/bin/update_plugins" all 2>/dev/null || true
-fi
-
 # Update neovim plugins
 info "Updating neovim plugins..."
 nvim --headless "+Lazy! sync" +qa 2>/dev/null || true

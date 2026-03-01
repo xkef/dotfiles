@@ -18,7 +18,7 @@ default shell.
 | **Shell**        | Zsh + [zinit](https://github.com/zdharma-continuum/zinit)    | Fast plugin loading, turbo mode         |
 | **Prompt**       | [Starship](https://starship.rs)                              | Cross-shell, fast, informative          |
 | **Editor**       | Neovim + lazy.nvim (no distro)                               | Minimal, explicit plugins, fast startup |
-| **Multiplexer**  | tmux + [TPM](https://github.com/tmux-plugins/tpm)            | Session persistence, vim navigation     |
+| **Multiplexer**  | tmux                                                         | Vim navigation, fzf session switching   |
 | **Terminal**     | [Ghostty](https://ghostty.org)                               | Native GPU rendering, OSC 52 clipboard  |
 | **Git**          | Modern config + [delta](https://github.com/dandavison/delta) | Histogram diffs, zdiff3 conflicts       |
 | **Fuzzy finder** | [fzf](https://github.com/junegunn/fzf) everywhere            | Shell, tmux, Neovim, git                |
@@ -40,17 +40,17 @@ Same physical key. Ctrl is the only difference.
 
 ## tmux `Ctrl-Space +`
 
-| Key          | Action                            |
-|--------------|-----------------------------------|
-| `\|` / `-`   | Split right / down                |
-| `H/J/K/L`    | Resize pane                       |
-| `Ctrl-Space` | Toggle last window (double-tap)   |
-| `Tab`        | Last window                       |
-| `f`          | Sessionizer — fzf pick project    |
-| `F`          | fzf switch session (with preview) |
-| `w`          | fzf switch window (all sessions)  |
-| `Enter`      | Enter copy mode                   |
-| `/`          | Enter copy mode and search        |
+| Key          | Action                                  |
+|--------------|-----------------------------------------|
+| `\|` / `-`   | Split right / down                      |
+| `H/J/K/L`    | Resize pane                             |
+| `Ctrl-Space` | Toggle last window (double-tap)         |
+| `Tab`        | Last window                             |
+| `f`          | Sessionizer — fzf pick project          |
+| `F`          | fzf switch session (with preview)       |
+| `w`          | fzf switch window (all sessions)        |
+| `Enter`      | Enter copy mode                         |
+| `/`          | Enter copy mode and search              |
 
 **Copy mode** (`v` select, `V` line, `C-v` block, `y` yank, `Y` yank to EOL):
 
