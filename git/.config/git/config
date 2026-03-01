@@ -41,10 +41,8 @@
 # ── Delta (pager) ────────────────────────────────────
 [delta]
 	navigate = true
-	dark = true
 	line-numbers = true
 	side-by-side = false
-	syntax-theme = Catppuccin Mocha
 
 [interactive]
 	diffFilter = delta --color-only
@@ -126,6 +124,10 @@
 # ── Maintenance ──────────────────────────────────────
 [maintenance]
 	auto = true
+
+# ── Theme (delta syntax-theme, managed by `theme` command) ──
+[include]
+	path = ~/.config/theme/delta.gitconfig
 
 # ── Local overrides (identity, signing, etc.) ────────
 [include]

@@ -1,11 +1,11 @@
 return {
-  -- Colorscheme
+  -- Colorschemes (active theme read from ~/.config/theme/current)
   {
     "catppuccin/nvim",
     name = "catppuccin",
+    lazy = false,
     priority = 1000,
     opts = {
-      flavour = "mocha",
       integrations = {
         cmp = true,
         gitsigns = true,
@@ -15,11 +15,11 @@ return {
         treesitter = true,
       },
     },
-    config = function(_, opts)
-      require("catppuccin").setup(opts)
-      vim.cmd.colorscheme("catppuccin")
-    end,
   },
+  { "folke/tokyonight.nvim", lazy = false, priority = 1000 },
+  { "rose-pine/neovim", name = "rose-pine", lazy = false, priority = 1000 },
+  { "ellisonleao/gruvbox.nvim", lazy = false, priority = 1000 },
+  { "shaunsingh/nord.nvim", lazy = false, priority = 1000 },
 
   -- Tmux navigation
   {

@@ -8,6 +8,8 @@ font-thicken = true
 adjust-cell-height = 0%
 
 # ── Theme ─────────────────────────────────────────────
+# Managed by `theme` command — switches ghostty, neovim, tmux, and shell
+# coherently. Run `ghostty +list-themes` to see available theme names.
 theme = Catppuccin Mocha
 
 # ── Window ────────────────────────────────────────────
