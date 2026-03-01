@@ -27,7 +27,7 @@ Same physical key. Ctrl is the only difference. `Space + key` in vim, `Ctrl-Spac
 | ---------------- | ------------------------------------------------------------ | ----------------------------------------- |
 | **Shell**        | Zsh + [zinit](https://github.com/zdharma-continuum/zinit)    | Fast plugin loading, turbo mode           |
 | **Prompt**       | [Starship](https://starship.rs)                              | Cross-shell, fast, informative            |
-| **Editor**       | Neovim + [LazyVim](https://www.lazyvim.org)                  | Full IDE, lazy-loaded, 12 language extras |
+| **Editor**       | Neovim + lazy.nvim (no distro)                               | Minimal, explicit plugins, fast startup   |
 | **Multiplexer**  | tmux + [TPM](https://github.com/tmux-plugins/tpm)            | Session persistence, vim navigation       |
 | **Terminal**     | [Ghostty](https://ghostty.org)                               | Native GPU rendering, OSC 52 clipboard    |
 | **Git**          | Modern config + [delta](https://github.com/dandavison/delta) | Histogram diffs, zdiff3 conflicts         |
@@ -45,7 +45,7 @@ dotfiles/
 ├── git/               # Git config (delta, modern defaults)
 ├── zsh/               # Zsh + Starship (conf.d/, aliases, fzf, functions)
 ├── tmux/              # tmux (vi mode, fzf popups, vim navigation)
-├── nvim/              # Neovim (LazyVim + custom plugins)
+├── nvim/              # Neovim (lazy.nvim, ~16 plugins, no distro)
 ├── ghostty/           # Ghostty terminal
 └── local/             # Everything else (scripts, bat, fd, shfmt, CLAUDE.md)
 ```
@@ -113,32 +113,101 @@ This is the main way to jump between projects — each project gets its own tmux
 
 ### Neovim
 
-Built on [LazyVim](https://www.lazyvim.org) — leader is **`Space`**.
+No distro — just lazy.nvim as plugin manager with ~16 explicit plugins. Keymaps follow [wincent/wincent](https://github.com/wincent/wincent). Leader is **`Space`**.
 
-**Language extras**: TypeScript, Python, Rust, Go, Java, C/C++, JSON, YAML, Markdown, Docker, Terraform, Tailwind CSS
+**Plugins**: lspconfig + mason (LSP), nvim-cmp (completion), treesitter + textobjects (syntax), telescope + fzf-native (fuzzy finder), fugitive + gitsigns (git), oil + harpoon (file nav), nvim-surround, vim-tmux-navigator, catppuccin.
 
-**Key mappings** (all prefixed with `Space`):
+**Leader mappings** (`Space` +):
 
-| Key   | Action                   | Plugin    |
-| ----- | ------------------------ | --------- |
-| `ff`  | Find files               | Telescope |
-| `/`   | Live grep (project-wide) | Telescope |
-| `sG`  | Grep word under cursor   | Telescope |
-| `sb`  | Fuzzy find in buffer     | Telescope |
-| `sR`  | Resume last search       | Telescope |
-| `sc`  | Command history          | Telescope |
-| `ha`  | Harpoon add file         | Harpoon   |
-| `hh`  | Harpoon quick menu       | Harpoon   |
-| `1-4` | Jump to harpoon file 1-4 | Harpoon   |
-| `uu`  | Toggle undotree          | Undotree  |
-| `zz`  | Zen mode                 | Zen Mode  |
+| Key              | Action                       |
+| ---------------- | ---------------------------- |
+| `<Space>`        | Alternate file (last buffer) |
+| `o`              | Close all other windows      |
+| `p`              | Show file path               |
+| `q`              | Quit window                  |
+| `w`              | Write file                   |
+| `x`              | Write and quit               |
+| `v`              | Reselect last visual         |
+| `zz`             | Strip trailing whitespace    |
 
-| Key         | Action                           |
-| ----------- | -------------------------------- |
-| `-`         | Open parent directory (Oil)      |
-| `C-h/j/k/l` | Navigate vim splits / tmux panes |
+**Fuzzy finder** (`Space` +):
 
-All Telescope pickers use the compiled **fzf-native** sorter for instant results.
+| Key   | Action                 |
+| ----- | ---------------------- |
+| `ff`  | Find files             |
+| `/`   | Live grep              |
+| `fb`  | Buffers                |
+| `fh`  | Help tags              |
+| `fr`  | Recent files           |
+| `sg`  | Grep (project)         |
+| `sG`  | Grep word under cursor |
+| `sr`  | Resume last search     |
+
+**File navigation**:
+
+| Key          | Action                           |
+| ------------ | -------------------------------- |
+| `-`          | File browser (Oil)               |
+| `Space + ha` | Harpoon add file                 |
+| `Space + hh` | Harpoon quick menu               |
+| `Space + 1-4`| Jump to harpoon file 1-4         |
+| `C-h/j/k/l`  | Navigate vim splits / tmux panes |
+
+**LSP** (active when a language server attaches):
+
+| Key          | Action          |
+| ------------ | --------------- |
+| `gd`         | Go to definition|
+| `gr`         | References      |
+| `gI`         | Implementation  |
+| `gy`         | Type definition |
+| `K`          | Hover           |
+| `Space + ca` | Code action     |
+| `Space + cr` | Rename (refactor)|
+| `Space + cf` | Format          |
+
+**Git**:
+
+| Key          | Action                     |
+| ------------ | -------------------------- |
+| `Space + gs` | Git status (fugitive)      |
+| inline       | Git blame per line (gitsigns, 500ms delay) |
+
+**Normal mode**:
+
+| Key            | Action                                |
+| -------------- | ------------------------------------- |
+| `Q`            | Disabled (no accidental Ex mode)      |
+| `j`/`k`        | Smart: jumps > 5 stored in jumplist   |
+| `C-d`/`C-u`    | Half-page scroll, cursor stays centered |
+| `n`/`N`         | Search next/prev, cursor stays centered |
+| `Esc`          | Clear search highlight                |
+| `Up`/`Down`     | Previous/next quickfix entry          |
+| `Left`/`Right`  | Previous/next quickfix file           |
+
+**Visual mode**:
+
+| Key          | Action                       |
+| ------------ | ---------------------------- |
+| `J`/`K`      | Move selection down/up       |
+| `Space + p`  | Paste without losing register|
+
+**Command mode**:
+
+| Key    | Action            |
+| ------ | ----------------- |
+| `C-a`  | Jump to start     |
+| `C-e`  | Jump to end       |
+
+**Diagnostics**:
+
+| Key          | Action                |
+| ------------ | --------------------- |
+| `[d` / `]d`  | Previous/next diagnostic |
+| `Space + e`  | Show diagnostic float |
+| `Space + xl` | Diagnostic loclist    |
+
+Install language servers with `:Mason` — they auto-configure via mason-lspconfig. All Telescope pickers use the compiled **fzf-native** sorter.
 
 ### Fuzzy finder (fzf)
 
