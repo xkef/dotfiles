@@ -1,3 +1,97 @@
+-- Leader key (must be set before lazy)
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
+
+-- Options
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.mouse = "a"
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.signcolumn = "yes"
+vim.opt.updatetime = 250
+vim.opt.undofile = true
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+vim.opt.clipboard = "unnamedplus"
+vim.opt.termguicolors = true
+vim.opt.scrolloff = 8
+vim.opt.expandtab = true
+vim.opt.shiftwidth = 2
+vim.opt.tabstop = 2
+vim.opt.cursorline = true
+vim.opt.wrap = false
+vim.opt.smartindent = true
+
+-- OSC 52 clipboard (works over SSH, in tmux, everywhere)
+if vim.env.SSH_TTY or vim.env.TMUX then
+  vim.g.clipboard = {
+    name = "OSC 52",
+    copy = {
+      ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+      ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+    },
+    paste = {
+      ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
+      ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+    },
+  }
+end
+
+-- Keymaps (wincent-style, see github.com/wincent/wincent)
+local map = vim.keymap.set
+
+-- Leader mappings
+map("n", "<leader><leader>", "<C-^>", { desc = "Alternate file" })
+map("n", "<leader>o", "<cmd>only<cr>", { desc = "Close other windows" })
+map("n", "<leader>p", function() print(vim.fn.expand("%:p")) end, { desc = "Show file path" })
+map("n", "<leader>q", "<cmd>quit<cr>", { desc = "Quit window" })
+map("n", "<leader>w", "<cmd>write<cr>", { desc = "Write file" })
+map("n", "<leader>x", "<cmd>xit<cr>", { desc = "Write and quit" })
+map("n", "<leader>v", "gv", { desc = "Reselect last visual" })
+map("n", "<leader>zz", function()
+  local pos = vim.api.nvim_win_get_cursor(0)
+  vim.cmd([[%s/\s\+$//e]])
+  vim.api.nvim_win_set_cursor(0, pos)
+end, { desc = "Strip trailing whitespace" })
+
+-- Normal mode
+map("n", "Q", "<nop>")
+map("n", "<Esc>", "<cmd>nohlsearch<CR>")
+map("n", "<C-d>", "<C-d>zz")
+map("n", "<C-u>", "<C-u>zz")
+map("n", "n", "nzzzv")
+map("n", "N", "Nzzzv")
+
+-- Smart j/k: store jumps > 5 in jumplist
+map("n", "j", function()
+  return vim.v.count > 5 and "m'" .. vim.v.count .. "j" or "j"
+end, { expr = true })
+map("n", "k", function()
+  return vim.v.count > 5 and "m'" .. vim.v.count .. "k" or "k"
+end, { expr = true })
+
+-- Quickfix navigation (arrow keys)
+map("n", "<Up>", "<cmd>cprevious<cr>", { desc = "Previous quickfix" })
+map("n", "<Down>", "<cmd>cnext<cr>", { desc = "Next quickfix" })
+map("n", "<Left>", "<cmd>cpfile<cr>", { desc = "Previous quickfix file" })
+map("n", "<Right>", "<cmd>cnfile<cr>", { desc = "Next quickfix file" })
+
+-- Visual mode
+map("v", "J", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
+map("v", "K", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
+map("x", "<leader>p", '"_dP', { desc = "Paste without losing register" })
+
+-- Command mode
+map("c", "<C-a>", "<Home>")
+map("c", "<C-e>", "<End>")
+
+-- Diagnostics
+map("n", "[d", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
+map("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
+map("n", "<leader>e", vim.diagnostic.open_float, { desc = "Show diagnostic" })
+map("n", "<leader>xl", vim.diagnostic.setloclist, { desc = "Diagnostic list" })
+
 -- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -10,77 +104,11 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- LazyVim marker (used by install script to detect existing config)
-local marker = vim.fn.stdpath("config") .. "/.lazyvim"
-if not vim.loop.fs_stat(marker) then
-  local f = io.open(marker, "w")
-  if f then f:close() end
-end
-
--- Leader key (must be set before lazy)
-vim.g.mapleader = " "
-vim.g.maplocalleader = "\\"
-
--- Import LazyVim and custom plugins
-require("lazy").setup({
-  spec = {
-    -- LazyVim core
-    {
-      "LazyVim/LazyVim",
-      import = "lazyvim.plugins",
-      opts = {
-        colorscheme = "catppuccin",
-      },
-    },
-
-    -- LazyVim extras (language support, tools)
-    { import = "lazyvim.plugins.extras.lang.typescript" },
-    { import = "lazyvim.plugins.extras.lang.python" },
-    { import = "lazyvim.plugins.extras.lang.rust" },
-    { import = "lazyvim.plugins.extras.lang.go" },
-    { import = "lazyvim.plugins.extras.lang.java" },
-    { import = "lazyvim.plugins.extras.lang.json" },
-    { import = "lazyvim.plugins.extras.lang.yaml" },
-    { import = "lazyvim.plugins.extras.lang.markdown" },
-    { import = "lazyvim.plugins.extras.lang.docker" },
-    { import = "lazyvim.plugins.extras.lang.terraform" },
-    { import = "lazyvim.plugins.extras.lang.tailwind" },
-    { import = "lazyvim.plugins.extras.lang.clangd" },
-
-    -- Coding extras
-    { import = "lazyvim.plugins.extras.ai.copilot" },
-    { import = "lazyvim.plugins.extras.coding.yanky" },
-
-    -- Editor extras
-    { import = "lazyvim.plugins.extras.editor.dial" },
-    { import = "lazyvim.plugins.extras.editor.illuminate" },
-
-    -- Formatting & Linting
-    { import = "lazyvim.plugins.extras.formatting.prettier" },
-    { import = "lazyvim.plugins.extras.linting.eslint" },
-
-    -- DAP (debugging)
-    { import = "lazyvim.plugins.extras.dap.core" },
-
-    -- UI extras
-    { import = "lazyvim.plugins.extras.ui.mini-animate" },
-
-    -- Custom plugins
-    { import = "plugins" },
-  },
-  defaults = {
-    lazy = false,
-    version = false,
-  },
-  checker = { enabled = true, notify = false },
+require("lazy").setup("plugins", {
   performance = {
     rtp = {
       disabled_plugins = {
-        "gzip",
-        "tarPlugin",
-        "tohtml",
-        "tutor",
-        "zipPlugin",
+        "gzip", "tarPlugin", "tohtml", "tutor", "zipPlugin", "netrwPlugin",
       },
     },
   },
