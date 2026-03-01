@@ -268,6 +268,16 @@ return {
     },
   },
 
+  -- Search and replace
+  {
+    "MagicDuck/grug-far.nvim",
+    keys = {
+      { "<leader>S",  "<cmd>GrugFar<cr>", desc = "Search and replace" },
+      { "<leader>sR", function() require("grug-far").open({ prefills = { search = vim.fn.expand("<cword>") } }) end, desc = "Search and replace (word)" },
+    },
+    opts = {},
+  },
+
   -- Surround
   {
     "kylechui/nvim-surround",

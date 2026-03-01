@@ -10,7 +10,7 @@ adjust-cell-height = 0%
 # ── Theme ─────────────────────────────────────────────
 # Managed by `theme` command — switches ghostty, neovim, tmux, and shell
 # coherently. Run `ghostty +list-themes` to see available theme names.
-theme = Catppuccin Mocha
+theme = Gruvbox Dark
 
 # ── Window ────────────────────────────────────────────
 window-padding-x = 8
@@ -37,9 +37,9 @@ mouse-hide-while-typing = true
 # ── Terminal ──────────────────────────────────────────
 scrollback-limit = 50000
 
-# ── Keybindings (platform-adaptive) ──────────────────
-# macOS-style keybindings are built-in on macOS
-# On Linux, use these common ones
+# ── Keybindings ───────────────────────────────────────
+# macOS native bindings (cmd+c/v/etc) are built-in and unaffected.
+# These add Linux-compatible ctrl+shift equivalents on all platforms.
 keybind = ctrl+shift+c=copy_to_clipboard
 keybind = ctrl+shift+v=paste_from_clipboard
 keybind = ctrl+shift+n=new_window
