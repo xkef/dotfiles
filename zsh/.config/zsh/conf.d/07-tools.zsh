@@ -1,0 +1,16 @@
+# ── Tool initialization ──────────────────────────────
+
+# zoxide (smart cd)
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init zsh --cmd cd)"
+fi
+
+# Starship prompt
+if command -v starship &>/dev/null; then
+  eval "$(starship init zsh)"
+fi
+
+# direnv (if installed)
+if command -v direnv &>/dev/null; then
+  eval "$(direnv hook zsh)"
+fi

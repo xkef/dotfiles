@@ -1,0 +1,10 @@
+# Stow ignores for the dotfiles repo root
+\.git
+\.gitignore
+\.stow-local-ignore
+\.editorconfig
+README\.md
+install
+packages\.toml
+scripts
+LICENSE
