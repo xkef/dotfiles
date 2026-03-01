@@ -13,17 +13,18 @@ default shell.
 
 ## What's included
 
-| Category         | Tool                                                         | Why                                     |
-|------------------|--------------------------------------------------------------|-----------------------------------------|
-| **Shell**        | Zsh + [zinit](https://github.com/zdharma-continuum/zinit)    | Fast plugin loading, turbo mode         |
-| **Prompt**       | [Starship](https://starship.rs)                              | Cross-shell, fast, informative          |
-| **Editor**       | Neovim + lazy.nvim (no distro)                               | Minimal, explicit plugins, fast startup |
-| **Multiplexer**  | tmux                                                         | Vim navigation, fzf session switching   |
-| **Terminal**     | [Ghostty](https://ghostty.org)                               | Native GPU rendering, OSC 52 clipboard  |
-| **Git**          | Modern config + [delta](https://github.com/dandavison/delta) | Histogram diffs, zdiff3 conflicts       |
-| **Fuzzy finder** | [fzf](https://github.com/junegunn/fzf) everywhere            | Shell, tmux, Neovim, git                |
-| **CLI tools**    | eza, bat, fd, ripgrep, zoxide                                | Rust replacements for UNIX classics     |
-| **AI**           | [Claude Code](https://github.com/anthropics/claude-code)     | Global `CLAUDE.md` via stow             |
+| Category     | Tool                                                                                    | Why                         |
+|--------------|-----------------------------------------------------------------------------------------|-----------------------------|
+| **Shell**    | Zsh + [zinit](https://github.com/zdharma-continuum/zinit)                               | Turbo-loaded plugins        |
+| **Prompt**   | [Starship](https://starship.rs)                                                         | Cross-shell, fast           |
+| **Editor**   | Neovim + lazy.nvim                                                                      | No distro, explicit config  |
+| **Mux**      | tmux                                                                                    | Vim nav, fzf sessions       |
+| **Terminal** | [Ghostty](https://ghostty.org)                                                          | GPU rendering, OSC 52       |
+| **Git**      | [delta](https://github.com/dandavison/delta)                                            | Histogram diffs, zdiff3     |
+| **Fuzzy**    | [fzf](https://github.com/junegunn/fzf) + [snacks](https://github.com/folke/snacks.nvim) | Shell/tmux + Neovim picker  |
+| **History**  | [atuin](https://atuin.sh)                                                               | Ranked search, sync         |
+| **CLI**      | eza, bat, fd, ripgrep, zoxide                                                           | Rust UNIX replacements      |
+| **AI**       | [Claude Code](https://github.com/anthropics/claude-code)                                | Global `CLAUDE.md` via stow |
 
 ---
 
@@ -40,17 +41,18 @@ Same physical key. Ctrl is the only difference.
 
 ## tmux `Ctrl-Space +`
 
-| Key          | Action                                  |
-|--------------|-----------------------------------------|
-| `\|` / `-`   | Split right / down                      |
-| `H/J/K/L`    | Resize pane                             |
-| `Ctrl-Space` | Toggle last window (double-tap)         |
-| `Tab`        | Last window                             |
-| `f`          | Sessionizer — fzf pick project          |
-| `F`          | fzf switch session (with preview)       |
-| `w`          | fzf switch window (all sessions)        |
-| `Enter`      | Enter copy mode                         |
-| `/`          | Enter copy mode and search              |
+| Key          | Action                            |
+|--------------|-----------------------------------|
+| `\|` / `-`   | Split right / down                |
+| `H/J/K/L`    | Resize pane                       |
+| `Ctrl-Space` | Toggle last window (double-tap)   |
+| `Tab`        | Last window                       |
+| `f`          | Sessionizer — fzf pick project    |
+| `F`          | fzf switch session (with preview) |
+| `w`          | fzf switch window (all sessions)  |
+| `g`          | Lazygit (floating popup)          |
+| `Enter`      | Enter copy mode                   |
+| `/`          | Enter copy mode and search        |
 
 **Copy mode** (`v` select, `V` line, `C-v` block, `y` yank, `Y` yank to EOL):
 
@@ -72,6 +74,7 @@ Same physical key. Ctrl is the only difference.
 | `ff`    | Find files                         |
 | `fr`    | Recent files                       |
 | `fb`    | Buffers                            |
+| `fh`    | Help tags                          |
 | `/`     | Live grep                          |
 | `sG`    | Grep word under cursor             |
 | `sr`    | Resume last search                 |
@@ -81,10 +84,28 @@ Same physical key. Ctrl is the only difference.
 | `hh`    | Harpoon menu                       |
 | `1`–`4` | Jump to harpoon file               |
 
+**Navigation:**
+
+| Key | Action                                     |
+|-----|--------------------------------------------|
+| `s` | Flash jump — jump anywhere in 2 keystrokes |
+| `S` | Flash treesitter — jump to any syntax node |
+
+**Git:**
+
+| Key  | Action  |
+|------|---------|
+| `gs` | Lazygit |
+
 **LSP:**
 
 | Key       | Action               |
 |-----------|----------------------|
+| `gd`      | Go to definition     |
+| `gr`      | References           |
+| `gI`      | Implementation       |
+| `gy`      | Type definition      |
+| `K`       | Hover                |
 | `ca`      | Code action          |
 | `cr`      | Rename               |
 | `cf`      | Format               |

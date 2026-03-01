@@ -1,35 +1,34 @@
 return {
-  -- Colorschemes (active theme read from ~/.config/theme/current)
+  -- Colorschemes (active theme read from ~/.config/theme/env)
+  -- All lazy=true: theme.lua calls vim.cmd.colorscheme() which lazy.nvim intercepts
   {
     "catppuccin/nvim",
     name = "catppuccin",
-    lazy = false,
-    priority = 1000,
+    lazy = true,
     opts = {
       integrations = {
         blink_cmp = true,
         gitsigns = true,
         mason = true,
         native_lsp = { enabled = true },
-        telescope = { enabled = true },
         treesitter = true,
         lualine = true,
       },
     },
   },
-  { "folke/tokyonight.nvim", lazy = false, priority = 1000 },
-  { "rose-pine/neovim", name = "rose-pine", lazy = false, priority = 1000 },
-  { "ellisonleao/gruvbox.nvim", lazy = false, priority = 1000 },
-  { "shaunsingh/nord.nvim", lazy = false, priority = 1000 },
+  { "folke/tokyonight.nvim", lazy = true },
+  { "rose-pine/neovim", name = "rose-pine", lazy = true },
+  { "ellisonleao/gruvbox.nvim", lazy = true },
+  { "shaunsingh/nord.nvim", lazy = true },
 
-  -- Tmux navigation
+  -- Smart split/pane navigation (Neovim + tmux, replaces vim-tmux-navigator)
   {
-    "christoomey/vim-tmux-navigator",
+    "mrjones2014/smart-splits.nvim",
     keys = {
-      { "<C-h>", "<cmd>TmuxNavigateLeft<cr>" },
-      { "<C-j>", "<cmd>TmuxNavigateDown<cr>" },
-      { "<C-k>", "<cmd>TmuxNavigateUp<cr>" },
-      { "<C-l>", "<cmd>TmuxNavigateRight<cr>" },
+      { "<C-h>", function() require("smart-splits").move_cursor_left() end },
+      { "<C-j>", function() require("smart-splits").move_cursor_down() end },
+      { "<C-k>", function() require("smart-splits").move_cursor_up() end },
+      { "<C-l>", function() require("smart-splits").move_cursor_right() end },
     },
   },
 
@@ -44,7 +43,7 @@ return {
     },
   },
 
-  -- LSP
+  -- LSP (Neovim 0.11 style: vim.lsp.config + automatic_enable)
   {
     "neovim/nvim-lspconfig",
     event = { "BufReadPost", "BufNewFile" },
@@ -56,23 +55,19 @@ return {
     config = function()
       require("mason").setup()
 
-      local capabilities = require("blink.cmp").get_lsp_capabilities()
+      -- Default capabilities for all servers
+      vim.lsp.config("*", {
+        capabilities = require("blink.cmp").get_lsp_capabilities(),
+      })
 
-      require("mason-lspconfig").setup({
-        handlers = {
-          function(server_name)
-            require("lspconfig")[server_name].setup({ capabilities = capabilities })
-          end,
-          ["lua_ls"] = function()
-            require("lspconfig").lua_ls.setup({
-              capabilities = capabilities,
-              settings = {
-                Lua = { telemetry = { enable = false } },
-              },
-            })
-          end,
+      -- Server-specific overrides
+      vim.lsp.config("lua_ls", {
+        settings = {
+          Lua = { telemetry = { enable = false } },
         },
       })
+
+      require("mason-lspconfig").setup({ automatic_enable = true })
 
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(ev)
@@ -156,9 +151,43 @@ return {
     event = "VeryLazy",
     opts = {},
     keys = {
-      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end,            desc = "Flash jump" },
-      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end,      desc = "Flash treesitter" },
-      { "r", mode = "o",               function() require("flash").remote() end,           desc = "Flash remote" },
+      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end,       desc = "Flash jump" },
+      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash treesitter" },
+      { "r", mode = "o",               function() require("flash").remote() end,      desc = "Flash remote" },
+    },
+  },
+
+  -- Snacks (picker replaces telescope; lazygit replaces vim-fugitive)
+  {
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    opts = {
+      picker  = { enabled = true },
+      lazygit = { enabled = true },
+      -- opt-out of everything else
+      bigfile      = { enabled = false },
+      dashboard    = { enabled = false },
+      indent       = { enabled = false },
+      input        = { enabled = false },
+      notifier     = { enabled = false },
+      quickfile    = { enabled = false },
+      scope        = { enabled = false },
+      scroll       = { enabled = false },
+      statuscolumn = { enabled = false },
+      terminal     = { enabled = false },
+      words        = { enabled = false },
+    },
+    keys = {
+      { "<leader>ff", function() Snacks.picker.files() end,     desc = "Find files" },
+      { "<leader>/",  function() Snacks.picker.grep() end,      desc = "Grep" },
+      { "<leader>fb", function() Snacks.picker.buffers() end,   desc = "Buffers" },
+      { "<leader>fh", function() Snacks.picker.help() end,      desc = "Help" },
+      { "<leader>fr", function() Snacks.picker.recent() end,    desc = "Recent files" },
+      { "<leader>sg", function() Snacks.picker.grep() end,      desc = "Grep" },
+      { "<leader>sG", function() Snacks.picker.grep_word() end, desc = "Grep word under cursor" },
+      { "<leader>sr", function() Snacks.picker.resume() end,    desc = "Resume search" },
+      { "<leader>gs", function() Snacks.lazygit() end,          desc = "Lazygit" },
     },
   },
 
@@ -185,7 +214,6 @@ return {
     config = function(_, opts)
       require("nvim-treesitter").setup(opts)
 
-      -- Textobjects
       local ts_select = require("nvim-treesitter-textobjects.select")
       local ts_move = require("nvim-treesitter-textobjects.move")
 
@@ -201,57 +229,13 @@ return {
     end,
   },
 
-  -- Telescope
-  {
-    "nvim-telescope/telescope.nvim",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
-    },
-    keys = {
-      { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find files" },
-      { "<leader>/",  "<cmd>Telescope live_grep<cr>",  desc = "Grep" },
-      { "<leader>fb", "<cmd>Telescope buffers<cr>",    desc = "Buffers" },
-      { "<leader>fh", "<cmd>Telescope help_tags<cr>",  desc = "Help" },
-      { "<leader>fr", "<cmd>Telescope oldfiles<cr>",   desc = "Recent files" },
-      { "<leader>sg", "<cmd>Telescope live_grep<cr>",  desc = "Grep" },
-      { "<leader>sG", "<cmd>Telescope grep_string<cr>", desc = "Grep word under cursor" },
-      { "<leader>sr", "<cmd>Telescope resume<cr>",     desc = "Resume search" },
-    },
-    opts = {
-      defaults = {
-        layout_strategy = "horizontal",
-        layout_config = { horizontal = { preview_width = 0.55 } },
-        sorting_strategy = "ascending",
-        file_ignore_patterns = { "node_modules", ".git/", "target/", "dist/", "build/" },
-        mappings = {
-          i = {
-            ["<C-j>"] = "move_selection_next",
-            ["<C-k>"] = "move_selection_previous",
-          },
-        },
-      },
-    },
-    config = function(_, opts)
-      require("telescope").setup(opts)
-      require("telescope").load_extension("fzf")
-    end,
-  },
-
-  -- Git
+  -- Git signs + blame
   {
     "lewis6991/gitsigns.nvim",
     event = { "BufReadPost", "BufNewFile" },
     opts = {
       current_line_blame = true,
       current_line_blame_opts = { delay = 500 },
-    },
-  },
-  {
-    "tpope/vim-fugitive",
-    cmd = "Git",
-    keys = {
-      { "<leader>gs", "<cmd>Git<cr>", desc = "Git status" },
     },
   },
 
@@ -266,12 +250,12 @@ return {
     branch = "harpoon2",
     dependencies = { "nvim-lua/plenary.nvim" },
     keys = {
-      { "<leader>ha", function() require("harpoon"):list():add() end, desc = "Harpoon add" },
-      { "<leader>hh", function() require("harpoon").ui:toggle_quick_menu(require("harpoon"):list()) end, desc = "Harpoon menu" },
-      { "<leader>1", function() require("harpoon"):list():select(1) end, desc = "Harpoon 1" },
-      { "<leader>2", function() require("harpoon"):list():select(2) end, desc = "Harpoon 2" },
-      { "<leader>3", function() require("harpoon"):list():select(3) end, desc = "Harpoon 3" },
-      { "<leader>4", function() require("harpoon"):list():select(4) end, desc = "Harpoon 4" },
+      { "<leader>ha", function() require("harpoon"):list():add() end,                                              desc = "Harpoon add" },
+      { "<leader>hh", function() require("harpoon").ui:toggle_quick_menu(require("harpoon"):list()) end,           desc = "Harpoon menu" },
+      { "<leader>1",  function() require("harpoon"):list():select(1) end,                                          desc = "Harpoon 1" },
+      { "<leader>2",  function() require("harpoon"):list():select(2) end,                                          desc = "Harpoon 2" },
+      { "<leader>3",  function() require("harpoon"):list():select(3) end,                                          desc = "Harpoon 3" },
+      { "<leader>4",  function() require("harpoon"):list():select(4) end,                                          desc = "Harpoon 4" },
     },
     opts = {},
   },
@@ -288,18 +272,11 @@ return {
         disabled_filetypes = { statusline = { "lazy" } },
       },
       sections = {
-        lualine_a = {
-          { "mode", fmt = function(s) return s:sub(1, 1) end },
-        },
-        lualine_b = {
-          { "branch", icon = "" },
-        },
+        lualine_a = { { "mode", fmt = function(s) return s:sub(1, 1) end } },
+        lualine_b = { { "branch", icon = "" } },
         lualine_c = {
           { "filename", path = 1, symbols = { modified = " ●", readonly = " ", unnamed = "[No Name]" } },
-          {
-            "diagnostics",
-            symbols = { error = "E:", warn = "W:", info = "I:", hint = "H:" },
-          },
+          { "diagnostics", symbols = { error = "E:", warn = "W:", info = "I:", hint = "H:" } },
         },
         lualine_x = { "filetype" },
         lualine_y = { "progress" },
@@ -320,7 +297,7 @@ return {
   {
     "MagicDuck/grug-far.nvim",
     keys = {
-      { "<leader>S",  "<cmd>GrugFar<cr>", desc = "Search and replace" },
+      { "<leader>S",  "<cmd>GrugFar<cr>",                                                                                   desc = "Search and replace" },
       { "<leader>sR", function() require("grug-far").open({ prefills = { search = vim.fn.expand("<cword>") } }) end, desc = "Search and replace (word)" },
     },
     opts = {},
