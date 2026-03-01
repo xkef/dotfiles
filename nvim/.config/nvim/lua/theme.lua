@@ -1,40 +1,39 @@
--- Theme system: reads ~/.config/theme/current to determine colorscheme.
+-- Theme system: reads ~/.config/theme/env for colorscheme and variant.
+-- The `theme` command writes this file; no duplicate table needed here.
 -- Auto-reloads on FocusGained so `theme <name>` in another pane takes effect.
 
 local M = {}
 
-local themes = {
-  ["catppuccin-mocha"]  = { colorscheme = "catppuccin-mocha", background = "dark" },
-  ["catppuccin-latte"]  = { colorscheme = "catppuccin-latte", background = "light" },
-  ["tokyonight"]        = { colorscheme = "tokyonight-night", background = "dark" },
-  ["tokyonight-day"]    = { colorscheme = "tokyonight-day",   background = "light" },
-  ["rose-pine"]         = { colorscheme = "rose-pine",        background = "dark" },
-  ["rose-pine-dawn"]    = { colorscheme = "rose-pine-dawn",   background = "light" },
-  ["gruvbox-dark"]      = { colorscheme = "gruvbox",          background = "dark" },
-  ["gruvbox-light"]     = { colorscheme = "gruvbox",          background = "light" },
-  ["nord"]              = { colorscheme = "nord",             background = "dark" },
-}
-
-local DEFAULT = "catppuccin-mocha"
+local DEFAULTS = { name = "catppuccin-mocha", nvim = "catppuccin-mocha", variant = "dark" }
 
 function M.read()
-  local path = vim.fn.expand("~/.config/theme/current")
+  local path = vim.fn.expand("~/.config/theme/env")
   local f = io.open(path, "r")
-  if not f then return DEFAULT end
-  local name = f:read("*l")
+  if not f then return DEFAULTS end
+  local cfg = {}
+  for line in f:lines() do
+    local k, v = line:match("^(%S+)=(.+)$")
+    if k == "THEME_NAME" then cfg.name = v
+    elseif k == "THEME_VARIANT" then cfg.variant = v
+    elseif k == "THEME_NVIM" then cfg.nvim = v
+    end
+  end
   f:close()
-  return (name and name ~= "") and vim.trim(name) or DEFAULT
+  return {
+    name    = cfg.name    or DEFAULTS.name,
+    nvim    = cfg.nvim    or DEFAULTS.nvim,
+    variant = cfg.variant or DEFAULTS.variant,
+  }
 end
 
 function M.apply()
-  local name = M.read()
-  local cfg = themes[name] or themes[DEFAULT]
-  vim.o.background = cfg.background
-  local ok = pcall(vim.cmd.colorscheme, cfg.colorscheme)
+  local cfg = M.read()
+  vim.o.background = cfg.variant
+  local ok = pcall(vim.cmd.colorscheme, cfg.nvim)
   if not ok then
-    vim.notify("theme: " .. cfg.colorscheme .. " not available", vim.log.levels.WARN)
+    vim.notify("theme: " .. cfg.nvim .. " not available", vim.log.levels.WARN)
   end
-  vim.g._current_theme = name
+  vim.g._current_theme = cfg.name
 end
 
 function M.setup()
@@ -42,8 +41,8 @@ function M.setup()
   vim.api.nvim_create_autocmd("FocusGained", {
     group = vim.api.nvim_create_augroup("ThemeAutoSwitch", { clear = true }),
     callback = function()
-      local name = M.read()
-      if name ~= vim.g._current_theme then
+      local cfg = M.read()
+      if cfg.name ~= vim.g._current_theme then
         M.apply()
       end
     end,
