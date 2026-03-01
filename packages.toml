@@ -1,0 +1,99 @@
+[stow]
+brew = "stow"
+pacman = "stow"
+apt = "stow"
+
+[git]
+brew = "git"
+pacman = "git"
+apt = "git"
+
+[curl]
+brew = "curl"
+pacman = "curl"
+apt = "curl"
+
+[zsh]
+brew = "zsh"
+pacman = "zsh"
+apt = "zsh"
+
+[tmux]
+brew = "tmux"
+pacman = "tmux"
+apt = "tmux"
+
+[nvim]
+brew = "neovim"
+pacman = "neovim"
+script = """
+curl -Lo /tmp/nvim.tar.gz "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-$(uname -m).tar.gz" \
+&& sudo tar -xzf /tmp/nvim.tar.gz -C /usr/local --strip-components=1 \
+&& rm /tmp/nvim.tar.gz"""
+
+[eza]
+brew = "eza"
+pacman = "eza"
+apt = "eza"
+apt_repo = "https://raw.githubusercontent.com/eza-community/eza/main/deb.asc"
+
+[bat]
+brew = "bat"
+pacman = "bat"
+apt = "bat"
+apt_alias = "batcat"
+
+[fd]
+brew = "fd"
+pacman = "fd"
+apt = "fd-find"
+apt_alias = "fdfind"
+
+[ripgrep]
+brew = "ripgrep"
+pacman = "ripgrep"
+apt = "ripgrep"
+
+[fzf]
+brew = "fzf"
+pacman = "fzf"
+apt = "fzf"
+
+[zoxide]
+brew = "zoxide"
+pacman = "zoxide"
+script = "curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh"
+
+[jq]
+brew = "jq"
+pacman = "jq"
+apt = "jq"
+
+[delta]
+brew = "delta"
+pacman = "git-delta"
+script = """
+DELTA_ARCH=$(uname -m | sed 's/aarch64/arm64/;s/x86_64/amd64/') \
+&& DELTA_V=$(curl -s https://api.github.com/repos/dandavison/delta/releases/latest | jq -r .tag_name) \
+&& curl -Lo /tmp/delta.deb "https://github.com/dandavison/delta/releases/latest/download/git-delta_${DELTA_V}_${DELTA_ARCH}.deb" \
+&& sudo dpkg -i /tmp/delta.deb \
+&& rm /tmp/delta.deb"""
+
+[starship]
+brew = "starship"
+pacman = "starship"
+script = "curl -sS https://starship.rs/install.sh | sh -s -- -y"
+
+[shfmt]
+brew = "shfmt"
+pacman = "shfmt"
+script = """
+SHFMT_V=$(curl -s https://api.github.com/repos/mvdan/sh/releases/latest | jq -r .tag_name) \
+&& SHFMT_ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') \
+&& curl -Lo ~/.local/bin/shfmt "https://github.com/mvdan/sh/releases/download/${SHFMT_V}/shfmt_${SHFMT_V}_linux_${SHFMT_ARCH}" \
+&& chmod +x ~/.local/bin/shfmt"""
+
+[ghostty]
+brew_cask = "ghostty"
+pacman = "ghostty"
+script = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/mkasberg/ghostty-ubuntu/HEAD/install.sh)"'

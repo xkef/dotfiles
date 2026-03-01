@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Update dotfiles: pull latest, re-stow, update plugins
+DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+info() { echo -e "${BLUE}[info]${NC}  $*"; }
+ok() { echo -e "${GREEN}[ok]${NC}    $*"; }
+
+echo ""
+echo -e "  Updating dotfiles..."
+echo ""
+
+# Pull latest
+if [ -d "$DOTFILES_DIR/.git" ]; then
+  info "Pulling latest changes..."
+  git -C "$DOTFILES_DIR" pull --rebase 2>/dev/null && ok "Git pull done" || ok "Already up to date"
+fi
+
+# Re-stow
+info "Re-stowing packages..."
+cd "$DOTFILES_DIR"
+for dir in git zsh tmux nvim ghostty local; do
+  if [ -d "$dir" ]; then
+    stow -t "$HOME" --restow "$dir" 2>/dev/null && ok "  $dir" || true
+  fi
+done
+
+# Update zinit plugins
+info "Updating zinit plugins..."
+zsh -ic 'zinit update --all 2>/dev/null; exit' 2>/dev/null || true
+
+# Update tmux plugins
+if [ -x "$HOME/.config/tmux/plugins/tpm/bin/update_plugins" ]; then
+  info "Updating tmux plugins..."
+  "$HOME/.config/tmux/plugins/tpm/bin/update_plugins" all 2>/dev/null || true
+fi
+
+# Update neovim plugins
+info "Updating neovim plugins..."
+nvim --headless "+Lazy! sync" +qa 2>/dev/null || true
+
+echo ""
+ok "Dotfiles updated!"
