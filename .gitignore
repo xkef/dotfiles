@@ -1,0 +1,20 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+
+# Local overrides (not tracked)
+zsh/.config/zsh/local.zsh
+git/.config/git/config.local
+__pycache__/
+
+.idea/
+/tmux/.config/tmux/plugins/tpm/
+/zsh/.config/zsh/.zcompdump
+/zsh/.config/zsh/.zsh_history
+/nvim/.config/nvim/lazy-lock.json
+/nvim/.config/nvim/lazyvim.json

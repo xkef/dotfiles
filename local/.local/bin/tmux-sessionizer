@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Quick tmux session management with fzf
+# Inspired by ThePrimeagen's tmux-sessionizer
+# Usage: tmux-sessionizer [directory]
+
+set -euo pipefail
+
+SEARCH_DIRS=(
+  "$HOME/projects"
+  "$HOME/work"
+  "$HOME/personal"
+  "$HOME/.config"
+)
+
+if [[ $# -eq 1 ]]; then
+  selected=$1
+else
+  # Build list of directories to search (only those that exist)
+  dirs=()
+  for d in "${SEARCH_DIRS[@]}"; do
+    [[ -d "$d" ]] && dirs+=("$d")
+  done
+
+  if [[ ${#dirs[@]} -eq 0 ]]; then
+    echo "No search directories found. Create one of: ${SEARCH_DIRS[*]}"
+    exit 1
+  fi
+
+  selected=$(find "${dirs[@]}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | fzf \
+    --height 40% \
+    --reverse \
+    --border \
+    --prompt "project> " \
+    --preview 'eza -la --icons --no-permissions --no-user --git {} 2>/dev/null || ls -la {}')
+fi
+
+if [[ -z "${selected:-}" ]]; then
+  exit 0
+fi
+
+selected_name=$(basename "$selected" | tr . _)
+
+if ! tmux has-session -t="$selected_name" 2>/dev/null; then
+  tmux new-session -ds "$selected_name" -c "$selected"
+fi
+
+if [[ -z "${TMUX:-}" ]]; then
+  tmux attach-session -t "$selected_name"
+else
+  tmux switch-client -t "$selected_name"
+fi

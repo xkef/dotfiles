@@ -1,0 +1,257 @@
+#!/usr/bin/env python3
+"""Dotfiles installer — auto-detects OS, installs packages from packages.toml, stows configs."""
+
+from __future__ import annotations
+
+import getpass
+import os
+import shutil
+import subprocess
+import sys
+import tomllib
+from pathlib import Path
+
+DOTFILES = Path(__file__).resolve().parent
+HOME = Path.home()
+STOW_PACKAGES = ("git", "zsh", "tmux", "nvim", "ghostty", "local")
+
+
+def log(msg: str) -> None:
+    """Print a status line."""
+    print(f"  {msg}")
+
+
+def run(cmd: str, quiet: bool = False) -> subprocess.CompletedProcess[str]:
+    """Run a shell command, optionally suppressing all output."""
+    kwargs: dict = {"shell": True, "check": True}
+    if quiet:
+        kwargs["stdout"] = subprocess.DEVNULL
+        kwargs["stderr"] = subprocess.DEVNULL
+    return subprocess.run(cmd, **kwargs)
+
+
+def has(cmd: str) -> bool:
+    """Check if a command exists on PATH."""
+    return shutil.which(cmd) is not None
+
+
+def detect_os() -> str:
+    """Detect the current OS. Returns 'macos', 'arch', 'debian', or 'unknown'."""
+    if sys.platform == "darwin":
+        return "macos"
+    if Path("/etc/arch-release").exists():
+        return "arch"
+    if Path("/etc/debian_version").exists():
+        return "debian"
+    return "unknown"
+
+
+def load_packages() -> dict[str, dict]:
+    """Load package definitions from packages.toml."""
+    with open(DOTFILES / "packages.toml", "rb") as f:
+        return tomllib.load(f)
+
+
+def install_macos(packages: dict[str, dict]) -> None:
+    """Install packages via Homebrew (formulae and casks)."""
+    if not has("brew"):
+        log("Installing Homebrew...")
+        run(
+            '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+        )
+
+    brew = [v["brew"] for v in packages.values() if "brew" in v]
+    casks = [v["brew_cask"] for v in packages.values() if "brew_cask" in v]
+
+    if brew:
+        log("brew install...")
+        run(f"brew install {' '.join(brew)}", quiet=True)
+    if casks:
+        log("brew install --cask...")
+        run(f"brew install --cask {' '.join(casks)}", quiet=True)
+
+
+def install_arch(packages: dict[str, dict]) -> None:
+    """Install packages via pacman."""
+    pkgs = [v["pacman"] for v in packages.values() if "pacman" in v]
+    log("pacman...")
+    run(f"sudo pacman -Sy --needed --noconfirm {' '.join(pkgs)}", quiet=True)
+
+
+def install_debian(packages: dict[str, dict]) -> None:
+    """Install packages via apt, with fallback to install scripts for missing packages."""
+    apt_pkgs = [v["apt"] for v in packages.values() if "apt" in v]
+
+    for name, pkg in packages.items():
+        if "apt_repo" in pkg and not has(name):
+            log(f"Adding apt repo for {name}...")
+            run("sudo mkdir -p /etc/apt/keyrings", quiet=True)
+            run(
+                f'curl -fsSL "{pkg["apt_repo"]}" '
+                f"| sudo gpg --dearmor -o /etc/apt/keyrings/{name}.gpg 2>/dev/null || true",
+                quiet=True,
+            )
+            run(
+                f'echo "deb [signed-by=/etc/apt/keyrings/{name}.gpg] http://deb.gierens.de stable main" '
+                f"| sudo tee /etc/apt/sources.list.d/{name}.list >/dev/null",
+                quiet=True,
+            )
+
+    if apt_pkgs:
+        log("apt install...")
+        run("sudo apt-get update -qq", quiet=True)
+        run(f"sudo apt-get install -y {' '.join(apt_pkgs)}", quiet=True)
+
+    for name, pkg in packages.items():
+        if alias := pkg.get("apt_alias"):
+            if not has(name) and has(alias):
+                run(
+                    f'sudo ln -sf "$(command -v {alias})" /usr/local/bin/{name}',
+                    quiet=True,
+                )
+
+    for name, pkg in packages.items():
+        if "script" in pkg and "apt" not in pkg and not has(name):
+            log(f"Installing {name}...")
+            run(pkg["script"], quiet=True)
+
+    for name, pkg in packages.items():
+        if "manual" in pkg and not has(name):
+            log(f"  ! {name}: install from {pkg['manual']}")
+
+
+def install_packages() -> None:
+    """Detect OS, acquire sudo once if needed, then install all packages."""
+    packages = load_packages()
+    os_type = detect_os()
+
+    if os_type in ("arch", "debian"):
+        run("sudo -v")
+
+    if os_type == "macos":
+        install_macos(packages)
+    elif os_type == "arch":
+        install_arch(packages)
+    elif os_type == "debian":
+        install_debian(packages)
+    else:
+        log("Unknown OS — install packages manually (see packages.toml)")
+        return
+
+    log("Packages installed")
+
+
+def _clear_stow_conflicts(pkg: str) -> None:
+    """Remove files and symlinks in HOME that would block stow for *pkg*."""
+    pkg_dir = DOTFILES / pkg
+    for src in pkg_dir.rglob("*"):
+        if src.is_dir() and not src.is_symlink():
+            continue
+        rel = src.relative_to(pkg_dir)
+        target = HOME / rel
+        # Remove broken symlinks in parent directories
+        for parent in target.parents:
+            if parent == HOME:
+                break
+            if parent.is_symlink() and not parent.is_dir():
+                parent.unlink()
+        # Remove conflicting file or symlink at the target path
+        if target.is_symlink() or (target.exists() and not target.is_dir()):
+            target.unlink()
+
+
+def stow_configs() -> None:
+    """Symlink config directories into $HOME via GNU Stow."""
+    os.chdir(DOTFILES)
+    for pkg in STOW_PACKAGES:
+        if (DOTFILES / pkg).is_dir():
+            try:
+                run(f"stow -t {HOME} -D {pkg}", quiet=True)
+            except subprocess.CalledProcessError:
+                pass
+            _clear_stow_conflicts(pkg)
+            try:
+                run(f"stow -t {HOME} {pkg}", quiet=True)
+            except subprocess.CalledProcessError:
+                log(f"  ! {pkg} (stow failed — resolve manually)")
+
+
+def ensure_dir(path: Path) -> None:
+    """Ensure path is a directory, removing broken symlinks or files blocking it."""
+    try:
+        rel = path.relative_to(HOME)
+    except ValueError:
+        path.mkdir(parents=True, exist_ok=True)
+        return
+    current = HOME
+    for part in rel.parts:
+        current = current / part
+        if current.is_symlink() and not current.is_dir():
+            current.unlink()
+        elif not current.is_symlink() and current.exists() and not current.is_dir():
+            current.unlink()
+    path.mkdir(parents=True, exist_ok=True)
+
+
+def setup_plugins() -> None:
+    """Clone zinit (zsh) and TPM (tmux) if not already present."""
+    xdg_data = Path(os.environ.get("XDG_DATA_HOME", HOME / ".local/share"))
+
+    zinit = xdg_data / "zinit/zinit.git"
+    if not zinit.exists():
+        log("Cloning zinit...")
+        ensure_dir(zinit.parent)
+        run(f"git clone --quiet https://github.com/zdharma-continuum/zinit.git {zinit}")
+
+    tpm = HOME / ".config/tmux/plugins/tpm"
+    if not tpm.exists():
+        log("Cloning TPM...")
+        ensure_dir(tpm.parent)
+        run(f"git clone --quiet https://github.com/tmux-plugins/tpm {tpm}")
+
+
+def install_ghostty_terminfo() -> None:
+    """Install Ghostty's xterm-ghostty terminfo if missing."""
+    try:
+        run("infocmp xterm-ghostty", quiet=True)
+    except subprocess.CalledProcessError:
+        ghostty = shutil.which("ghostty")
+        if ghostty:
+            log("Installing Ghostty terminfo...")
+            try:
+                run("ghostty +show-terminfo | tic -x -", quiet=True)
+            except subprocess.CalledProcessError:
+                log("  ! Could not install Ghostty terminfo")
+
+
+def set_default_shell() -> None:
+    """Set zsh as the user's login shell, reusing the cached sudo ticket."""
+    zsh = shutil.which("zsh")
+    if not zsh or os.environ.get("SHELL") == zsh:
+        return
+
+    shells = Path("/etc/shells")
+    if shells.exists() and zsh not in shells.read_text():
+        run(f'echo "{zsh}" | sudo tee -a /etc/shells >/dev/null')
+
+    try:
+        run(f"sudo chsh -s {zsh} {getpass.getuser()}")
+    except subprocess.CalledProcessError:
+        log(f"  ! Run manually: chsh -s {zsh}")
+
+
+def main() -> None:
+    """Entry point: install packages, stow configs, set up plugins, switch to zsh."""
+    print("\n  dotfiles\n")
+
+    install_packages()
+    stow_configs()
+    setup_plugins()
+    install_ghostty_terminfo()
+    set_default_shell()
+
+    print("\n  Done! Run `exec zsh` to reload, `prefix+I` in tmux to install plugins.\n")
+
+
+if __name__ == "__main__":
+    main()

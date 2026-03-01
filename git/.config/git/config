@@ -1,0 +1,132 @@
+# Modern git config — following core developer recommendations
+# See: https://blog.gitbutler.com/how-git-core-devs-configure-git/
+# Personal overrides: ~/.config/git/config.local
+
+[user]
+	# Set your identity in ~/.config/git/config.local:
+	#   [user]
+	#     name = Your Name
+	#     email = you@example.com
+	#     signingkey = ~/.ssh/id_ed25519.pub
+
+[init]
+	defaultBranch = main
+
+[core]
+	editor = nvim
+	pager = delta
+	excludesfile = ~/.config/git/ignore
+	autocrlf = input
+	whitespace = trailing-space,space-before-tab
+
+[column]
+	ui = auto
+
+[branch]
+	sort = -committerdate
+
+[tag]
+	sort = version:refname
+
+# ── Diff ──────────────────────────────────────────────
+[diff]
+	algorithm = histogram
+	colorMoved = plain
+	mnemonicPrefix = true
+	renames = true
+
+[diff "bin"]
+	textconv = hexdump -ve '1/1 "%.2x "'
+
+# ── Delta (pager) ────────────────────────────────────
+[delta]
+	navigate = true
+	dark = true
+	line-numbers = true
+	side-by-side = false
+	syntax-theme = Catppuccin Mocha
+
+[interactive]
+	diffFilter = delta --color-only
+
+# ── Merge / Rebase ───────────────────────────────────
+[merge]
+	conflictstyle = zdiff3
+	tool = nvimdiff
+
+[mergetool "nvimdiff"]
+	cmd = nvim -d "$LOCAL" "$MERGED" "$REMOTE"
+
+[rebase]
+	autoSquash = true
+	autoStash = true
+	updateRefs = true
+
+[rerere]
+	enabled = true
+	autoupdate = true
+
+# ── Push / Pull / Fetch ─────────────────────────────
+[push]
+	default = simple
+	autoSetupRemote = true
+	followTags = true
+
+[pull]
+	rebase = true
+
+[fetch]
+	prune = true
+	pruneTags = true
+	all = true
+
+# ── Commit ───────────────────────────────────────────
+[commit]
+	verbose = true
+
+# ── Help ─────────────────────────────────────────────
+[help]
+	autocorrect = prompt
+
+# ── URL shortcuts ────────────────────────────────────
+[url "git@github.com:"]
+	insteadOf = "gh:"
+
+[url "git@gitlab.com:"]
+	insteadOf = "gl:"
+
+[url "git@bitbucket.org:"]
+	insteadOf = "bb:"
+
+# ── Aliases ──────────────────────────────────────────
+[alias]
+	st = status -sb
+	co = checkout
+	sw = switch
+	br = branch
+	ci = commit
+	ca = commit --amend
+	cp = cherry-pick
+	unstage = reset HEAD --
+	last = log -1 HEAD
+	lg = log --oneline --graph --decorate --all -20
+	ll = log --pretty=format:'%C(yellow)%h%Creset %C(blue)%ad%Creset %C(green)%an%Creset %s%C(red)%d%Creset' --date=short
+	wip = !git add -A && git commit -m 'wip: checkpoint'
+	undo = reset --soft HEAD~1
+	amend = commit --amend --no-edit
+	branches = for-each-ref --sort=-committerdate --format='%(refname:short) %(committerdate:relative)' refs/heads
+	contributors = shortlog -sn --no-merges
+	cleanup = !git branch --merged | grep -v '\\*\\|main\\|master' | xargs -n1 git branch -d
+	# Worktree shortcuts for parallel work
+	wt = worktree
+	wta = worktree add
+	wtl = worktree list
+	wtr = worktree remove
+
+# ── Maintenance ──────────────────────────────────────
+[maintenance]
+	auto = true
+
+# ── Local overrides (identity, signing, etc.) ────────
+[include]
+	path = ~/.config/git/config.local
