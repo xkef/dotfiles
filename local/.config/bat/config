@@ -1,5 +1,5 @@
 # bat configuration
---theme="Catppuccin Mocha"
+# Theme set via BAT_THEME env var (managed by `theme` command)
 --style="numbers,changes,header"
 --italic-text=always
 --map-syntax "*.conf:INI"

@@ -45,5 +45,12 @@ fi
 info "Updating neovim plugins..."
 nvim --headless "+Lazy! sync" +qa 2>/dev/null || true
 
+# Regenerate theme configs
+if command -v theme &>/dev/null; then
+  info "Regenerating theme configs..."
+  current_theme=$(cat "$HOME/.config/theme/current" 2>/dev/null || echo "catppuccin-mocha")
+  theme "$current_theme" >/dev/null 2>&1 && ok "Theme: $current_theme" || true
+fi
+
 echo ""
 ok "Dotfiles updated!"
