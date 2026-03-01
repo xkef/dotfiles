@@ -14,13 +14,12 @@ if command -v fd &>/dev/null; then
   _fzf_compgen_dir() { fd --type d --hidden --follow --exclude .git . "$1"; }
 fi
 
-# Catppuccin Mocha theme + previews
+# Colors use ANSI references (0-15) so they follow the terminal theme automatically.
+# No hardcoded hex — change ghostty theme and FZF adapts.
 export FZF_DEFAULT_OPTS=" \
   --height 60% --layout=reverse --border --info=inline-right \
-  --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
-  --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
-  --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
-  --color=selected-bg:#45475a \
+  --color=fg:-1,bg:-1,hl:6,fg+:-1,bg+:8,hl+:6:bold \
+  --color=info:5,prompt:4,pointer:4,marker:2,spinner:5,header:3,border:8,gutter:-1 \
   --bind 'ctrl-/:toggle-preview' \
   --bind 'ctrl-y:execute-silent(echo -n {+} | pbcopy 2>/dev/null || echo -n {+} | xclip -sel clip 2>/dev/null)' \
   --bind 'ctrl-d:half-page-down,ctrl-u:half-page-up'"

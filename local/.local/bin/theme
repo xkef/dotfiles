@@ -1,0 +1,355 @@
+#!/usr/bin/env bash
+# Unified theme switcher for ghostty, neovim, tmux, and shell tools.
+# Usage: theme [name|--list|--toggle]
+#
+# Changes terminal colors immediately via OSC escape sequences (works in
+# ghostty, kitty, iTerm2, etc.) and updates config files for persistence.
+
+set -euo pipefail
+
+THEME_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/theme"
+GHOSTTY_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config"
+CURRENT_FILE="$THEME_DIR/current"
+
+# ── Theme definitions ────────────────────────────────────
+# Each call sets: ghostty_theme, nvim_scheme, background, bat_theme, pair,
+# palette[0-15], theme_bg, theme_fg, theme_cursor
+
+theme_config() {
+  case "$1" in
+    catppuccin-mocha)
+      ghostty_theme="Catppuccin Mocha"
+      nvim_scheme="catppuccin-mocha"
+      background="dark"
+      bat_theme="Catppuccin Mocha"
+      pair="catppuccin-latte"
+      palette=(45475a f38ba8 a6e3a1 f9e2af 89b4fa cba6f7 94e2d5 bac2de
+               585b70 f38ba8 a6e3a1 f9e2af 89b4fa cba6f7 94e2d5 a6adc8)
+      theme_bg=1e1e2e theme_fg=cdd6f4 theme_cursor=f5e0dc
+      ;;
+    catppuccin-latte)
+      ghostty_theme="Catppuccin Latte"
+      nvim_scheme="catppuccin-latte"
+      background="light"
+      bat_theme="Catppuccin Latte"
+      pair="catppuccin-mocha"
+      palette=(5c5f77 d20f39 40a02b df8e1d 1e66f5 8839ef 179299 acb0be
+               6c6f85 d20f39 40a02b df8e1d 1e66f5 8839ef 179299 bcc0cc)
+      theme_bg=eff1f5 theme_fg=4c4f69 theme_cursor=dc8a78
+      ;;
+    tokyonight)
+      ghostty_theme="TokyoNight"
+      nvim_scheme="tokyonight-night"
+      background="dark"
+      bat_theme="tokyonight_night"
+      pair="tokyonight-day"
+      palette=(15161e f7768e 9ece6a e0af68 7aa2f7 bb9af7 7dcfff a9b1d6
+               414868 f7768e 9ece6a e0af68 7aa2f7 bb9af7 7dcfff c0caf5)
+      theme_bg=1a1b26 theme_fg=c0caf5 theme_cursor=c0caf5
+      ;;
+    tokyonight-day)
+      ghostty_theme="TokyoNight Day"
+      nvim_scheme="tokyonight-day"
+      background="light"
+      bat_theme="tokyonight_day"
+      pair="tokyonight"
+      palette=(e9e9ed f52a65 587539 8c6c3e 2e7de9 9854f1 007197 6172b0
+               a1a6c5 f52a65 587539 8c6c3e 2e7de9 9854f1 007197 3760bf)
+      theme_bg=e1e2e7 theme_fg=3760bf theme_cursor=3760bf
+      ;;
+    rose-pine)
+      ghostty_theme="Rose Pine"
+      nvim_scheme="rose-pine"
+      background="dark"
+      bat_theme="rose-pine"
+      pair="rose-pine-dawn"
+      palette=(26233a eb6f92 31748f f6c177 9ccfd8 c4a7e7 ebbcba e0def4
+               6e6a86 eb6f92 31748f f6c177 9ccfd8 c4a7e7 ebbcba e0def4)
+      theme_bg=191724 theme_fg=e0def4 theme_cursor=524f67
+      ;;
+    rose-pine-dawn)
+      ghostty_theme="Rose Pine Dawn"
+      nvim_scheme="rose-pine-dawn"
+      background="light"
+      bat_theme="rose-pine-dawn"
+      pair="rose-pine"
+      palette=(f2e9e1 b4637a 286983 ea9d34 56949f 907aa9 d7827e 575279
+               9893a5 b4637a 286983 ea9d34 56949f 907aa9 d7827e 575279)
+      theme_bg=faf4ed theme_fg=575279 theme_cursor=cecacd
+      ;;
+    gruvbox-dark)
+      ghostty_theme="Gruvbox Dark"
+      nvim_scheme="gruvbox"
+      background="dark"
+      bat_theme="gruvbox-dark"
+      pair="gruvbox-light"
+      palette=(282828 cc241d 98971a d79921 458588 b16286 689d6a a89984
+               928374 fb4934 b8bb26 fabd2f 83a598 d3869b 8ec07c ebdbb2)
+      theme_bg=282828 theme_fg=ebdbb2 theme_cursor=ebdbb2
+      ;;
+    gruvbox-light)
+      ghostty_theme="Gruvbox Light"
+      nvim_scheme="gruvbox"
+      background="light"
+      bat_theme="gruvbox-light"
+      pair="gruvbox-dark"
+      palette=(fbf1c7 cc241d 98971a d79921 458588 b16286 689d6a 7c6f64
+               928374 9d0006 79740e b57614 076678 8f3f71 427b58 3c3836)
+      theme_bg=fbf1c7 theme_fg=3c3836 theme_cursor=3c3836
+      ;;
+    nord)
+      ghostty_theme="Nord"
+      nvim_scheme="nord"
+      background="dark"
+      bat_theme="Nord"
+      pair="nord"
+      palette=(3b4252 bf616a a3be8c ebcb8b 81a1c1 b48ead 88c0d0 e5e9f0
+               4c566a bf616a a3be8c ebcb8b 81a1c1 b48ead 8fbcbb eceff4)
+      theme_bg=2e3440 theme_fg=d8dee9 theme_cursor=d8dee9
+      ;;
+    *) return 1 ;;
+  esac
+}
+
+THEMES=(
+  catppuccin-mocha
+  catppuccin-latte
+  tokyonight
+  tokyonight-day
+  rose-pine
+  rose-pine-dawn
+  gruvbox-dark
+  gruvbox-light
+  nord
+)
+
+# ── Helpers ──────────────────────────────────────────────
+
+current_theme() {
+  if [[ -f "$CURRENT_FILE" ]]; then
+    cat "$CURRENT_FILE"
+  else
+    echo "catppuccin-mocha"
+  fi
+}
+
+list_themes() {
+  local current
+  current=$(current_theme)
+  for t in "${THEMES[@]}"; do
+    theme_config "$t" 2>/dev/null
+    if [[ "$t" == "$current" ]]; then
+      echo "* $t ($background)"
+    else
+      echo "  $t ($background)"
+    fi
+  done
+}
+
+# ── OSC escape sequences ────────────────────────────────
+# Change terminal colors live — works in ghostty, kitty, iTerm2, etc.
+# Inside tmux, writes directly to each client's terminal (bypasses
+# the need for allow-passthrough).
+
+_send_osc() {
+  if [[ -n "${TMUX:-}" ]]; then
+    local tty
+    while IFS= read -r tty; do
+      printf '%s' "$1" > "$tty"
+    done < <(tmux list-clients -F '#{client_tty}')
+  else
+    printf '%s' "$1" >/dev/tty
+  fi
+}
+
+_put_template() {
+  _send_osc "$(printf '\033]4;%d;rgb:%s\033\\' "$@")"
+}
+
+_put_template_var() {
+  _send_osc "$(printf '\033]%d;rgb:%s\033\\' "$@")"
+}
+
+_hex_rgb() { echo "${1:0:2}/${1:2:2}/${1:4:2}"; }
+
+apply_terminal_colors() {
+  [[ -t 0 ]] || return 0  # skip if not interactive
+
+  local i
+  for i in {0..15}; do
+    _put_template "$i" "$(_hex_rgb "${palette[$i]}")"
+  done
+  _put_template_var 10 "$(_hex_rgb "$theme_fg")"
+  _put_template_var 11 "$(_hex_rgb "$theme_bg")"
+  _put_template_var 12 "$(_hex_rgb "$theme_cursor")"
+}
+
+# ── Generators ───────────────────────────────────────────
+
+generate_tmux_conf() {
+  local bg="$1"
+  mkdir -p "$THEME_DIR"
+
+  # Contrast color for text on accent backgrounds:
+  # dark themes → colour0 (dark), light themes → colour7 (dark text)
+  local pill_fg="colour0"
+  local border_dim="colour8"
+  if [[ "$bg" == "light" ]]; then
+    pill_fg="colour7"
+    border_dim="colour7"
+  fi
+
+  cat > "$THEME_DIR/tmux.conf" << EOF
+# Auto-generated by theme — do not edit
+# Status bar
+set -g status-style "bg=default,fg=default"
+set -g status-left "#{?client_prefix,#[bg=colour5],#[bg=colour4]}#[fg=${pill_fg},bold] #S #[default] "
+set -g status-right "#{?window_zoomed_flag,#[fg=colour3][Z] ,}#[fg=colour8]%H:%M  #[fg=colour5]#h "
+
+# Window tabs
+setw -g window-status-format "  #[fg=colour8]#I #W "
+setw -g window-status-current-format "  #[fg=colour4,bold]#I #W "
+setw -g window-status-separator ""
+setw -g window-status-activity-style "fg=colour3"
+setw -g window-status-bell-style "fg=colour1"
+
+# Pane borders
+set -g pane-border-style "fg=${border_dim}"
+set -g pane-active-border-style "fg=colour4"
+
+# Messages and command prompt
+set -g message-style "bg=default,fg=colour4"
+set -g message-command-style "bg=default,fg=colour5"
+
+# Selection and copy mode
+set -g mode-style "bg=colour4,fg=${pill_fg}"
+set -g copy-mode-match-style "bg=colour3,fg=${pill_fg}"
+set -g copy-mode-current-match-style "bg=colour6,fg=${pill_fg}"
+
+# Popup borders
+set -g popup-border-style "fg=colour8"
+set -g popup-border-lines "rounded"
+EOF
+}
+
+generate_env() {
+  local bat_theme="$1"
+  mkdir -p "$THEME_DIR"
+  cat > "$THEME_DIR/env.zsh" << EOF
+# Auto-generated by theme — do not edit
+export BAT_THEME="$bat_theme"
+EOF
+}
+
+generate_delta_conf() {
+  local bat_theme="$1" bg="$2"
+  mkdir -p "$THEME_DIR"
+  if [[ "$bg" == "light" ]]; then
+    cat > "$THEME_DIR/delta.gitconfig" << EOF
+[delta]
+	syntax-theme = $bat_theme
+	light = true
+EOF
+  else
+    cat > "$THEME_DIR/delta.gitconfig" << EOF
+[delta]
+	syntax-theme = $bat_theme
+	dark = true
+EOF
+  fi
+}
+
+# ── Reloaders ────────────────────────────────────────────
+
+update_ghostty() {
+  local ghostty_theme="$1"
+  [[ -f "$GHOSTTY_CONFIG" ]] || return 0
+  local tmp
+  tmp=$(mktemp)
+  awk -v theme="$ghostty_theme" '/^theme = /{$0="theme = " theme} {print}' \
+    "$GHOSTTY_CONFIG" > "$tmp"
+  cat "$tmp" > "$GHOSTTY_CONFIG"
+  rm "$tmp"
+}
+
+reload_neovim() {
+  local scheme="$1" bg="$2"
+  local runtime_dir="${XDG_RUNTIME_DIR:-/tmp}"
+  for sock in "$runtime_dir"/nvim.*.0; do
+    [[ -S "$sock" ]] || continue
+    nvim --server "$sock" --remote-send \
+      "<Cmd>set background=$bg<CR><Cmd>colorscheme $scheme<CR>" 2>/dev/null || true
+  done
+}
+
+reload_tmux() {
+  command -v tmux &>/dev/null && tmux list-sessions &>/dev/null 2>&1 || return 0
+  tmux source-file "$THEME_DIR/tmux.conf" 2>/dev/null || true
+  # Force status bar redraw to pick up new terminal colors
+  tmux refresh-client -S 2>/dev/null || true
+}
+
+# ── Apply ────────────────────────────────────────────────
+
+apply_theme() {
+  local name="$1"
+
+  if ! theme_config "$name"; then
+    echo "Unknown theme: $name"
+    echo ""
+    echo "Available themes:"
+    list_themes
+    return 1
+  fi
+
+  mkdir -p "$THEME_DIR"
+  echo "$name" > "$CURRENT_FILE"
+
+  # Live: change current terminal colors via OSC escape sequences
+  apply_terminal_colors
+
+  # Persist: update config files for new windows/sessions
+  generate_tmux_conf "$background"
+  generate_env "$bat_theme"
+  generate_delta_conf "$bat_theme" "$background"
+  update_ghostty "$ghostty_theme"
+
+  # Reload running tools
+  reload_neovim "$nvim_scheme" "$background"
+  reload_tmux
+
+  echo "Switched to: $name ($background)"
+}
+
+# ── Main ─────────────────────────────────────────────────
+
+case "${1:-}" in
+  --list|-l)
+    list_themes
+    ;;
+  --toggle|-t)
+    current=$(current_theme)
+    if theme_config "$current"; then
+      apply_theme "$pair"
+    fi
+    ;;
+  --help|-h)
+    echo "Usage: theme [name|--list|--toggle]"
+    echo ""
+    echo "  theme           Show current theme and list available"
+    echo "  theme <name>    Switch to theme"
+    echo "  theme --list    List available themes"
+    echo "  theme --toggle  Toggle between dark/light variant"
+    echo ""
+    echo "Themes:"
+    list_themes
+    ;;
+  "")
+    echo "Current: $(current_theme)"
+    echo ""
+    list_themes
+    ;;
+  *)
+    apply_theme "$1"
+    ;;
+esac

@@ -1,3 +1,5 @@
+vim.loader.enable()
+
 -- Leader key (must be set before lazy)
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
@@ -113,3 +115,6 @@ require("lazy").setup("plugins", {
     },
   },
 })
+
+-- Theme: read from ~/.config/theme/current, auto-reload on focus
+require("theme").setup()
