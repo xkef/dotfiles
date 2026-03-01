@@ -7,7 +7,7 @@ return {
     priority = 1000,
     opts = {
       integrations = {
-        cmp = true,
+        blink_cmp = true,
         gitsigns = true,
         mason = true,
         native_lsp = { enabled = true },
@@ -33,6 +33,17 @@ return {
     },
   },
 
+  -- Lua development (better Neovim API types for lua_ls)
+  {
+    "folke/lazydev.nvim",
+    ft = "lua",
+    opts = {
+      library = {
+        { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+      },
+    },
+  },
+
   -- LSP
   {
     "neovim/nvim-lspconfig",
@@ -40,12 +51,12 @@ return {
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
-      "hrsh7th/cmp-nvim-lsp",
+      "saghen/blink.cmp",
     },
     config = function()
       require("mason").setup()
 
-      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+      local capabilities = require("blink.cmp").get_lsp_capabilities()
 
       require("mason-lspconfig").setup({
         handlers = {
@@ -56,10 +67,7 @@ return {
             require("lspconfig").lua_ls.setup({
               capabilities = capabilities,
               settings = {
-                Lua = {
-                  workspace = { checkThirdParty = false },
-                  telemetry = { enable = false },
-                },
+                Lua = { telemetry = { enable = false } },
               },
             })
           end,
@@ -78,47 +86,87 @@ return {
           m("K", vim.lsp.buf.hover, "Hover")
           m("<leader>ca", vim.lsp.buf.code_action, "Code action")
           m("<leader>cr", vim.lsp.buf.rename, "Rename")
-          m("<leader>cf", function() vim.lsp.buf.format({ async = true }) end, "Format")
+          vim.lsp.inlay_hint.enable(true, { bufnr = ev.buf })
         end,
       })
     end,
   },
 
-  -- Completion
+  -- Completion (blink.cmp — Rust-based, replaces nvim-cmp)
   {
-    "hrsh7th/nvim-cmp",
-    event = "InsertEnter",
-    dependencies = {
-      "hrsh7th/cmp-nvim-lsp",
-      "hrsh7th/cmp-buffer",
-      "hrsh7th/cmp-path",
-      "L3MON4D3/LuaSnip",
-      "saadparwaiz1/cmp_luasnip",
-    },
-    config = function()
-      local cmp = require("cmp")
-      local luasnip = require("luasnip")
-      cmp.setup({
-        snippet = {
-          expand = function(args) luasnip.lsp_expand(args.body) end,
+    "saghen/blink.cmp",
+    version = "*",
+    dependencies = { "L3MON4D3/LuaSnip" },
+    opts = {
+      snippets = { preset = "luasnip" },
+      keymap = { preset = "default" },
+      appearance = { nerd_font_variant = "mono" },
+      sources = {
+        default = { "lazydev", "lsp", "path", "snippets", "buffer" },
+        providers = {
+          lazydev = {
+            name = "LazyDev",
+            module = "lazydev.integrations.blink",
+            score_offset = 100,
+          },
         },
-        mapping = cmp.mapping.preset.insert({
-          ["<C-b>"] = cmp.mapping.scroll_docs(-4),
-          ["<C-f>"] = cmp.mapping.scroll_docs(4),
-          ["<C-Space>"] = cmp.mapping.complete(),
-          ["<CR>"] = cmp.mapping.confirm({ select = true }),
-          ["<C-n>"] = cmp.mapping.select_next_item(),
-          ["<C-p>"] = cmp.mapping.select_prev_item(),
-        }),
-        sources = cmp.config.sources({
-          { name = "nvim_lsp" },
-          { name = "luasnip" },
-        }, {
-          { name = "buffer" },
-          { name = "path" },
-        }),
-      })
-    end,
+      },
+      completion = {
+        documentation = { auto_show = true, auto_show_delay_ms = 200 },
+      },
+      signature = { enabled = true },
+    },
+  },
+
+  -- Auto-format on save
+  {
+    "stevearc/conform.nvim",
+    event = { "BufWritePre" },
+    cmd = { "ConformInfo" },
+    keys = {
+      {
+        "<leader>cf",
+        function() require("conform").format({ async = true, lsp_fallback = true }) end,
+        desc = "Format",
+      },
+    },
+    opts = {
+      formatters_by_ft = {
+        lua = { "stylua" },
+        python = { "ruff_format" },
+        javascript = { "prettierd", "prettier", stop_after_first = true },
+        typescript = { "prettierd", "prettier", stop_after_first = true },
+        javascriptreact = { "prettierd", "prettier", stop_after_first = true },
+        typescriptreact = { "prettierd", "prettier", stop_after_first = true },
+        json = { "prettierd", "prettier", stop_after_first = true },
+        css = { "prettierd", "prettier", stop_after_first = true },
+        html = { "prettierd", "prettier", stop_after_first = true },
+        markdown = { "prettierd", "prettier", stop_after_first = true },
+        sh = { "shfmt" },
+        go = { "gofmt" },
+        rust = { "rustfmt" },
+      },
+      format_on_save = { timeout_ms = 500, lsp_fallback = true },
+    },
+  },
+
+  -- Flash (s/S to jump anywhere on screen)
+  {
+    "folke/flash.nvim",
+    event = "VeryLazy",
+    opts = {},
+    keys = {
+      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end,            desc = "Flash jump" },
+      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end,      desc = "Flash treesitter" },
+      { "r", mode = "o",               function() require("flash").remote() end,           desc = "Flash remote" },
+    },
+  },
+
+  -- Auto-close brackets/quotes
+  {
+    "windwp/nvim-autopairs",
+    event = "InsertEnter",
+    opts = {},
   },
 
   -- Treesitter

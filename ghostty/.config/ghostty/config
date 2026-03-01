@@ -49,3 +49,11 @@ keybind = ctrl+shift+plus=increase_font_size:1
 keybind = ctrl+shift+minus=decrease_font_size:1
 keybind = ctrl+shift+zero=reset_font_size
 keybind = ctrl+shift+f=toggle_fullscreen
+
+# ── Quick terminal (dropdown) ──────────────────────
+quick-terminal-position = top
+quick-terminal-size = 50%
+keybind = global:ctrl+grave_accent=toggle_quick_terminal
+
+# ── Window ────────────────────────────────────────
+window-save-state = always

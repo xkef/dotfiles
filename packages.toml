@@ -97,3 +97,17 @@ SHFMT_V=$(curl -s https://api.github.com/repos/mvdan/sh/releases/latest | jq -r 
 brew_cask = "ghostty"
 pacman = "ghostty"
 script = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/mkasberg/ghostty-ubuntu/HEAD/install.sh)"'
+
+[lazygit]
+brew = "lazygit"
+pacman = "lazygit"
+script = """
+LG_V=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | jq -r '.tag_name | ltrimstr("v")') \
+&& curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LG_V}/lazygit_${LG_V}_Linux_x86_64.tar.gz" \
+&& tar -xzf /tmp/lazygit.tar.gz -C ~/.local/bin lazygit \
+&& rm /tmp/lazygit.tar.gz"""
+
+[atuin]
+brew = "atuin"
+pacman = "atuin"
+script = "curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh"
