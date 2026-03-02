@@ -84,15 +84,6 @@ brew = "starship"
 pacman = "starship"
 script = "curl -sS https://starship.rs/install.sh | sh -s -- -y"
 
-[shfmt]
-brew = "shfmt"
-pacman = "shfmt"
-script = """
-SHFMT_V=$(curl -s https://api.github.com/repos/mvdan/sh/releases/latest | jq -r .tag_name) \
-&& SHFMT_ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') \
-&& curl -Lo ~/.local/bin/shfmt "https://github.com/mvdan/sh/releases/download/${SHFMT_V}/shfmt_${SHFMT_V}_linux_${SHFMT_ARCH}" \
-&& chmod +x ~/.local/bin/shfmt"""
-
 [ghostty]
 brew_cask = "ghostty"
 pacman = "ghostty"

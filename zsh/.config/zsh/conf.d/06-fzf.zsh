@@ -3,13 +3,25 @@ if ! command -v fzf &>/dev/null; then
   return
 fi
 
-# Use fd for everything when available
+# Use fd for file/dir search, sorted by recency (recent first, then rest, deduped)
 if command -v fd &>/dev/null; then
-  export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
-  export FZF_CTRL_T_COMMAND='fd --type f --hidden --follow --exclude .git'
-  export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+  # Ctrl-T: recently modified files first, then all files
+  export FZF_CTRL_T_COMMAND='\
+    { fd --type f --changed-within 1week --hidden --follow --exclude .git; \
+      fd --type f --hidden --follow --exclude .git; \
+    } | awk "!seen[\$0]++"'
 
-  # Use fd for ** path completion (e.g. vim **<tab>)
+  # Alt-C: zoxide frecency dirs first, then all dirs from fd (deduped)
+  if command -v zoxide &>/dev/null; then
+    export FZF_ALT_C_COMMAND='\
+      { zoxide query -l 2>/dev/null; \
+        fd --type d --hidden --follow --exclude .git; \
+      } | awk "!seen[\$0]++"'
+  else
+    export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+  fi
+
+  # ** tab completion
   _fzf_compgen_path() { fd --hidden --follow --exclude .git . "$1"; }
   _fzf_compgen_dir() { fd --type d --hidden --follow --exclude .git . "$1"; }
 fi
@@ -18,26 +30,23 @@ fi
 # No hardcoded hex — change ghostty theme and FZF adapts.
 export FZF_DEFAULT_OPTS=" \
   --height 60% --layout=reverse --border --info=inline-right \
+  --tiebreak=chunk,length \
   --color=fg:-1,bg:-1,hl:6,fg+:-1,bg+:8,hl+:6:bold \
   --color=info:5,prompt:4,pointer:4,marker:2,spinner:5,header:3,border:8,gutter:-1 \
   --bind 'ctrl-/:toggle-preview' \
   --bind 'ctrl-y:execute-silent(echo -n {+} | pbcopy 2>/dev/null || echo -n {+} | xclip -sel clip 2>/dev/null)' \
   --bind 'ctrl-d:half-page-down,ctrl-u:half-page-up'"
 
-# Ctrl-T: file search with bat preview
+# Ctrl-T: file search with bat preview, path-aware scoring
 export FZF_CTRL_T_OPTS=" \
+  --scheme=path \
   --preview 'bat --color=always --style=numbers --line-range :300 {} 2>/dev/null || cat {}' \
   --preview-window 'right:50%:border-left' \
   --header 'CTRL-/ toggle preview │ CTRL-Y copy'"
 
-# Ctrl-R: history search with command preview
-export FZF_CTRL_R_OPTS=" \
-  --preview 'echo {}' --preview-window 'up:3:wrap:hidden' \
-  --bind 'ctrl-/:toggle-preview' \
-  --header 'CTRL-/ toggle preview'"
-
-# Alt-C: directory search with tree preview
+# Alt-C: directory search with tree preview, path-aware scoring
 export FZF_ALT_C_OPTS=" \
+  --scheme=path \
   --preview 'eza -T --color=always --icons --level=2 {} 2>/dev/null || ls -la {}' \
   --preview-window 'right:50%:border-left'"
 
@@ -75,7 +84,7 @@ fkill() {
 # Interactive file open in editor
 fe() {
   local file
-  file=$(fzf --height 40% --reverse \
+  file=$(fzf --height 40% --reverse --scheme=path \
     --preview 'bat --color=always --style=numbers --line-range :200 {} 2>/dev/null || cat {}')
   [ -n "$file" ] && ${EDITOR:-nvim} "$file"
 }
