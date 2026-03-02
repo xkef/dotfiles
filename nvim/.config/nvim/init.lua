@@ -24,6 +24,15 @@ vim.opt.tabstop = 2
 vim.opt.cursorline = true
 vim.opt.wrap = false
 vim.opt.smartindent = true
+vim.opt.list = true
+vim.opt.listchars = {
+  tab      = "→ ",
+  trail    = "·",
+  nbsp     = "␣",
+  extends  = "»",
+  precedes = "«",
+  lead     = "·",
+}
 
 -- OSC 52 clipboard (works over SSH, in tmux, everywhere)
 if vim.env.SSH_TTY or vim.env.TMUX then
