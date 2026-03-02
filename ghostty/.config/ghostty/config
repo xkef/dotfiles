@@ -36,6 +36,7 @@ mouse-hide-while-typing = true
 
 # ── Terminal ──────────────────────────────────────────
 scrollback-limit = 50000
+term = xterm-256color
 
 # ── Keybindings ───────────────────────────────────────
 # macOS native bindings (cmd+c/v/etc) are built-in and unaffected.

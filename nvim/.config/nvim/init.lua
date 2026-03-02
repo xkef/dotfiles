@@ -125,5 +125,15 @@ require("lazy").setup("plugins", {
   },
 })
 
+-- Diagnostics: virtual line below current line avoids clashing with gitsigns blame
+vim.diagnostic.config({
+  virtual_text = false,
+  virtual_lines = { current_line = true },
+  signs = true,
+  underline = true,
+  update_in_insert = false,
+  severity_sort = true,
+})
+
 -- Theme: read from ~/.config/theme/current, auto-reload on focus
 require("theme").setup()

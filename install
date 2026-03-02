@@ -204,20 +204,6 @@ def setup_plugins() -> None:
         run(f"git clone --quiet https://github.com/zdharma-continuum/zinit.git {zinit}")
 
 
-def install_ghostty_terminfo() -> None:
-    """Install Ghostty's xterm-ghostty terminfo if missing."""
-    try:
-        run("infocmp xterm-ghostty", quiet=True)
-    except subprocess.CalledProcessError:
-        ghostty = shutil.which("ghostty")
-        if ghostty:
-            log("Installing Ghostty terminfo...")
-            try:
-                run("ghostty +show-terminfo | tic -x -", quiet=True)
-            except subprocess.CalledProcessError:
-                log("  ! Could not install Ghostty terminfo")
-
-
 def set_default_shell() -> None:
     """Set zsh as the user's login shell, reusing the cached sudo ticket."""
     zsh = shutil.which("zsh")
@@ -241,7 +227,6 @@ def main() -> None:
     install_packages()
     stow_configs()
     setup_plugins()
-    install_ghostty_terminfo()
     set_default_shell()
 
     print("\n  Done! Run `exec zsh` to reload.\n")
