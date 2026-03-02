@@ -15,7 +15,7 @@ if command -v direnv &>/dev/null; then
   eval "$(direnv hook zsh)"
 fi
 
-# atuin (smart shell history — replaces fzf Ctrl+R)
+# atuin (smart shell history — Ctrl+R only, up arrow uses normal history)
 if command -v atuin &>/dev/null; then
-  eval "$(atuin init zsh)"
+  eval "$(atuin init zsh --disable-up-arrow)"
 fi
