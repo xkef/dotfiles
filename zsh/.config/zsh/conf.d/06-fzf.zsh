@@ -53,6 +53,10 @@ export FZF_ALT_C_OPTS=" \
 # Source fzf shell integration (keybindings + completion)
 source <(fzf --zsh 2>/dev/null)
 
+# Rebind directory picker: ctrl+g ("go") instead of alt-c
+# (alt-c doesn't work on Swiss German Mac keyboards without breaking other opt+ combos)
+bindkey '^g' fzf-cd-widget
+
 # ── FZF-powered functions ────────────────────────────
 
 # Interactive git branch switch

@@ -36,7 +36,6 @@ mouse-hide-while-typing = true
 
 # ── Terminal ──────────────────────────────────────────
 scrollback-limit = 50000
-macos-option-as-alt = left
 
 # ── Keybindings ───────────────────────────────────────
 # macOS native bindings (cmd+c/v/etc) are built-in and unaffected.
