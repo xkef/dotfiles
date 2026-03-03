@@ -8,13 +8,12 @@ cd ~/dotfiles && ./install
 ```
 
 The install script reads `packages.toml`, auto-detects your OS, and installs everything using the native package
-manager (Homebrew on macOS, pacman on Arch, apt on Ubuntu/Debian). Then it symlinks configs via stow and sets zsh as
-default shell.
+manager. Then it symlinks configs via stow and sets zsh as default shell.
 
 ## What's included
 
 | Category     | Tool                                                                                    | Why                         |
-|--------------|-----------------------------------------------------------------------------------------|-----------------------------|
+| ------------ | --------------------------------------------------------------------------------------- | --------------------------- |
 | **Shell**    | Zsh + [zinit](https://github.com/zdharma-continuum/zinit)                               | Turbo-loaded plugins        |
 | **Prompt**   | [Starship](https://starship.rs)                                                         | Cross-shell, fast           |
 | **Editor**   | Neovim + lazy.nvim                                                                      | No distro, explicit config  |
@@ -31,7 +30,7 @@ default shell.
 ## The one thing to remember
 
 | Context    | Key          |        |
-|------------|--------------|--------|
+| ---------- | ------------ | ------ |
 | **Neovim** | `Space`      | leader |
 | **tmux**   | `Ctrl-Space` | prefix |
 
@@ -42,7 +41,7 @@ Same physical key. Ctrl is the only difference.
 ## tmux `Ctrl-Space +`
 
 | Key          | Action                            |
-|--------------|-----------------------------------|
+| ------------ | --------------------------------- |
 | `\|` / `-`   | Split right / down                |
 | `H/J/K/L`    | Resize pane                       |
 | `Ctrl-Space` | Toggle last window (double-tap)   |
@@ -57,7 +56,7 @@ Same physical key. Ctrl is the only difference.
 **Copy mode** (`v` select, `V` line, `C-v` block, `y` yank, `Y` yank to EOL):
 
 | Key     | Action                  |
-|---------|-------------------------|
+| ------- | ----------------------- |
 | `H/L`   | Start / end of line     |
 | `/` `?` | Search forward/backward |
 
@@ -68,7 +67,7 @@ Same physical key. Ctrl is the only difference.
 **Files & search:**
 
 | Key     | Action                             |
-|---------|------------------------------------|
+| ------- | ---------------------------------- |
 | `Space` | Alternate file (last buffer)       |
 | `-`     | File browser (Oil)                 |
 | `ff`    | Find files                         |
@@ -87,20 +86,20 @@ Same physical key. Ctrl is the only difference.
 **Navigation:**
 
 | Key | Action                                     |
-|-----|--------------------------------------------|
+| --- | ------------------------------------------ |
 | `s` | Flash jump — jump anywhere in 2 keystrokes |
 | `S` | Flash treesitter — jump to any syntax node |
 
 **Git:**
 
 | Key  | Action  |
-|------|---------|
+| ---- | ------- |
 | `gs` | Lazygit |
 
 **LSP:**
 
 | Key       | Action               |
-|-----------|----------------------|
+| --------- | -------------------- |
 | `gd`      | Go to definition     |
 | `gr`      | References           |
 | `gI`      | Implementation       |
@@ -115,7 +114,7 @@ Same physical key. Ctrl is the only difference.
 **Other:**
 
 | Key                  | Action                        |
-|----------------------|-------------------------------|
+| -------------------- | ----------------------------- |
 | `Up`/`Down`          | Prev/next quickfix entry      |
 | `Left`/`Right`       | Prev/next quickfix file       |
 | `p`                  | Show file path                |
@@ -130,7 +129,7 @@ Same physical key. Ctrl is the only difference.
 ## Shell functions
 
 | Command                          | Action                                 |
-|----------------------------------|----------------------------------------|
+| -------------------------------- | -------------------------------------- |
 | `fe`                             | fzf → open file in editor              |
 | `frg`                            | ripgrep → fzf → jump to line in editor |
 | `fbr`                            | fzf git branch switcher                |
@@ -144,7 +143,7 @@ Same physical key. Ctrl is the only difference.
 ## Local overrides
 
 | What   | File                               |
-|--------|------------------------------------|
+| ------ | ---------------------------------- |
 | Shell  | `~/.config/zsh/local.zsh`          |
 | Git    | `~/.config/git/config.local`       |
 | Neovim | `~/.config/nvim/lua/plugins/*.lua` |
