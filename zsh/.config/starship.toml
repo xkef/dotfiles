@@ -1,16 +1,17 @@
 # General
 format = """
 $directory\
+$character"""
+
+right_format = """
+${env_var.PROMPT_DURATION}\
 $git_branch\
 $git_status\
 $java\
 $python\
 $nodejs\
 $docker_context\
-$kubernetes\
-$cmd_duration\
-$line_break\
-$character"""
+$kubernetes"""
 
 # Prompt character
 [character]
@@ -19,7 +20,7 @@ error_symbol = '[❯](bold red)'
 
 # Directory
 [directory]
-truncation_length = 3
+truncation_length = 1
 truncate_to_repo = true
 style = 'bold cyan'
 
@@ -64,8 +65,8 @@ disabled = true
 format = '[$symbol$context(/$namespace)]($style) '
 symbol = '☸ '
 
-# Command duration (show if > 2s)
 [cmd_duration]
-min_time = 2000
-format = '[took $duration]($style) '
-style = 'bold yellow'
+disabled = true
+
+[env_var.PROMPT_DURATION]
+format = "[$env_value](bold yellow) "
