@@ -22,12 +22,19 @@ def log(msg: str) -> None:
 
 
 def run(cmd: str, quiet: bool = False) -> subprocess.CompletedProcess[str]:
-    """Run a shell command, optionally suppressing all output."""
-    kwargs: dict = {"shell": True, "check": True}
-    if quiet:
-        kwargs["stdout"] = subprocess.DEVNULL
-        kwargs["stderr"] = subprocess.DEVNULL
-    return subprocess.run(cmd, **kwargs)
+    """Run a shell command. When quiet, output is captured and shown only on failure."""
+    if not quiet:
+        return subprocess.run(cmd, shell=True, check=True)
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    if result.returncode != 0:
+        output = (result.stdout + result.stderr).strip()
+        if output:
+            for line in output.splitlines()[-30:]:
+                log(f"    | {line}")
+        raise subprocess.CalledProcessError(
+            result.returncode, cmd, result.stdout, result.stderr
+        )
+    return result
 
 
 def has(cmd: str) -> bool:
@@ -36,13 +43,11 @@ def has(cmd: str) -> bool:
 
 
 def detect_os() -> str:
-    """Detect the current OS. Returns 'macos', 'arch', 'debian', or 'unknown'."""
+    """Detect the current OS. Returns 'macos', 'arch', or 'unknown'."""
     if sys.platform == "darwin":
         return "macos"
     if Path("/etc/arch-release").exists():
         return "arch"
-    if Path("/etc/debian_version").exists():
-        return "debian"
     return "unknown"
 
 
@@ -70,54 +75,40 @@ def install_macos(packages: dict[str, dict]) -> None:
         log("brew install --cask...")
         run(f"brew install --cask {' '.join(casks)}", quiet=True)
 
+    _install_remaining_via_scripts(packages, skip_keys=("brew", "brew_cask"))
+
 
 def install_arch(packages: dict[str, dict]) -> None:
-    """Install packages via pacman."""
+    """Install packages via pacman, then scripts for the rest."""
     pkgs = [v["pacman"] for v in packages.values() if "pacman" in v]
     log("pacman...")
     run(f"sudo pacman -Sy --needed --noconfirm {' '.join(pkgs)}", quiet=True)
 
+    _install_remaining_via_scripts(packages, skip_keys=("pacman",))
 
-def install_debian(packages: dict[str, dict]) -> None:
-    """Install packages via apt, with fallback to install scripts for missing packages."""
-    apt_pkgs = [v["apt"] for v in packages.values() if "apt" in v]
 
-    for name, pkg in packages.items():
-        if "apt_repo" in pkg and not has(name):
-            log(f"Adding apt repo for {name}...")
-            run("sudo mkdir -p /etc/apt/keyrings", quiet=True)
-            run(
-                f'curl -fsSL "{pkg["apt_repo"]}" '
-                f"| sudo gpg --dearmor -o /etc/apt/keyrings/{name}.gpg 2>/dev/null || true",
-                quiet=True,
-            )
-            run(
-                f'echo "deb [signed-by=/etc/apt/keyrings/{name}.gpg] http://deb.gierens.de stable main" '
-                f"| sudo tee /etc/apt/sources.list.d/{name}.list >/dev/null",
-                quiet=True,
-            )
-
-    if apt_pkgs:
-        log("apt install...")
-        run("sudo apt-get update -qq", quiet=True)
-        run(f"sudo apt-get install -y {' '.join(apt_pkgs)}", quiet=True)
+def _install_remaining_via_scripts(
+    packages: dict[str, dict], skip_keys: tuple[str, ...] = ()
+) -> None:
+    """Run install scripts for packages not covered by the given package manager keys."""
+    local_bin = HOME / ".local" / "bin"
+    local_bin.mkdir(parents=True, exist_ok=True)
+    os.environ["PATH"] = f"{local_bin}:{os.environ.get('PATH', '')}"
 
     for name, pkg in packages.items():
-        if alias := pkg.get("apt_alias"):
-            if not has(name) and has(alias):
-                run(
-                    f'sudo ln -sf "$(command -v {alias})" /usr/local/bin/{name}',
-                    quiet=True,
-                )
-
-    for name, pkg in packages.items():
-        if "script" in pkg and "apt" not in pkg and not has(name):
-            log(f"Installing {name}...")
+        if any(k in pkg for k in skip_keys):
+            continue
+        if "script" not in pkg:
+            log(f"  ! {name}: no install method available")
+            continue
+        bin_name = pkg.get("bin", name)
+        if has(bin_name):
+            continue
+        log(f"Installing {name} via script...")
+        try:
             run(pkg["script"], quiet=True)
-
-    for name, pkg in packages.items():
-        if "manual" in pkg and not has(name):
-            log(f"  ! {name}: install from {pkg['manual']}")
+        except subprocess.CalledProcessError as e:
+            log(f"  ! {name}: install failed (exit {e.returncode})")
 
 
 def install_packages() -> None:
@@ -125,18 +116,15 @@ def install_packages() -> None:
     packages = load_packages()
     os_type = detect_os()
 
-    if os_type in ("arch", "debian"):
+    if os_type == "arch":
         run("sudo -v")
 
     if os_type == "macos":
         install_macos(packages)
     elif os_type == "arch":
         install_arch(packages)
-    elif os_type == "debian":
-        install_debian(packages)
     else:
-        log("Unknown OS — install packages manually (see packages.toml)")
-        return
+        _install_remaining_via_scripts(packages)
 
     log("Packages installed")
 
@@ -193,6 +181,31 @@ def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
+def setup_bat_themes() -> None:
+    """Install syntax themes for bat/delta (Catppuccin, Tokyonight, Rosé Pine)."""
+    themes_dir = Path(os.environ.get("XDG_CONFIG_HOME", HOME / ".config")) / "bat/themes"
+    sources = {
+        "Catppuccin Mocha.tmTheme": "https://raw.githubusercontent.com/catppuccin/bat/main/themes/Catppuccin%20Mocha.tmTheme",
+        "Catppuccin Latte.tmTheme": "https://raw.githubusercontent.com/catppuccin/bat/main/themes/Catppuccin%20Latte.tmTheme",
+        "tokyonight_night.tmTheme": "https://raw.githubusercontent.com/folke/tokyonight.nvim/main/extras/sublime/tokyonight_night.tmTheme",
+        "tokyonight_day.tmTheme": "https://raw.githubusercontent.com/folke/tokyonight.nvim/main/extras/sublime/tokyonight_day.tmTheme",
+        "rose-pine.tmTheme": "https://raw.githubusercontent.com/rose-pine/tm-theme/main/dist/rose-pine.tmTheme",
+        "rose-pine-dawn.tmTheme": "https://raw.githubusercontent.com/rose-pine/tm-theme/main/dist/rose-pine-dawn.tmTheme",
+    }
+    ensure_dir(themes_dir)
+    changed = False
+    for name, url in sources.items():
+        dest = themes_dir / name
+        if dest.exists():
+            continue
+        log(f"Downloading {name}...")
+        run(f'curl -fsSL -o "{dest}" "{url}"', quiet=True)
+        changed = True
+    if changed and has("bat"):
+        log("Rebuilding bat theme cache...")
+        run("bat cache --build", quiet=True)
+
+
 def setup_plugins() -> None:
     """Clone zinit (zsh plugin manager) if not already present."""
     xdg_data = Path(os.environ.get("XDG_DATA_HOME", HOME / ".local/share"))
@@ -226,6 +239,7 @@ def main() -> None:
 
     install_packages()
     stow_configs()
+    setup_bat_themes()
     setup_plugins()
     set_default_shell()
 
