@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# https://docs.claude.com/en/docs/claude-code/hooks#notification
+terminal-notifier -title "Claude" -subtitle "Notification" -activate com.mitchellh.ghostty -message "$(jq -r .message)"

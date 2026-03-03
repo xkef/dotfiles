@@ -102,3 +102,6 @@ LG_V=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/lates
 brew = "atuin"
 pacman = "atuin"
 script = "curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh"
+
+[jdtls]
+brew = "jdtls"

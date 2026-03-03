@@ -1,0 +1,31 @@
+#!/bin/bash
+
+INPUT=$(cat)
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+
+[ -z "$FILE_PATH" ] && exit 0
+
+SENSITIVE_PATTERNS=(
+  ".env"
+  ".env.local"
+  ".env.production"
+  ".env.staging"
+  "id_rsa"
+  "id_ed25519"
+  "id_ecdsa"
+  ".pem"
+  ".key"
+  "credentials.json"
+  ".netrc"
+  ".aws/credentials"
+  ".p12"
+)
+
+for pattern in "${SENSITIVE_PATTERNS[@]}"; do
+  if [[ "$FILE_PATH" == *"$pattern"* ]]; then
+    echo "Blocked: refusing to write to sensitive file matching '$pattern': $FILE_PATH" >&2
+    exit 2
+  fi
+done
+
+exit 0
