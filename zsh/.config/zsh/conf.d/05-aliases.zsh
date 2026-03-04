@@ -16,10 +16,6 @@ if command -v bat &>/dev/null; then
   alias catn='bat'
 fi
 
-if command -v fd &>/dev/null; then
-  alias find='fd'
-fi
-
 # Git shortcuts (supplement OMZ git plugin)
 alias gs='git status -sb'
 alias gd='git diff'
