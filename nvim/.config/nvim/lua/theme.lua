@@ -1,4 +1,4 @@
--- Theme system: reads ~/.config/theme/env for colorscheme and variant.
+-- Theme system: reads ~/.config/theme/current for colorscheme and variant.
 -- The `theme` command writes this file; no duplicate table needed here.
 -- Auto-reloads on FocusGained so `theme <name>` in another pane takes effect.
 
@@ -7,15 +7,15 @@ local M = {}
 local DEFAULTS = { name = "catppuccin-mocha", nvim = "catppuccin-mocha", variant = "dark" }
 
 function M.read()
-  local path = vim.fn.expand("~/.config/theme/env")
+  local path = vim.fn.expand("~/.config/theme/current")
   local f = io.open(path, "r")
   if not f then return DEFAULTS end
   local cfg = {}
   for line in f:lines() do
     local k, v = line:match("^(%S+)=(.+)$")
-    if k == "THEME_NAME" then cfg.name = v
-    elseif k == "THEME_VARIANT" then cfg.variant = v
-    elseif k == "THEME_NVIM" then cfg.nvim = v
+    if k == "name" then cfg.name = v
+    elseif k == "variant" then cfg.variant = v
+    elseif k == "nvim" then cfg.nvim = v
     end
   end
   f:close()

@@ -1,5 +1,5 @@
 return {
-  -- Colorschemes (active theme read from ~/.config/theme/env)
+  -- Colorschemes (active theme read from ~/.config/theme/current)
   -- All lazy=true: theme.lua calls vim.cmd.colorscheme() which lazy.nvim intercepts
   {
     "catppuccin/nvim",

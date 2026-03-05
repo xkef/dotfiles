@@ -182,19 +182,19 @@ def ensure_dir(path: Path) -> None:
 
 
 def setup_bat_themes() -> None:
-    """Install syntax themes for bat/delta (Catppuccin, Tokyonight, Rosé Pine)."""
+    """Install syntax themes for bat/delta, sourced from the theme script."""
+    theme_cmd = DOTFILES / "local/.local/bin/theme"
+    result = subprocess.run(
+        [str(theme_cmd), "--bat-sources"],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        return
     themes_dir = Path(os.environ.get("XDG_CONFIG_HOME", HOME / ".config")) / "bat/themes"
-    sources = {
-        "Catppuccin Mocha.tmTheme": "https://raw.githubusercontent.com/catppuccin/bat/main/themes/Catppuccin%20Mocha.tmTheme",
-        "Catppuccin Latte.tmTheme": "https://raw.githubusercontent.com/catppuccin/bat/main/themes/Catppuccin%20Latte.tmTheme",
-        "tokyonight_night.tmTheme": "https://raw.githubusercontent.com/folke/tokyonight.nvim/main/extras/sublime/tokyonight_night.tmTheme",
-        "tokyonight_day.tmTheme": "https://raw.githubusercontent.com/folke/tokyonight.nvim/main/extras/sublime/tokyonight_day.tmTheme",
-        "rose-pine.tmTheme": "https://raw.githubusercontent.com/rose-pine/tm-theme/main/dist/rose-pine.tmTheme",
-        "rose-pine-dawn.tmTheme": "https://raw.githubusercontent.com/rose-pine/tm-theme/main/dist/rose-pine-dawn.tmTheme",
-    }
     ensure_dir(themes_dir)
     changed = False
-    for name, url in sources.items():
+    for line in result.stdout.strip().splitlines():
+        name, url = line.split("\t", 1)
         dest = themes_dir / name
         if dest.exists():
             continue
