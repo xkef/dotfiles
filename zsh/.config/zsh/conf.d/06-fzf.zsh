@@ -5,18 +5,20 @@ fi
 
 # Use fd for file/dir search, sorted by recency (recent first, then rest, deduped)
 if command -v fd &>/dev/null; then
+  local dedup='awk "!seen[\$0]++"'
+
   # Ctrl-T: recently modified files first, then all files
-  export FZF_CTRL_T_COMMAND='\
+  export FZF_CTRL_T_COMMAND="\
     { fd --type f --changed-within 1week --hidden --follow --exclude .git; \
       fd --type f --hidden --follow --exclude .git; \
-    } | awk "!seen[\$0]++"'
+    } | $dedup"
 
   # Alt-C: zoxide frecency dirs first, then all dirs from fd (deduped)
   if command -v zoxide &>/dev/null; then
-    export FZF_ALT_C_COMMAND='\
+    export FZF_ALT_C_COMMAND="\
       { zoxide query -l 2>/dev/null; \
         fd --type d --hidden --follow --exclude .git; \
-      } | awk "!seen[\$0]++"'
+      } | $dedup"
   else
     export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
   fi

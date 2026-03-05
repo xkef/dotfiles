@@ -241,31 +241,12 @@ return {
 
   -- File navigation
   {
-    "stevearc/oil.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
-    keys = { { "-", "<cmd>Oil<cr>", desc = "File browser" } },
-    opts = {
-      default_file_explorer = true,
-      columns = { "icon" },
-      view_options = { show_hidden = true },
-      float = {
-        padding = 2,
-        max_width = 90,
-        max_height = 30,
-      },
-      keymaps = {
-        ["q"] = "actions.close",
-        ["<C-v>"] = { "actions.select", opts = { vertical = true } },
-        ["<C-s>"] = { "actions.select", opts = { horizontal = true } },
-        ["<C-p>"] = "actions.preview",
-        ["<C-r>"] = "actions.refresh",
-      },
-    },
-  },
-  {
     "nvim-tree/nvim-tree.lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
-    keys = { { "<leader>e", "<cmd>NvimTreeToggle<cr>", desc = "Tree explorer" } },
+    keys = {
+      { "<leader>e", "<cmd>NvimTreeToggle<cr>", desc = "Tree explorer" },
+      { "-", "<cmd>NvimTreeToggle<cr>", desc = "File browser" },
+    },
     opts = {
       renderer = {
         group_empty = true,
@@ -348,7 +329,7 @@ return {
   {
     "MagicDuck/grug-far.nvim",
     keys = {
-      { "<leader>S",  "<cmd>GrugFar<cr>",                                                                                   desc = "Search and replace" },
+      { "<leader>S",  "<cmd>GrugFar<cr>",                                                                            desc = "Search and replace" },
       { "<leader>sR", function() require("grug-far").open({ prefills = { search = vim.fn.expand("<cword>") } }) end, desc = "Search and replace (word)" },
     },
     opts = {},

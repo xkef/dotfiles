@@ -7,8 +7,8 @@ git clone https://github.com/YOUR_USER/dotfiles.git ~/dotfiles
 cd ~/dotfiles && ./install
 ```
 
-The install script reads `packages.toml`, auto-detects your OS, and installs everything using the native package
-manager. Then it symlinks configs via stow and sets zsh as default shell.
+The install script auto-detects your OS and installs packages using the native format (`Brewfile` on macOS, `pkgs.arch`
+on Arch, pre-built binaries elsewhere). Then it symlinks configs via stow and sets zsh as default shell.
 
 ## What's included
 
@@ -69,8 +69,8 @@ Same physical key. Ctrl is the only difference.
 | Key     | Action                             |
 |---------|------------------------------------|
 | `Space` | Alternate file (last buffer)       |
-| `-`     | File browser (Oil)                 |
-| `e`     | Tree explorer (nvim-tree)          |
+| `-`     | File browser (nvim-tree)           |
+| `e`     | File browser (nvim-tree)           |
 | `ff`    | Find files                         |
 | `fr`    | Recent files                       |
 | `fb`    | Buffers                            |
@@ -84,23 +84,13 @@ Same physical key. Ctrl is the only difference.
 | `hh`    | Harpoon menu                       |
 | `1`–`4` | Jump to harpoon file               |
 
-**Oil (inside file browser):**
+**nvim-tree (inside file browser):**
 
 | Key   | Action         |
 |-------|----------------|
-| `q`   | Close          |
-| `C-p` | Toggle preview |
-| `C-v` | Open in vsplit |
-| `C-s` | Open in split  |
-| `C-r` | Refresh        |
-
-**nvim-tree (inside tree explorer):**
-
-| Key   | Action       |
-|-------|--------------|
-| `l`   | Open         |
-| `h`   | Close folder |
-| `q`   | Close tree   |
+| `l`   | Open           |
+| `h`   | Close folder   |
+| `q`   | Close tree     |
 | `C-v` | Open in vsplit |
 | `C-s` | Open in split  |
 
