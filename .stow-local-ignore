@@ -6,7 +6,9 @@
 \.editorconfig
 README\.md
 install
-packages\.toml
+install-bins\.sh
+Brewfile
+pkgs\.arch
 scripts
 LICENSE
 \.DS_Store

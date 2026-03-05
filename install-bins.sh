@@ -30,11 +30,6 @@ latest_tag() {
 
 ARCH=$(uname -m)
 
-map_arch() {
-    local from=$1 to=$2
-    if [[ "$ARCH" == "$from" ]]; then echo "$to"; else echo "$ARCH"; fi
-}
-
 install_bin() {
     local name=$1; shift
     if has "$name"; then return 0; fi
@@ -51,68 +46,25 @@ install_bin() {
     fi
 }
 
-# Download a binary from a GitHub release tarball.
-#   github_release <repo> <asset_pattern> <bin_in_archive> [arch_from:arch_to]
-# Patterns use {tag}, {version}, {arch}. The arch mapping is optional.
-github_release() {
-    local repo=$1 asset_pat=$2 bin_pat=$3
-    local from="" to=""
-    if [[ -n "${4:-}" ]]; then
-        from=${4%%:*}; to=${4##*:}
-    fi
-
-    local a=$ARCH
-    [[ -n "$from" && "$a" == "$from" ]] && a=$to
+# Download a tarball from a GitHub release containing a single binary.
+#   github_bin <repo> <arch> <asset> <bin_in_archive>
+# All args are fully resolved (no templates).
+github_bin() {
+    local repo=$1 a=$2 asset=$3 bin_path=$4
     local tag; tag=$(latest_tag "$repo") || return 1
-    local version=${tag#v}
-    local asset=${asset_pat//\{tag\}/$tag}
-    asset=${asset//\{version\}/$version}
-    asset=${asset//\{arch\}/$a}
-    local bin_path=${bin_pat//\{tag\}/$tag}
-    bin_path=${bin_path//\{version\}/$version}
-    bin_path=${bin_path//\{arch\}/$a}
-    local url="https://github.com/${repo}/releases/download/${tag}/${asset}"
-
-    curl -fsSL "$url" | tar -xzf - -C /tmp
-    cp "/tmp/${bin_path}" "$BIN/"
-    local dir=${bin_path%/*}
-    if [[ "$dir" != "$bin_path" ]]; then
-        rm -rf "/tmp/${dir}"
-    else
-        rm -f "/tmp/${bin_path}"
-    fi
-}
-
-# --- individual installers ---
-
-do_nvim() {
-    local a; a=$(map_arch aarch64 arm64)
-    mkdir -p "$HOME/.local"
-    curl -fsSL "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${a}.tar.gz" \
-        | tar -xzf - -C "$HOME/.local" --strip-components=1
-}
-
-do_eza() {
-    local a; a=$(map_arch arm64 aarch64)
-    curl -fsSL "https://github.com/eza-community/eza/releases/latest/download/eza_${a}-unknown-linux-gnu.tar.gz" \
-        | tar -xzf - -C "$BIN"
-}
-
-do_fzf() {
-    local a=$ARCH
-    case "$a" in x86_64) a=amd64 ;; aarch64) a=arm64 ;; esac
-    local tag; tag=$(latest_tag junegunn/fzf) || return 1
     local v=${tag#v}
-    curl -fsSL "https://github.com/junegunn/fzf/releases/download/${tag}/fzf-${v}-linux_${a}.tar.gz" \
-        | tar -xzf - -C "$BIN" fzf
+    # Expand tag/version in asset and bin_path
+    asset=${asset/TAG/$tag}; asset=${asset/VER/$v}; asset=${asset/ARCH/$a}
+    bin_path=${bin_path/TAG/$tag}; bin_path=${bin_path/VER/$v}; bin_path=${bin_path/ARCH/$a}
+    curl -fsSL "https://github.com/$repo/releases/download/$tag/$asset" | tar -xzf - -C /tmp
+    cp "/tmp/$bin_path" "$BIN/"
+    local dir=${bin_path%/*}
+    [[ "$dir" != "$bin_path" ]] && rm -rf "/tmp/$dir" || rm -f "/tmp/$bin_path"
 }
 
-do_jq() {
-    local a=$ARCH
-    case "$a" in x86_64) a=amd64 ;; aarch64) a=arm64 ;; esac
-    curl -fsSL -o "$BIN/jq" "https://github.com/jqlang/jq/releases/latest/download/jq-linux-${a}"
-    chmod +x "$BIN/jq"
-}
+# Arch mapping helpers
+linux_arch()  { case $ARCH in arm64) echo aarch64 ;; *) echo "$ARCH" ;; esac; }
+go_arch()     { case $ARCH in x86_64) echo amd64 ;; aarch64) echo arm64 ;; *) echo "$ARCH" ;; esac; }
 
 # --- main ---
 
@@ -124,16 +76,26 @@ if (( ${#missing[@]} )); then
     log "Skipping (need system package manager): ${missing[*]}"
 fi
 
-install_bin nvim     do_nvim
-install_bin eza      do_eza
-install_bin bat      github_release sharkdp/bat      "bat-{tag}-{arch}-unknown-linux-gnu.tar.gz"      "bat-{tag}-{arch}-unknown-linux-gnu/bat"      arm64:aarch64
-install_bin fd       github_release sharkdp/fd       "fd-{tag}-{arch}-unknown-linux-gnu.tar.gz"       "fd-{tag}-{arch}-unknown-linux-gnu/fd"        arm64:aarch64
-install_bin rg       github_release BurntSushi/ripgrep "ripgrep-{tag}-{arch}-unknown-linux-gnu.tar.gz" "ripgrep-{tag}-{arch}-unknown-linux-gnu/rg"   arm64:aarch64
-install_bin delta    github_release dandavison/delta  "delta-{tag}-{arch}-unknown-linux-gnu.tar.gz"    "delta-{tag}-{arch}-unknown-linux-gnu/delta"  arm64:aarch64
-install_bin lazygit  github_release jesseduffield/lazygit "lazygit_{version}_Linux_{arch}.tar.gz"      "lazygit"                                    aarch64:arm64
-install_bin fzf      do_fzf
+install_bin nvim  bash -c "
+    mkdir -p \$HOME/.local
+    curl -fsSL https://github.com/neovim/neovim/releases/latest/download/nvim-linux-$(go_arch).tar.gz \
+        | tar -xzf - -C \$HOME/.local --strip-components=1"
+
+install_bin eza   bash -c \
+    "curl -fsSL https://github.com/eza-community/eza/releases/latest/download/eza_$(linux_arch)-unknown-linux-gnu.tar.gz \
+        | tar -xzf - -C '$BIN'"
+
+install_bin bat    github_bin sharkdp/bat         "$(linux_arch)" "bat-TAG-ARCH-unknown-linux-gnu.tar.gz"      "bat-TAG-ARCH-unknown-linux-gnu/bat"
+install_bin fd     github_bin sharkdp/fd          "$(linux_arch)" "fd-TAG-ARCH-unknown-linux-gnu.tar.gz"       "fd-TAG-ARCH-unknown-linux-gnu/fd"
+install_bin rg     github_bin BurntSushi/ripgrep   "$(linux_arch)" "ripgrep-TAG-ARCH-unknown-linux-gnu.tar.gz"  "ripgrep-TAG-ARCH-unknown-linux-gnu/rg"
+install_bin delta  github_bin dandavison/delta     "$(linux_arch)" "delta-TAG-ARCH-unknown-linux-gnu.tar.gz"    "delta-TAG-ARCH-unknown-linux-gnu/delta"
+install_bin lazygit github_bin jesseduffield/lazygit "$(go_arch)"  "lazygit_VER_Linux_ARCH.tar.gz"              "lazygit"
+install_bin fzf    github_bin junegunn/fzf         "$(go_arch)"   "fzf-VER-linux_ARCH.tar.gz"                  "fzf"
+
+install_bin jq     bash -c \
+    "curl -fsSL -o '$BIN/jq' https://github.com/jqlang/jq/releases/latest/download/jq-linux-$(go_arch) && chmod +x '$BIN/jq'"
+
 install_bin zoxide   bash -c 'curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh'
-install_bin jq       do_jq
 install_bin starship bash -c "curl -sS https://starship.rs/install.sh | sh -s -- -y -b '$BIN'"
 install_bin ghostty  bash -c 'curl -fsSL https://raw.githubusercontent.com/mkasberg/ghostty-ubuntu/HEAD/install.sh | bash'
 install_bin atuin    bash -c "curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh"

@@ -1,116 +1,82 @@
-#!/usr/bin/env python3
-"""Dotfiles installer — auto-detects OS, installs packages, stows configs."""
+#!/usr/bin/env bash
+# Dotfiles installer — auto-detects OS, installs packages, stows configs.
+set -uo pipefail
 
-import getpass
-import os
-import shutil
-import subprocess
-import sys
-from pathlib import Path
-from subprocess import CompletedProcess
+DOTFILES="$(cd "$(dirname "$0")" && pwd)"
 
-DOTFILES = Path(__file__).resolve().parent
-HOME = Path.home()
-STOW_PACKAGES = (DOTFILES / ".stow-packages").read_text().split()
+log() { printf '  %s\n' "$1"; }
+has() { command -v "$1" &>/dev/null; }
 
+run_quiet() {
+  local context=${1:-}
+  shift
+  local output
+  if output=$("$@" 2>&1); then
+    return 0
+  fi
+  local rc=$?
+  log "  ! ${context} failed (exit $rc)"
+  if [[ -n "$output" ]]; then
+    printf '%s\n' "$output" | tail -30 | while IFS= read -r line; do
+      log "    | $line"
+    done
+  fi
+  return $rc
+}
 
-def log(msg: str) -> None:
-  """Print a status line."""
-  print(f"  {msg}")
+# ── Install packages ──────────────────────────────────
 
+printf '\n  dotfiles\n\n'
 
-def run(cmd: str, quiet: bool = False, context: str = "") -> CompletedProcess[bytes] | CompletedProcess[str]:
-  """Run a shell command. When quiet, output is captured and shown only on failure."""
-  if not quiet:
-    return subprocess.run(cmd, shell=True, check=True)
-  result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-  if result.returncode != 0:
-    label = context or cmd
-    log(f"  ! {label} failed (exit {result.returncode})")
-    output = (result.stdout + result.stderr).strip()
-    if output:
-      for line in output.splitlines()[-30:]:
-        log(f"    | {line}")
-    raise subprocess.CalledProcessError(
-      result.returncode, cmd, result.stdout, result.stderr
-    )
-  return result
+case "$(uname -s)" in
+Darwin)
+  if ! has brew; then
+    log "Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  fi
+  log "brew bundle..."
+  run_quiet "brew bundle" brew bundle --file="$DOTFILES/Brewfile"
+  ;;
+Linux)
+  if [[ -f /etc/arch-release ]]; then
+    sudo -v
+    log "pacman..."
+    run_quiet "pacman install" sudo pacman -Sy --needed --noconfirm $(cat "$DOTFILES/pkgs.arch")
+  elif [[ -f "$DOTFILES/install-bins.sh" ]]; then
+    log "Running install-bins.sh..."
+    bash "$DOTFILES/install-bins.sh"
+  else
+    log "  ! install-bins.sh not found, skipping binary installs"
+  fi
+  ;;
+esac
+log "Packages installed"
 
+# ── Stow configs ──────────────────────────────────────
 
-def has(cmd: str) -> bool:
-  """Check if a command exists on PATH."""
-  return shutil.which(cmd) is not None
+find "$DOTFILES" -name .DS_Store -delete 2>/dev/null
 
+while IFS= read -r pkg; do
+  [[ -z "$pkg" ]] && continue
+  if [[ ! -d "$DOTFILES/$pkg" ]]; then
+    log "  ! stow: package dir '$pkg' not found, skipping"
+    continue
+  fi
+  if run_quiet "stow $pkg" stow --dir="$DOTFILES" -t "$HOME" --adopt "$pkg"; then
+    run_quiet "git restore $pkg" git -C "$DOTFILES" checkout -- "$pkg/"
+  else
+    log "  ! stow $pkg: failed — resolve manually"
+  fi
+done <"$DOTFILES/.stow-packages"
 
-def detect_os() -> str:
-  """Detect the current OS. Returns 'macos', 'arch', or 'linux'."""
-  if sys.platform == "darwin":
-    return "macos"
-  if Path("/etc/arch-release").exists():
-    return "arch"
-  return "linux"
+# ── Default shell ─────────────────────────────────────
 
+zsh="$(command -v zsh 2>/dev/null || true)"
+if [[ -n "$zsh" && "$zsh" != "${SHELL:-}" ]]; then
+  if [[ -f /etc/shells ]] && ! grep -qx "$zsh" /etc/shells; then
+    echo "$zsh" | sudo tee -a /etc/shells >/dev/null
+  fi
+  sudo chsh -s "$zsh" "$(whoami)" || log "  ! Run manually: chsh -s $zsh"
+fi
 
-def stow_configs() -> None:
-  """Symlink config directories into $HOME via GNU Stow."""
-  for pkg in STOW_PACKAGES:
-    pkg_dir = DOTFILES / pkg
-    if not pkg_dir.is_dir():
-      log(f"  ! stow: package dir '{pkg}' not found, skipping")
-      continue
-    try:
-      run(f"stow --dir={DOTFILES} -t {HOME} --adopt {pkg}", quiet=True, context=f"stow {pkg}")
-      run(f"git -C {DOTFILES} checkout -- {pkg}/", quiet=True, context=f"git restore {pkg}")
-    except subprocess.CalledProcessError:
-      log(f"  ! stow {pkg}: failed — resolve manually")
-
-
-def set_default_shell() -> None:
-  """Set zsh as the user's login shell, reusing the cached sudo ticket."""
-  zsh = shutil.which("zsh")
-  if not zsh or os.environ.get("SHELL") == zsh:
-    return
-
-  shells = Path("/etc/shells")
-  if shells.exists() and zsh not in shells.read_text():
-    run(f'echo "{zsh}" | sudo tee -a /etc/shells >/dev/null')
-
-  try:
-    run(f"sudo chsh -s {zsh} {getpass.getuser()}")
-  except subprocess.CalledProcessError:
-    log(f"  ! Run manually: chsh -s {zsh}")
-
-
-def main() -> None:
-  """Entry point: install packages, stow configs, switch to zsh."""
-  print("\n  dotfiles\n")
-
-  os_type = detect_os()
-  if os_type == "macos":
-    if not has("brew"):
-      log("Installing Homebrew...")
-      run('/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"')
-    log("brew bundle...")
-    run(f"brew bundle --file={DOTFILES / 'Brewfile'}", quiet=True, context="brew bundle")
-  elif os_type == "arch":
-    run("sudo -v")
-    pkgs = (DOTFILES / "pkgs.arch").read_text().split()
-    log("pacman...")
-    run(f"sudo pacman -Sy --needed --noconfirm {' '.join(pkgs)}", quiet=True, context="pacman install")
-  else:
-    script = DOTFILES / "install-bins.sh"
-    if script.exists():
-      log("Running install-bins.sh...")
-      run(f"bash {script}")
-    else:
-      log(f"  ! {script} not found, skipping binary installs")
-  log("Packages installed")
-
-  stow_configs()
-  set_default_shell()
-
-  print("\n  Done! Run `exec zsh` to reload.\n")
-
-
-if __name__ == "__main__":
-  main()
+printf '\n  Done! Run `exec zsh` to reload.\n\n'
