@@ -2,6 +2,7 @@
 \.git
 \.gitignore
 \.stow-local-ignore
+\.stow-packages
 \.editorconfig
 README\.md
 install

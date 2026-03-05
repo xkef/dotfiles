@@ -25,7 +25,7 @@ fi
 # Re-stow
 info "Re-stowing packages..."
 cd "$DOTFILES_DIR"
-for dir in git zsh tmux nvim ghostty local; do
+for dir in $(cat "$DOTFILES_DIR/.stow-packages"); do
   if [ -d "$dir" ]; then
     stow -t "$HOME" --restow "$dir" 2>/dev/null && ok "  $dir" || true
   fi

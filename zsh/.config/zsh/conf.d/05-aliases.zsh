@@ -16,19 +16,6 @@ if command -v bat &>/dev/null; then
   alias catn='bat'
 fi
 
-# Git shortcuts (supplement OMZ git plugin)
-alias gs='git status -sb'
-alias gd='git diff'
-alias gds='git diff --staged'
-alias gc='git commit'
-alias gca='git commit --amend'
-alias gp='git push'
-alias gpl='git pull --rebase'
-alias gco='git checkout'
-alias gsw='git switch'
-alias gbr='git branch'
-alias glog='git log --oneline --graph --decorate -20'
-
 # Quick edit
 alias v='nvim'
 alias vi='nvim'

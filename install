@@ -13,7 +13,7 @@ from pathlib import Path
 
 DOTFILES = Path(__file__).resolve().parent
 HOME = Path.home()
-STOW_PACKAGES = ("git", "zsh", "tmux", "nvim", "ghostty", "local")
+STOW_PACKAGES = (DOTFILES / ".stow-packages").read_text().split()
 
 
 def log(msg: str) -> None:
