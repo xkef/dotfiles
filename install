@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-"""Dotfiles installer — auto-detects OS, installs packages from packages.toml, stows configs."""
-
-from __future__ import annotations
+"""Dotfiles installer — auto-detects OS, installs packages, stows configs."""
 
 import getpass
 import os
 import shutil
 import subprocess
 import sys
-import tomllib
 from pathlib import Path
+from subprocess import CompletedProcess
 
 DOTFILES = Path(__file__).resolve().parent
 HOME = Path.home()
@@ -17,234 +15,102 @@ STOW_PACKAGES = (DOTFILES / ".stow-packages").read_text().split()
 
 
 def log(msg: str) -> None:
-    """Print a status line."""
-    print(f"  {msg}")
+  """Print a status line."""
+  print(f"  {msg}")
 
 
-def run(cmd: str, quiet: bool = False) -> subprocess.CompletedProcess[str]:
-    """Run a shell command. When quiet, output is captured and shown only on failure."""
-    if not quiet:
-        return subprocess.run(cmd, shell=True, check=True)
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-    if result.returncode != 0:
-        output = (result.stdout + result.stderr).strip()
-        if output:
-            for line in output.splitlines()[-30:]:
-                log(f"    | {line}")
-        raise subprocess.CalledProcessError(
-            result.returncode, cmd, result.stdout, result.stderr
-        )
-    return result
+def run(cmd: str, quiet: bool = False, context: str = "") -> CompletedProcess[bytes] | CompletedProcess[str]:
+  """Run a shell command. When quiet, output is captured and shown only on failure."""
+  if not quiet:
+    return subprocess.run(cmd, shell=True, check=True)
+  result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+  if result.returncode != 0:
+    label = context or cmd
+    log(f"  ! {label} failed (exit {result.returncode})")
+    output = (result.stdout + result.stderr).strip()
+    if output:
+      for line in output.splitlines()[-30:]:
+        log(f"    | {line}")
+    raise subprocess.CalledProcessError(
+      result.returncode, cmd, result.stdout, result.stderr
+    )
+  return result
 
 
 def has(cmd: str) -> bool:
-    """Check if a command exists on PATH."""
-    return shutil.which(cmd) is not None
+  """Check if a command exists on PATH."""
+  return shutil.which(cmd) is not None
 
 
 def detect_os() -> str:
-    """Detect the current OS. Returns 'macos', 'arch', or 'unknown'."""
-    if sys.platform == "darwin":
-        return "macos"
-    if Path("/etc/arch-release").exists():
-        return "arch"
-    return "unknown"
-
-
-def load_packages() -> dict[str, dict]:
-    """Load package definitions from packages.toml."""
-    with open(DOTFILES / "packages.toml", "rb") as f:
-        return tomllib.load(f)
-
-
-def install_macos(packages: dict[str, dict]) -> None:
-    """Install packages via Homebrew (formulae and casks)."""
-    if not has("brew"):
-        log("Installing Homebrew...")
-        run(
-            '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-        )
-
-    brew = [v["brew"] for v in packages.values() if "brew" in v]
-    casks = [v["brew_cask"] for v in packages.values() if "brew_cask" in v]
-
-    if brew:
-        log("brew install...")
-        run(f"brew install {' '.join(brew)}", quiet=True)
-    if casks:
-        log("brew install --cask...")
-        run(f"brew install --cask {' '.join(casks)}", quiet=True)
-
-    _install_remaining_via_scripts(packages, skip_keys=("brew", "brew_cask"))
-
-
-def install_arch(packages: dict[str, dict]) -> None:
-    """Install packages via pacman, then scripts for the rest."""
-    pkgs = [v["pacman"] for v in packages.values() if "pacman" in v]
-    log("pacman...")
-    run(f"sudo pacman -Sy --needed --noconfirm {' '.join(pkgs)}", quiet=True)
-
-    _install_remaining_via_scripts(packages, skip_keys=("pacman",))
-
-
-def _install_remaining_via_scripts(
-    packages: dict[str, dict], skip_keys: tuple[str, ...] = ()
-) -> None:
-    """Run install scripts for packages not covered by the given package manager keys."""
-    local_bin = HOME / ".local" / "bin"
-    local_bin.mkdir(parents=True, exist_ok=True)
-    os.environ["PATH"] = f"{local_bin}:{os.environ.get('PATH', '')}"
-
-    for name, pkg in packages.items():
-        if any(k in pkg for k in skip_keys):
-            continue
-        if "script" not in pkg:
-            log(f"  ! {name}: no install method available")
-            continue
-        bin_name = pkg.get("bin", name)
-        if has(bin_name):
-            continue
-        log(f"Installing {name} via script...")
-        try:
-            run(pkg["script"], quiet=True)
-        except subprocess.CalledProcessError as e:
-            log(f"  ! {name}: install failed (exit {e.returncode})")
-
-
-def install_packages() -> None:
-    """Detect OS, acquire sudo once if needed, then install all packages."""
-    packages = load_packages()
-    os_type = detect_os()
-
-    if os_type == "arch":
-        run("sudo -v")
-
-    if os_type == "macos":
-        install_macos(packages)
-    elif os_type == "arch":
-        install_arch(packages)
-    else:
-        _install_remaining_via_scripts(packages)
-
-    log("Packages installed")
-
-
-def _clear_stow_conflicts(pkg: str) -> None:
-    """Remove files and symlinks in HOME that would block stow for *pkg*."""
-    pkg_dir = DOTFILES / pkg
-    for src in pkg_dir.rglob("*"):
-        if src.is_dir() and not src.is_symlink():
-            continue
-        rel = src.relative_to(pkg_dir)
-        target = HOME / rel
-        # Remove broken symlinks in parent directories
-        for parent in target.parents:
-            if parent == HOME:
-                break
-            if parent.is_symlink() and not parent.is_dir():
-                parent.unlink()
-        # Remove conflicting file or symlink at the target path
-        if target.is_symlink() or (target.exists() and not target.is_dir()):
-            target.unlink()
+  """Detect the current OS. Returns 'macos', 'arch', or 'linux'."""
+  if sys.platform == "darwin":
+    return "macos"
+  if Path("/etc/arch-release").exists():
+    return "arch"
+  return "linux"
 
 
 def stow_configs() -> None:
-    """Symlink config directories into $HOME via GNU Stow."""
-    os.chdir(DOTFILES)
-    for pkg in STOW_PACKAGES:
-        if (DOTFILES / pkg).is_dir():
-            try:
-                run(f"stow -t {HOME} -D {pkg}", quiet=True)
-            except subprocess.CalledProcessError:
-                pass
-            _clear_stow_conflicts(pkg)
-            try:
-                run(f"stow -t {HOME} {pkg}", quiet=True)
-            except subprocess.CalledProcessError:
-                log(f"  ! {pkg} (stow failed — resolve manually)")
-
-
-def ensure_dir(path: Path) -> None:
-    """Ensure path is a directory, removing broken symlinks or files blocking it."""
+  """Symlink config directories into $HOME via GNU Stow."""
+  for pkg in STOW_PACKAGES:
+    pkg_dir = DOTFILES / pkg
+    if not pkg_dir.is_dir():
+      log(f"  ! stow: package dir '{pkg}' not found, skipping")
+      continue
     try:
-        rel = path.relative_to(HOME)
-    except ValueError:
-        path.mkdir(parents=True, exist_ok=True)
-        return
-    current = HOME
-    for part in rel.parts:
-        current = current / part
-        if current.is_symlink() and not current.is_dir():
-            current.unlink()
-        elif not current.is_symlink() and current.exists() and not current.is_dir():
-            current.unlink()
-    path.mkdir(parents=True, exist_ok=True)
-
-
-def setup_bat_themes() -> None:
-    """Install syntax themes for bat/delta, sourced from the theme script."""
-    theme_cmd = DOTFILES / "local/.local/bin/theme"
-    result = subprocess.run(
-        [str(theme_cmd), "--bat-sources"],
-        capture_output=True, text=True,
-    )
-    if result.returncode != 0 or not result.stdout.strip():
-        return
-    themes_dir = Path(os.environ.get("XDG_CONFIG_HOME", HOME / ".config")) / "bat/themes"
-    ensure_dir(themes_dir)
-    changed = False
-    for line in result.stdout.strip().splitlines():
-        name, url = line.split("\t", 1)
-        dest = themes_dir / name
-        if dest.exists():
-            continue
-        log(f"Downloading {name}...")
-        run(f'curl -fsSL -o "{dest}" "{url}"', quiet=True)
-        changed = True
-    if changed and has("bat"):
-        log("Rebuilding bat theme cache...")
-        run("bat cache --build", quiet=True)
-
-
-def setup_plugins() -> None:
-    """Clone zinit (zsh plugin manager) if not already present."""
-    xdg_data = Path(os.environ.get("XDG_DATA_HOME", HOME / ".local/share"))
-
-    zinit = xdg_data / "zinit/zinit.git"
-    if not zinit.exists():
-        log("Cloning zinit...")
-        ensure_dir(zinit.parent)
-        run(f"git clone --quiet https://github.com/zdharma-continuum/zinit.git {zinit}")
+      run(f"stow --dir={DOTFILES} -t {HOME} --adopt {pkg}", quiet=True, context=f"stow {pkg}")
+      run(f"git -C {DOTFILES} checkout -- {pkg}/", quiet=True, context=f"git restore {pkg}")
+    except subprocess.CalledProcessError:
+      log(f"  ! stow {pkg}: failed — resolve manually")
 
 
 def set_default_shell() -> None:
-    """Set zsh as the user's login shell, reusing the cached sudo ticket."""
-    zsh = shutil.which("zsh")
-    if not zsh or os.environ.get("SHELL") == zsh:
-        return
+  """Set zsh as the user's login shell, reusing the cached sudo ticket."""
+  zsh = shutil.which("zsh")
+  if not zsh or os.environ.get("SHELL") == zsh:
+    return
 
-    shells = Path("/etc/shells")
-    if shells.exists() and zsh not in shells.read_text():
-        run(f'echo "{zsh}" | sudo tee -a /etc/shells >/dev/null')
+  shells = Path("/etc/shells")
+  if shells.exists() and zsh not in shells.read_text():
+    run(f'echo "{zsh}" | sudo tee -a /etc/shells >/dev/null')
 
-    try:
-        run(f"sudo chsh -s {zsh} {getpass.getuser()}")
-    except subprocess.CalledProcessError:
-        log(f"  ! Run manually: chsh -s {zsh}")
+  try:
+    run(f"sudo chsh -s {zsh} {getpass.getuser()}")
+  except subprocess.CalledProcessError:
+    log(f"  ! Run manually: chsh -s {zsh}")
 
 
 def main() -> None:
-    """Entry point: install packages, stow configs, set up plugins, switch to zsh."""
-    print("\n  dotfiles\n")
+  """Entry point: install packages, stow configs, switch to zsh."""
+  print("\n  dotfiles\n")
 
-    install_packages()
-    stow_configs()
-    setup_bat_themes()
-    setup_plugins()
-    set_default_shell()
+  os_type = detect_os()
+  if os_type == "macos":
+    if not has("brew"):
+      log("Installing Homebrew...")
+      run('/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"')
+    log("brew bundle...")
+    run(f"brew bundle --file={DOTFILES / 'Brewfile'}", quiet=True, context="brew bundle")
+  elif os_type == "arch":
+    run("sudo -v")
+    pkgs = (DOTFILES / "pkgs.arch").read_text().split()
+    log("pacman...")
+    run(f"sudo pacman -Sy --needed --noconfirm {' '.join(pkgs)}", quiet=True, context="pacman install")
+  else:
+    script = DOTFILES / "install-bins.sh"
+    if script.exists():
+      log("Running install-bins.sh...")
+      run(f"bash {script}")
+    else:
+      log(f"  ! {script} not found, skipping binary installs")
+  log("Packages installed")
 
-    print("\n  Done! Run `exec zsh` to reload.\n")
+  stow_configs()
+  set_default_shell()
+
+  print("\n  Done! Run `exec zsh` to reload.\n")
 
 
 if __name__ == "__main__":
-    main()
+  main()

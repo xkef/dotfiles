@@ -251,6 +251,21 @@ reload_tmux() {
   tmux refresh-client -S 2>/dev/null || true
 }
 
+# ── Bat theme management ─────────────────────────────────
+
+ensure_bat_theme() {
+  command -v bat &>/dev/null || return 0
+  local url
+  url=$(bat_theme_url "$bat_theme")
+  [[ -n "$url" ]] || return 0
+  local themes_dir="${XDG_CONFIG_HOME:-$HOME/.config}/bat/themes"
+  local dest="$themes_dir/${bat_theme}.tmTheme"
+  [[ -f "$dest" ]] && return 0
+  mkdir -p "$themes_dir"
+  curl -fsSL -o "$dest" "$url" 2>/dev/null || return 0
+  bat cache --build &>/dev/null
+}
+
 # ── Apply ────────────────────────────────────────────────
 
 apply_theme() {
@@ -265,10 +280,10 @@ apply_theme() {
   fi
 
   apply_terminal_colors
+  ensure_bat_theme
   write_current "$name" "$background" "$bat_theme" "$nvim_scheme"
   update_ghostty "$ghostty_theme"
 
-  # Reload running tools
   reload_neovim "$nvim_scheme" "$background"
   reload_tmux
 
@@ -291,15 +306,6 @@ case "${1:-}" in
     for t in "${THEMES[@]}"; do
       theme_config "$t" 2>/dev/null
       echo "$t:$background"
-    done
-    ;;
-  --bat-sources)
-    for t in "${THEMES[@]}"; do
-      theme_config "$t" 2>/dev/null
-      url=$(bat_theme_url "$bat_theme")
-      if [[ -n "$url" ]]; then
-        printf '%s.tmTheme\t%s\n' "$bat_theme" "$url"
-      fi
     done
     ;;
   --help|-h)
