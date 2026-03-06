@@ -6,10 +6,10 @@
 set -euo pipefail
 
 SEARCH_DIRS=(
-  "$HOME/projects"
+  "$HOME/code"
   "$HOME/work"
   "$HOME/personal"
-  "$HOME/.config"
+  "$HOME"
 )
 
 if [[ $# -eq 1 ]]; then
