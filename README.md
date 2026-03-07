@@ -36,11 +36,11 @@ Same physical key. Ctrl is the only difference.
 
 ## Finding keybindings
 
-| Where      | How          | What                                     |
-|------------|--------------|------------------------------------------|
-| **tmux**   | `prefix + ?` | Keybinding reference (floating popup)    |
-| **Neovim** | `leader + ?` | Keybinding reference (floating terminal) |
-| **Shell**  | `Ctrl-G`     | navi interactive cheatsheets (commands)  |
+| Where      | How          | What                                  |
+|------------|--------------|---------------------------------------|
+| **tmux**   | `prefix + ?` | Keybinding reference (floating popup) |
+| **Neovim** | `Space` + ?  | which-key discovery popup             |
+| **Shell**  | `Ctrl-G`     | navi interactive cheatsheets          |
 
 ---
 
