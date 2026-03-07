@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 set -e
 
-PROFILE="$HOME/.local/bin/.claude/claude-sandbox.sb"
+if [[ "$(uname)" == "Darwin" ]]; then
+  PROFILE="$HOME/.local/bin/.claude/claude-sandbox.sb"
 
-exec sandbox-exec \
-  -D "CWD=$(pwd)" \
-  -D "HOME=$HOME" \
-  -D "CLAUDE_HOME=$HOME/.claude" \
-  -D "CLAUDE_JSON=$HOME/.claude.json" \
-  -D "CLAUDE_AUTH=$HOME/.config/claude-code" \
-  -D "LOCAL_BIN=$HOME/.local/bin" \
-  -D "GIT_CONFIG=$HOME/.config/git" \
-  -f "$PROFILE" \
-  claude "$@"
+  exec sandbox-exec \
+    -D "CWD=$(pwd)" \
+    -D "HOME=$HOME" \
+    -D "CLAUDE_HOME=$HOME/.claude" \
+    -D "CLAUDE_JSON=$HOME/.claude.json" \
+    -D "CLAUDE_AUTH=$HOME/.config/claude-code" \
+    -D "LOCAL_BIN=$HOME/.local/bin" \
+    -D "GIT_CONFIG=$HOME/.config/git" \
+    -f "$PROFILE" \
+    claude "$@"
+else
+  exec claude "$@"
+fi

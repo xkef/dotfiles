@@ -12,16 +12,17 @@ on Arch, pre-built binaries elsewhere). Then it symlinks configs via stow and se
 
 ## What's included
 
-| Tool                                                                             | What it does                                  |
-|----------------------------------------------------------------------------------|-----------------------------------------------|
-| [Zsh](https://www.zsh.org) + [zinit](https://github.com/zdharma-continuum/zinit) | Shell with fast plugin loading                |
-| [Starship](https://starship.rs)                                                  | Minimal, cross-shell prompt                   |
-| [Neovim](https://neovim.io) + lazy.nvim                                          | Editor, no distro                             |
-| [tmux](https://github.com/tmux/tmux)                                             | Terminal multiplexer with vim navigation      |
-| [Ghostty](https://ghostty.org)                                                   | GPU-accelerated terminal                      |
-| [fzf](https://github.com/junegunn/fzf)                                           | Fuzzy finder everywhere (shell, tmux, neovim) |
-| [atuin](https://atuin.sh)                                                        | Searchable shell history with sync            |
-| eza, bat, fd, ripgrep, zoxide                                                    | Modern unix replacements                      |
+| Tool                                                                             | What it does                                           |
+|----------------------------------------------------------------------------------|--------------------------------------------------------|
+| [Zsh](https://www.zsh.org) + [zinit](https://github.com/zdharma-continuum/zinit) | Shell with fast plugin loading                         |
+| [Starship](https://starship.rs)                                                  | Minimal, cross-shell prompt                            |
+| [Neovim](https://neovim.io) + lazy.nvim                                          | Editor, no distro                                      |
+| [tmux](https://github.com/tmux/tmux)                                             | Terminal multiplexer with vim navigation               |
+| [Ghostty](https://ghostty.org)                                                   | GPU-accelerated terminal                               |
+| [fzf](https://github.com/junegunn/fzf)                                           | Fuzzy finder everywhere (shell, tmux, neovim)          |
+| [atuin](https://atuin.sh)                                                        | Searchable shell history with sync                     |
+| [Claude Code](https://claude.ai/)                                                | AI coding agent with Seatbelt sandbox and custom hooks |
+| eza, bat, fd, ripgrep, zoxide                                                    | Modern unix replacements                               |
 
 ---
 
