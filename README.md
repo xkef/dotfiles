@@ -12,19 +12,16 @@ on Arch, pre-built binaries elsewhere). Then it symlinks configs via stow and se
 
 ## What's included
 
-| Category     | Tool                                                                                    | Why                         |
-|--------------|-----------------------------------------------------------------------------------------|-----------------------------|
-| **Shell**    | Zsh + [zinit](https://github.com/zdharma-continuum/zinit)                               | Turbo-loaded plugins        |
-| **Prompt**   | [Starship](https://starship.rs)                                                         | Cross-shell, fast           |
-| **Editor**   | Neovim + lazy.nvim                                                                      | No distro, explicit config  |
-| **Mux**      | tmux                                                                                    | Vim nav, fzf sessions       |
-| **Terminal** | [Ghostty](https://ghostty.org)                                                          | GPU rendering, OSC 52       |
-| **Git**      | [delta](https://github.com/dandavison/delta)                                            | Histogram diffs, zdiff3     |
-| **Fuzzy**    | [fzf](https://github.com/junegunn/fzf) + [snacks](https://github.com/folke/snacks.nvim) | Shell/tmux + Neovim picker  |
-| **History**  | [atuin](https://atuin.sh)                                                               | Ranked search, sync         |
-| **CLI**      | eza, bat, fd, ripgrep, zoxide                                                           | Rust UNIX replacements      |
-| **Cheats**   | [navi](https://github.com/denisidoro/navi)                                              | Interactive cheatsheets     |
-| **AI**       | [Claude Code](https://github.com/anthropics/claude-code)                                | Global `CLAUDE.md` via stow |
+| Tool                                                                             | What it does                                  |
+|----------------------------------------------------------------------------------|-----------------------------------------------|
+| [Zsh](https://www.zsh.org) + [zinit](https://github.com/zdharma-continuum/zinit) | Shell with fast plugin loading                |
+| [Starship](https://starship.rs)                                                  | Minimal, cross-shell prompt                   |
+| [Neovim](https://neovim.io) + lazy.nvim                                          | Editor, no distro                             |
+| [tmux](https://github.com/tmux/tmux)                                             | Terminal multiplexer with vim navigation      |
+| [Ghostty](https://ghostty.org)                                                   | GPU-accelerated terminal                      |
+| [fzf](https://github.com/junegunn/fzf)                                           | Fuzzy finder everywhere (shell, tmux, neovim) |
+| [atuin](https://atuin.sh)                                                        | Searchable shell history with sync            |
+| eza, bat, fd, ripgrep, zoxide                                                    | Modern unix replacements                      |
 
 ---
 
@@ -39,13 +36,11 @@ Same physical key. Ctrl is the only difference.
 
 ## Finding keybindings
 
-| Where      | How                 | What                                        |
-|------------|---------------------|---------------------------------------------|
-| **tmux**   | `prefix + ?`        | Keybinding reference (floating popup)       |
-| **Neovim** | `Space ?`           | Keybinding reference (floating terminal)    |
-| **Neovim** | `Space` + wait      | which-key discovery popup                   |
-| **Shell**  | `Ctrl-G`            | navi interactive cheatsheets (commands)     |
-| **Shell**  | `keys`              | Same keybinding reference as above          |
+| Where      | How          | What                                     |
+|------------|--------------|------------------------------------------|
+| **tmux**   | `prefix + ?` | Keybinding reference (floating popup)    |
+| **Neovim** | `leader + ?` | Keybinding reference (floating terminal) |
+| **Shell**  | `Ctrl-G`     | navi interactive cheatsheets (commands)  |
 
 ---
 
