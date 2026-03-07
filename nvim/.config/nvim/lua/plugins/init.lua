@@ -175,7 +175,7 @@ return {
       scope        = { enabled = false },
       scroll       = { enabled = false },
       statuscolumn = { enabled = false },
-      terminal     = { enabled = true },
+      terminal     = { enabled = true, win = { style = "float" } },
       words        = { enabled = false },
     },
     keys = {
@@ -188,8 +188,16 @@ return {
       { "<leader>sG", function() Snacks.picker.grep_word() end, desc = "Grep word under cursor" },
       { "<leader>sr", function() Snacks.picker.resume() end,    desc = "Resume search" },
       { "<leader>gs", function() Snacks.lazygit() end,          desc = "Lazygit" },
-      { "<leader>?",  function() Snacks.terminal("keys") end,  desc = "Keybinding reference" },
+      { "<leader>?",  function() require("which-key").show() end, desc = "Which-key (all keybindings)" },
+      { "<leader>t",  function() Snacks.terminal() end,        desc = "Floating terminal" },
     },
+  },
+
+  -- Which-key (keybinding discovery, press leader and wait)
+  {
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    opts = {},
   },
 
   -- Auto-close brackets/quotes
