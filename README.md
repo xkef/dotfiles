@@ -39,7 +39,7 @@ Same physical key. Ctrl is the only difference.
 | Where      | How          | What                                  |
 |------------|--------------|---------------------------------------|
 | **tmux**   | `prefix + ?` | Keybinding reference (floating popup) |
-| **Neovim** | `Space` + ?  | which-key discovery popup             |
+| **Neovim** | `Space + ?`  | which-key discovery popup             |
 | **Shell**  | `Ctrl-G`     | navi interactive cheatsheets          |
 
 ---
