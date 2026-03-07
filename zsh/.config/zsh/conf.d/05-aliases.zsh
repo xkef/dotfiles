@@ -27,6 +27,9 @@ alias ta='tmux attach -t'
 alias tn='tmux new -s'
 alias tl='tmux list-sessions'
 
+# Claude
+alias claude='claude-sandboxed'
+
 # Misc
 alias reload='exec zsh'
 alias ..='cd ..'

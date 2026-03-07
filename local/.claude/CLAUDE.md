@@ -1,3 +1,11 @@
+# Sandbox restrictions
+
+This session runs inside a macOS Seatbelt sandbox. Only the current working directory, `~/.claude/`,
+`~/.config/claude-code/`, `~/.config/git/`, and `~/.local/bin/` are accessible. Everything else under `$HOME` is
+blocked at the OS level. Do not attempt to read, search, or traverse paths outside these allowed directories — the
+commands will silently return nothing. If the user asks about files outside the sandbox, inform them of the restriction
+and suggest they run the command directly in their terminal.
+
 # Always use skills when available
 
 Before performing any action, check if there's a relevant skill available and use it immediately:
@@ -73,7 +81,8 @@ to help." Just answer the question concisely.
 
 # Planning notes
 
-Plan files under `.claude-notes/` are local-only scratch space. Never commit them. Never delete them unless explicitly instructed.
+Plan files under `.claude-notes/` are local-only scratch space. Never commit them. Never delete them unless explicitly
+instructed.
 
 # How to deal with hallucinations
 

@@ -6,21 +6,20 @@
   },
   "permissions": {
     "allow": [
-      "Bash(git diff*)",
-      "Bash(git log*)",
-      "Bash(git show*)",
-      "Bash(git status*)",
-      "Bash(git branch*)",
-      "Bash(git stash list*)",
-      "Bash(rg *)",
-      "Bash(fd *)",
-      "Bash(ls *)",
-      "Bash(wc *)",
-      "Skill(commit)"
+      "Bash",
+      "Read(./**)",
+      "Edit(./**)",
+      "MultiEdit(./**)",
+      "Write(./**)",
+      "Skill(commit)",
+      "Fetch"
     ],
     "deny": [
       "Bash(*rm -rf*)",
       "Bash(*git push --force*)",
+      "Bash(*git merge*)",
+      "Bash(*git rebase*)",
+      "Bash(*git reset --hard*)",
       "Bash(*> .env*)",
       "Bash(*> .env.*)"
     ]
