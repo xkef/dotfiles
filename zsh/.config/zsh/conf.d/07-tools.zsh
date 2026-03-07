@@ -1,5 +1,10 @@
 # ── Tool initialization ──────────────────────────────
 
+autoload -Uz zmv
+
+auto-ls() { eza --group-directories-first 2>/dev/null || ls --color=auto; }
+chpwd_functions+=( auto-ls )
+
 # Homebrew
 if [[ -f /opt/homebrew/bin/brew ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"

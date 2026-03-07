@@ -107,6 +107,7 @@
 	cp = cherry-pick
 	unstage = reset HEAD --
 	last = log -1 HEAD
+	ds = diff --shortstat
 	lg = log --oneline --graph --decorate --all -20
 	ll = log --pretty=format:'%C(yellow)%h%Creset %C(blue)%ad%Creset %C(green)%an%Creset %s%C(red)%d%Creset' --date=short
 	wip = !git add -A && git commit -m 'wip: checkpoint'

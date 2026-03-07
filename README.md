@@ -101,11 +101,16 @@ Same physical key. Ctrl is the only difference.
 | `s` | Flash jump — jump anywhere in 2 keystrokes |
 | `S` | Flash treesitter — jump to any syntax node |
 
-**Git:**
+**Git (gitsigns):**
 
-| Key  | Action  |
-|------|---------|
-| `gs` | Lazygit |
+| Key  | Action              |
+|------|---------------------|
+| `gs` | Lazygit             |
+| `]h` | Next hunk           |
+| `[h` | Prev hunk           |
+| `hp` | Preview hunk diff   |
+| `hr` | Reset (revert) hunk |
+| `hd` | Diff buffer         |
 
 **LSP:**
 
@@ -148,6 +153,48 @@ Same physical key. Ctrl is the only difference.
 | `fkill`                          | fzf process killer                     |
 | `theme [name\|--list\|--toggle]` | Switch terminal/editor theme           |
 | `dotfiles-update`                | Pull, re-stow, update all plugins      |
+
+---
+
+## Zsh line editing
+
+ZLE (Zsh Line Editor) in emacs mode (`bindkey -e`). The built-in bindings
+below are always active. Custom bindings (`Ctrl-Z`, `Ctrl-X Ctrl-E`,
+magic-space) are added in `04-keys.zsh`. Alt keys require Option-as-Meta
+in the terminal (Ghostty enables this by default via `macos-option-as-alt`).
+
+`Ctrl-P`/`Ctrl-N` and arrow keys are rebound to prefix history search.
+`Ctrl-R` is handled by atuin.
+
+**Movement:**
+
+| Key      | Action            |
+|----------|-------------------|
+| `Ctrl-A` | Beginning of line |
+| `Ctrl-E` | End of line       |
+| `Alt-F`  | Forward one word  |
+| `Alt-B`  | Backward one word |
+
+**Editing:**
+
+| Key                | Action                          |
+|--------------------|---------------------------------|
+| `Ctrl-W`           | Delete word backward            |
+| `Alt-D`            | Delete word forward             |
+| `Ctrl-K`           | Kill to end of line             |
+| `Ctrl-U`           | Kill entire line                |
+| `Ctrl-Y`           | Yank (paste) last killed text   |
+| `Ctrl-T`           | Transpose characters            |
+| `Ctrl-Z`           | Undo last edit on command line  |
+| `Ctrl-X Ctrl-E`    | Edit command in nvim            |
+| `Space` after `!!` | Expand history reference inline |
+
+**Extras:**
+
+| Key / Command           | Action                      |
+|-------------------------|-----------------------------|
+| `zmv '(*).txt' '$1.md'` | Batch rename files          |
+| (auto)                  | Auto-ls on directory change |
 
 ---
 
