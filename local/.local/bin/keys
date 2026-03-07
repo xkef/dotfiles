@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# If stdout is a terminal, self-page. -R: ANSI colors, -i: case-insensitive search
+if [[ -t 1 ]]; then
+  exec "$0" | less -Ri
+fi
+
+# Colors (ANSI 16 — follows terminal theme)
+R='\033[0m'        # reset
+B='\033[1m'        # bold
+D='\033[2m'        # dim
+K='\033[1m'        # key color (bold)
+H='\033[1;36m'     # heading (cyan)
+S='\033[1;44;97m'  # section (white on blue bg)
+Q='\033[2;37m'     # quiet (dim white)
+
+key() { printf "  ${K}%-18s${R} %s\n" "$1" "$2"; }
+gap() { printf "  ${D}%-18s${R}\n" ""; }
+section() { printf "\n ${S} %s ${R}\n\n" "$1"; }
+heading() { printf "\n ${H}%s${R}\n\n" "$1"; }
+note() { printf "  ${Q}%s${R}\n" "$1"; }
+
+# --- output ---
+
+printf "\n${B} Keybinding Reference${R}\n"
+printf " ${D}tmux prefix = ${B}Ctrl-Space${D}  |  nvim leader = ${B}Space${R}\n"
+
+section "tmux  Ctrl-Space +"
+
+key "| / -"          "Split right / down"
+key "h/j/k/l"        "Navigate panes"
+key "H/J/K/L"        "Resize pane (repeatable)"
+key "Ctrl-Space"     "Toggle last window (double-tap)"
+key "Tab"            "Last window"
+key "n / p"          "Next / previous window"
+key "c"              "New window"
+gap
+key "f"              "Sessionizer (fzf project picker)"
+key "F"              "Switch session (fzf popup)"
+key "w"              "Switch window, all sessions"
+key "g"              "Lazygit (floating popup)"
+key "?"              "This reference (floating popup)"
+gap
+key "S"              "New named session"
+key "s"              "Browse sessions"
+key "Enter"          "Enter copy mode"
+key "/"              "Copy mode + search"
+
+heading "Copy mode"
+note "v select  V line  Ctrl-v block  y yank  Y yank-EOL"
+echo
+key "H / L"          "Start / end of line"
+key "/ / ?"          "Search forward / backward"
+key "Ctrl-u / d"     "Half page up / down"
+
+section "Neovim  Space +"
+
+heading "Files and search"
+key "Space"          "Alternate file (last buffer)"
+key "- / e"          "File browser (nvim-tree)"
+key "ff"             "Find files"
+key "fr"             "Recent files"
+key "fb"             "Buffers"
+key "fh"             "Help tags"
+key "/"              "Live grep"
+key "sG"             "Grep word under cursor"
+key "sr"             "Resume last search"
+key "S"              "Search and replace (grug-far)"
+key "sR"             "Search and replace at cursor"
+gap
+key "ha"             "Harpoon add"
+key "hh"             "Harpoon menu"
+key "1-4"            "Jump to harpoon mark"
+
+heading "Navigation"
+key "s"              "Flash jump (2 keystrokes)"
+key "S"              "Flash treesitter (syntax node)"
+
+heading "Git"
+key "gs"             "Lazygit"
+key "]h / [h"        "Next / prev hunk"
+key "hp"             "Preview hunk diff"
+key "hr"             "Reset (revert) hunk"
+key "hd"             "Diff buffer"
+
+heading "LSP"
+key "gd"             "Go to definition"
+key "gr"             "References"
+key "gI"             "Implementation"
+key "gy"             "Type definition"
+key "K"              "Hover"
+key "ca"             "Code action"
+key "cr"             "Rename"
+key "cf"             "Format"
+key "e"              "Diagnostic float"
+key "[d / ]d"        "Prev / next diagnostic"
+
+heading "Other"
+key "?"              "This keybinding reference"
+key "Up / Down"      "Prev / next quickfix entry"
+key "Left / Right"   "Prev / next quickfix file"
+key "zz"             "Strip trailing whitespace"
+key "v"              "Reselect last visual"
+key "J / K (visual)" "Move selection down / up"
+key "Space+p (vis)"  "Paste without losing register"
+
+section "Shell"
+
+heading "Functions"
+key "fe"             "fzf file finder, open in editor"
+key "frg"            "ripgrep + fzf, jump to line"
+key "fbr"            "fzf git branch switcher"
+key "flog"           "fzf git log browser"
+key "fkill"          "fzf process killer"
+key "g"              "git status / git command"
+key "mcd <dir>"      "mkdir + cd"
+key "root"           "cd to git repo root"
+key "envup [file]"   "Load .env into shell"
+key "theme"          "Switch terminal / editor theme"
+key "dotfiles-update" "Pull, re-stow, update plugins"
+key "keys"           "This reference"
+
+heading "Zsh line editing"
+note "Ctrl-R atuin  |  Ctrl-G navi  |  Ctrl-P/N prefix history"
+echo
+key "Ctrl-T"         "File search (fzf)"
+key "Ctrl-X d"       "Directory jump (fzf)"
+key "Ctrl-G"         "Navi cheatsheet"
+gap
+key "Ctrl-A / E"     "Beginning / end of line"
+key "Alt-F / B"      "Forward / backward one word"
+key "Ctrl-W"         "Delete word backward"
+key "Alt-D"          "Delete word forward"
+key "Ctrl-K"         "Kill to end of line"
+key "Ctrl-U"         "Kill entire line"
+key "Ctrl-Y"         "Yank last killed text"
+key "Ctrl-Z"         "Undo last edit"
+key "Ctrl-X Ctrl-E"  "Edit command in nvim"
+key "!! then Space"  "Expand history inline"
+key "Esc Esc"        "Sudo last command"
+
+echo

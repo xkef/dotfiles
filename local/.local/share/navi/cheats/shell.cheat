@@ -1,0 +1,74 @@
+% shell, fzf functions
+
+# Find and open file in editor (fzf)
+fe
+
+# Live grep with fzf (ripgrep -> fzf -> editor)
+frg
+
+# Git branch switcher (fzf)
+fbr
+
+# Git log browser (fzf)
+flog
+
+# Kill process (fzf)
+fkill
+
+% shell, functions
+
+# Git status (no args) or git command
+g <args>
+
+# Make directory and cd into it
+mcd <dirname>
+
+# cd to git repo root
+root
+
+# Load .env file into shell
+envup <envfile>
+
+# Show what's listening on a port
+whats-on-port <port>
+
+# Kill process on a port
+kill-port <port>
+
+$ port: echo '3000 5000 8000 8080 9000' | tr ' ' '\n'
+$ envfile: echo '.env .env.local .env.development' | tr ' ' '\n'
+
+% shell, theme
+
+# Switch terminal + editor theme
+theme <theme_name>
+
+# List available themes
+theme --list
+
+# Toggle dark/light variant
+theme --toggle
+
+$ theme_name: theme --completions 2>/dev/null
+
+% shell, aliases
+
+# Reload shell
+reload
+
+# Batch rename files (zmv)
+zmv '<src_pattern>' '<dst_pattern>'
+
+# Update dotfiles (pull, re-stow, update plugins)
+dotfiles-update
+
+% shell, navigation
+
+# Auto-cd: just type a directory name (no cd needed)
+# AUTO_CD is enabled
+
+# Directory stack: cd pushes to stack
+# Use cd -1, cd -2, etc. to go back
+
+# Smart cd (zoxide): cd uses frecency
+# Learns as you navigate

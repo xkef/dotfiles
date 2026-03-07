@@ -1,0 +1,84 @@
+% zsh, movement (emacs mode)
+
+# Beginning of line
+# Ctrl-A
+
+# End of line
+# Ctrl-E
+
+# Forward one word
+# Alt-F
+
+# Backward one word
+# Alt-B
+
+% zsh, editing
+
+# Delete word backward
+# Ctrl-W
+
+# Delete word forward
+# Alt-D
+
+# Kill to end of line
+# Ctrl-K
+
+# Kill entire line
+# Ctrl-U
+
+# Yank (paste) last killed text
+# Ctrl-Y
+
+# Transpose characters
+# Ctrl-T
+
+# Undo last edit
+# Ctrl-Z
+
+# Edit command in nvim
+# Ctrl-X Ctrl-E
+
+# Expand history reference inline (!! etc.)
+# Space after !! (magic-space)
+
+% zsh, history
+
+# Search history (atuin)
+# Ctrl-R
+
+# Previous history match (prefix)
+# Ctrl-P or Up arrow
+
+# Next history match (prefix)
+# Ctrl-N or Down arrow
+
+# Prefix a command with space to exclude from history
+# HIST_IGNORE_SPACE is enabled
+
+% zsh, fzf keybindings
+
+# File search (Ctrl-T)
+# Ctrl-T — bat preview, recent files first
+
+# Navi interactive cheatsheet
+# Ctrl-G
+
+# Toggle preview in fzf
+# Ctrl-/
+
+# Copy selection in fzf
+# Ctrl-Y
+
+# Half page up/down in fzf
+# Ctrl-U / Ctrl-D
+
+% zsh, misc
+
+# Sudo last command
+# press Escape twice (OMZ sudo plugin)
+
+# "Did you mean?" correction
+# CORRECT is enabled — suggests fixes for typos
+
+# Extended glob operators
+# ^ (not), ~ (except), # (repeat) — EXTENDED_GLOB enabled

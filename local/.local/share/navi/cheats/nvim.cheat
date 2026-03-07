@@ -1,0 +1,132 @@
+% nvim, leader is Space
+
+# Find files
+# Space ff
+
+# Live grep
+# Space /
+
+# Grep word under cursor
+# Space sG
+
+# Recent files
+# Space fr
+
+# Buffers
+# Space fb
+
+# Help tags
+# Space fh
+
+# Resume last search
+# Space sr
+
+# Search & replace (grug-far)
+# Space S
+
+# Search & replace word under cursor
+# Space sR
+
+% nvim, navigation
+
+# Flash jump (2-keystroke jump anywhere)
+# s
+
+# Flash treesitter (jump to syntax node)
+# S
+
+# File browser (nvim-tree)
+# Space e or -
+
+# Alternate file (last buffer)
+# Space Space
+
+# Harpoon add
+# Space ha
+
+# Harpoon menu
+# Space hh
+
+# Jump to harpoon 1/2/3/4
+# Space 1-4
+
+% nvim, git (gitsigns)
+
+# Lazygit
+# Space gs
+
+# Next hunk
+# ]h
+
+# Previous hunk
+# [h
+
+# Preview hunk diff
+# Space hp
+
+# Reset (revert) hunk
+# Space hr
+
+# Diff buffer
+# Space hd
+
+% nvim, lsp
+
+# Go to definition
+# gd
+
+# References
+# gr
+
+# Implementation
+# gI
+
+# Type definition
+# gy
+
+# Hover
+# K
+
+# Code action
+# Space ca
+
+# Rename
+# Space cr
+
+# Format
+# Space cf
+
+# Diagnostic float
+# Space e
+
+# Prev/next diagnostic
+# [d / ]d
+
+% nvim, other
+
+# Quickfix prev/next entry
+# Up / Down
+
+# Quickfix prev/next file
+# Left / Right
+
+# Move selection down/up (visual mode)
+# J / K
+
+# Paste without losing register (visual)
+# Space p
+
+# Reselect last visual
+# Space v
+
+# Strip trailing whitespace
+# Space zz
+
+# Show file path
+# Space p
+
+# Smart pane navigation (tmux-aware)
+# Ctrl-h/j/k/l
+
+# Center after page-down/up
+# Ctrl-d / Ctrl-u

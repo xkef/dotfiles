@@ -99,3 +99,5 @@ install_bin zoxide   bash -c 'curl -sSfL https://raw.githubusercontent.com/ajeet
 install_bin starship bash -c "curl -sS https://starship.rs/install.sh | sh -s -- -y -b '$BIN'"
 install_bin ghostty  bash -c 'curl -fsSL https://raw.githubusercontent.com/mkasberg/ghostty-ubuntu/HEAD/install.sh | bash'
 install_bin atuin    bash -c "curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh"
+install_bin navi     bash -c \
+    "curl -fsSL https://raw.githubusercontent.com/denisidoro/navi/master/scripts/install | BIN_DIR='$BIN' bash"

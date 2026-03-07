@@ -1,0 +1,99 @@
+% git, basics
+
+# Status (short)
+git status -sb
+
+# Add all changes
+git add -A
+
+# Add file interactively
+git add -p <file>
+
+# Commit
+git commit
+
+# Commit with message
+git commit -m "<message>"
+
+# Amend last commit (no edit)
+git amend
+
+# Undo last commit (keep changes staged)
+git undo
+
+# WIP checkpoint (add all + commit)
+git wip
+
+# Diff (staged)
+git diff --cached
+
+# Diff (unstaged)
+git diff
+
+# Diff stats only
+git ds
+
+# Log (graph, 20 entries)
+git lg
+
+# Log (oneline, author, date)
+git ll
+
+% git, branches
+
+# Switch branch (fzf)
+fbr
+
+# List branches by recency
+git branches
+
+# Create and switch to new branch
+git switch -c <branch_name>
+
+# Delete merged branches
+git cleanup
+
+# Merge branch into current
+git merge <branch>
+
+# Rebase onto branch
+git rebase <branch>
+
+# Interactive git log browser (fzf)
+flog
+
+$ branch: git branch --format='%(refname:short)' --- --preview 'git log --oneline --graph --color=always {}'
+$ file: git diff --name-only --- --preview 'git diff --color=always -- {}'
+
+% git, remote
+
+# Push (auto-setup remote tracking)
+git push
+
+# Pull (rebase)
+git pull
+
+# Fetch all remotes (prune)
+git fetch
+
+% git, stash
+
+# Stash changes
+git stash
+
+# Pop last stash
+git stash pop
+
+# List stashes
+git stash list
+
+% git, worktree
+
+# List worktrees
+git wtl
+
+# Add worktree
+git wta <path> <branch>
+
+# Remove worktree
+git wtr <path>

@@ -31,3 +31,8 @@ fi
 if command -v atuin &>/dev/null; then
   eval "$(atuin init zsh --disable-up-arrow)"
 fi
+
+# navi (interactive cheatsheet — Ctrl+G)
+if command -v navi &>/dev/null; then
+  eval "$(navi widget zsh)"
+fi

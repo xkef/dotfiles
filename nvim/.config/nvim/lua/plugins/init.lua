@@ -175,7 +175,7 @@ return {
       scope        = { enabled = false },
       scroll       = { enabled = false },
       statuscolumn = { enabled = false },
-      terminal     = { enabled = false },
+      terminal     = { enabled = true },
       words        = { enabled = false },
     },
     keys = {
@@ -188,6 +188,7 @@ return {
       { "<leader>sG", function() Snacks.picker.grep_word() end, desc = "Grep word under cursor" },
       { "<leader>sr", function() Snacks.picker.resume() end,    desc = "Resume search" },
       { "<leader>gs", function() Snacks.lazygit() end,          desc = "Lazygit" },
+      { "<leader>?",  function() Snacks.terminal("keys") end,  desc = "Keybinding reference" },
     },
   },
 
