@@ -34,6 +34,7 @@ copy-on-select = clipboard
 
 # ── Mouse ─────────────────────────────────────────────
 mouse-hide-while-typing = true
+link-url = true
 
 # ── Terminal ──────────────────────────────────────────
 scrollback-limit = 50000
