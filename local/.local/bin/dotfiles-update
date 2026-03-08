@@ -7,26 +7,28 @@ log() { printf '  %s\n' "$1"; }
 
 printf '\n  Updating dotfiles...\n\n'
 
-# Pull latest
 if [[ -d "$DOTFILES_DIR/.git" ]]; then
   log "Pulling latest changes..."
   git -C "$DOTFILES_DIR" pull --rebase 2>/dev/null || true
 fi
 
-# Re-stow (same logic as install)
 log "Re-stowing packages..."
 find "$DOTFILES_DIR" -name .DS_Store -delete 2>/dev/null
 while IFS= read -r pkg; do
   [[ -z "$pkg" || ! -d "$DOTFILES_DIR/$pkg" ]] && continue
   stow --dir="$DOTFILES_DIR" -t "$HOME" --adopt "$pkg" 2>/dev/null || true
   git -C "$DOTFILES_DIR" checkout -- "$pkg/" 2>/dev/null || true
-done < "$DOTFILES_DIR/.stow-packages"
+done <"$DOTFILES_DIR/.stow-packages"
 
-# Update plugins
 log "Updating neovim plugins..."
 nvim --headless "+Lazy! sync" +qa 2>/dev/null || true
 
-# Regenerate theme
+log "Formatting lazy-lock.json..."
+lazy_lock="$DOTFILES_DIR/nvim/.config/nvim/lazy-lock.json"
+if [[ -f "$lazy_lock" ]] && command -v jq &>/dev/null; then
+  jq --sort-keys . "$lazy_lock" >"$lazy_lock.tmp" && mv "$lazy_lock.tmp" "$lazy_lock"
+fi
+
 if command -v theme &>/dev/null; then
   log "Regenerating theme..."
   theme "$(sed -n 's/^name=//p' "$HOME/.config/theme/current" 2>/dev/null || echo catppuccin-mocha)" >/dev/null 2>&1 || true
