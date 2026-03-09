@@ -13,6 +13,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
     -D "LOCAL_BIN=$HOME/.local/bin" \
     -D "GIT_CONFIG=$HOME/.config/git" \
     -D "DOTFILES=$HOME/dots" \
+    -D "M2_REPO=$HOME/.m2" \
     -f "$PROFILE" \
     claude "$@"
 else
