@@ -3,6 +3,7 @@ set -e
 
 if [[ "$(uname)" == "Darwin" ]]; then
   PROFILE="$HOME/.local/bin/.claude/claude-sandbox.sb"
+  DOTFILES_DIR="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir")}"
 
   exec sandbox-exec \
     -D "CWD=$(pwd)" \
@@ -12,7 +13,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
     -D "CLAUDE_AUTH=$HOME/.config/claude-code" \
     -D "LOCAL_BIN=$HOME/.local/bin" \
     -D "GIT_CONFIG=$HOME/.config/git" \
-    -D "DOTFILES=$HOME/dots" \
+    -D "DOTFILES=$DOTFILES_DIR" \
     -D "M2_REPO=$HOME/.m2" \
     -f "$PROFILE" \
     claude "$@"

@@ -21,6 +21,11 @@ if command -v bat &>/dev/null; then
   export MANROFFOPT="-c"
 fi
 
+# Dotfiles
+if [[ -z "${DOTFILES_DIR:-}" && -f "$HOME/.config/dotfiles/dir" ]]; then
+  export DOTFILES_DIR="$(<"$HOME/.config/dotfiles/dir")"
+fi
+
 # Path
 typeset -U path
 path=(

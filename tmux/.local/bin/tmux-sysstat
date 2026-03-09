@@ -5,7 +5,12 @@ set -euo pipefail
 readonly SMOOTH="${TMPDIR:-/tmp}/tmux-sysstat-smooth"
 
 # ── CPU (normalized 0–100%, smoothed) ────────────────
-raw=$(ps -A -o %cpu= | awk -v c="$(sysctl -n hw.logicalcpu)" '{s+=$1} END {printf "%.0f", s/c}')
+if [[ "$(uname)" == Darwin ]]; then
+  ncpu=$(sysctl -n hw.logicalcpu)
+else
+  ncpu=$(nproc)
+fi
+raw=$(ps -A -o %cpu= | awk -v c="$ncpu" '{s+=$1} END {printf "%.0f", s/c}')
 ((raw > 100)) && raw=100
 
 prev=${raw}
@@ -14,15 +19,20 @@ cpu=$(awk "BEGIN {printf \"%.0f\", 0.3 * $raw + 0.7 * $prev}")
 echo "$cpu" >"$SMOOTH"
 
 # ── Memory (used / total) ────────────────────────────
-page_size=$(sysctl -n hw.pagesize)
-total=$(sysctl -n hw.memsize)
-eval "$(vm_stat | awk -F: '
-  /Pages active/             { gsub(/[^0-9]/,"",$2); print "active="   $2 }
-  /Pages wired/              { gsub(/[^0-9]/,"",$2); print "wired="    $2 }
-  /occupied by compressor/   { gsub(/[^0-9]/,"",$2); print "compressed=" $2 }
-')"
-compressed=${compressed:-0}
-used=$(((active + wired + compressed) * page_size))
+if [[ "$(uname)" == Darwin ]]; then
+  page_size=$(sysctl -n hw.pagesize)
+  total=$(sysctl -n hw.memsize)
+  eval "$(vm_stat | awk -F: '
+    /Pages active/             { gsub(/[^0-9]/,"",$2); print "active="   $2 }
+    /Pages wired/              { gsub(/[^0-9]/,"",$2); print "wired="    $2 }
+    /occupied by compressor/   { gsub(/[^0-9]/,"",$2); print "compressed=" $2 }
+  ')"
+  compressed=${compressed:-0}
+  used=$(((active + wired + compressed) * page_size))
+else
+  eval "$(awk '/^MemTotal:/ {print "total="$2*1024} /^MemAvailable:/ {print "avail="$2*1024}' /proc/meminfo)"
+  used=$((total - avail))
+fi
 mem_pct=$((used * 100 / total))
 ((mem_pct > 100)) && mem_pct=100
 

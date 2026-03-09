@@ -1,4 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# https://docs.claude.com/en/docs/claude-code/hooks#notification
-terminal-notifier -title "Claude" -subtitle "Notification" -activate com.mitchellh.ghostty -message "$(jq -r .message)"
+msg=$(jq -r .message)
+
+if command -v terminal-notifier &>/dev/null; then
+  terminal-notifier -title Claude -subtitle Notification \
+    -activate com.mitchellh.ghostty -message "$msg"
+elif command -v notify-send &>/dev/null; then
+  notify-send Claude "$msg"
+fi
