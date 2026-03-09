@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-if [[ "$(uname)" == "Darwin" ]]; then
-  PROFILE="$HOME/.local/bin/.claude/claude-sandbox.sb"
-  DOTFILES_DIR="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir")}"
+DOTFILES_DIR="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir")}"
 
+if [[ "$(uname)" == "Darwin" ]]; then
   exec sandbox-exec \
     -D "CWD=$(pwd)" \
     -D "HOME=$HOME" \
@@ -15,8 +14,28 @@ if [[ "$(uname)" == "Darwin" ]]; then
     -D "GIT_CONFIG=$HOME/.config/git" \
     -D "DOTFILES=$DOTFILES_DIR" \
     -D "M2_REPO=$HOME/.m2" \
-    -f "$PROFILE" \
+    -f "$HOME/.local/bin/.claude/claude-sandbox.sb" \
+    claude "$@"
+elif command -v bwrap &>/dev/null; then
+  exec bwrap \
+    --ro-bind / / \
+    --dev /dev \
+    --proc /proc \
+    --tmpfs /tmp \
+    --tmpfs "$HOME" \
+    --bind "$(pwd)" "$(pwd)" \
+    --bind "$HOME/.claude" "$HOME/.claude" \
+    --bind "$HOME/.claude.json" "$HOME/.claude.json" \
+    --bind "$HOME/.config/claude-code" "$HOME/.config/claude-code" \
+    --bind "$HOME/.m2" "$HOME/.m2" \
+    --ro-bind "$HOME/.local/bin" "$HOME/.local/bin" \
+    --ro-bind "$HOME/.config/git" "$HOME/.config/git" \
+    --ro-bind "$HOME/.config/dotfiles" "$HOME/.config/dotfiles" \
+    --ro-bind "$DOTFILES_DIR" "$DOTFILES_DIR" \
     claude "$@"
 else
+  printf '\033[33m⚠ WARNING: No sandbox available (install sandbox-exec or bwrap)\033[0m\n' >&2
+  read -r -p "Continue without sandbox? [y/N] " reply
+  [[ "$reply" =~ ^[Yy]$ ]] || exit 1
   exec claude "$@"
 fi
