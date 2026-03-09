@@ -9,7 +9,9 @@
   "permissions": {
     "allow": [
       "Bash",
-      "Read(./**)",
+      "Read",
+      "Grep",
+      "Glob",
       "Edit(./**)",
       "MultiEdit(./**)",
       "Write(./**)",
@@ -29,7 +31,6 @@
       "Bash(*> .env.*)"
     ]
   },
-  "model": "opus",
   "hooks": {
     "Notification": [
       {
@@ -105,5 +106,6 @@
   },
   "alwaysThinkingEnabled": true,
   "autoUpdatesChannel": "stable",
-  "plansDirectory": ".claude-notes"
+  "plansDirectory": ".claude-notes",
+  "effortLevel": "high"
 }

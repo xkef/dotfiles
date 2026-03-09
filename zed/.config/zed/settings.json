@@ -1,0 +1,215 @@
+{
+  "agent_buffer_font_size": 14.0,
+  "ui_font_weight": 850.0,
+  "buffer_line_height": "standard",
+  "vim_mode": true,
+  "relative_line_numbers": "enabled",
+  "cursor_shape": "block",
+  "cursor_blink": false,
+  "current_line_highlight": "all",
+
+  "theme": "Nord Dark",
+
+  "icon_theme": "Catppuccin Icons",
+
+  "buffer_font_family": "JetBrainsMono Nerd Font",
+  "buffer_font_size": 14.0,
+  "buffer_font_weight": 600.0,
+  "ui_font_family": "JetBrainsMono Nerd Font",
+  "ui_font_size": 14.0,
+
+  "tab_size": 2,
+  "hard_tabs": false,
+  "format_on_save": "on",
+  "autosave": { "after_delay": { "milliseconds": 1000 } },
+  "ensure_final_newline_on_save": true,
+  "remove_trailing_whitespace_on_save": true,
+
+  "colorize_brackets": true,
+  "indent_guides": {
+    "enabled": true,
+    "line_width": 1,
+    "active_line_width": 2,
+    "coloring": "indent_aware",
+    "background_coloring": "indent_aware",
+  },
+
+  "minimap": {
+    "show": "auto",
+    "thumb": "always",
+  },
+
+  "scrollbar": {
+    "show": "auto",
+    "cursors": true,
+    "git_diff": true,
+    "search_results": true,
+    "selected_symbol": true,
+    "diagnostics": "all",
+  },
+
+  "tabs": {
+    "file_icons": true,
+    "git_status": true,
+    "close_position": "right",
+    "activate_on_close": "history",
+    "show_close_button": "hover",
+    "show_diagnostics": "errors",
+  },
+
+  "toolbar": {
+    "breadcrumbs": true,
+    "quick_actions": true,
+    "selections_menu": true,
+  },
+
+  "file_icons": true,
+  "vertical_scroll_margin": 8,
+  "selection_highlight": true,
+  "rounded_selection": true,
+  "show_whitespaces": "boundary",
+  "soft_wrap": "preferred_line_length",
+  "preferred_line_length": 120,
+  "show_wrap_guides": true,
+
+  "inlay_hints": {
+    "enabled": true,
+    "show_type_hints": true,
+    "show_parameter_hints": true,
+  },
+
+  "gutter": {
+    "line_numbers": true,
+    "code_actions": true,
+    "runnables": true,
+    "folds": true,
+  },
+
+  "git": {
+    "inline_blame": { "enabled": true, "delay_ms": 500 },
+    "git_gutter": "tracked_files",
+  },
+
+  "terminal": {
+    "font_weight": 850.0,
+    "font_family": "JetBrainsMono Nerd Font",
+    "font_size": 14,
+    "line_height": "comfortable",
+    "cursor_shape": "block",
+    "blinking": "off",
+    "shell": { "program": "zsh" },
+  },
+
+  "project_panel": {
+    "dock": "left",
+    "default_width": 260,
+    "auto_fold_dirs": true,
+    "git_status": true,
+  },
+
+  "outline_panel": {
+    "dock": "right",
+    "default_width": 260,
+  },
+
+  "auto_install_extensions": {
+    "java": true,
+    "kotlin": true,
+    "groovy": true,
+    "xml": true,
+    "toml": true,
+    "sql": true,
+    "html": true,
+    "basher": true,
+    "dockerfile": true,
+    "docker-compose": true,
+    "make": true,
+    "env": true,
+    "ini": true,
+    "csv": true,
+    "log": true,
+    "editorconfig": true,
+    "git-firefly": true,
+    "emmet": true,
+    "snippets": true,
+    "rainbow-csv": true,
+    "dependi": true,
+    "catppuccin": true,
+    "catppuccin-icons": true,
+    "tokyo-night": true,
+    "rose-pine-theme": true,
+    "gruvbox-material": true,
+    "nord": true,
+  },
+
+  "languages": {
+    "Java": {
+      "tab_size": 4,
+      "hard_tabs": false,
+      "format_on_save": "on",
+      "preferred_line_length": 120,
+    },
+    "Kotlin": {
+      "tab_size": 4,
+      "hard_tabs": false,
+      "format_on_save": "on",
+    },
+    "JSON": {
+      "tab_size": 2,
+      "format_on_save": "on",
+    },
+    "YAML": {
+      "tab_size": 2,
+    },
+    "Markdown": {
+      "soft_wrap": "preferred_line_length",
+      "preferred_line_length": 100,
+    },
+  },
+
+  "lsp": {
+    "jdtls": {
+      "settings": {
+        "java": {
+          "format": {
+            "enabled": true,
+            "settings": {
+              "tabSize": 4,
+              "insertSpaces": true,
+            },
+          },
+          "completion": {
+            "importOrder": ["java", "javax", "org", "com", ""],
+            "favoriteStaticMembers": [
+              "org.junit.Assert.*",
+              "org.junit.jupiter.api.Assertions.*",
+              "org.mockito.Mockito.*",
+              "org.mockito.ArgumentMatchers.*",
+            ],
+          },
+          "sources": {
+            "organizeImports": {
+              "starThreshold": 5,
+              "staticStarThreshold": 3,
+            },
+          },
+          "codeGeneration": {
+            "toString": {
+              "template": "${object.className}{${member.name()}=${member.value}, ${otherMembers}}",
+            },
+            "useBlocks": true,
+            "generateComments": false,
+          },
+          "saveActions": {
+            "organizeImports": true,
+          },
+        },
+      },
+    },
+  },
+
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false,
+  },
+}
