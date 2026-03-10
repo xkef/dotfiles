@@ -21,9 +21,10 @@ command -v eza &>/dev/null && compdef _files eza
 # fzf-tab (must load after compinit)
 zinit light Aloxaf/fzf-tab
 
-# Syntax highlighting and autosuggestions
-zinit light zdharma-continuum/fast-syntax-highlighting
-zinit light zsh-users/zsh-autosuggestions
+# Syntax highlighting and autosuggestions (deferred for faster startup)
+zinit wait lucid for \
+  zdharma-continuum/fast-syntax-highlighting \
+  zsh-users/zsh-autosuggestions
 
 # Essential OMZ snippets
 zinit snippet OMZP::git

@@ -36,7 +36,7 @@ export FZF_DEFAULT_OPTS=" \
   --color=fg:-1,bg:-1,hl:6,fg+:-1,bg+:8,hl+:6:bold \
   --color=info:5,prompt:4,pointer:4,marker:2,spinner:5,header:3,border:8,gutter:-1 \
   --bind 'ctrl-/:toggle-preview' \
-  --bind 'ctrl-y:execute-silent(echo -n {+} | pbcopy 2>/dev/null || echo -n {+} | xclip -sel clip 2>/dev/null)' \
+  --bind 'ctrl-y:execute-silent(echo -n {+} | pbcopy 2>/dev/null || echo -n {+} | wl-copy 2>/dev/null || echo -n {+} | xclip -sel clip 2>/dev/null)' \
   --bind 'ctrl-d:half-page-down,ctrl-u:half-page-up'"
 
 # Ctrl-T: file search with bat preview, path-aware scoring

@@ -2,7 +2,15 @@
 
 autoload -Uz zmv
 
-auto-ls() { eza --group-directories-first 2>/dev/null || ls --color=auto; }
+auto-ls() {
+  if (( $+commands[eza] )); then
+    eza --group-directories-first
+  elif [[ "$OSTYPE" == darwin* ]]; then
+    command ls -G
+  else
+    command ls --color=auto
+  fi
+}
 chpwd_functions+=( auto-ls )
 
 # zoxide (smart cd)
@@ -28,4 +36,11 @@ fi
 # navi (interactive cheatsheet — Ctrl+G)
 if command -v navi &>/dev/null; then
   eval "$(navi widget zsh)"
+fi
+
+# nvm (Node version manager — lazy-loaded)
+export NVM_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/nvm"
+if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+  source "$NVM_DIR/nvm.sh" --no-use
+  source "$NVM_DIR/bash_completion" 2>/dev/null
 fi

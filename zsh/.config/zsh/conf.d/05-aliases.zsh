@@ -5,6 +5,10 @@ if command -v eza &>/dev/null; then
   alias ll='eza -la --group-directories-first --git'
   alias lt='eza -T --level=2'
   alias la='eza -a --group-directories-first'
+elif [[ "$OSTYPE" == darwin* ]]; then
+  alias ls='ls -G'
+  alias ll='ls -Gla'
+  alias la='ls -Ga'
 else
   alias ls='ls --color=auto'
   alias ll='ls -la'
