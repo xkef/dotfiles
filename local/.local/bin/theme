@@ -173,26 +173,23 @@ _send_osc() {
   fi
 }
 
-_put_template() {
-  _send_osc "$(printf '\033]4;%d;rgb:%s\033\\' "$@")"
-}
-
-_put_template_var() {
-  _send_osc "$(printf '\033]%d;rgb:%s\033\\' "$@")"
-}
-
 _hex_rgb() { echo "${1:0:2}/${1:2:2}/${1:4:2}"; }
 
 apply_terminal_colors() {
   [[ -t 0 ]] || return 0  # skip if not interactive
 
-  local i
+  # Build all OSC sequences into a single string, then write once per
+  # tty. This reduces 19 separate writes to 1 (significant in tmux
+  # with multiple clients).
+  local seq="" i
   for i in {0..15}; do
-    _put_template "$i" "$(_hex_rgb "${palette[$i]}")"
+    seq+=$(printf '\033]4;%d;rgb:%s\033\\' "$i" "$(_hex_rgb "${palette[$i]}")")
   done
-  _put_template_var 10 "$(_hex_rgb "$theme_fg")"
-  _put_template_var 11 "$(_hex_rgb "$theme_bg")"
-  _put_template_var 12 "$(_hex_rgb "$theme_cursor")"
+  seq+=$(printf '\033]10;rgb:%s\033\\' "$(_hex_rgb "$theme_fg")")
+  seq+=$(printf '\033]11;rgb:%s\033\\' "$(_hex_rgb "$theme_bg")")
+  seq+=$(printf '\033]12;rgb:%s\033\\' "$(_hex_rgb "$theme_cursor")")
+
+  _send_osc "$seq"
 }
 
 write_current() {
