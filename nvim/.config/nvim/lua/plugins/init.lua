@@ -309,7 +309,9 @@ return {
       { "<leader>3",  function() require("harpoon"):list():select(3) end,                                          desc = "Harpoon 3" },
       { "<leader>4",  function() require("harpoon"):list():select(4) end,                                          desc = "Harpoon 4" },
     },
-    opts = {},
+    config = function()
+      require("harpoon"):setup()
+    end,
   },
 
   -- Statusline
