@@ -102,10 +102,20 @@ theme_config() {
       nvim_scheme="nord"
       background="dark"
       bat_theme="Nord"
-      pair="nord"
+      pair="nord-light"
       palette=(3b4252 bf616a a3be8c ebcb8b 81a1c1 b48ead 88c0d0 e5e9f0
                4c566a bf616a a3be8c ebcb8b 81a1c1 b48ead 8fbcbb eceff4)
       theme_bg=2e3440 theme_fg=d8dee9 theme_cursor=d8dee9
+      ;;
+    nord-light)
+      ghostty_theme="Nord Light"
+      nvim_scheme="nord"
+      background="light"
+      bat_theme="OneHalfLight"
+      pair="nord"
+      palette=(e5e9f0 bf616a a3be8c ebcb8b 81a1c1 b48ead 88c0d0 3b4252
+               d8dee9 bf616a a3be8c ebcb8b 81a1c1 b48ead 8fbcbb 2e3440)
+      theme_bg=eceff4 theme_fg=2e3440 theme_cursor=4c566a
       ;;
     *) return 1 ;;
   esac
@@ -121,6 +131,7 @@ THEMES=(
   gruvbox-dark
   gruvbox-light
   nord
+  nord-light
 )
 
 # ── Bat theme sources (non-builtin themes that need downloading) ──
@@ -215,19 +226,20 @@ update_ghostty() {
   [[ -f "$GHOSTTY_CONFIG" ]] || return 0
   local tmp
   tmp=$(mktemp)
-  awk -v theme="$ghostty_theme" '/^theme = /{$0="theme = " theme} {print}' \
-    "$GHOSTTY_CONFIG" > "$tmp"
-  cat "$tmp" > "$GHOSTTY_CONFIG"
-  rm "$tmp"
+  sed "s/^theme = .*/theme = $ghostty_theme/" "$GHOSTTY_CONFIG" > "$tmp"
+  mv "$tmp" "$GHOSTTY_CONFIG"
 }
 
 reload_neovim() {
   local scheme="$1" bg="$2"
-  local runtime_dir="${XDG_RUNTIME_DIR:-/tmp}"
-  for sock in "$runtime_dir"/nvim.*.0; do
-    [[ -S "$sock" ]] || continue
-    nvim --server "$sock" --remote-send \
-      "<Cmd>set background=$bg<CR><Cmd>colorscheme $scheme<CR>" 2>/dev/null || true
+  local dir
+  for dir in "${XDG_RUNTIME_DIR:-}" "${TMPDIR:-}" "/tmp"; do
+    [[ -n "$dir" && -d "$dir" ]] || continue
+    for sock in "$dir"/nvim.*.0; do
+      [[ -S "$sock" ]] || continue
+      nvim --server "$sock" --remote-send \
+        "<Cmd>set background=$bg<CR><Cmd>colorscheme $scheme<CR>" 2>/dev/null || true
+    done
   done
 }
 
@@ -299,7 +311,11 @@ case "${1:-}" in
   --toggle|-t)
     current=$(current_theme)
     if theme_config "$current"; then
-      apply_theme "$pair"
+      if [[ -z "$pair" ]]; then
+        echo "No alternate variant for $current"
+      else
+        apply_theme "$pair"
+      fi
     fi
     ;;
   --completions)
