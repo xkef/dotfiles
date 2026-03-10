@@ -15,7 +15,6 @@
 [core]
 	editor = nvim
 	pager = delta
-	excludesfile = ~/.config/git/ignore
 	autocrlf = input
 	whitespace = trailing-space,space-before-tab
 
@@ -66,7 +65,6 @@
 
 # ── Push / Pull / Fetch ─────────────────────────────
 [push]
-	default = simple
 	autoSetupRemote = true
 	followTags = true
 
@@ -81,6 +79,7 @@
 # ── Commit ───────────────────────────────────────────
 [commit]
 	verbose = true
+	template = ~/.config/git/message
 
 # ── Help ─────────────────────────────────────────────
 [help]

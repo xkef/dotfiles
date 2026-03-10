@@ -9,7 +9,6 @@ Thumbs.db
 
 # Local overrides (not tracked)
 zsh/.config/zsh/local.zsh
-git/.config/git/config.local
 __pycache__/
 
 .idea/
@@ -18,3 +17,4 @@ __pycache__/
 /nvim/.config/nvim/lazyvim.json
 /.claude/settings.local.json
 *.tmTheme
+/git/.config/git/config.local
