@@ -41,7 +41,7 @@ theme_config() {
       ghostty_theme="TokyoNight"
       nvim_scheme="tokyonight-night"
       background="dark"
-      bat_theme="tokyonight_night"
+      bat_theme="OneHalfDark"
       pair="tokyonight-day"
       palette=(15161e f7768e 9ece6a e0af68 7aa2f7 bb9af7 7dcfff a9b1d6
                414868 f7768e 9ece6a e0af68 7aa2f7 bb9af7 7dcfff c0caf5)
@@ -51,7 +51,7 @@ theme_config() {
       ghostty_theme="TokyoNight Day"
       nvim_scheme="tokyonight-day"
       background="light"
-      bat_theme="tokyonight_day"
+      bat_theme="OneHalfLight"
       pair="tokyonight"
       palette=(e9e9ed f52a65 587539 8c6c3e 2e7de9 9854f1 007197 6172b0
                a1a6c5 f52a65 587539 8c6c3e 2e7de9 9854f1 007197 3760bf)
@@ -61,7 +61,7 @@ theme_config() {
       ghostty_theme="Rose Pine"
       nvim_scheme="rose-pine"
       background="dark"
-      bat_theme="rose-pine"
+      bat_theme="Sublime Snazzy"
       pair="rose-pine-dawn"
       palette=(26233a eb6f92 31748f f6c177 9ccfd8 c4a7e7 ebbcba e0def4
                6e6a86 eb6f92 31748f f6c177 9ccfd8 c4a7e7 ebbcba e0def4)
@@ -71,7 +71,7 @@ theme_config() {
       ghostty_theme="Rose Pine Dawn"
       nvim_scheme="rose-pine-dawn"
       background="light"
-      bat_theme="rose-pine-dawn"
+      bat_theme="OneHalfLight"
       pair="rose-pine"
       palette=(f2e9e1 b4637a 286983 ea9d34 56949f 907aa9 d7827e 575279
                9893a5 b4637a 286983 ea9d34 56949f 907aa9 d7827e 575279)
@@ -133,19 +133,6 @@ THEMES=(
   nord
   nord-light
 )
-
-# ── Bat theme sources (non-builtin themes that need downloading) ──
-
-bat_theme_url() {
-  case "$1" in
-    "Catppuccin Mocha") echo "https://raw.githubusercontent.com/catppuccin/bat/main/themes/Catppuccin%20Mocha.tmTheme" ;;
-    "Catppuccin Latte") echo "https://raw.githubusercontent.com/catppuccin/bat/main/themes/Catppuccin%20Latte.tmTheme" ;;
-    "tokyonight_night") echo "https://raw.githubusercontent.com/folke/tokyonight.nvim/main/extras/sublime/tokyonight_night.tmTheme" ;;
-    "tokyonight_day")   echo "https://raw.githubusercontent.com/folke/tokyonight.nvim/main/extras/sublime/tokyonight_day.tmTheme" ;;
-    "rose-pine")        echo "https://raw.githubusercontent.com/rose-pine/tm-theme/main/dist/rose-pine.tmTheme" ;;
-    "rose-pine-dawn")   echo "https://raw.githubusercontent.com/rose-pine/tm-theme/main/dist/rose-pine-dawn.tmTheme" ;;
-  esac
-}
 
 # ── Helpers ──────────────────────────────────────────────
 
@@ -263,21 +250,6 @@ reload_tmux() {
   tmux refresh-client -S 2>/dev/null || true
 }
 
-# ── Bat theme management ─────────────────────────────────
-
-ensure_bat_theme() {
-  command -v bat &>/dev/null || return 0
-  local url
-  url=$(bat_theme_url "$bat_theme")
-  [[ -n "$url" ]] || return 0
-  local themes_dir="${XDG_CONFIG_HOME:-$HOME/.config}/bat/themes"
-  local dest="$themes_dir/${bat_theme}.tmTheme"
-  [[ -f "$dest" ]] && return 0
-  mkdir -p "$themes_dir"
-  curl -fsSL -o "$dest" "$url" 2>/dev/null || return 0
-  bat cache --build &>/dev/null
-}
-
 # ── Apply ────────────────────────────────────────────────
 
 apply_theme() {
@@ -292,7 +264,6 @@ apply_theme() {
   fi
 
   apply_terminal_colors
-  ensure_bat_theme
   write_current "$name" "$background" "$bat_theme" "$nvim_scheme"
   update_ghostty "$ghostty_theme"
 
