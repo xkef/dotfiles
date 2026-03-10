@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# CPU + memory for tmux status-right
+# CPU + memory for tmux status-right (optimized for minimal forks)
 set -euo pipefail
 
 readonly SMOOTH="${TMPDIR:-/tmp}/tmux-sysstat-smooth"
+readonly OS=$(uname)
 
 # ── CPU (normalized 0–100%, smoothed) ────────────────
-if [[ "$(uname)" == Darwin ]]; then
+if [[ "$OS" == Darwin ]]; then
   ncpu=$(sysctl -n hw.logicalcpu)
 else
   ncpu=$(nproc)
@@ -19,19 +20,18 @@ cpu=$(awk "BEGIN {printf \"%.0f\", 0.3 * $raw + 0.7 * $prev}")
 echo "$cpu" >"$SMOOTH"
 
 # ── Memory (used / total) ────────────────────────────
-if [[ "$(uname)" == Darwin ]]; then
-  page_size=$(sysctl -n hw.pagesize)
-  total=$(sysctl -n hw.memsize)
-  eval "$(vm_stat | awk -F: '
-    /Pages active/             { gsub(/[^0-9]/,"",$2); print "active="   $2 }
-    /Pages wired/              { gsub(/[^0-9]/,"",$2); print "wired="    $2 }
-    /occupied by compressor/   { gsub(/[^0-9]/,"",$2); print "compressed=" $2 }
-  ')"
-  compressed=${compressed:-0}
-  used=$(((active + wired + compressed) * page_size))
+if [[ "$OS" == Darwin ]]; then
+  read -r page_size total <<< "$(sysctl -n hw.pagesize hw.memsize)"
+  used=$(vm_stat | awk -v ps="$page_size" '
+    /Pages active/           { gsub(/[^0-9]/,"",$NF); a=$NF }
+    /Pages wired/            { gsub(/[^0-9]/,"",$NF); w=$NF }
+    /occupied by compressor/ { gsub(/[^0-9]/,"",$NF); c=$NF }
+    END { printf "%.0f", (a + w + c) * ps }')
 else
-  eval "$(awk '/^MemTotal:/ {print "total="$2*1024} /^MemAvailable:/ {print "avail="$2*1024}' /proc/meminfo)"
-  used=$((total - avail))
+  read -r total used <<< "$(awk '
+    /^MemTotal:/     { t=$2*1024 }
+    /^MemAvailable:/ { a=$2*1024 }
+    END { printf "%.0f %.0f", t, t-a }' /proc/meminfo)"
 fi
 mem_pct=$((used * 100 / total))
 ((mem_pct > 100)) && mem_pct=100
@@ -39,10 +39,9 @@ mem_pct=$((used * 100 / total))
 used_g=$(awk "BEGIN {printf \"%.1f\", $used / 1073741824}")
 total_g=$(awk "BEGIN {printf \"%.0f\", $total / 1073741824}")
 
-# ── Colors ────────────────────────────────────────────
+# ── Output ────────────────────────────────────────────
 cc="colour8"
 ((cpu >= 80)) && cc="colour1"
 
-# ── Output ────────────────────────────────────────────
 printf '#[fg=%s]%3d%%  #[fg=colour8]%s/%sG' \
   "$cc" "$cpu" "$used_g" "$total_g"
