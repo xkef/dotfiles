@@ -59,6 +59,5 @@ format = '[$symbol$context(/$namespace)]($style) '
 symbol = '☸ '
 
 [cmd_duration]
-min_time = 0
-show_milliseconds = true
+min_time = 2000
 format = "[$duration](bold yellow) "
