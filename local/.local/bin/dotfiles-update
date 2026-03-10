@@ -14,11 +14,16 @@ fi
 
 log "Re-stowing packages..."
 find "$DOTFILES_DIR" -name .DS_Store -delete 2>/dev/null
-while IFS= read -r pkg; do
-  [[ -z "$pkg" || ! -d "$DOTFILES_DIR/$pkg" ]] && continue
-  stow --dir="$DOTFILES_DIR" -t "$HOME" --adopt "$pkg" 2>/dev/null || true
-  git -C "$DOTFILES_DIR" checkout -- "$pkg/" 2>/dev/null || true
-done <"$DOTFILES_DIR/.stow-packages"
+if ! git -C "$DOTFILES_DIR" diff --quiet 2>/dev/null; then
+  log "  ! Uncommitted changes — skipping stow (would overwrite work)"
+  log "    Commit or stash, then re-run."
+else
+  while IFS= read -r pkg; do
+    [[ -z "$pkg" || ! -d "$DOTFILES_DIR/$pkg" ]] && continue
+    stow --dir="$DOTFILES_DIR" -t "$HOME" --adopt "$pkg" 2>/dev/null || true
+    git -C "$DOTFILES_DIR" checkout -- "$pkg/" 2>/dev/null || true
+  done <"$DOTFILES_DIR/.stow-packages"
+fi
 
 log "Updating neovim plugins..."
 nvim --headless "+Lazy! sync" +qa 2>/dev/null || true

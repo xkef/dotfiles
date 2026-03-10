@@ -20,9 +20,9 @@ run_quiet() {
   local rc=$?
   log "  ! ${context} failed (exit $rc)"
   if [[ -n "$output" ]]; then
-    printf '%s\n' "$output" | tail -30 | while IFS= read -r line; do
+    while IFS= read -r line; do
       log "    | $line"
-    done
+    done <<< "$(printf '%s\n' "$output" | tail -30)"
   fi
   return $rc
 }
@@ -58,6 +58,13 @@ log "Packages installed"
 # ── Stow configs ──────────────────────────────────────
 
 find "$DOTFILES" -name .DS_Store -delete 2>/dev/null
+
+# --adopt + checkout overwrites uncommitted changes — abort if worktree is dirty.
+if [[ -d "$DOTFILES/.git" ]] && ! git -C "$DOTFILES" diff --quiet 2>/dev/null; then
+  log "  ! Uncommitted changes detected — commit or stash before running install."
+  log "    (--adopt would overwrite your in-progress work)"
+  exit 1
+fi
 
 while IFS= read -r pkg; do
   [[ -z "$pkg" ]] && continue
