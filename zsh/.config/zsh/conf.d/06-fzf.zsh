@@ -52,8 +52,19 @@ export FZF_ALT_C_OPTS=" \
   --preview 'eza -T --color=always --icons --level=2 {} 2>/dev/null || ls -la {}' \
   --preview-window 'right:50%:border-left'"
 
-# Source fzf shell integration (keybindings + completion)
-source <(fzf --zsh 2>/dev/null)
+# Source fzf shell integration (cached — regenerates when fzf binary changes)
+(){
+  local cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/eval-cache"
+  local bin=${commands[fzf]:-}
+  local f="$cache/fzf.zsh"
+  if [[ -n "$bin" ]]; then
+    if [[ ! -f "$f" || "$bin" -nt "$f" ]]; then
+      mkdir -p "$cache"
+      fzf --zsh > "$f" 2>/dev/null
+    fi
+    source "$f"
+  fi
+}
 
 # Directory picker: Ctrl-X d (alt-c broken on Swiss German Mac, Ctrl-G is navi)
 bindkey '^Xd' fzf-cd-widget

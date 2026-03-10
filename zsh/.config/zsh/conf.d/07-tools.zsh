@@ -13,34 +13,49 @@ auto-ls() {
 }
 chpwd_functions+=( auto-ls )
 
+# ── Cached eval ──────────────────────────────────────
+# Cache output of `tool init zsh` commands. Regenerates when
+# the binary's mtime changes. Eliminates fork+exec on warm startup.
+_cached_eval() {
+  local cmd=$1; shift
+  local bin=${commands[$cmd]:-}
+  [[ -n "$bin" ]] || return
+  local cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/eval-cache"
+  local f="$cache/$cmd.zsh"
+  if [[ ! -f "$f" || "$bin" -nt "$f" ]]; then
+    mkdir -p "$cache"
+    "$cmd" "$@" > "$f"
+  fi
+  source "$f"
+}
+
 # zoxide (smart cd)
-if command -v zoxide &>/dev/null; then
-  eval "$(zoxide init zsh --cmd z)"
-fi
+_cached_eval zoxide init zsh --cmd z
 
 # Starship prompt
-if command -v starship &>/dev/null; then
-  eval "$(starship init zsh)"
-fi
+_cached_eval starship init zsh
 
-# direnv (if installed)
-if command -v direnv &>/dev/null; then
-  eval "$(direnv hook zsh)"
-fi
+# direnv
+_cached_eval direnv hook zsh
 
 # atuin (smart shell history — Ctrl+R only, up arrow uses normal history)
-if command -v atuin &>/dev/null; then
-  eval "$(atuin init zsh --disable-up-arrow)"
-fi
+_cached_eval atuin init zsh --disable-up-arrow
 
 # navi (interactive cheatsheet — Ctrl+G)
-if command -v navi &>/dev/null; then
-  eval "$(navi widget zsh)"
-fi
+_cached_eval navi widget zsh
 
-# nvm (Node version manager — lazy-loaded)
+# ── nvm (lazy-loaded) ────────────────────────────────
+# nvm.sh is ~5000 lines of bash; sourcing it costs ~80-200ms.
+# Stub functions defer the cost to first use of nvm/node/npm/npx.
 export NVM_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/nvm"
 if [[ -s "$NVM_DIR/nvm.sh" ]]; then
-  source "$NVM_DIR/nvm.sh" --no-use
-  source "$NVM_DIR/bash_completion" 2>/dev/null
+  _nvm_load() {
+    unfunction nvm node npm npx 2>/dev/null
+    source "$NVM_DIR/nvm.sh"
+    source "$NVM_DIR/bash_completion" 2>/dev/null
+  }
+  nvm()  { _nvm_load; nvm "$@" }
+  node() { _nvm_load; node "$@" }
+  npm()  { _nvm_load; npm "$@" }
+  npx()  { _nvm_load; npx "$@" }
 fi

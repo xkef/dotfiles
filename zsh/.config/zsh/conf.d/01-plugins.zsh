@@ -26,7 +26,8 @@ zinit wait lucid for \
   zdharma-continuum/fast-syntax-highlighting \
   zsh-users/zsh-autosuggestions
 
-# Essential OMZ snippets
-zinit snippet OMZP::git
-zinit snippet OMZP::sudo
-zinit snippet OMZP::command-not-found
+# Essential OMZ snippets (deferred — aliases and completions not needed at first prompt)
+zinit wait lucid for \
+  OMZP::git \
+  OMZP::sudo \
+  OMZP::command-not-found
