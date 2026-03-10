@@ -12,3 +12,6 @@ pkgs\.arch
 scripts
 LICENSE
 \.DS_Store
+\.claude-notes
+\.idea
+keys\.md

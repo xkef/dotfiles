@@ -73,7 +73,7 @@ while IFS= read -r pkg; do
     continue
   fi
   if run_quiet "stow $pkg" stow --dir="$DOTFILES" -t "$HOME" --adopt "$pkg"; then
-    run_quiet "git restore $pkg" git -C "$DOTFILES" checkout -- "$pkg/"
+    run_quiet "git restore $pkg" git -C "$DOTFILES" restore "$pkg/"
   else
     log "  ! stow $pkg: failed — resolve manually"
   fi
