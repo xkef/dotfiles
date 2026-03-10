@@ -44,6 +44,7 @@ Linux)
   if [[ -f /etc/arch-release ]]; then
     sudo -v
     log "pacman..."
+    # shellcheck disable=SC2046
     run_quiet "pacman install" sudo pacman -Sy --needed --noconfirm $(cat "$DOTFILES/pkgs.arch")
   elif [[ -f "$DOTFILES/install-bins.sh" ]]; then
     log "Running install-bins.sh..."

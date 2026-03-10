@@ -18,3 +18,4 @@ __pycache__/
 /.claude/settings.local.json
 *.tmTheme
 /git/.config/git/config.local
+/.nvimlog
