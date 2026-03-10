@@ -44,7 +44,7 @@ v select — V line — Ctrl-v block — y yank — Y yank-EOL
 | Key   | Action                        |
 |-------|-------------------------------|
 | Space | Alternate file (last buffer)  |
-| - / e | File browser (nvim-tree)      |
+| - / e | File browser (nvim-tree)     |
 | ff    | Find files                    |
 | fr    | Recent files                  |
 | fb    | Buffers                       |
@@ -88,7 +88,7 @@ v select — V line — Ctrl-v block — y yank — Y yank-EOL
 | ca      | Code action            |
 | cr      | Rename                 |
 | cf      | Format                 |
-| e       | Diagnostic float       |
+| d       | Diagnostic float       |
 | [d / ]d | Prev / next diagnostic |
 
 ### Other
@@ -103,6 +103,26 @@ v select — V line — Ctrl-v block — y yank — Y yank-EOL
 | v              | Reselect last visual          |
 | J / K (visual) | Move selection down / up      |
 | Space+p (vis)  | Paste without losing register |
+
+---
+
+## jj (Jujutsu)
+
+### Aliases
+
+| Command       | Action                                 |
+|---------------|----------------------------------------|
+| jj            | Show log (default command)             |
+| jj nt         | New change on top of trunk             |
+| jj retrunk    | Rebase current stack onto trunk        |
+| jj reheat     | Rebase entire stack onto trunk         |
+| jj tug        | Move nearest bookmark to parent of @   |
+| jj consume    | Squash from another change into @      |
+| jj eject      | Squash from @ into another change      |
+| jj examine -r | Detailed log with patch for a revision |
+| jj credit     | File annotation (like git blame)       |
+| jj cat        | Show file contents at a revision       |
+| jj streamline | Simplify parent structure              |
 
 ---
 

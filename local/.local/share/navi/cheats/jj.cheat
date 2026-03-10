@@ -1,0 +1,93 @@
+% jj, basics
+
+# Show log (default)
+jj
+
+# Status
+jj st
+
+# Show current change diff
+jj show
+
+# Describe (set commit message)
+jj describe -m "<message>"
+
+# New empty change on top of current
+jj new
+
+# New change on top of trunk
+jj nt
+
+# Squash working copy into parent
+jj squash
+
+# Split current change by files
+jj split
+
+# Edit an earlier change (working copy moves there)
+jj edit <rev>
+
+% jj, navigation
+
+# Examine a revision (detailed log + patch)
+jj examine -r <rev>
+
+# File annotation (like git blame)
+jj credit <file>
+
+# Show file at a revision
+jj cat <file> -r <rev>
+
+# Diff between two revisions
+jj diff --from <rev> --to <rev>
+
+% jj, rebase
+
+# Rebase current stack onto trunk
+jj retrunk
+
+# Rebase entire stack onto trunk
+jj reheat
+
+# Rebase onto a specific revision
+jj rebase -d <rev>
+
+# Simplify parent structure
+jj streamline
+
+% jj, bookmarks
+
+# List bookmarks
+jj bookmark list
+
+# Create bookmark at current change
+jj bookmark create <name>
+
+# Move nearest bookmark to parent of @
+jj tug
+
+# Push bookmarks to remote
+jj git push
+
+# Fetch from remote
+jj git fetch
+
+% jj, workflow
+
+# Squash from another change into current
+jj consume <rev>
+
+# Squash from current into another change
+jj eject <rev>
+
+# Absorb uncommitted changes into matching commits
+jj absorb
+
+# Resolve merge conflicts
+jj resolve
+
+# Undo last operation
+jj op undo
+
+$ rev: jj log --no-graph -T 'change_id.shortest() ++ " "' -r 'all()' 2>/dev/null --- --preview 'jj show -r {} 2>/dev/null'
+$ file: jj diff --name-only 2>/dev/null

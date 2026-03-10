@@ -1,0 +1,68 @@
+# Jujutsu configuration
+# Personal overrides (identity, signing): jj config set --user
+# See: https://github.com/jj-vcs/jj/discussions/5812
+
+[ui]
+default-command = "log"
+editor = "nvim"
+diff.format = "color-words"
+graph.style = "square"
+log-word-wrap = true
+log-synthetic-elided-nodes = true
+color = "auto"
+
+# ── Pager: delta ─────────────────────────────────────
+# Scope delta to diff-producing commands only, so it doesn't
+# mangle output from status, bookmark list, etc.
+[[--scope]]
+--when.commands = ["diff", "show", "log"]
+[--scope.ui]
+pager = "delta"
+
+# ── Diff/merge tools ────────────────────────────────
+[merge-tools.vimdiff]
+program = "nvim"
+
+[merge-tools.delta]
+program = "delta"
+diff-args = ["--color-only", "$left", "$right"]
+diff-expected-exit-codes = [0, 1]
+
+# ── Git interop ──────────────────────────────────────
+[git]
+auto-local-bookmark = false
+write-change-id-header = true
+sign-on-push = true
+private-commits = 'description(glob:"wip:*") | description(glob:"private:*")'
+
+# ── Revsets ──────────────────────────────────────────
+[revsets]
+log = 'ancestors(reachable(mine() | @, mutable()), 2) | trunk() | @'
+
+[revset-aliases]
+'immutable_heads()' = 'present(trunk()) | untracked_remote_bookmarks() | tags()'
+'stack()' = 'ancestors(reachable(@, mutable()), 2)'
+'stack(x)' = 'ancestors(reachable(x, mutable()), 2)'
+
+# ── Aliases ──────────────────────────────────────────
+[aliases]
+examine = ["log", "-T", "builtin_log_detailed", "-p", "-r"]
+nt = ["new", "trunk()"]
+retrunk = ["rebase", "-d", "trunk()"]
+reheat = ["rebase", "-d", "trunk()", "-s", "all:roots(trunk()..stack(@))"]
+tug = ["bookmark", "move", "--from", "heads(::@- & bookmarks())", "--to", "@-"]
+consume = ["squash", "--into", "@", "--from"]
+eject = ["squash", "--from", "@", "--into"]
+credit = ["file", "annotate"]
+cat = ["file", "show"]
+streamline = ["simplify-parents"]
+
+# ── Diff styling ─────────────────────────────────────
+[colors]
+"diff removed token" = { bg = "#331111", underline = false }
+"diff added token" = { bg = "#113311", underline = false }
+
+# ── Snapshot ─────────────────────────────────────────
+[snapshot]
+auto-update-stale = true
+max-new-file-size = "2MiB"

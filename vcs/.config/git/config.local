@@ -1,0 +1,5 @@
+[user]
+  name = xkef
+  email = xkef@pm.me
+  signingkey = ~/.ssh/id_ed25519.pub
+
