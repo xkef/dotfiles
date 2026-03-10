@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Smoke test for dotfiles: validates configs parse correctly.
+set -uo pipefail
+
+DOTFILES="$(cd "$(dirname "$0")" && pwd)"
+
+errors=0
+check() {
+  local desc=$1
+  shift
+  if "$@" &>/dev/null; then
+    printf '  \033[32m✓\033[0m %s\n' "$desc"
+  else
+    printf '  \033[31m✗\033[0m %s\n' "$desc"
+    ((errors++))
+  fi
+}
+
+printf '\n  dotfiles smoke test\n\n'
+
+# Shell
+check "zsh syntax" zsh -n "$DOTFILES/zsh/.config/zsh/.zshrc"
+for f in "$DOTFILES"/zsh/.config/zsh/conf.d/*.zsh; do
+  check "zsh syntax: $(basename "$f")" zsh -n "$f"
+done
+
+# Neovim
+if command -v nvim &>/dev/null; then
+  check "nvim headless load" nvim --headless +"lua require('lazy')" +qa
+fi
+
+# Tmux
+if command -v tmux &>/dev/null; then
+  check "tmux config parse" tmux -f "$DOTFILES/tmux/.config/tmux/tmux.conf" start-server \; kill-server
+fi
+
+# Starship
+if command -v starship &>/dev/null; then
+  check "starship config" starship config
+fi
+
+# Git
+check "git config" git config --list
+
+# Shellcheck (if available)
+if command -v shellcheck &>/dev/null; then
+  for f in "$DOTFILES/install" "$DOTFILES/install-bins.sh" \
+    "$DOTFILES/local/.local/bin/theme" \
+    "$DOTFILES/tmux/.local/bin/tmux-sessionizer" \
+    "$DOTFILES/tmux/.local/bin/tmux-sysstat"; do
+    if [[ -f "$f" ]]; then
+      check "shellcheck: $(basename "$f")" shellcheck -S warning "$f"
+    fi
+  done
+fi
+
+printf '\n'
+if ((errors)); then
+  printf '  %d check(s) failed\n\n' "$errors"
+  exit 1
+else
+  printf '  All checks passed\n\n'
+fi

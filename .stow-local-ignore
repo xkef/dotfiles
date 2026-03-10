@@ -7,6 +7,7 @@
 README\.md
 install
 install-bins\.sh
+test
 Brewfile
 pkgs\.arch
 scripts

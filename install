@@ -59,11 +59,20 @@ log "Packages installed"
 
 find "$DOTFILES" -name .DS_Store -delete 2>/dev/null
 
-# --adopt + checkout overwrites uncommitted changes — abort if worktree is dirty.
-if [[ -d "$DOTFILES/.git" ]] && ! git -C "$DOTFILES" diff --quiet 2>/dev/null; then
-  log "  ! Uncommitted changes detected — commit or stash before running install."
-  log "    (--adopt would overwrite your in-progress work)"
-  exit 1
+adopt=false
+for arg in "$@"; do
+  case "$arg" in
+    --adopt) adopt=true ;;
+  esac
+done
+
+if $adopt; then
+  # --adopt + checkout overwrites uncommitted changes — abort if worktree is dirty.
+  if [[ -d "$DOTFILES/.git" ]] && ! git -C "$DOTFILES" diff --quiet 2>/dev/null; then
+    log "  ! Uncommitted changes detected — commit or stash before running install."
+    log "    (--adopt would overwrite your in-progress work)"
+    exit 1
+  fi
 fi
 
 while IFS= read -r pkg; do
@@ -72,10 +81,16 @@ while IFS= read -r pkg; do
     log "  ! stow: package dir '$pkg' not found, skipping"
     continue
   fi
-  if run_quiet "stow $pkg" stow --dir="$DOTFILES" -t "$HOME" --adopt "$pkg"; then
-    run_quiet "git restore $pkg" git -C "$DOTFILES" restore "$pkg/"
+  if $adopt; then
+    if run_quiet "stow $pkg" stow --dir="$DOTFILES" -t "$HOME" --adopt "$pkg"; then
+      run_quiet "git restore $pkg" git -C "$DOTFILES" restore "$pkg/"
+    else
+      log "  ! stow $pkg: failed — resolve manually"
+    fi
   else
-    log "  ! stow $pkg: failed — resolve manually"
+    if ! run_quiet "stow $pkg" stow --dir="$DOTFILES" -t "$HOME" "$pkg"; then
+      log "  ! stow $pkg: conflict — run with --adopt to resolve"
+    fi
   fi
 done <"$DOTFILES/.stow-packages"
 

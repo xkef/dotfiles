@@ -3,7 +3,8 @@
 set -euo pipefail
 
 readonly SMOOTH="${TMPDIR:-/tmp}/tmux-sysstat-smooth"
-readonly OS=$(uname)
+readonly OS
+OS=$(uname)
 
 # ── CPU (normalized 0–100%, smoothed) ────────────────
 if [[ "$OS" == Darwin ]]; then
