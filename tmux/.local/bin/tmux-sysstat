@@ -21,7 +21,7 @@ echo "$cpu" >"$SMOOTH"
 
 # ── Memory (used / total) ────────────────────────────
 if [[ "$OS" == Darwin ]]; then
-  read -r page_size total <<< "$(sysctl -n hw.pagesize hw.memsize)"
+  { read -r page_size; read -r total; } <<< "$(sysctl -n hw.pagesize hw.memsize)"
   used=$(vm_stat | awk -v ps="$page_size" '
     /Pages active/           { gsub(/[^0-9]/,"",$NF); a=$NF }
     /Pages wired/            { gsub(/[^0-9]/,"",$NF); w=$NF }

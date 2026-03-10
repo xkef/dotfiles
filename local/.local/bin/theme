@@ -189,6 +189,9 @@ apply_terminal_colors() {
   seq+=$(printf '\033]11;rgb:%s\033\\' "$(_hex_rgb "$theme_bg")")
   seq+=$(printf '\033]12;rgb:%s\033\\' "$(_hex_rgb "$theme_cursor")")
 
+  # Save for shell startup replay (new terminals apply this on init)
+  printf '%s' "$seq" > "$THEME_DIR/osc-palette"
+
   _send_osc "$seq"
 }
 

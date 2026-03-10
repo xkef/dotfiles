@@ -59,7 +59,7 @@ export FZF_ALT_C_OPTS=" \
   local f="$cache/fzf.zsh"
   if [[ -n "$bin" ]]; then
     if [[ ! -f "$f" || "$bin" -nt "$f" ]]; then
-      mkdir -p "$cache"
+      mkdir -p -m 700 "$cache"
       fzf --zsh > "$f" 2>/dev/null
     fi
     source "$f"

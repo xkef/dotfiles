@@ -13,36 +13,39 @@ auto-ls() {
 }
 chpwd_functions+=( auto-ls )
 
-# ── Cached eval ──────────────────────────────────────
+# ── Cached init ──────────────────────────────────────
 # Cache output of `tool init zsh` commands. Regenerates when
 # the binary's mtime changes. Eliminates fork+exec on warm startup.
-_cached_eval() {
+# Security: equivalent to `eval "$(cmd init zsh)"` — same code runs,
+# just read from a user-owned cache file instead of a pipe. Directory
+# is mode 700 to prevent other users from reading or writing.
+_cached_source() {
   local cmd=$1; shift
   local bin=${commands[$cmd]:-}
   [[ -n "$bin" ]] || return
   local cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/eval-cache"
   local f="$cache/$cmd.zsh"
   if [[ ! -f "$f" || "$bin" -nt "$f" ]]; then
-    mkdir -p "$cache"
+    mkdir -p -m 700 "$cache"
     "$cmd" "$@" > "$f"
   fi
   source "$f"
 }
 
 # zoxide (smart cd)
-_cached_eval zoxide init zsh --cmd z
+_cached_source zoxide init zsh --cmd z
 
 # Starship prompt
-_cached_eval starship init zsh
+_cached_source starship init zsh
 
 # direnv
-_cached_eval direnv hook zsh
+_cached_source direnv hook zsh
 
 # atuin (smart shell history — Ctrl+R only, up arrow uses normal history)
-_cached_eval atuin init zsh --disable-up-arrow
+_cached_source atuin init zsh --disable-up-arrow
 
 # navi (interactive cheatsheet — Ctrl+G)
-_cached_eval navi widget zsh
+_cached_source navi widget zsh
 
 # ── nvm (lazy-loaded) ────────────────────────────────
 # nvm.sh is ~5000 lines of bash; sourcing it costs ~80-200ms.

@@ -13,7 +13,7 @@
   },
   "conform.nvim": {
     "branch": "master",
-    "commit": "40dcec5555f960b0a04340d76eabdf4efe78599d"
+    "commit": "086a40dc7ed8242c03be9f47fbcee68699cc2395"
   },
   "flash.nvim": {
     "branch": "main",
@@ -29,7 +29,7 @@
   },
   "gruvbox.nvim": {
     "branch": "main",
-    "commit": "561126520034a1dac2f78ab063db025d12555998"
+    "commit": "334d5fd49fc8033f26408425366c66c6390c57bb"
   },
   "harpoon": {
     "branch": "harpoon2",
@@ -65,7 +65,7 @@
   },
   "nvim-lspconfig": {
     "branch": "master",
-    "commit": "2163c54bb6cfec53e3e555665ada945b8c8331b9"
+    "commit": "d8bf4c47385340ab2029402201d4d7c9f99f437a"
   },
   "nvim-surround": {
     "branch": "main",
@@ -81,7 +81,7 @@
   },
   "nvim-treesitter-textobjects": {
     "branch": "main",
-    "commit": "efee9bb7b2f4b45ff28f562cabe6f530f264f676"
+    "commit": "4e91b5d0394329a229725b021a8ea217099826ef"
   },
   "nvim-web-devicons": {
     "branch": "master",
