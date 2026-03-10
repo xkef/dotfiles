@@ -9,5 +9,4 @@ setopt HIST_IGNORE_DUPS       # ignore consecutive dups
 setopt HIST_IGNORE_ALL_DUPS   # remove older dup entries
 setopt HIST_IGNORE_SPACE      # ignore commands with leading space
 setopt HIST_VERIFY            # show before executing history
-setopt SHARE_HISTORY          # share across sessions
-setopt INC_APPEND_HISTORY     # append immediately
+setopt SHARE_HISTORY          # share across sessions (implies INC_APPEND_HISTORY)

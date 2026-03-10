@@ -7,6 +7,13 @@ export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 # Zsh config directory
 export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 
+# Homebrew (must load before tool checks below)
+if [[ -f /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+
 # Editor
 export EDITOR="nvim"
 export VISUAL="nvim"

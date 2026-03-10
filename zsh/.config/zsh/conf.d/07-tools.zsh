@@ -7,7 +7,7 @@ chpwd_functions+=( auto-ls )
 
 # zoxide (smart cd)
 if command -v zoxide &>/dev/null; then
-  eval "$(zoxide init zsh --cmd cd)"
+  eval "$(zoxide init zsh --cmd z)"
 fi
 
 # Starship prompt
