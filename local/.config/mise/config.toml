@@ -1,0 +1,8 @@
+[tools]
+node = "lts"
+python = "latest"
+go = "latest"
+rust = "latest"
+java = "24"
+maven = "latest"
+mvnd = "latest"

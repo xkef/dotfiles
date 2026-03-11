@@ -31,7 +31,6 @@ clipboard-read = allow
 clipboard-write = allow
 clipboard-paste-protection = true
 copy-on-select = clipboard
-clipboard-copy-format = text
 
 # ── Mouse ─────────────────────────────────────────────
 mouse-hide-while-typing = true

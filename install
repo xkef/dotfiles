@@ -56,6 +56,13 @@ Linux)
 esac
 log "Packages installed"
 
+# ── Install mise tools ────────────────────────────────
+
+if has mise; then
+  log "Installing mise tools..."
+  run_quiet "mise install" mise install
+fi
+
 # ── Stow configs ──────────────────────────────────────
 
 find "$DOTFILES" -name .DS_Store -delete 2>/dev/null

@@ -44,7 +44,7 @@ v select — V line — Ctrl-v block — y yank — Y yank-EOL
 | Key   | Action                        |
 |-------|-------------------------------|
 | Space | Alternate file (last buffer)  |
-| - / e | File browser (nvim-tree)     |
+| - / e | File browser (nvim-tree)      |
 | ff    | Find files                    |
 | fr    | Recent files                  |
 | fb    | Buffers                       |
@@ -166,3 +166,20 @@ Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 | Ctrl-X Ctrl-E | Edit command in nvim        |
 | !! then Space | Expand history inline       |
 | Esc Esc       | Sudo last command           |
+
+---
+
+## mise (runtime manager)
+
+### Switch versions
+
+| Command              | Action                           |
+|----------------------|----------------------------------|
+| mise ls              | List installed runtimes          |
+| mise use node@20     | Set Node 20 for current project  |
+| mise use -g node@22  | Set Node 22 globally             |
+| mise use java@24     | Set Java 24 for current project  |
+| mise use -g java@21  | Set Java 21 globally             |
+| mise install node@18 | Install without switching        |
+| mise ls-remote node  | List all available Node versions |
+| mise ls-remote java  | List all available Java versions |

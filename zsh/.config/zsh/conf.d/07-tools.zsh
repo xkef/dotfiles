@@ -40,6 +40,7 @@ _cached_source() {
 }
 
 # ── External tool initialization ─────────────────────
+_cached_source mise activate zsh
 _cached_source zoxide init zsh --cmd z
 _cached_source starship init zsh
 _cached_source direnv hook zsh

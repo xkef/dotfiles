@@ -25,6 +25,11 @@ else
   done <"$DOTFILES_DIR/.stow-packages"
 fi
 
+if command -v mise &>/dev/null; then
+  log "Updating mise tools..."
+  mise upgrade 2>/dev/null || true
+fi
+
 log "Updating neovim plugins..."
 nvim --headless "+Lazy! sync" +qa 2>/dev/null || true
 
