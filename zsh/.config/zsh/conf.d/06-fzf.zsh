@@ -66,7 +66,7 @@ export FZF_ALT_C_OPTS=" \
   fi
 }
 
-# Directory picker: Ctrl-X d (alt-c broken on Swiss German Mac, Ctrl-G is navi)
+# Alt-C works via ghostty macos-option-as-alt=left; Ctrl-X d as fallback
 bindkey '^Xd' fzf-cd-widget
 
 # ── FZF-powered functions ────────────────────────────
