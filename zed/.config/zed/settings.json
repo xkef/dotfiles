@@ -167,13 +167,7 @@
             }
           },
           "completion": {
-            "importOrder": [
-              "java",
-              "javax",
-              "org",
-              "com",
-              ""
-            ],
+            "importOrder": ["java", "javax", "org", "com", ""],
             "favoriteStaticMembers": [
               "org.junit.Assert.*",
               "org.junit.jupiter.api.Assertions.*",

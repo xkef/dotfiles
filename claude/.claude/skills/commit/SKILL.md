@@ -35,16 +35,17 @@ For more information on Jujutsu, see the `/jujutsu` skill.
    ignored via the global `~/.config/git/ignore` file: these plan files should never be included in a commit as they are
    intended to be local-only aids to development.
 3. Create a commit message with:
-  - A subject of 72 characters or less in Conventional Commits format (eg. "docs: add migration notes" or "fix: avoid
-    double-render in list component"). In repositories that make use of scopes, you can include a scope in parentheses (
-    eg. "chore(frontend): update copyright year" or "feat(login): add support for magic links").
-  - A blank line.
-  - A detailed description, wrapped to 72 characters, using basic Markdown syntax.
-  - At the bottom, include the full text of **all** prompts that were used while preparing the changes that led to the
-    commit; **never** omit any prompts.
-  - If you were involved in the preparation of the changes, include a commit trailer of the form: "Co-Authored-By:
-    Claude <noreply@anthropic.com>" (after "Claude", include the actual model name and version if it is available to you
-    from the system prompt).
+
+- A subject of 72 characters or less in Conventional Commits format (eg. "docs: add migration notes" or "fix: avoid
+  double-render in list component"). In repositories that make use of scopes, you can include a scope in parentheses (
+  eg. "chore(frontend): update copyright year" or "feat(login): add support for magic links").
+- A blank line.
+- A detailed description, wrapped to 72 characters, using basic Markdown syntax.
+- At the bottom, include the full text of **all** prompts that were used while preparing the changes that led to the
+  commit; **never** omit any prompts.
+- If you were involved in the preparation of the changes, include a commit trailer of the form: "Co-Authored-By:
+  Claude <noreply@anthropic.com>" (after "Claude", include the actual model name and version if it is available to you
+  from the system prompt).
 
 ## Best practices
 
@@ -58,7 +59,7 @@ For more information on Jujutsu, see the `/jujutsu` skill.
 ## Conventional Commits types
 
 | Type     | When to use                                                                                        |
-|----------|----------------------------------------------------------------------------------------------------|
+| -------- | -------------------------------------------------------------------------------------------------- |
 | fix      | Bug fixes                                                                                          |
 | feat     | New features                                                                                       |
 | chore    | Content                                                                                            |

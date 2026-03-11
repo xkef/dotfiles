@@ -6,6 +6,6 @@ FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 [ -z "$FILE_PATH" ] && exit 0
 
 mkdir -p ~/.claude
-echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) WRITE $FILE_PATH" >> ~/.claude/write-audit.log
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) WRITE $FILE_PATH" >>~/.claude/write-audit.log
 
 exit 0

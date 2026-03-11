@@ -13,7 +13,7 @@ on Arch, pre-built binaries elsewhere). Then it symlinks configs via stow and se
 ## What's included
 
 | Tool                                                                             | What it does                                           |
-|----------------------------------------------------------------------------------|--------------------------------------------------------|
+| -------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | [Zsh](https://www.zsh.org) + [zinit](https://github.com/zdharma-continuum/zinit) | Shell with fast plugin loading                         |
 | [Starship](https://starship.rs)                                                  | Minimal, cross-shell prompt                            |
 | [Neovim](https://neovim.io) + lazy.nvim                                          | Editor, no distro                                      |
@@ -30,7 +30,7 @@ on Arch, pre-built binaries elsewhere). Then it symlinks configs via stow and se
 ## The one thing to remember
 
 | Context    | Key          |        |
-|------------|--------------|--------|
+| ---------- | ------------ | ------ |
 | **Neovim** | `Space`      | leader |
 | **tmux**   | `Ctrl-Space` | prefix |
 
@@ -39,7 +39,7 @@ Same physical key. Ctrl is the only difference.
 ## Finding keybindings
 
 | Where      | How          | What                                  |
-|------------|--------------|---------------------------------------|
+| ---------- | ------------ | ------------------------------------- |
 | **tmux**   | `prefix + ?` | Keybinding reference (floating popup) |
 | **Neovim** | `leader + ?` | which-key discovery popup             |
 | **Shell**  | `Ctrl-G`     | navi interactive cheatsheets          |
@@ -49,7 +49,7 @@ Same physical key. Ctrl is the only difference.
 ## Local overrides
 
 | What   | File                                 |
-|--------|--------------------------------------|
+| ------ | ------------------------------------ |
 | Shell  | `~/.config/zsh/local.zsh`            |
 | Git    | `~/.config/git/config.local`         |
 | jj     | `jj config set --user user.name "…"` |

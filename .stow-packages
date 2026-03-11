@@ -1,8 +1,8 @@
-vcs
-zsh
-tmux
-nvim
-ghostty
 claude
-zed
+ghostty
 local
+nvim
+tmux
+vcs
+zed
+zsh

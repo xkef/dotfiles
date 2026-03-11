@@ -42,13 +42,6 @@ fi
 # Git
 check "git config" git config --list
 
-# Shellcheck (if available) — check all tracked shell scripts
-if command -v shellcheck &>/dev/null; then
-  while IFS= read -r f; do
-    check "shellcheck: $f" shellcheck -S warning "$DOTFILES/$f"
-  done < <(cd "$DOTFILES" && git ls-files | xargs file --mime-type 2>/dev/null | awk -F: '/x-shellscript/ {print $1}')
-fi
-
 printf '\n'
 if ((errors)); then
   printf '  %d check(s) failed\n\n' "$errors"

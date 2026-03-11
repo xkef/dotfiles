@@ -2,69 +2,49 @@
   {
     "label": "Maven: build",
     "command": "mvn",
-    "args": [
-      "clean",
-      "compile"
-    ],
+    "args": ["clean", "compile"],
     "use_new_terminal": false,
     "allow_concurrent_runs": false
   },
   {
     "label": "Maven: test",
     "command": "mvn",
-    "args": [
-      "test"
-    ],
+    "args": ["test"],
     "use_new_terminal": false,
     "allow_concurrent_runs": false
   },
   {
     "label": "Maven: test (current file)",
     "command": "mvn",
-    "args": [
-      "test",
-      "-Dtest=$ZED_STEM"
-    ],
+    "args": ["test", "-Dtest=$ZED_STEM"],
     "use_new_terminal": false,
     "allow_concurrent_runs": false
   },
   {
     "label": "Maven: package",
     "command": "mvn",
-    "args": [
-      "clean",
-      "package",
-      "-DskipTests"
-    ],
+    "args": ["clean", "package", "-DskipTests"],
     "use_new_terminal": false,
     "allow_concurrent_runs": false
   },
   {
     "label": "Gradle: build",
     "command": "./gradlew",
-    "args": [
-      "build"
-    ],
+    "args": ["build"],
     "use_new_terminal": false,
     "allow_concurrent_runs": false
   },
   {
     "label": "Gradle: test",
     "command": "./gradlew",
-    "args": [
-      "test"
-    ],
+    "args": ["test"],
     "use_new_terminal": false,
     "allow_concurrent_runs": false
   },
   {
     "label": "Gradle: test (current file)",
     "command": "./gradlew",
-    "args": [
-      "test",
-      "--tests",
-      "$ZED_STEM"
-    ],
+    "args": ["test", "--tests", "$ZED_STEM"],
     "use_new_terminal": false,
     "allow_concurrent_runs": false
   }

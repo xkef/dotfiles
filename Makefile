@@ -1,5 +1,6 @@
 DOTFILES := $(shell pwd)
 STOW_PACKAGES := $(shell cat .stow-packages)
+SHELL_FILES := $(shell git ls-files | xargs file --mime-type 2>/dev/null | awk -F: '/x-shellscript/ {print $$1}')
 
 .PHONY: help install update test stow unstow restow fmt lint tools clean
 
@@ -39,15 +40,13 @@ tools: ## Install mise tools (languages + formatters)
 
 fmt: ## Format all dotfiles
 	stylua nvim/.config/nvim/
-	shfmt -w install test install-bins.sh local/.local/bin/*
+	shfmt -w $(SHELL_FILES)
 	prettier --write '**/*.{json,yaml,yml,toml,css,html,md}' \
 		--ignore-path .gitignore 2>/dev/null || true
 
 lint: ## Lint shell scripts and neovim config
 	@printf '\n  Linting...\n\n'
-	@shellcheck -S warning install test install-bins.sh \
-		local/.local/bin/dotfiles-update local/.local/bin/theme \
-		tmux/.local/bin/tmux-sessionizer tmux/.local/bin/tmux-sysstat
+	@shellcheck -S warning $(SHELL_FILES)
 	@nvim --headless +"lua require('lazy')" +qa
 	@printf '\n  All clean\n\n'
 
