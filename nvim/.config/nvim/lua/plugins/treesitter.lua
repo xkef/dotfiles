@@ -6,7 +6,7 @@ return {
     dependencies = { "nvim-treesitter/nvim-treesitter-textobjects" },
     opts = {
       ensure_installed = {
-        "bash", "c", "css", "go", "html", "javascript", "json",
+        "bash", "c", "css", "go", "html", "java", "javascript", "json",
         "lua", "markdown", "python", "rust", "tsx", "typescript",
         "vim", "vimdoc", "yaml",
       },

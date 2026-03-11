@@ -20,6 +20,14 @@ return {
     config = function()
       require("mason").setup()
 
+      local mr = require("mason-registry")
+      for _, pkg_name in ipairs({ "java-debug-adapter", "java-test" }) do
+        local ok, pkg = pcall(mr.get_package, pkg_name)
+        if ok and not pkg:is_installed() then
+          pkg:install()
+        end
+      end
+
       vim.lsp.config("*", {
         capabilities = require("blink.cmp").get_lsp_capabilities(),
       })
@@ -30,7 +38,11 @@ return {
         },
       })
 
-      require("mason-lspconfig").setup({ automatic_enable = true })
+      require("mason-lspconfig").setup({
+        automatic_enable = {
+          exclude = { "jdtls" },
+        },
+      })
 
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(ev)

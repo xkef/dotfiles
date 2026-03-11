@@ -22,7 +22,7 @@ on Arch, pre-built binaries elsewhere). Then it symlinks configs via stow and se
 | [fzf](https://github.com/junegunn/fzf)                                           | Fuzzy finder everywhere (shell, tmux, neovim)          |
 | [atuin](https://atuin.sh)                                                        | Searchable shell history with sync                     |
 | [Claude Code](https://claude.ai/)                                                | AI coding agent with Seatbelt sandbox and custom hooks |
-| [jj (Jujutsu)](https://github.com/jj-vcs/jj)                                    | Git-compatible VCS with simpler mental model           |
+| [jj (Jujutsu)](https://github.com/jj-vcs/jj)                                     | Git-compatible VCS with simpler mental model           |
 | eza, bat, fd, ripgrep, zoxide                                                    | Modern unix replacements                               |
 
 ---
@@ -48,9 +48,9 @@ Same physical key. Ctrl is the only difference.
 
 ## Local overrides
 
-| What   | File                                      |
-|--------|-------------------------------------------|
-| Shell  | `~/.config/zsh/local.zsh`                 |
-| Git    | `~/.config/git/config.local`              |
-| jj     | `jj config set --user user.name "…"`      |
-| Neovim | `~/.config/nvim/lua/plugins/*.lua`        |
+| What   | File                                 |
+|--------|--------------------------------------|
+| Shell  | `~/.config/zsh/local.zsh`            |
+| Git    | `~/.config/git/config.local`         |
+| jj     | `jj config set --user user.name "…"` |
+| Neovim | `~/.config/nvim/lua/plugins/*.lua`   |
