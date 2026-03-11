@@ -16,6 +16,7 @@ return {
     opts = {
       picker  = { enabled = true },
       lazygit = { enabled = true },
+      image   = { enabled = true },
       bigfile      = { enabled = false },
       dashboard    = { enabled = false },
       indent       = { enabled = false },
