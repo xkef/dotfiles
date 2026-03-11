@@ -48,8 +48,8 @@ Linux)
     run_quiet "pacman install" sudo pacman -Sy --needed --noconfirm $(cat "$DOTFILES/pkgs.arch")
   else
     log "Enabling mise system tools..."
-    mkdir -p "$HOME/.config/mise"
-    cp "$DOTFILES/mise-system-tools.toml" "$HOME/.config/mise/system-tools.toml"
+    mkdir -p "$HOME/.config/mise/conf.d"
+    cp "$DOTFILES/mise-system-tools.toml" "$HOME/.config/mise/conf.d/system-tools.toml"
   fi
   ;;
 esac
