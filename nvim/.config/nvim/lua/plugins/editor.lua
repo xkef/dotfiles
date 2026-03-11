@@ -6,7 +6,9 @@ return {
     keys = {
       {
         "<leader>cf",
-        function() require("conform").format({ async = true, lsp_fallback = true }) end,
+        function()
+          require("conform").format({ async = true, lsp_fallback = true })
+        end,
         desc = "Format",
       },
     },
@@ -35,9 +37,30 @@ return {
     event = "VeryLazy",
     opts = {},
     keys = {
-      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end,       desc = "Flash jump" },
-      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash treesitter" },
-      { "r", mode = "o",               function() require("flash").remote() end,      desc = "Flash remote" },
+      {
+        "s",
+        mode = { "n", "x", "o" },
+        function()
+          require("flash").jump()
+        end,
+        desc = "Flash jump",
+      },
+      {
+        "S",
+        mode = { "n", "x", "o" },
+        function()
+          require("flash").treesitter()
+        end,
+        desc = "Flash treesitter",
+      },
+      {
+        "r",
+        mode = "o",
+        function()
+          require("flash").remote()
+        end,
+        desc = "Flash remote",
+      },
     },
   },
 
@@ -57,8 +80,18 @@ return {
   {
     "MagicDuck/grug-far.nvim",
     keys = {
-      { "<leader>S",  "<cmd>GrugFar<cr>",                                                                            desc = "Search and replace" },
-      { "<leader>sR", function() require("grug-far").open({ prefills = { search = vim.fn.expand("<cword>") } }) end, desc = "Search and replace (word)" },
+      {
+        "<leader>S",
+        "<cmd>GrugFar<cr>",
+        desc = "Search and replace",
+      },
+      {
+        "<leader>sR",
+        function()
+          require("grug-far").open({ prefills = { search = vim.fn.expand("<cword>") } })
+        end,
+        desc = "Search and replace (word)",
+      },
     },
     opts = {},
   },

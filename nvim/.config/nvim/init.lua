@@ -30,12 +30,12 @@ vim.opt.foldlevelstart = 99
 vim.opt.foldtext = ""
 vim.opt.list = true
 vim.opt.listchars = {
-  tab      = "→ ",
-  trail    = "·",
-  nbsp     = "␣",
-  extends  = "»",
+  tab = "→ ",
+  trail = "·",
+  nbsp = "␣",
+  extends = "»",
   precedes = "«",
-  lead     = "·",
+  lead = "·",
 }
 
 -- OSC 52 clipboard (works over SSH, in tmux, everywhere)
@@ -59,7 +59,9 @@ local map = vim.keymap.set
 -- Leader mappings
 map("n", "<leader><leader>", "<C-^>", { desc = "Alternate file" })
 map("n", "<leader>o", "<cmd>only<cr>", { desc = "Close other windows" })
-map("n", "<leader>p", function() print(vim.fn.expand("%:p")) end, { desc = "Show file path" })
+map("n", "<leader>p", function()
+  print(vim.fn.expand("%:p"))
+end, { desc = "Show file path" })
 map("n", "<leader>q", "<cmd>quit<cr>", { desc = "Quit window" })
 map("n", "<leader>w", "<cmd>write<cr>", { desc = "Write file" })
 map("n", "<leader>x", "<cmd>xit<cr>", { desc = "Write and quit" })
@@ -102,8 +104,12 @@ map("c", "<C-a>", "<Home>")
 map("c", "<C-e>", "<End>")
 
 -- Diagnostics
-map("n", "[d", function() vim.diagnostic.jump({ count = -1 }) end, { desc = "Previous diagnostic" })
-map("n", "]d", function() vim.diagnostic.jump({ count = 1 }) end, { desc = "Next diagnostic" })
+map("n", "[d", function()
+  vim.diagnostic.jump({ count = -1 })
+end, { desc = "Previous diagnostic" })
+map("n", "]d", function()
+  vim.diagnostic.jump({ count = 1 })
+end, { desc = "Next diagnostic" })
 map("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 map("n", "<leader>xl", vim.diagnostic.setloclist, { desc = "Diagnostic list" })
 
@@ -111,7 +117,9 @@ map("n", "<leader>xl", vim.diagnostic.setloclist, { desc = "Diagnostic list" })
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.uv.fs_stat(lazypath) then
   vim.fn.system({
-    "git", "clone", "--filter=blob:none",
+    "git",
+    "clone",
+    "--filter=blob:none",
     "https://github.com/folke/lazy.nvim.git",
     "--branch=stable",
     lazypath,
@@ -123,7 +131,12 @@ require("lazy").setup("plugins", {
   performance = {
     rtp = {
       disabled_plugins = {
-        "gzip", "tarPlugin", "tohtml", "tutor", "zipPlugin", "netrwPlugin",
+        "gzip",
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
+        "netrwPlugin",
       },
     },
   },

@@ -16,7 +16,14 @@ return {
         disabled_filetypes = { statusline = { "lazy" } },
       },
       sections = {
-        lualine_a = { { "mode", fmt = function(s) return s:sub(1, 1) end } },
+        lualine_a = {
+          {
+            "mode",
+            fmt = function(s)
+              return s:sub(1, 1)
+            end,
+          },
+        },
         lualine_b = { { "branch", icon = "" } },
         lualine_c = {
           { "filename", path = 1, symbols = { modified = " ●", readonly = " ", unnamed = "[No Name]" } },

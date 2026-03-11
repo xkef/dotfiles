@@ -1,0 +1,10 @@
+[tools]
+# Formatters used by conform.nvim (editor.lua)
+stylua = "latest"
+shfmt = "latest"
+ruff = "latest"
+"npm:prettier" = "latest"
+"npm:@fsouza/prettierd" = "latest"
+
+# Linters used by the test script
+shellcheck = "latest"

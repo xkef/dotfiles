@@ -4,7 +4,9 @@ vim.opt_local.tabstop = 4
 local jdtls = require("jdtls")
 
 local root_dir = require("jdtls.setup").find_root({ ".git", "mvnw", "gradlew", "pom.xml", "build.gradle" })
-if not root_dir then return end
+if not root_dir then
+  return
+end
 
 local project_name = vim.fn.fnamemodify(root_dir, ":p:h:t")
 local data_dir = vim.fn.stdpath("data") .. "/jdtls/" .. project_name
@@ -19,7 +21,8 @@ local bundles = {}
 
 local mason_path = vim.fn.stdpath("data") .. "/mason/packages"
 
-local debug_jar = vim.fn.glob(mason_path .. "/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar")
+local debug_jar =
+  vim.fn.glob(mason_path .. "/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar")
 if debug_jar ~= "" then
   table.insert(bundles, debug_jar)
 end
@@ -71,8 +74,9 @@ local config = {
     m("<leader>co", jdtls.organize_imports, "Organize imports")
     m("<leader>cv", jdtls.extract_variable, "Extract variable")
     m("<leader>cc", jdtls.extract_constant, "Extract constant")
-    vim.keymap.set("v", "<leader>cm", function() jdtls.extract_method(true) end,
-      { buffer = bufnr, desc = "Extract method" })
+    vim.keymap.set("v", "<leader>cm", function()
+      jdtls.extract_method(true)
+    end, { buffer = bufnr, desc = "Extract method" })
     m("<leader>cT", jdtls.test_class, "Test class (jdtls)")
     m("<leader>ct", jdtls.test_nearest_method, "Test method (jdtls)")
   end,

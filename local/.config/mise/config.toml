@@ -1,3 +1,5 @@
+includes = ["system-tools.toml"]
+
 [env]
 GITHUB_TOKEN = "{{exec(command='gh auth token')}}"
 

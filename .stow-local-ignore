@@ -6,7 +6,7 @@
 \.editorconfig
 README\.md
 install
-install-bins\.sh
+mise-system-tools\.toml
 test
 Brewfile
 pkgs\.arch
@@ -16,3 +16,5 @@ LICENSE
 \.claude-notes
 \.idea
 keys\.md
+Makefile
+mise\.toml

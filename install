@@ -22,7 +22,7 @@ run_quiet() {
   if [[ -n "$output" ]]; then
     while IFS= read -r line; do
       log "    | $line"
-    done <<< "$(printf '%s\n' "$output" | tail -30)"
+    done <<<"$(printf '%s\n' "$output" | tail -30)"
   fi
   return $rc
 }
@@ -46,22 +46,14 @@ Linux)
     log "pacman..."
     # shellcheck disable=SC2046
     run_quiet "pacman install" sudo pacman -Sy --needed --noconfirm $(cat "$DOTFILES/pkgs.arch")
-  elif [[ -f "$DOTFILES/install-bins.sh" ]]; then
-    log "Running install-bins.sh..."
-    bash "$DOTFILES/install-bins.sh"
   else
-    log "  ! install-bins.sh not found, skipping binary installs"
+    log "Enabling mise system tools..."
+    mkdir -p "$HOME/.config/mise"
+    cp "$DOTFILES/mise-system-tools.toml" "$HOME/.config/mise/system-tools.toml"
   fi
   ;;
 esac
 log "Packages installed"
-
-# ── Install mise tools ────────────────────────────────
-
-if has mise; then
-  log "Installing mise tools..."
-  run_quiet "mise install" mise install
-fi
 
 # ── Stow configs ──────────────────────────────────────
 
@@ -70,7 +62,7 @@ find "$DOTFILES" -name .DS_Store -delete 2>/dev/null
 adopt=false
 for arg in "$@"; do
   case "$arg" in
-    --adopt) adopt=true ;;
+  --adopt) adopt=true ;;
   esac
 done
 
@@ -101,6 +93,13 @@ while IFS= read -r pkg; do
     fi
   fi
 done <"$DOTFILES/.stow-packages"
+
+# ── Install mise tools ────────────────────────────────
+
+if has mise; then
+  log "Installing mise tools..."
+  run_quiet "mise install" mise install
+fi
 
 # ── Default shell ─────────────────────────────────────
 

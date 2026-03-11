@@ -9,19 +9,24 @@ local DEFAULTS = { name = "catppuccin-mocha", nvim = "catppuccin-mocha", variant
 function M.read()
   local path = vim.fn.expand("~/.config/theme/current")
   local f = io.open(path, "r")
-  if not f then return DEFAULTS end
+  if not f then
+    return DEFAULTS
+  end
   local cfg = {}
   for line in f:lines() do
     local k, v = line:match("^(%S+)=(.+)$")
-    if k == "name" then cfg.name = v
-    elseif k == "variant" then cfg.variant = v
-    elseif k == "nvim" then cfg.nvim = v
+    if k == "name" then
+      cfg.name = v
+    elseif k == "variant" then
+      cfg.variant = v
+    elseif k == "nvim" then
+      cfg.nvim = v
     end
   end
   f:close()
   return {
-    name    = cfg.name    or DEFAULTS.name,
-    nvim    = cfg.nvim    or DEFAULTS.nvim,
+    name = cfg.name or DEFAULTS.name,
+    nvim = cfg.nvim or DEFAULTS.nvim,
     variant = cfg.variant or DEFAULTS.variant,
   }
 end

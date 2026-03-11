@@ -1,0 +1,24 @@
+# System tools for Linux without a package manager (non-macOS, non-Arch).
+# On macOS these come from Brewfile; on Arch from pkgs.arch.
+#
+# Copied to ~/.config/mise/system-tools.toml by the install script and
+# loaded via `includes` in the global mise config.
+#
+# Prerequisites (need a system package manager):
+#   stow, git, curl, zsh, jdtls
+
+[tools]
+tmux = "latest"
+neovim = "latest"
+eza = "latest"
+bat = "latest"
+fd = "latest"
+ripgrep = "latest"
+delta = "latest"
+lazygit = "latest"
+fzf = "latest"
+jq = "latest"
+zoxide = "latest"
+starship = "latest"
+atuin = "latest"
+navi = "latest"
