@@ -1,9 +1,10 @@
 format = """
-$directory\
+${custom.cwd}\
 $character"""
 
 right_format = """
 $cmd_duration\
+$directory\
 $git_branch\
 $git_status\
 $java\
@@ -17,14 +18,16 @@ success_symbol = '[❯](bold green)'
 error_symbol = '[❯](bold red)'
 
 [directory]
-truncation_length = 1
-truncate_to_repo = true
-style = 'bold cyan'
+truncation_length = 8
+truncate_to_repo = false
+fish_style_pwd_dir_length = 1
+truncation_symbol = '…/'
+style = 'dimmed cyan'
 
 [git_branch]
 format = '[$symbol$branch]($style) '
 symbol = ' '
-style = 'bold purple'
+style = 'purple'
 
 [git_status]
 format = '($stashed$staged$modified$untracked$conflicted$ahead_behind)'
@@ -60,4 +63,10 @@ symbol = '☸ '
 
 [cmd_duration]
 min_time = 2000
-format = "[$duration](bold yellow) "
+show_milliseconds = true
+format = "[$duration](yellow) "
+
+[custom.cwd]
+command = 'basename "$PWD"'
+when = true
+format = '[$output](bold cyan) '
