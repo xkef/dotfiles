@@ -1,0 +1,6 @@
+# Yazi keymap — vim-centric defaults with a few extras
+
+[manager]
+prepend_keymap = [
+  { on = "<C-s>", run = "shell '$SHELL' --block --confirm", desc = "Open shell here" },
+]

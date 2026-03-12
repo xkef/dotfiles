@@ -4,8 +4,8 @@ set -e
 DOTFILES_DIR="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir")}"
 
 if [[ "$(uname)" == "Darwin" ]]; then
-  creds=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null) \
-    && printf '%s' "$creds" > "$HOME/.claude/.credentials.json"
+  creds=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null) &&
+    printf '%s' "$creds" >"$HOME/.claude/.credentials.json"
   unset creds
 
   exec sandbox-exec \

@@ -5,7 +5,7 @@
 ## tmux — Ctrl-Space +
 
 | Key        | Action                           |
-|------------|----------------------------------|
+| ---------- | -------------------------------- |
 | │ / -      | Split right / down               |
 | h/j/k/l    | Navigate panes                   |
 | H/J/K/L    | Resize pane (repeatable)         |
@@ -30,7 +30,7 @@
 v select — V line — Ctrl-v block — y yank — Y yank-EOL
 
 | Key        | Action                    |
-|------------|---------------------------|
+| ---------- | ------------------------- |
 | H / L      | Start / end of line       |
 | / / ?      | Search forward / backward |
 | Ctrl-u / d | Half page up / down       |
@@ -42,7 +42,7 @@ v select — V line — Ctrl-v block — y yank — Y yank-EOL
 ### Files and search
 
 | Key   | Action                        |
-|-------|-------------------------------|
+| ----- | ----------------------------- |
 | Space | Alternate file (last buffer)  |
 | - / e | File browser (nvim-tree)      |
 | ff    | Find files                    |
@@ -62,14 +62,14 @@ v select — V line — Ctrl-v block — y yank — Y yank-EOL
 ### Navigation
 
 | Key | Action                         |
-|-----|--------------------------------|
+| --- | ------------------------------ |
 | s   | Flash jump (2 keystrokes)      |
 | S   | Flash treesitter (syntax node) |
 
 ### Git
 
 | Key     | Action              |
-|---------|---------------------|
+| ------- | ------------------- |
 | gs      | Lazygit             |
 | ]h / [h | Next / prev hunk    |
 | hp      | Preview hunk diff   |
@@ -79,7 +79,7 @@ v select — V line — Ctrl-v block — y yank — Y yank-EOL
 ### LSP
 
 | Key     | Action                 |
-|---------|------------------------|
+| ------- | ---------------------- |
 | gd      | Go to definition       |
 | gr      | References             |
 | gI      | Implementation         |
@@ -94,7 +94,7 @@ v select — V line — Ctrl-v block — y yank — Y yank-EOL
 ### Other
 
 | Key            | Action                        |
-|----------------|-------------------------------|
+| -------------- | ----------------------------- |
 | ?              | Which-key (all keybindings)   |
 | t              | Floating terminal             |
 | Up / Down      | Prev / next quickfix entry    |
@@ -111,7 +111,7 @@ v select — V line — Ctrl-v block — y yank — Y yank-EOL
 ### Aliases
 
 | Command       | Action                                 |
-|---------------|----------------------------------------|
+| ------------- | -------------------------------------- |
 | jj            | Show log (default command)             |
 | jj nt         | New change on top of trunk             |
 | jj retrunk    | Rebase current stack onto trunk        |
@@ -131,7 +131,7 @@ v select — V line — Ctrl-v block — y yank — Y yank-EOL
 ### Functions
 
 | Key             | Action                          |
-|-----------------|---------------------------------|
+| --------------- | ------------------------------- |
 | fe              | fzf file finder, open in editor |
 | frg             | ripgrep + fzf, jump to line     |
 | fbr             | fzf git branch switcher         |
@@ -150,7 +150,7 @@ v select — V line — Ctrl-v block — y yank — Y yank-EOL
 Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 
 | Key           | Action                      |
-|---------------|-----------------------------|
+| ------------- | --------------------------- |
 | Ctrl-T        | File search (fzf)           |
 | Ctrl-X d      | Directory jump (fzf)        |
 | Ctrl-G        | Navi cheatsheet             |
@@ -174,7 +174,7 @@ Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 ### Switch versions
 
 | Command              | Action                           |
-|----------------------|----------------------------------|
+| -------------------- | -------------------------------- |
 | mise ls              | List installed runtimes          |
 | mise use node@20     | Set Node 20 for current project  |
 | mise use -g node@22  | Set Node 22 globally             |

@@ -44,3 +44,19 @@ alias df='df -h'
 alias du='du -h'
 alias mkdir='mkdir -pv'
 alias grep='grep --color=auto'
+
+if command -v dust &>/dev/null; then
+  alias du='dust'
+fi
+
+if command -v duf &>/dev/null; then
+  alias df='duf'
+fi
+
+if command -v procs &>/dev/null; then
+  alias ps='procs'
+fi
+
+if command -v sd &>/dev/null; then
+  alias sed='sd'
+fi

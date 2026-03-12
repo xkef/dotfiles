@@ -46,3 +46,16 @@ _cached_source starship init zsh
 _cached_source direnv hook zsh
 _cached_source atuin init zsh --disable-up-arrow
 _cached_source navi widget zsh
+
+# ── Yazi: cd-on-quit wrapper ─────────────────────────
+if command -v yazi &>/dev/null; then
+  y() {
+    local tmp
+    tmp=$(mktemp -t "yazi-cwd.XXXXXX")
+    yazi "$@" --cwd-file="$tmp"
+    if cwd=$(command cat -- "$tmp") && [[ -n "$cwd" && "$cwd" != "$PWD" ]]; then
+      builtin cd -- "$cwd"
+    fi
+    rm -f -- "$tmp"
+  }
+fi

@@ -1,0 +1,118 @@
+# Yazi theme — uses terminal palette so it follows the active theme
+# (Nord, Catppuccin, etc.) without hardcoded hex values.
+
+[manager]
+cwd = { fg = "cyan", bold = true }
+
+hovered = { reversed = true }
+preview_hovered = { underline = true }
+
+find_keyword = { fg = "yellow", bold = true, italic = true, underline = true }
+find_position = { fg = "magenta", bg = "reset", italic = true }
+
+marker_selected = { fg = "green", bg = "green" }
+marker_copied = { fg = "yellow", bg = "yellow" }
+marker_cut = { fg = "red", bg = "red" }
+
+tab_active = { fg = "black", bg = "cyan" }
+tab_inactive = { fg = "white", bg = "darkgray" }
+tab_width = 1
+
+count_copied = { fg = "black", bg = "yellow" }
+count_cut = { fg = "black", bg = "red" }
+count_selected = { fg = "black", bg = "green" }
+
+border_symbol = "│"
+border_style = { fg = "darkgray" }
+
+[status]
+separator_open = ""
+separator_close = ""
+separator_style = { fg = "darkgray", bg = "darkgray" }
+
+mode_normal = { fg = "black", bg = "cyan", bold = true }
+mode_select = { fg = "black", bg = "green", bold = true }
+mode_unset = { fg = "black", bg = "magenta", bold = true }
+
+progress_label = { fg = "white", bold = true }
+progress_normal = { fg = "cyan", bg = "black" }
+progress_error = { fg = "red", bg = "black" }
+
+permissions_t = { fg = "cyan" }
+permissions_r = { fg = "yellow" }
+permissions_w = { fg = "red" }
+permissions_x = { fg = "green" }
+permissions_s = { fg = "darkgray" }
+
+[input]
+border = { fg = "cyan" }
+title = { }
+value = { }
+selected = { reversed = true }
+
+[select]
+border = { fg = "cyan" }
+active = { fg = "magenta" }
+inactive = { }
+
+[completion]
+border = { fg = "cyan" }
+active = { bg = "darkgray" }
+inactive = { }
+icon_file = ""
+icon_folder = ""
+icon_command = ""
+
+[tasks]
+border = { fg = "cyan" }
+title = { }
+hovered = { underline = true }
+
+[which]
+mask = { bg = "darkgray" }
+cand = { fg = "cyan" }
+rest = { fg = "darkgray" }
+desc = { fg = "magenta" }
+separator = "  "
+separator_style = { fg = "darkgray" }
+
+[help]
+on = { fg = "magenta" }
+run = { fg = "cyan" }
+desc = { }
+hovered = { bg = "darkgray", bold = true }
+footer = { fg = "black", bg = "white" }
+
+[filetype]
+rules = [
+  { mime = "image/*", fg = "magenta" },
+  { mime = "video/*", fg = "yellow" },
+  { mime = "audio/*", fg = "yellow" },
+  { mime = "application/zip", fg = "red" },
+  { mime = "application/gzip", fg = "red" },
+  { mime = "application/x-tar", fg = "red" },
+  { mime = "application/x-bzip*", fg = "red" },
+  { mime = "application/x-xz", fg = "red" },
+  { mime = "application/x-zstd", fg = "red" },
+  { mime = "application/x-7z-compressed", fg = "red" },
+  { mime = "application/x-rar", fg = "red" },
+  { name = "*.md", fg = "cyan" },
+  { name = "*.rs", fg = "red" },
+  { name = "*.go", fg = "cyan" },
+  { name = "*.ts", fg = "blue" },
+  { name = "*.tsx", fg = "blue" },
+  { name = "*.js", fg = "yellow" },
+  { name = "*.jsx", fg = "yellow" },
+  { name = "*.py", fg = "green" },
+  { name = "*.lua", fg = "blue" },
+  { name = "*.sh", fg = "green" },
+  { name = "*.zsh", fg = "green" },
+  { name = "*.toml", fg = "red" },
+  { name = "*.yaml", fg = "red" },
+  { name = "*.yml", fg = "red" },
+  { name = "*.json", fg = "yellow" },
+  { name = "*.lock", fg = "darkgray" },
+  { name = "*.log", fg = "darkgray" },
+  { name = "*", fg = "white" },
+  { name = "*/", fg = "cyan" },
+]

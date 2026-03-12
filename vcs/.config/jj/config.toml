@@ -28,6 +28,11 @@ program = "delta"
 diff-args = ["--color-only", "$left", "$right"]
 diff-expected-exit-codes = [0, 1]
 
+[merge-tools.difft]
+program = "difft"
+diff-args = ["--color=always", "$left", "$right"]
+diff-expected-exit-codes = [0, 1]
+
 # ── Git interop ──────────────────────────────────────
 [git]
 auto-local-bookmark = false
