@@ -1,0 +1,144 @@
+" IdeaVim config — mirrors nvim/tmux keybinding conventions
+" See: https://github.com/JetBrains/ideavim/wiki
+
+" --- Options (matching nvim init.lua) ---
+set number
+set relativenumber
+set ignorecase
+set smartcase
+set scrolloff=8
+set clipboard=unnamedplus
+set incsearch
+set hlsearch
+set showmode
+
+" --- Emulated plugins ---
+set surround
+set commentary
+set highlightedyank
+set nerdtree
+set argtextobj
+set textobj-entire
+set matchit
+set which-key
+set sneak
+
+let g:WhichKey_DefaultDelay = 300
+
+" --- Leader ---
+let mapleader=" "
+
+" --- Core leader mappings ---
+nmap <leader><leader> <C-S-6>
+nmap <leader>o <Action>(CloseAllEditorsButActive)
+nmap <leader>p <Action>(CopyAbsolutePath)
+nmap <leader>q <Action>(CloseContent)
+nmap <leader>w :w<CR>
+nmap <leader>x :wq<CR>
+nmap <leader>v gv
+
+" --- Normal mode ---
+nmap Q <nop>
+nmap <Esc> :nohlsearch<CR>
+nmap <C-d> <C-d>zz
+nmap <C-u> <C-u>zz
+nmap n nzzzv
+nmap N Nzzzv
+
+" --- Visual mode ---
+vmap J :m '>+1<CR>gv=gv
+vmap K :m '<-2<CR>gv=gv
+xmap <leader>p "_dP
+
+" --- Command mode ---
+cmap <C-a> <Home>
+cmap <C-e> <End>
+
+" --- Split navigation (C-hjkl) ---
+nmap <C-h> <Action>(PrevSplitPane)
+nmap <C-l> <Action>(NextSplitPane)
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+
+" --- Find / search (matching snacks.nvim) ---
+nmap <leader>ff <Action>(GotoFile)
+nmap <leader>/ <Action>(FindInPath)
+nmap <leader>fb <Action>(Switcher)
+nmap <leader>fh <Action>(HelpTopics)
+nmap <leader>fr <Action>(RecentFiles)
+nmap <leader>sg <Action>(FindInPath)
+nmap <leader>sG <Action>(FindWordAtCaret)
+nmap <leader>sr <Action>(FindInPath)
+
+" --- File tree (matching nvim-tree) ---
+nmap <leader>e :NERDTreeToggle<CR>
+nmap - :NERDTreeToggle<CR>
+
+" --- Harpoon-style bookmarks ---
+nmap <leader>ha <Action>(ToggleBookmarkWithMnemonic)
+nmap <leader>hh <Action>(ShowBookmarks)
+nmap <leader>1 <Action>(GotoBookmark1)
+nmap <leader>2 <Action>(GotoBookmark2)
+nmap <leader>3 <Action>(GotoBookmark3)
+nmap <leader>4 <Action>(GotoBookmark4)
+
+" --- LSP / code intelligence (matching nvim lsp.lua) ---
+nmap gd <Action>(GotoDeclaration)
+nmap gr <Action>(FindUsages)
+nmap gI <Action>(GotoImplementation)
+nmap gy <Action>(GotoTypeDeclaration)
+nmap <leader>ca <Action>(ShowIntentionActions)
+nmap <leader>cr <Action>(RenameElement)
+nmap <leader>cf <Action>(ReformatCode)
+
+" --- Diagnostics (matching nvim [d / ]d) ---
+nmap [d <Action>(GotoPreviousError)
+nmap ]d <Action>(GotoNextError)
+nmap <leader>d <Action>(ShowErrorDescription)
+nmap <leader>xl <Action>(ActivateProblemsViewToolWindow)
+
+" --- Git (matching gitsigns.nvim) ---
+nmap ]h <Action>(VcsShowNextChangeMarker)
+nmap [h <Action>(VcsShowPrevChangeMarker)
+nmap <leader>hp <Action>(VcsShowCurrentChangeMarker)
+nmap <leader>hr <Action>(Vcs.RollbackChangedLines)
+nmap <leader>hd <Action>(Compare.LastVersion)
+nmap <leader>gs <Action>(ActivateCommitToolWindow)
+
+" --- Search and replace (matching grug-far.nvim) ---
+nmap <leader>S <Action>(ReplaceInPath)
+nmap <leader>sR <Action>(ReplaceInPath)
+
+" --- Treesitter-style navigation ---
+nmap ]f <Action>(MethodDown)
+nmap [f <Action>(MethodUp)
+nmap ]c <Action>(GotoNextElementUnderCaretUsage)
+nmap [c <Action>(GotoPrevElementUnderCaretUsage)
+
+" --- Debug (matching nvim-dap) ---
+nmap <leader>db <Action>(ToggleLineBreakpoint)
+nmap <leader>dc <Action>(Resume)
+nmap <leader>do <Action>(StepOver)
+nmap <leader>di <Action>(StepInto)
+nmap <leader>dO <Action>(StepOut)
+nmap <leader>dr <Action>(EvaluateExpression)
+nmap <leader>dl <Action>(Rerun)
+nmap <leader>dt <Action>(Stop)
+
+" --- Tests (matching neotest) ---
+nmap <leader>tn <Action>(RunClass)
+nmap <leader>tf <Action>(RunClass)
+nmap <leader>ts <Action>(ActivateRunToolWindow)
+nmap <leader>to <Action>(ActivateRunToolWindow)
+nmap <leader>tp <Action>(ActivateRunToolWindow)
+nmap <leader>td <Action>(DebugClass)
+
+" --- Quickfix-style navigation (arrow keys, matching nvim) ---
+nmap <Up> <Action>(GotoPreviousError)
+nmap <Down> <Action>(GotoNextError)
+
+" --- Terminal ---
+nmap <leader>t <Action>(ActivateTerminalToolWindow)
+
+" --- Misc ---
+nmap <leader>? <Action>(GotoAction)
