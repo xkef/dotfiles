@@ -21,6 +21,18 @@ setopt HIST_IGNORE_SPACE     # leading-space commands stay out of history
 setopt HIST_REDUCE_BLANKS
 setopt HIST_VERIFY           # expand !! before running
 
+# ── Pager ──────────────────────────────────────
+export PAGER=less
+export LESS="-iFMRX -#.25"
+export LESSHISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/lesshst"
+
+export LESS_TERMCAP_mb=$'\E[01;31m'      # begin blink (red)
+export LESS_TERMCAP_md=$'\E[01;38;5;208m' # begin bold (orange)
+export LESS_TERMCAP_me=$'\E[0m'           # end mode
+export LESS_TERMCAP_se=$'\E[0m'           # end standout
+export LESS_TERMCAP_ue=$'\E[0m'           # end underline
+export LESS_TERMCAP_us=$'\E[04;38;5;111m' # begin underline (light blue)
+
 # ── Named directories ───────────────────────────
 hash -d dots="${DOTFILES_DIR:-$HOME/dotfiles}"
 hash -d cfg="$XDG_CONFIG_HOME"
