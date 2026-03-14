@@ -27,6 +27,25 @@ on Arch, pre-built binaries elsewhere). Then it symlinks configs via stow and se
 
 ---
 
+## Management
+
+Use the `dot` command for all dotfiles operations:
+
+```
+dot install       Full install (packages + stow + tools)
+dot install-adopt  Install, adopting existing files into the repo
+dot update         Pull, re-stow, update plugins and tools
+dot stow           Stow all packages into ~
+dot unstow         Remove all symlinks from ~
+dot restow         Re-stow (fixes stale symlinks)
+dot test           Run smoke tests
+dot fmt            Format all dotfiles
+dot lint           Lint shell scripts and neovim config
+dot edit           Open dotfiles in $EDITOR
+dot cd             Print dotfiles path (use: cd "$(dot cd)")
+dot macos          Apply macOS developer defaults (macOS only)
+```
+
 ## The one thing to remember
 
 | Context    | Key          |        |
@@ -54,3 +73,4 @@ Same physical key. Ctrl is the only difference.
 | Git    | `~/.config/git/config.local`         |
 | jj     | `jj config set --user user.name "…"` |
 | Neovim | `~/.config/nvim/lua/plugins/*.lua`   |
+| tmux   | `~/.config/tmux/local.conf`          |
