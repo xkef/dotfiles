@@ -39,6 +39,13 @@ if command -v bat &>/dev/null; then
   export MANROFFOPT="-c"
 fi
 
+# XDG-compliant tool homes
+export CARGO_HOME="$XDG_DATA_HOME/cargo"
+export RUSTUP_HOME="$XDG_DATA_HOME/rustup"
+export GOPATH="$XDG_DATA_HOME/go"
+export LESSHISTFILE="$XDG_STATE_HOME/less/history"
+export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
+
 # Dotfiles
 if [[ -z "${DOTFILES_DIR:-}" && -f "$HOME/.config/dotfiles/dir" ]]; then
   export DOTFILES_DIR="$(<"$HOME/.config/dotfiles/dir")"
@@ -48,8 +55,8 @@ fi
 typeset -U path
 path=(
   "$HOME/.local/bin"
-  "$HOME/.cargo/bin"
-  "$HOME/go/bin"
+  "$CARGO_HOME/bin"
+  "$GOPATH/bin"
   "/usr/local/bin"
   $path
 )
