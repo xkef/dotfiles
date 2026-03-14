@@ -17,6 +17,11 @@ bindkey -r '^[l' '^[L'
 bindkey -r '^[t' '^[T'
 # Alt-U (upcase-word — rarely intended)
 bindkey -r '^[u' '^[U'
+# Smart word boundaries: Ctrl-W stops at / . _ - instead of deleting entire paths
+autoload -Uz select-word-style
+select-word-style bash
+WORDCHARS=''
+
 bindkey '^p' history-search-backward
 bindkey '^n' history-search-forward
 bindkey '^[[A' history-search-backward # Up arrow
@@ -28,7 +33,19 @@ autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^X^E' edit-command-line
 
-bindkey '^Z' undo
+# Ctrl-Z: toggle between foreground and background
+fg-bg-toggle() {
+  if (( ${#jobstates} )); then
+    zle push-input
+    BUFFER="fg"
+    zle accept-line
+  else
+    zle undo
+  fi
+}
+zle -N fg-bg-toggle
+bindkey '^Z' fg-bg-toggle
+
 bindkey ' ' magic-space
 
 # Ctrl-S → yazi (cd-on-quit)
