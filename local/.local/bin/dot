@@ -32,7 +32,7 @@ USAGE
 
 cmd_install() { "$DOTFILES_DIR/install" "$@"; }
 cmd_update()  { dotfiles-update; }
-cmd_test()    { "$DOTFILES_DIR/test"; }
+cmd_test()    { dotfiles-test; }
 
 cmd_stow() {
   while IFS= read -r pkg; do
