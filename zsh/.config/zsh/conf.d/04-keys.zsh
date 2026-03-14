@@ -1,6 +1,22 @@
 # ── Key bindings ──────────────────────────────────────
 stty -ixon # disable XON/XOFF so Ctrl-S is available
 bindkey -e # emacs mode
+
+# Defensive unbinds: disable sequences that cause mysterious behavior
+# Ctrl-Q (flow control resume — redundant with stty -ixon)
+bindkey -r '^Q'
+# Alt-Enter / ESC-Enter (some terminals send this accidentally)
+bindkey -r '^[^M'
+# Alt-H (run-help — opens man page unexpectedly)
+bindkey -r '^[H' '^[h'
+# Alt-? (which-command — easy to fat-finger)
+bindkey -r '^[?'
+# Alt-L (downcase-word — easy to hit instead of Ctrl-L)
+bindkey -r '^[l' '^[L'
+# Alt-T (transpose-words — rarely intended)
+bindkey -r '^[t' '^[T'
+# Alt-U (upcase-word — rarely intended)
+bindkey -r '^[u' '^[U'
 bindkey '^p' history-search-backward
 bindkey '^n' history-search-forward
 bindkey '^[[A' history-search-backward # Up arrow
