@@ -52,8 +52,9 @@ export FZF_ALT_C_OPTS=" \
   --preview 'eza -T --color=always --icons --level=2 {} 2>/dev/null || ls -la {}' \
   --preview-window 'right:50%:border-left'"
 
-# Source fzf shell integration (cached — regenerates when fzf binary changes)
-(){
+# Source fzf shell integration (deferred — keybindings not needed at first prompt)
+_deferred_fzf_init() {
+  unfunction _deferred_fzf_init
   local cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/eval-cache"
   local bin=${commands[fzf]:-}
   local f="$cache/fzf.zsh"
@@ -66,6 +67,7 @@ export FZF_ALT_C_OPTS=" \
     source "$f"
   fi
 }
+precmd_functions+=(_deferred_fzf_init)
 
 # Alt-C works via ghostty macos-option-as-alt=left; Ctrl-X d as fallback
 bindkey '^Xd' fzf-cd-widget

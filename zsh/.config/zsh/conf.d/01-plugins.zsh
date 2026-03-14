@@ -17,7 +17,8 @@ zinit light zsh-users/zsh-completions
 
 # Initialize completion system (rebuild dump daily, cache otherwise)
 autoload -Uz compinit
-local _zcd="${ZDOTDIR:-$HOME}/.zcompdump"
+local _zcd="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
+[[ -d "${_zcd:h}" ]] || mkdir -p "${_zcd:h}"
 local -a _fresh=( "$_zcd"(Nm-24) )
 if (( $#_fresh )); then
   compinit -C -d "$_zcd"
@@ -30,8 +31,8 @@ zinit cdreplay -q
 # Register missing completions (eza has no built-in zsh completions)
 command -v eza &>/dev/null && compdef _files eza
 
-# fzf-tab (must load after compinit)
-zinit light Aloxaf/fzf-tab
+# fzf-tab (must load after compinit, deferred to avoid ~5ms sync cost)
+zinit wait lucid for Aloxaf/fzf-tab
 
 # Syntax highlighting and autosuggestions (deferred for faster startup)
 zinit wait lucid for \

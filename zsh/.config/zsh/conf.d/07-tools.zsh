@@ -51,11 +51,17 @@ mise() {
 }
 
 compdef _mise mise
-_cached_source zoxide init zsh --cmd z
 _cached_source starship init zsh
-_cached_source direnv hook zsh
-_cached_source atuin init zsh --disable-up-arrow
-_cached_source navi widget zsh
+
+# Defer tools not needed at first prompt (~9ms saved)
+_deferred_tool_init() {
+  unfunction _deferred_tool_init
+  _cached_source zoxide init zsh --cmd z
+  _cached_source direnv hook zsh
+  _cached_source atuin init zsh --disable-up-arrow
+  _cached_source navi widget zsh
+}
+precmd_functions+=(_deferred_tool_init)
 
 # ── Yazi: cd-on-quit wrapper ─────────────────────────
 if command -v yazi &>/dev/null; then
