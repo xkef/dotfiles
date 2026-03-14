@@ -12,13 +12,14 @@ HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
 [[ -d "${HISTFILE:h}" ]] || mkdir -p "${HISTFILE:h}"
 HISTSIZE=100000
 SAVEHIST=100000
-setopt HIST_IGNORE_ALL_DUPS # remove older duplicate entries
-setopt HIST_FIND_NO_DUPS    # skip duplicates in reverse search
-setopt HIST_REDUCE_BLANKS   # trim unnecessary whitespace
-setopt HIST_VERIFY          # expand !! before running
-setopt SHARE_HISTORY        # share across sessions in real time
 setopt EXTENDED_HISTORY      # save timestamps
-setopt INC_APPEND_HISTORY   # write immediately, not on exit
+setopt SHARE_HISTORY         # share across sessions (implies INC_APPEND_HISTORY)
+setopt HIST_EXPIRE_DUPS_FIRST
+setopt HIST_IGNORE_ALL_DUPS  # remove older duplicate entries
+setopt HIST_FIND_NO_DUPS     # skip duplicates in reverse search
+setopt HIST_IGNORE_SPACE     # leading-space commands stay out of history
+setopt HIST_REDUCE_BLANKS
+setopt HIST_VERIFY           # expand !! before running
 
 # ── Named directories ───────────────────────────
 hash -d dots="${DOTFILES_DIR:-$HOME/dotfiles}"

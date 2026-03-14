@@ -40,22 +40,12 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 alias cls='clear'
-alias df='df -h'
-alias du='du -h'
 alias mkdir='mkdir -pv'
 alias grep='grep --color=auto'
 
-if command -v dust &>/dev/null; then
-  alias du='dust'
-fi
-
-if command -v duf &>/dev/null; then
-  alias df='duf'
-fi
-
-if command -v procs &>/dev/null; then
-  alias ps='procs'
-fi
+if command -v dust &>/dev/null; then alias du='dust'; else alias du='du -h'; fi
+if command -v duf &>/dev/null; then alias df='duf'; else alias df='df -h'; fi
+if command -v procs &>/dev/null; then alias ps='procs'; fi
 
 # Universal extract/compress via ouch
 if command -v ouch &>/dev/null; then

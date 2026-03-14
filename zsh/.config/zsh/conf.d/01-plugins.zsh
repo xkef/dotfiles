@@ -34,18 +34,12 @@ command -v eza &>/dev/null && compdef _files eza
 # fzf-tab (must load after compinit, deferred to avoid ~5ms sync cost)
 zinit wait lucid for Aloxaf/fzf-tab
 
-# Syntax highlighting and autosuggestions (deferred for faster startup)
+# Deferred plugins (not needed at first prompt)
 zinit wait lucid for \
   zdharma-continuum/fast-syntax-highlighting \
-  zsh-users/zsh-autosuggestions
-
-# Essential OMZ snippets (deferred — aliases and completions not needed at first prompt)
-zinit wait lucid for \
+  zsh-users/zsh-autosuggestions \
   OMZP::git \
   OMZP::sudo \
-  OMZP::command-not-found
-
-# Notify when long-running commands finish (>30s)
-zinit wait lucid for \
+  OMZP::command-not-found \
   atload'export AUTO_NOTIFY_THRESHOLD=30; export AUTO_NOTIFY_TITLE="Done: %command"; export AUTO_NOTIFY_IGNORE=(nvim vim less bat man tmux atuin navi yazi y)' \
-  MichaelAquilina/zsh-auto-notify
+    MichaelAquilina/zsh-auto-notify
