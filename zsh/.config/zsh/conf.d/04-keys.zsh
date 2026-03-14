@@ -36,9 +36,8 @@ bindkey '^X^E' edit-command-line
 # Ctrl-Z: toggle between foreground and background
 fg-bg-toggle() {
   if (( ${#jobstates} )); then
-    zle push-input
-    BUFFER="fg"
-    zle accept-line
+    fg
+    zle reset-prompt
   else
     zle undo
   fi
