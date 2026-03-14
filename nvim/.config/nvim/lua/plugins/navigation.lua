@@ -147,7 +147,7 @@ return {
       },
       view = {
         width = 35,
-        side = "left",
+        side = "right",
       },
       filters = { dotfiles = false },
       actions = {
