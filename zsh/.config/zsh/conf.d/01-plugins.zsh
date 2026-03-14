@@ -11,8 +11,19 @@ source "${ZINIT_HOME}/zinit.zsh"
 zinit ice blockf
 zinit light zsh-users/zsh-completions
 
-# Initialize completion system
-autoload -Uz compinit && compinit -C
+# Homebrew completions (must be in fpath before compinit)
+[[ -d "${HOMEBREW_PREFIX:-}/share/zsh/site-functions" ]] && \
+  fpath=("$HOMEBREW_PREFIX/share/zsh/site-functions" $fpath)
+
+# Initialize completion system (rebuild dump daily, cache otherwise)
+autoload -Uz compinit
+local _zcd="${ZDOTDIR:-$HOME}/.zcompdump"
+local -a _fresh=( "$_zcd"(Nm-24) )
+if (( $#_fresh )); then
+  compinit -C -d "$_zcd"
+else
+  compinit -d "$_zcd"
+fi
 zinit cdreplay -q
 
 # Register missing completions (eza has no built-in zsh completions)

@@ -19,3 +19,4 @@ __pycache__/
 *.tmTheme
 /git/.config/git/config.local
 /.nvimlog
+/zsh/.config/zsh/.zcompcache/brew_all_commands

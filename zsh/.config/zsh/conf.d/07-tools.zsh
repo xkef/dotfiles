@@ -41,6 +41,15 @@ _cached_source() {
 
 # ── External tool initialization ─────────────────────
 _cached_source mise activate zsh --shims
+
+mise() {
+  command mise "$@"
+  case "$1" in
+    install|use|uninstall|upgrade) command mise reshim ;;
+  esac
+}
+
+compdef _mise mise
 _cached_source zoxide init zsh --cmd z
 _cached_source starship init zsh
 _cached_source direnv hook zsh

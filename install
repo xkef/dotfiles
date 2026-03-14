@@ -57,8 +57,6 @@ log "Packages installed"
 
 # ── Stow configs ──────────────────────────────────────
 
-find "$DOTFILES" -name .DS_Store -delete 2>/dev/null
-
 adopt=false
 for arg in "$@"; do
   case "$arg" in
