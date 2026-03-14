@@ -34,7 +34,12 @@ _cached_source() {
   fi
   if $stale; then
     mkdir -p -m 700 "$cache"
+    rm -f "$f" "$f.zwc"
     { echo "# $realbin"; "$cmd" "$@"; } > "$f"
+    if (( $(wc -l < "$f") <= 1 )); then
+      rm -f "$f"
+      return 1
+    fi
     zcompile "$f"
   fi
   source "$f"

@@ -11,7 +11,7 @@ zstyle ':completion:*' matcher-list \
   'l:|=* r:|=*'
 
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
-zstyle ':completion:*' menu no                              # disable default menu (fzf-tab handles it)
+zstyle ':completion:*' menu no # disable default menu (fzf-tab handles it)
 
 # Group completions by category
 zstyle ':completion:*' group-name ''
