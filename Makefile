@@ -41,8 +41,9 @@ tools: ## Install mise tools (languages + formatters)
 fmt: ## Format all dotfiles
 	stylua nvim/.config/nvim/
 	shfmt -w $(SHELL_FILES)
-	prettier --write '**/*.{json,yaml,yml,toml,css,html,md}' \
+	prettier --write '**/*.{json,yaml,yml,css,html,md}' \
 		--ignore-path .gitignore 2>/dev/null || true
+	taplo fmt
 
 lint: ## Lint shell scripts and neovim config
 	@printf '\n  Linting...\n\n'

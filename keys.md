@@ -4,34 +4,34 @@
 
 ## tmux — Ctrl-Space +
 
-| Key        | Action                           |
-| ---------- | -------------------------------- |
-| │ / -      | Split right / down               |
-| h/j/k/l    | Navigate panes                   |
-| H/J/K/L    | Resize pane (repeatable)         |
-| Ctrl-Space | Toggle last window (double-tap)  |
-| Tab        | Last window                      |
-| n / p      | Next / previous window           |
-| < / >      | Swap window left / right         |
-| c          | New window                       |
-|            |                                  |
-| f          | Sessionizer (fzf project picker) |
-| F          | Switch session (fzf popup)       |
-| w          | Switch window, all sessions      |
-| g          | Lazygit (floating popup)         |
-| ?          | This reference (floating popup)  |
-| t          | Thumbs (hint-copy visible text)  |
-| u          | Open URL from scrollback (fzf)   |
-| Ctrl-f     | tmux-fzf (sessions/windows/etc)  |
-|            |                                  |
-| S          | New named session                |
-| s          | Browse sessions                  |
-| o / i      | Jump to prev / next prompt       |
-| Enter      | Enter copy mode                  |
-| /          | Search forward (enters copy mode)|
-| Ctrl-l     | Clear scrollback history         |
-| r          | Reload tmux config               |
-| I          | Install TPM plugins              |
+| Key        | Action                            |
+| ---------- | --------------------------------- |
+| │ / -      | Split right / down                |
+| h/j/k/l    | Navigate panes                    |
+| H/J/K/L    | Resize pane (repeatable)          |
+| Ctrl-Space | Toggle last window (double-tap)   |
+| Tab        | Last window                       |
+| n / p      | Next / previous window            |
+| < / >      | Swap window left / right          |
+| c          | New window                        |
+|            |                                   |
+| f          | Sessionizer (fzf project picker)  |
+| F          | Switch session (fzf popup)        |
+| w          | Switch window, all sessions       |
+| g          | Lazygit (floating popup)          |
+| ?          | This reference (floating popup)   |
+| t          | Thumbs (hint-copy visible text)   |
+| u          | Open URL from scrollback (fzf)    |
+| Ctrl-f     | tmux-fzf (sessions/windows/etc)   |
+|            |                                   |
+| S          | New named session                 |
+| s          | Browse sessions                   |
+| o / i      | Jump to prev / next prompt        |
+| Enter      | Enter copy mode                   |
+| /          | Search forward (enters copy mode) |
+| Ctrl-l     | Clear scrollback history          |
+| r          | Reload tmux config                |
+| I          | Install TPM plugins               |
 
 ### Copy mode
 
@@ -122,24 +122,24 @@ v/V/Ctrl-v toggle VISUAL/LINE/BLOCK (press again to cancel) — y yank — Y yan
 
 Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 
-| Key           | Action                      |
-| ------------- | --------------------------- |
-| Ctrl-S        | Yazi file manager (cd-on-quit) |
-| Ctrl-T        | File search (fzf)           |
-| Ctrl-X d      | Directory jump (fzf)        |
-| Ctrl-G        | Navi cheatsheet             |
-|               |                             |
-| Ctrl-A / E    | Beginning / end of line     |
-| Alt-F / B     | Forward / backward one word |
+| Key           | Action                                |
+| ------------- | ------------------------------------- |
+| Ctrl-S        | Yazi file manager (cd-on-quit)        |
+| Ctrl-T        | File search (fzf)                     |
+| Ctrl-X d      | Directory jump (fzf)                  |
+| Ctrl-G        | Navi cheatsheet                       |
+|               |                                       |
+| Ctrl-A / E    | Beginning / end of line               |
+| Alt-F / B     | Forward / backward one word           |
 | Ctrl-W        | Delete word backward (stops at /.\_-) |
-| Alt-D         | Delete word forward         |
-| Ctrl-K        | Kill to end of line         |
-| Ctrl-U        | Kill entire line            |
-| Ctrl-Y        | Yank last killed text       |
-| Ctrl-Z        | Toggle fg/bg (undo if no jobs) |
-| Ctrl-X Ctrl-E | Edit command in nvim        |
-| !! then Space | Expand history inline       |
-| Esc Esc       | Sudo last command           |
+| Alt-D         | Delete word forward                   |
+| Ctrl-K        | Kill to end of line                   |
+| Ctrl-U        | Kill entire line                      |
+| Ctrl-Y        | Yank last killed text                 |
+| Ctrl-Z        | Toggle fg/bg (undo if no jobs)        |
+| Ctrl-X Ctrl-E | Edit command in nvim                  |
+| !! then Space | Expand history inline                 |
+| Esc Esc       | Sudo last command                     |
 
 ### Named directories
 

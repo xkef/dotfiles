@@ -46,26 +46,26 @@ permissions_s = { fg = "darkgray" }
 
 [input]
 border = { fg = "cyan" }
-title = { }
-value = { }
+title = {}
+value = {}
 selected = { reversed = true }
 
 [select]
 border = { fg = "cyan" }
 active = { fg = "magenta" }
-inactive = { }
+inactive = {}
 
 [completion]
 border = { fg = "cyan" }
 active = { bg = "darkgray" }
-inactive = { }
+inactive = {}
 icon_file = ""
 icon_folder = ""
 icon_command = ""
 
 [tasks]
 border = { fg = "cyan" }
-title = { }
+title = {}
 hovered = { underline = true }
 
 [which]
@@ -79,7 +79,7 @@ separator_style = { fg = "darkgray" }
 [help]
 on = { fg = "magenta" }
 run = { fg = "cyan" }
-desc = { }
+desc = {}
 hovered = { bg = "darkgray", bold = true }
 footer = { fg = "black", bg = "white" }
 

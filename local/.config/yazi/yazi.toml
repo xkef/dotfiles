@@ -20,9 +20,7 @@ image_quality = 75
 sixel_fraction = 15
 
 [opener]
-edit = [
-  { run = '${EDITOR:-nvim} "$@"', block = true, for = "unix" },
-]
+edit = [{ run = '${EDITOR:-nvim} "$@"', block = true, for = "unix" }]
 
 [open]
 prepend_rules = [

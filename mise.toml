@@ -3,8 +3,8 @@
 stylua = "latest"
 shfmt = "latest"
 ruff = "latest"
-"npm:prettier" = "latest"
-"npm:@fsouza/prettierd" = "latest"
+prettier = "latest"
+taplo = "latest"
 
 # Linters used by the test script
 shellcheck = "latest"
