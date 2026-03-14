@@ -35,6 +35,7 @@ _cached_source() {
   if $stale; then
     mkdir -p -m 700 "$cache"
     { echo "# $realbin"; "$cmd" "$@"; } > "$f"
+    zcompile "$f"
   fi
   source "$f"
 }

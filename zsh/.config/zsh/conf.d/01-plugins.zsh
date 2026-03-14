@@ -23,6 +23,7 @@ if (( $#_fresh )); then
   compinit -C -d "$_zcd"
 else
   compinit -d "$_zcd"
+  { zcompile "$_zcd" } &!
 fi
 zinit cdreplay -q
 

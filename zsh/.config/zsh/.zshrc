@@ -2,7 +2,9 @@
 [[ -n "$ZPROFRC" ]] && zmodload zsh/zprof
 
 # Source all config files from conf.d/ (in order)
+# zsh automatically uses .zwc bytecode if it exists and is newer than .zsh
 for f in "$ZDOTDIR"/conf.d/*.zsh(N); do
+  [[ ! -f "$f.zwc" || "$f" -nt "$f.zwc" ]] && zcompile "$f" &>/dev/null
   source "$f"
 done
 

@@ -61,6 +61,7 @@ export FZF_ALT_C_OPTS=" \
     if [[ ! -f "$f" || "$bin" -nt "$f" ]]; then
       mkdir -p -m 700 "$cache"
       fzf --zsh > "$f" 2>/dev/null
+      zcompile "$f"
     fi
     source "$f"
   fi
