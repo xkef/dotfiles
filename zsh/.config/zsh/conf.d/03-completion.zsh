@@ -21,8 +21,7 @@ zstyle ':completion:*:descriptions' format '[%d]'
 zstyle ':completion:*' file-sort modification
 zstyle ':completion:*:*:cd:*' tag-order local-directories directory-stack path-directories
 
-# Process completion: show full info
-zstyle ':completion:*:*:kill:*' menu yes select
+# Process completion: enrich the candidate list (fzf-tab renders it)
 zstyle ':completion:*:kill:*' force-list always
 zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
@@ -34,16 +33,6 @@ zstyle ':completion:*' cache-path "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompcach
 # ── fzf-tab ──────────────────────────────────────────
 zstyle ':fzf-tab:*' fzf-flags --height=~15 --layout=reverse --border
 zstyle ':fzf-tab:*' switch-group '<' '>'
-
-# File/directory previews
-zstyle ':fzf-tab:complete:cd:*' fzf-preview \
-  'eza -1 --color=always --icons --group-directories-first $realpath 2>/dev/null || ls -1 $realpath'
-zstyle ':fzf-tab:complete:ls:*' fzf-preview \
-  'eza -1 --color=always --icons --group-directories-first $realpath 2>/dev/null || ls -1 $realpath'
-zstyle ':fzf-tab:complete:eza:*' fzf-preview \
-  'eza -1 --color=always --icons --group-directories-first $realpath 2>/dev/null || ls -1 $realpath'
-zstyle ':fzf-tab:complete:z:*' fzf-preview \
-  'eza -1 --color=always --icons --group-directories-first $realpath 2>/dev/null || ls -1 $realpath'
 
 # General file preview (bat for files, eza for dirs)
 zstyle ':fzf-tab:complete:*:*' fzf-preview \

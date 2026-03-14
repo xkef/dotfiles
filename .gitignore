@@ -20,3 +20,4 @@ __pycache__/
 /git/.config/git/config.local
 /.nvimlog
 /zsh/.config/zsh/.zcompcache/brew_all_commands
+*.zwc
