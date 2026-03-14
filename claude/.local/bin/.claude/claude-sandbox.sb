@@ -8,12 +8,18 @@
     (require-not (literal (param "HOME")))
     (require-not (subpath (param "CWD")))
     (require-not (subpath (param "CLAUDE_HOME")))
-    (require-not (literal (param "CLAUDE_JSON")))
+    (require-not (regex (param "CLAUDE_JSON_RE")))
     (require-not (subpath (param "CLAUDE_AUTH")))
     (require-not (subpath (param "LOCAL_BIN")))
     (require-not (subpath (param "GIT_CONFIG")))
+    (require-not (subpath (param "GH_CONFIG")))
     (require-not (subpath (param "DOTFILES")))
-    (require-not (subpath (param "M2_REPO")))))
+    (require-not (subpath (param "M2_REPO")))
+    ;; Read-only keychain access for OAuth credentials. Per-item ACLs
+    ;; still gate access — only items that granted `security` CLI access
+    ;; (e.g. "Claude Code-credentials") are readable without a prompt.
+    (require-not (literal (param "LIBRARY")))
+    (require-not (subpath (param "KEYCHAINS")))))
 
 ;; Allow executing scripts from local bin
 (allow process-exec (subpath (param "LOCAL_BIN")))
@@ -25,6 +31,6 @@
     (require-not (literal (param "HOME")))
     (require-not (subpath (param "CWD")))
     (require-not (subpath (param "CLAUDE_HOME")))
-    (require-not (literal (param "CLAUDE_JSON")))
+    (require-not (regex (param "CLAUDE_JSON_RE")))
     (require-not (subpath (param "CLAUDE_AUTH")))
     (require-not (subpath (param "M2_REPO")))))

@@ -4,20 +4,19 @@ set -e
 DOTFILES_DIR="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir")}"
 
 if [[ "$(uname)" == "Darwin" ]]; then
-  creds=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null) &&
-    printf '%s' "$creds" >"$HOME/.claude/.credentials.json"
-  unset creds
-
   exec sandbox-exec \
     -D "CWD=$(pwd)" \
     -D "HOME=$HOME" \
     -D "CLAUDE_HOME=$HOME/.claude" \
-    -D "CLAUDE_JSON=$HOME/.claude.json" \
+    -D "CLAUDE_JSON_RE=^${HOME}/\\.claude\\.json" \
     -D "CLAUDE_AUTH=$HOME/.config/claude-code" \
     -D "LOCAL_BIN=$HOME/.local/bin" \
     -D "GIT_CONFIG=$HOME/.config/git" \
+    -D "GH_CONFIG=$HOME/.config/gh" \
     -D "DOTFILES=$DOTFILES_DIR" \
     -D "M2_REPO=$HOME/.m2" \
+    -D "LIBRARY=$HOME/Library" \
+    -D "KEYCHAINS=$HOME/Library/Keychains" \
     -f "$HOME/.local/bin/.claude/claude-sandbox.sb" \
     claude "$@"
 elif command -v bwrap &>/dev/null; then
@@ -34,6 +33,7 @@ elif command -v bwrap &>/dev/null; then
     --bind "$HOME/.m2" "$HOME/.m2" \
     --ro-bind "$HOME/.local/bin" "$HOME/.local/bin" \
     --ro-bind "$HOME/.config/git" "$HOME/.config/git" \
+    --ro-bind "$HOME/.config/gh" "$HOME/.config/gh" \
     --ro-bind "$HOME/.config/dotfiles" "$HOME/.config/dotfiles" \
     --ro-bind "$DOTFILES_DIR" "$DOTFILES_DIR" \
     claude "$@"
