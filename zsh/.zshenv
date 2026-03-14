@@ -13,14 +13,12 @@ if [[ -d /opt/homebrew ]]; then
   export HOMEBREW_PREFIX="/opt/homebrew"
   export HOMEBREW_CELLAR="/opt/homebrew/Cellar"
   export HOMEBREW_REPOSITORY="/opt/homebrew"
-  path=(/opt/homebrew/bin /opt/homebrew/sbin $path)
   export MANPATH="/opt/homebrew/share/man${MANPATH+:$MANPATH}:"
   export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}"
 elif [[ -d /home/linuxbrew/.linuxbrew ]]; then
   export HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew"
   export HOMEBREW_CELLAR="/home/linuxbrew/.linuxbrew/Cellar"
   export HOMEBREW_REPOSITORY="/home/linuxbrew/.linuxbrew/Homebrew"
-  path=(/home/linuxbrew/.linuxbrew/bin /home/linuxbrew/.linuxbrew/sbin $path)
   export MANPATH="/home/linuxbrew/.linuxbrew/share/man${MANPATH+:$MANPATH}:"
   export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:${INFOPATH:-}"
 fi
@@ -51,12 +49,14 @@ if [[ -z "${DOTFILES_DIR:-}" && -f "$HOME/.config/dotfiles/dir" ]]; then
   export DOTFILES_DIR="$(<"$HOME/.config/dotfiles/dir")"
 fi
 
-# Path
+# Path — also re-asserted in .zprofile to override macOS path_helper.
 typeset -U path
 path=(
   "$HOME/.local/bin"
   "$CARGO_HOME/bin"
   "$GOPATH/bin"
+  ${HOMEBREW_PREFIX:+"$HOMEBREW_PREFIX/bin"}
+  ${HOMEBREW_PREFIX:+"$HOMEBREW_PREFIX/sbin"}
   "/usr/local/bin"
   $path
 )
