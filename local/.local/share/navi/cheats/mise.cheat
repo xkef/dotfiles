@@ -1,0 +1,22 @@
+% mise, runtime manager
+
+# List installed runtimes
+mise ls
+
+# Set tool version for current project
+mise use <tool>@<version>
+
+# Set tool version globally
+mise use -g <tool>@<version>
+
+# Install without switching
+mise install <tool>@<version>
+
+# List all available versions for a tool
+mise ls-remote <tool>
+
+# Update all tools
+mise upgrade
+
+$ tool: echo 'node python java go rust' | tr ' ' '\n'
+$ version: mise ls-remote <tool> 2>/dev/null | tail -20

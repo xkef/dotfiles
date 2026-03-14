@@ -106,44 +106,7 @@ v select — V line — Ctrl-v block — y yank — Y yank-EOL
 
 ---
 
-## jj (Jujutsu)
-
-### Aliases
-
-| Command       | Action                                 |
-| ------------- | -------------------------------------- |
-| jj            | Show log (default command)             |
-| jj nt         | New change on top of trunk             |
-| jj retrunk    | Rebase current stack onto trunk        |
-| jj reheat     | Rebase entire stack onto trunk         |
-| jj tug        | Move nearest bookmark to parent of @   |
-| jj consume    | Squash from another change into @      |
-| jj eject      | Squash from @ into another change      |
-| jj examine -r | Detailed log with patch for a revision |
-| jj credit     | File annotation (like git blame)       |
-| jj cat        | Show file contents at a revision       |
-| jj streamline | Simplify parent structure              |
-
----
-
 ## Shell
-
-### Functions
-
-| Key             | Action                          |
-| --------------- | ------------------------------- |
-| fe              | fzf file finder, open in editor |
-| frg             | ripgrep + fzf, jump to line     |
-| fbr             | fzf git branch switcher         |
-| flog            | fzf git log browser             |
-| fkill           | fzf process killer              |
-| g               | git status / git command        |
-| mcd \<dir>      | mkdir + cd                      |
-| root            | cd to git repo root             |
-| envup [file]    | Load .env into shell            |
-| theme           | Switch terminal / editor theme  |
-| dotfiles-update | Pull, re-stow, update plugins   |
-| keys            | This reference                  |
 
 ### Zsh line editing
 
@@ -166,20 +129,3 @@ Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 | Ctrl-X Ctrl-E | Edit command in nvim        |
 | !! then Space | Expand history inline       |
 | Esc Esc       | Sudo last command           |
-
----
-
-## mise (runtime manager)
-
-### Switch versions
-
-| Command              | Action                           |
-| -------------------- | -------------------------------- |
-| mise ls              | List installed runtimes          |
-| mise use node@20     | Set Node 20 for current project  |
-| mise use -g node@22  | Set Node 22 globally             |
-| mise use java@24     | Set Java 24 for current project  |
-| mise use -g java@21  | Set Java 21 globally             |
-| mise install node@18 | Install without switching        |
-| mise ls-remote node  | List all available Node versions |
-| mise ls-remote java  | List all available Java versions |
