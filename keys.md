@@ -19,6 +19,7 @@
 | F          | Switch session (fzf popup)        |
 | w          | Switch window, all sessions       |
 | g          | Lazygit (floating popup)          |
+| R          | Scooter search & replace (popup)  |
 | ?          | This reference (floating popup)   |
 | t          | Thumbs (hint-copy visible text)   |
 | u          | Open URL from scrollback (fzf)    |
@@ -147,4 +148,4 @@ Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 
 ### Modern aliases
 
-`rm` trash | `extract` / `compress` ouch | `cat` bat | `ls` eza | `du` dust | `df` duf | `ps` procs | `sed` sd
+`extract` / `compress` ouch | `cat` bat | `ls` eza | `du` dust | `df` duf | `ps` procs
