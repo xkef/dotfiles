@@ -43,3 +43,8 @@ zinit wait lucid for \
   OMZP::git \
   OMZP::sudo \
   OMZP::command-not-found
+
+# Notify when long-running commands finish (>30s)
+zinit wait lucid for \
+  atload'export AUTO_NOTIFY_THRESHOLD=30; export AUTO_NOTIFY_TITLE="Done: %command"; export AUTO_NOTIFY_IGNORE=(nvim vim less bat man tmux atuin navi yazi y)' \
+  MichaelAquilina/zsh-auto-notify

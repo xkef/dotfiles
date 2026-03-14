@@ -131,12 +131,20 @@ Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 |               |                             |
 | Ctrl-A / E    | Beginning / end of line     |
 | Alt-F / B     | Forward / backward one word |
-| Ctrl-W        | Delete word backward        |
+| Ctrl-W        | Delete word backward (stops at /.\_-) |
 | Alt-D         | Delete word forward         |
 | Ctrl-K        | Kill to end of line         |
 | Ctrl-U        | Kill entire line            |
 | Ctrl-Y        | Yank last killed text       |
-| Ctrl-Z        | Undo last edit              |
+| Ctrl-Z        | Toggle fg/bg (undo if no jobs) |
 | Ctrl-X Ctrl-E | Edit command in nvim        |
 | !! then Space | Expand history inline       |
 | Esc Esc       | Sudo last command           |
+
+### Named directories
+
+`~dots` dotfiles | `~cfg` ~/.config | `~data` ~/.local/share | `~cache` ~/.cache
+
+### Modern aliases
+
+`rm` trash | `extract` / `compress` ouch | `cat` bat | `ls` eza | `du` dust | `df` duf | `ps` procs | `sed` sd
