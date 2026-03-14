@@ -6,12 +6,13 @@
 
 | Key        | Action                           |
 | ---------- | -------------------------------- |
-| v / │ / -  | Split right / right / down       |
+| │ / -      | Split right / down               |
 | h/j/k/l    | Navigate panes                   |
 | H/J/K/L    | Resize pane (repeatable)         |
 | Ctrl-Space | Toggle last window (double-tap)  |
 | Tab        | Last window                      |
 | n / p      | Next / previous window           |
+| < / >      | Swap window left / right         |
 | c          | New window                       |
 |            |                                  |
 | f          | Sessionizer (fzf project picker) |
@@ -25,21 +26,24 @@
 |            |                                  |
 | S          | New named session                |
 | s          | Browse sessions                  |
+| o / i      | Jump to prev / next prompt       |
 | Enter      | Enter copy mode                  |
-| /          | Copy mode + search               |
+| /          | Search forward (enters copy mode)|
+| Ctrl-l     | Clear scrollback history         |
 | r          | Reload tmux config               |
 | I          | Install TPM plugins              |
 
 ### Copy mode
 
-v select — V line — Ctrl-v block — y yank — Y yank-EOL
+v/V/Ctrl-v toggle VISUAL/LINE/BLOCK (press again to cancel) — y yank — Y yank-EOL — q cancel
 
 | Key        | Action                    |
 | ---------- | ------------------------- |
 | H / L      | Start / end of line       |
 | / / ?      | Search forward / backward |
 | Ctrl-u / d | Half page up / down       |
-| Escape     | Cancel                    |
+| o / i      | Previous / next prompt    |
+| Escape / q | Cancel                    |
 
 ---
 
