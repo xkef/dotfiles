@@ -7,20 +7,15 @@ export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 # Zsh config directory
 export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 
-# Homebrew — static exports avoid ~15ms fork+exec of `brew shellenv`
-# on every zsh invocation (including non-interactive scripts/subshells).
+# Homebrew (macOS only) — static exports avoid ~15ms fork+exec of
+# `brew shellenv` on every zsh invocation (including non-interactive
+# scripts/subshells).
 if [[ -d /opt/homebrew ]]; then
   export HOMEBREW_PREFIX="/opt/homebrew"
   export HOMEBREW_CELLAR="/opt/homebrew/Cellar"
   export HOMEBREW_REPOSITORY="/opt/homebrew"
   export MANPATH="/opt/homebrew/share/man${MANPATH+:$MANPATH}:"
   export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}"
-elif [[ -d /home/linuxbrew/.linuxbrew ]]; then
-  export HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew"
-  export HOMEBREW_CELLAR="/home/linuxbrew/.linuxbrew/Cellar"
-  export HOMEBREW_REPOSITORY="/home/linuxbrew/.linuxbrew/Homebrew"
-  export MANPATH="/home/linuxbrew/.linuxbrew/share/man${MANPATH+:$MANPATH}:"
-  export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:${INFOPATH:-}"
 fi
 
 # Editor
