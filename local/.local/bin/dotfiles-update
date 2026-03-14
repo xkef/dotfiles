@@ -18,11 +18,11 @@ if ! git -C "$DOTFILES_DIR" diff --quiet 2>/dev/null; then
   log "  ! Uncommitted changes — skipping stow (would overwrite work)"
   log "    Commit or stash, then re-run."
 else
-  while IFS= read -r pkg; do
-    [[ -z "$pkg" || ! -d "$DOTFILES_DIR/$pkg" ]] && continue
+  for pkg in "$DOTFILES_DIR"/*/; do
+    pkg="$(basename "$pkg")"
     stow --dir="$DOTFILES_DIR" -t "$HOME" --adopt "$pkg" 2>/dev/null || true
     git -C "$DOTFILES_DIR" checkout -- "$pkg/" 2>/dev/null || true
-  done <"$DOTFILES_DIR/.stow-packages"
+  done
 fi
 
 if command -v mise &>/dev/null; then

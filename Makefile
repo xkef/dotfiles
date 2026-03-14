@@ -1,5 +1,5 @@
 DOTFILES := $(shell pwd)
-STOW_PACKAGES := $(shell cat .stow-packages)
+STOW_PACKAGES := $(shell ls -d */ 2>/dev/null | sed 's|/||')
 SHELL_FILES := $(shell git ls-files | xargs file --mime-type 2>/dev/null | awk -F: '/x-shellscript/ {print $$1}')
 
 .PHONY: help install update test stow unstow restow fmt lint tools clean

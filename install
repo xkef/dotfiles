@@ -73,12 +73,8 @@ if $adopt; then
   fi
 fi
 
-while IFS= read -r pkg; do
-  [[ -z "$pkg" ]] && continue
-  if [[ ! -d "$DOTFILES/$pkg" ]]; then
-    log "  ! stow: package dir '$pkg' not found, skipping"
-    continue
-  fi
+for pkg in "$DOTFILES"/*/; do
+  pkg="$(basename "$pkg")"
   if $adopt; then
     if run_quiet "stow $pkg" stow --dir="$DOTFILES" -t "$HOME" --adopt "$pkg"; then
       run_quiet "git restore $pkg" git -C "$DOTFILES" restore "$pkg/"
@@ -90,7 +86,7 @@ while IFS= read -r pkg; do
       log "  ! stow $pkg: conflict — run with --adopt to resolve"
     fi
   fi
-done <"$DOTFILES/.stow-packages"
+done
 
 # ── Install mise tools ────────────────────────────────
 

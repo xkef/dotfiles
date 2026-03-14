@@ -10,6 +10,8 @@ cd ~/dotfiles && ./install
 The install script auto-detects your OS and installs packages using the native format (`Brewfile` on macOS, `pkgs.arch`
 on Arch, pre-built binaries elsewhere). Then it symlinks configs via stow and sets zsh as default shell.
 
+Every top-level directory is a stow package — add a new one and it gets picked up automatically.
+
 ## What's included
 
 | Tool                                                                             | What it does                                           |
@@ -25,26 +27,22 @@ on Arch, pre-built binaries elsewhere). Then it symlinks configs via stow and se
 | [jj (Jujutsu)](https://github.com/jj-vcs/jj)                                     | Git-compatible VCS with simpler mental model           |
 | eza, bat, fd, ripgrep, zoxide                                                    | Modern unix replacements                               |
 
+## Maintenance
+
+```
+make install       # Full install (packages + stow + tools)
+make install-adopt # Install, adopting existing files
+make update        # Pull, re-stow, update plugins and tools
+make test          # Run smoke tests
+make stow          # Stow all packages into ~
+make restow        # Re-stow (fixes stale symlinks)
+make fmt           # Format all dotfiles
+make lint          # Lint shell scripts and neovim config
+```
+
+On macOS, run `./macos-defaults` once after a fresh install to apply developer-friendly system defaults.
+
 ---
-
-## Management
-
-Use the `dot` command for all dotfiles operations:
-
-```
-dot install       Full install (packages + stow + tools)
-dot install-adopt  Install, adopting existing files into the repo
-dot update         Pull, re-stow, update plugins and tools
-dot stow           Stow all packages into ~
-dot unstow         Remove all symlinks from ~
-dot restow         Re-stow (fixes stale symlinks)
-dot test           Run smoke tests
-dot fmt            Format all dotfiles
-dot lint           Lint shell scripts and neovim config
-dot edit           Open dotfiles in $EDITOR
-dot cd             Print dotfiles path (use: cd "$(dot cd)")
-dot macos          Apply macOS developer defaults (macOS only)
-```
 
 ## The one thing to remember
 
