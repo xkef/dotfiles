@@ -6,7 +6,7 @@
 
 | Key        | Action                           |
 | ---------- | -------------------------------- |
-| │ / -      | Split right / down               |
+| v / │ / -  | Split right / right / down       |
 | h/j/k/l    | Navigate panes                   |
 | H/J/K/L    | Resize pane (repeatable)         |
 | Ctrl-Space | Toggle last window (double-tap)  |
@@ -19,11 +19,16 @@
 | w          | Switch window, all sessions      |
 | g          | Lazygit (floating popup)         |
 | ?          | This reference (floating popup)  |
+| t          | Thumbs (hint-copy visible text)  |
+| u          | Open URL from scrollback (fzf)   |
+| Ctrl-f     | tmux-fzf (sessions/windows/etc)  |
 |            |                                  |
 | S          | New named session                |
 | s          | Browse sessions                  |
 | Enter      | Enter copy mode                  |
 | /          | Copy mode + search               |
+| r          | Reload tmux config               |
+| I          | Install TPM plugins              |
 
 ### Copy mode
 
@@ -34,6 +39,7 @@ v select — V line — Ctrl-v block — y yank — Y yank-EOL
 | H / L      | Start / end of line       |
 | / / ?      | Search forward / backward |
 | Ctrl-u / d | Half page up / down       |
+| Escape     | Cancel                    |
 
 ---
 
@@ -114,6 +120,7 @@ Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 
 | Key           | Action                      |
 | ------------- | --------------------------- |
+| Ctrl-S        | Yazi file manager (cd-on-quit) |
 | Ctrl-T        | File search (fzf)           |
 | Ctrl-X d      | Directory jump (fzf)        |
 | Ctrl-G        | Navi cheatsheet             |
