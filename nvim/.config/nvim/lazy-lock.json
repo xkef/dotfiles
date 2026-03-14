@@ -9,7 +9,7 @@
   },
   "catppuccin": {
     "branch": "main",
-    "commit": "12c004cde3f36cb1d57242f1e6aac46b09a0e5b4"
+    "commit": "384f304c8b04664c9e0091fbfb3923c5f97c1bcf"
   },
   "conform.nvim": {
     "branch": "master",
@@ -25,7 +25,7 @@
   },
   "grug-far.nvim": {
     "branch": "main",
-    "commit": "ac52ee2d87399dfd7b0d59d5b1d2bbaf2a4028f1"
+    "commit": "dc4684e163971bb1f5bfb93fbd4bb3e892bf9b15"
   },
   "gruvbox.nvim": {
     "branch": "main",
@@ -41,7 +41,7 @@
   },
   "lazydev.nvim": {
     "branch": "main",
-    "commit": "5231c62aa83c2f8dc8e7ba957aa77098cda1257d"
+    "commit": "ff2cbcba459b637ec3fd165a2be59b7bbaeedf0d"
   },
   "lualine.nvim": {
     "branch": "master",
@@ -49,7 +49,7 @@
   },
   "mason-lspconfig.nvim": {
     "branch": "main",
-    "commit": "a324581a3c83fdacdb9804b79de1cbe00ce18550"
+    "commit": "a676ab7282da8d651e175118bcf54483ca11e46d"
   },
   "mason.nvim": {
     "branch": "main",
@@ -81,7 +81,7 @@
   },
   "nvim-lspconfig": {
     "branch": "master",
-    "commit": "d8bf4c47385340ab2029402201d4d7c9f99f437a"
+    "commit": "4d0724be90b633ddce51b328a631060e6acd7d66"
   },
   "nvim-nio": {
     "branch": "master",
@@ -93,11 +93,11 @@
   },
   "nvim-tree.lua": {
     "branch": "master",
-    "commit": "4b30847c91d498446cb8440c03031359b045e050"
+    "commit": "9197f3ee3f0c9a754aab5b16500db6d7da5f68fd"
   },
   "nvim-treesitter": {
     "branch": "main",
-    "commit": "5cb05e1b0fa3c469958a2b26f36b3fe930af221c"
+    "commit": "eb1f8e80cb28eb7892f347609e0bdc5eb574b945"
   },
   "nvim-treesitter-textobjects": {
     "branch": "main",
@@ -105,7 +105,7 @@
   },
   "nvim-web-devicons": {
     "branch": "master",
-    "commit": "737cf6c657898d0c697311d79d361288a1343d50"
+    "commit": "d7462543c9e366c0d196c7f67a945eaaf5d99414"
   },
   "plenary.nvim": {
     "branch": "master",
@@ -117,11 +117,11 @@
   },
   "smart-splits.nvim": {
     "branch": "master",
-    "commit": "25bf40abf79720ebfa98e09259b7c42942055f4c"
+    "commit": "82d01bb71bc051955654b3af68355f783d872fe0"
   },
   "snacks.nvim": {
     "branch": "main",
-    "commit": "9912042fc8bca2209105526ac7534e9a0c2071b2"
+    "commit": "b2cb00ef7d12da7f2d6e0684c43e2965896309dd"
   },
   "tokyonight.nvim": {
     "branch": "main",
