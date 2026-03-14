@@ -57,15 +57,6 @@ if command -v procs &>/dev/null; then
   alias ps='procs'
 fi
 
-if command -v sd &>/dev/null; then
-  alias sed='sd'
-fi
-
-# Safe rm: use trash (moves to macOS Trash / freedesktop trash)
-if command -v trash &>/dev/null; then
-  alias rm='trash'
-fi
-
 # Universal extract/compress via ouch
 if command -v ouch &>/dev/null; then
   alias extract='ouch decompress'
