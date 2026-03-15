@@ -3,6 +3,20 @@ vim.opt_local.tabstop = 4
 vim.opt_local.makeprg = "mvnd clean compile"
 vim.opt_local.errorformat = "[ERROR] %f:[%l\\,%c] %m"
 
+-- Fold imports as a single block, delegate everything else to treesitter
+_G._java_foldexpr = function()
+  local line = vim.fn.getline(vim.v.lnum)
+  if line:match("^import ") then
+    local prev = vim.v.lnum > 1 and vim.fn.getline(vim.v.lnum - 1) or ""
+    if not prev:match("^import ") then
+      return ">1"
+    end
+    return "1"
+  end
+  return vim.treesitter.foldexpr()
+end
+vim.opt_local.foldexpr = "v:lua._java_foldexpr()"
+
 local jdtls = require("jdtls")
 
 local root_dir = require("jdtls.setup").find_root({ ".git", "mvnw", "gradlew", "pom.xml", "build.gradle" })
@@ -81,6 +95,35 @@ local config = {
   on_attach = function(client, bufnr)
     vim.api.nvim_set_current_dir(root_dir)
     jdtls.setup_dap({ hotcodereplace = "auto" })
+
+    vim.api.nvim_create_autocmd("BufWritePre", {
+      buffer = bufnr,
+      callback = function()
+        local params = vim.lsp.util.make_range_params()
+        params.context = { only = { "source.organizeImports" } }
+        local result = vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, 3000)
+        for _, res in pairs(result or {}) do
+          for _, r in pairs(res.result or {}) do
+            if r.edit then
+              vim.lsp.util.apply_workspace_edit(r.edit, "utf-16")
+            end
+          end
+        end
+      end,
+    })
+
+    vim.schedule(function()
+      local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+      for i, line in ipairs(lines) do
+        if line:match("^import ") then
+          local saved = vim.api.nvim_win_get_cursor(0)
+          vim.api.nvim_win_set_cursor(0, { i, 0 })
+          pcall(vim.cmd, "normal! zc")
+          vim.api.nvim_win_set_cursor(0, saved)
+          break
+        end
+      end
+    end)
 
     if not client._spring_dap_configured then
       client._spring_dap_configured = true

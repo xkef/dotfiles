@@ -66,6 +66,9 @@ return {
             vim.keymap.set("n", keys, func, { buffer = ev.buf, desc = desc })
           end
           m("gy", vim.lsp.buf.type_definition, "Type definition")
+          m("gi", vim.lsp.buf.implementation, "Go to implementation")
+          m("gr", vim.lsp.buf.references, "References")
+          m("gI", vim.lsp.buf.incoming_calls, "Incoming calls")
           m("<leader>ca", vim.lsp.buf.code_action, "Code action")
           m("<leader>cr", vim.lsp.buf.rename, "Rename")
         end,
