@@ -18,4 +18,8 @@ return {
   { "rose-pine/neovim", name = "rose-pine", lazy = true },
   { "ellisonleao/gruvbox.nvim", lazy = true },
   { "shaunsingh/nord.nvim", lazy = true },
+  { "olimorris/onedarkpro.nvim", lazy = true },
+  { "rebelot/kanagawa.nvim", lazy = true },
+  { "neanias/everforest-nvim", lazy = true },
+  { "Mofiqul/dracula.nvim", lazy = true },
 }

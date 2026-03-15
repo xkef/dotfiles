@@ -117,6 +117,76 @@ theme_config() {
       d8dee9 bf616a a3be8c ebcb8b 81a1c1 b48ead 8fbcbb 2e3440)
     theme_bg=eceff4 theme_fg=2e3440 theme_cursor=4c566a
     ;;
+  onedark)
+    ghostty_theme="Atom One Dark"
+    nvim_scheme="onedark"
+    background="dark"
+    bat_theme="OneHalfDark"
+    pair="onelight"
+    palette=(21252b e06c75 98c379 e5c07b 61afef c678dd 56b6c2 abb2bf
+      767676 e06c75 98c379 e5c07b 61afef c678dd 56b6c2 abb2bf)
+    theme_bg=21252b theme_fg=abb2bf theme_cursor=abb2bf
+    ;;
+  onelight)
+    ghostty_theme="Atom One Light"
+    nvim_scheme="onelight"
+    background="light"
+    bat_theme="OneHalfLight"
+    pair="onedark"
+    palette=(000000 de3e35 3f953a d2b67c 2f5af3 950095 3f953a bbbbbb
+      000000 de3e35 3f953a d2b67c 2f5af3 a00095 3f953a ffffff)
+    theme_bg=f9f9f9 theme_fg=2a2c33 theme_cursor=bbbbbb
+    ;;
+  kanagawa)
+    ghostty_theme="Kanagawa Wave"
+    nvim_scheme="kanagawa-wave"
+    background="dark"
+    bat_theme="Sublime Snazzy"
+    pair="kanagawa-lotus"
+    palette=(090618 c34043 76946a c0a36e 7e9cd8 957fb8 6a9589 c8c093
+      727169 e82424 98bb6c e6c384 7fb4ca 938aa9 7aa89f dcd7ba)
+    theme_bg=1f1f28 theme_fg=dcd7ba theme_cursor=dcd7ba
+    ;;
+  kanagawa-lotus)
+    ghostty_theme="Kanagawa Lotus"
+    nvim_scheme="kanagawa-lotus"
+    background="light"
+    bat_theme="OneHalfLight"
+    pair="kanagawa"
+    palette=(1f1f28 c84053 6f894e 77713f 4d699b b35b79 597b75 545464
+      8a8980 d7474b 6e915f 836f4a 6693bf 624c83 5e857a 43436c)
+    theme_bg=f2ecbc theme_fg=545464 theme_cursor=43436c
+    ;;
+  everforest-dark)
+    ghostty_theme="Everforest Dark Hard"
+    nvim_scheme="everforest"
+    background="dark"
+    bat_theme="gruvbox-dark"
+    pair="everforest-light"
+    palette=(7a8478 e67e80 a7c080 dbbc7f 7fbbb3 d699b6 83c092 f2efdf
+      a6b0a0 f85552 8da101 dfa000 3a94c5 df69ba 35a77c fffbef)
+    theme_bg=1e2326 theme_fg=d3c6aa theme_cursor=e69875
+    ;;
+  everforest-light)
+    ghostty_theme="Everforest Light Med"
+    nvim_scheme="everforest"
+    background="light"
+    bat_theme="gruvbox-light"
+    pair="everforest-dark"
+    palette=(7a8478 e67e80 9ab373 c1a266 7fbbb3 d699b6 83c092 b2af9f
+      a6b0a0 f85552 8da101 dfa000 3a94c5 df69ba 35a77c fffbef)
+    theme_bg=efebd4 theme_fg=5c6a72 theme_cursor=f57d26
+    ;;
+  dracula)
+    ghostty_theme="Dracula"
+    nvim_scheme="dracula"
+    background="dark"
+    bat_theme="Dracula"
+    pair=""
+    palette=(21222c ff5555 50fa7b f1fa8c bd93f9 ff79c6 8be9fd f8f8f2
+      6272a4 ff6e6e 69ff94 ffffa5 d6acff ff92df a4ffff ffffff)
+    theme_bg=282a36 theme_fg=f8f8f2 theme_cursor=f8f8f2
+    ;;
   *) return 1 ;;
   esac
 }
@@ -132,6 +202,13 @@ THEMES=(
   gruvbox-light
   nord
   nord-light
+  onedark
+  onelight
+  kanagawa
+  kanagawa-lotus
+  everforest-dark
+  everforest-light
+  dracula
 )
 
 # ── Helpers ──────────────────────────────────────────────
@@ -207,7 +284,7 @@ EOF
 
   local dark_or_light="true"
   [[ "$bg" == "light" ]] && dark_or_light="false"
-  cat >"$THEME_DIR/delta.gitconfig" <<EOF
+  cat >"${XDG_CONFIG_HOME:-$HOME/.config}/git/delta.gitconfig" <<EOF
 [delta]
 	syntax-theme = $bat
 	dark = $dark_or_light

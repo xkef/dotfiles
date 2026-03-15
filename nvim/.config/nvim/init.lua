@@ -114,7 +114,6 @@ map("n", "]d", function()
 end, { desc = "Next diagnostic" })
 map("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 
-
 -- Autosave on focus loss and idle
 vim.api.nvim_create_autocmd({ "FocusLost", "BufLeave", "CursorHold", "InsertLeave" }, {
   group = vim.api.nvim_create_augroup("Autosave", { clear = true }),

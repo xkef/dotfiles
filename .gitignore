@@ -21,3 +21,4 @@ __pycache__/
 /.nvimlog
 /zsh/.config/zsh/.zcompcache/brew_all_commands
 *.zwc
+/vcs/.config/git/delta.gitconfig

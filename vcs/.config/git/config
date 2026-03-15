@@ -129,7 +129,7 @@
 
 # ── Theme-generated overrides (delta syntax theme) ───
 [include]
-	path = ~/.config/theme/delta.gitconfig
+	path = ~/.config/git/delta.gitconfig
 
 # ── Local overrides (identity, signing, etc.) ────────
 [include]
