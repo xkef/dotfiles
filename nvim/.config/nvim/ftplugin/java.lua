@@ -1,5 +1,5 @@
-vim.opt_local.shiftwidth = 4
-vim.opt_local.tabstop = 4
+vim.opt_local.shiftwidth = 2
+vim.opt_local.tabstop = 2
 vim.opt_local.makeprg = "mvnd clean compile"
 vim.opt_local.errorformat = "[ERROR] %f:[%l\\,%c] %m"
 
@@ -68,6 +68,11 @@ local config = {
 
   settings = {
     java = {
+      format = {
+        settings = {
+          profile = "GoogleStyle",
+        },
+      },
       signatureHelp = { enabled = true },
       contentProvider = { preferred = "fernflower" },
       completion = {
