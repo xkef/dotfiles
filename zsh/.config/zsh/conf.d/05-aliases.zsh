@@ -34,6 +34,9 @@ alias tl='tmux list-sessions'
 # Claude
 alias claude='claude-sandboxed'
 
+# Batch rename
+alias mmv='noglob zmv -W'
+
 # Misc
 alias reload='exec zsh'
 alias ..='cd ..'

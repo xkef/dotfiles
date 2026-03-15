@@ -1,5 +1,4 @@
 # ── Key bindings ──────────────────────────────────────
-stty -ixon # disable XON/XOFF so Ctrl-S is available
 bindkey -e # emacs mode
 
 # Defensive unbinds: disable sequences that cause mysterious behavior

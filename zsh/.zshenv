@@ -22,10 +22,6 @@ fi
 export EDITOR="nvim"
 export VISUAL="nvim"
 
-# Pager
-export PAGER="less"
-export LESS="-R --mouse"
-
 # Man pager (use bat for colorful manpages)
 if command -v bat &>/dev/null; then
   export MANPAGER="sh -c 'col -bx | bat -l man -p'"

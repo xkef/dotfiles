@@ -5,7 +5,10 @@ setopt PUSHD_IGNORE_DUPS    # no dup entries in dir stack
 setopt PUSHD_MINUS          # swap +/- for cd -N
 setopt CORRECT              # "did you mean?" for commands
 setopt EXTENDED_GLOB        # ^, ~, # as glob operators
+setopt GLOB_STAR_SHORT      # **.c instead of **/*.c
 setopt INTERACTIVE_COMMENTS # allow # comments in interactive shell
+setopt NO_FLOW_CONTROL      # disable XON/XOFF (frees Ctrl-S/Ctrl-Q)
+setopt PIPE_FAIL            # pipeline exit = rightmost non-zero
 
 # ── History ──────────────────────────────────────
 HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
@@ -23,8 +26,7 @@ setopt HIST_VERIFY           # expand !! before running
 
 # ── Pager ──────────────────────────────────────
 export PAGER=less
-export LESS="-iFMRX -#.25"
-export LESSHISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/lesshst"
+export LESS="-iFMRX --mouse -#.25"
 
 export LESS_TERMCAP_mb=$'\E[01;31m'      # begin blink (red)
 export LESS_TERMCAP_md=$'\E[01;38;5;208m' # begin bold (orange)
