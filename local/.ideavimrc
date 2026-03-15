@@ -55,10 +55,10 @@ cmap <C-a> <Home>
 cmap <C-e> <End>
 
 " --- Split navigation (C-hjkl) ---
-nmap <C-h> <Action>(PrevSplitPane)
-nmap <C-l> <Action>(NextSplitPane)
-nnoremap <C-j> <C-w>j
-nnoremap <C-k> <C-w>k
+nmap <C-h> <C-w>h
+nmap <C-j> <C-w>j
+nmap <C-k> <C-w>k
+nmap <C-l> <C-w>l
 
 " --- Find / search (matching snacks.nvim) ---
 nmap <leader>ff <Action>(GotoFile)
@@ -68,7 +68,7 @@ nmap <leader>fh <Action>(HelpTopics)
 nmap <leader>fr <Action>(RecentFiles)
 nmap <leader>sg <Action>(FindInPath)
 nmap <leader>sG <Action>(FindWordAtCaret)
-nmap <leader>sr <Action>(FindInPath)
+nmap <leader>sr <Action>(ReplaceInPath)
 
 " --- File tree (matching nvim-tree) ---
 nmap <leader>e :NERDTreeToggle<CR>
@@ -107,7 +107,6 @@ nmap <leader>gs <Action>(ActivateCommitToolWindow)
 
 " --- Search and replace (matching grug-far.nvim) ---
 nmap <leader>S <Action>(ReplaceInPath)
-nmap <leader>sR <Action>(ReplaceInPath)
 
 " --- Treesitter-style navigation ---
 nmap ]f <Action>(MethodDown)
@@ -127,10 +126,7 @@ nmap <leader>dt <Action>(Stop)
 
 " --- Tests (matching neotest) ---
 nmap <leader>tn <Action>(RunClass)
-nmap <leader>tf <Action>(RunClass)
 nmap <leader>ts <Action>(ActivateRunToolWindow)
-nmap <leader>to <Action>(ActivateRunToolWindow)
-nmap <leader>tp <Action>(ActivateRunToolWindow)
 nmap <leader>td <Action>(DebugClass)
 
 " --- Quickfix-style navigation (arrow keys, matching nvim) ---
@@ -138,7 +134,7 @@ nmap <Up> <Action>(GotoPreviousError)
 nmap <Down> <Action>(GotoNextError)
 
 " --- Terminal ---
-nmap <leader>t <Action>(ActivateTerminalToolWindow)
+nmap <leader>T <Action>(ActivateTerminalToolWindow)
 
 " --- Misc ---
 nmap <leader>? <Action>(GotoAction)
