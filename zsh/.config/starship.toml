@@ -11,8 +11,7 @@ $git_metrics\
 $java\
 $python\
 $nodejs\
-$docker_context\
-$kubernetes"""
+$docker_context"""
 
 [character]
 success_symbol = '[❯](bold green)'
@@ -62,11 +61,6 @@ symbol = ' '
 [docker_context]
 format = '[$symbol$context]($style) '
 symbol = ' '
-
-[kubernetes]
-disabled = true
-format = '[$symbol$context(/$namespace)]($style) '
-symbol = '☸ '
 
 [cmd_duration]
 min_time = 2000
