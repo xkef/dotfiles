@@ -127,6 +127,10 @@
 [maintenance]
 	auto = true
 
+# ── Theme-generated overrides (delta syntax theme) ───
+[include]
+	path = ~/.config/theme/delta.gitconfig
+
 # ── Local overrides (identity, signing, etc.) ────────
 [include]
 	path = ~/.config/git/config.local

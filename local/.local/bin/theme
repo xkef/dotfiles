@@ -204,6 +204,14 @@ variant=$bg
 nvim=$nvim
 bat_theme=$bat
 EOF
+
+  local dark_or_light="true"
+  [[ "$bg" == "light" ]] && dark_or_light="false"
+  cat >"$THEME_DIR/delta.gitconfig" <<EOF
+[delta]
+	syntax-theme = $bat
+	dark = $dark_or_light
+EOF
 }
 
 # ── Reloaders ────────────────────────────────────────────
