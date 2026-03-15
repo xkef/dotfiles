@@ -15,6 +15,10 @@
     "branch": "master",
     "commit": "086a40dc7ed8242c03be9f47fbcee68699cc2395"
   },
+  "diffview.nvim": {
+    "branch": "main",
+    "commit": "4516612fe98ff56ae0415a259ff6361a89419b0a"
+  },
   "flash.nvim": {
     "branch": "main",
     "commit": "fcea7ff883235d9024dc41e638f164a450c14ca2"
