@@ -38,6 +38,7 @@ alias claude='claude-sandboxed'
 alias mmv='noglob zmv -W'
 
 # Misc
+alias help='run-help'
 alias reload='exec zsh'
 alias ..='cd ..'
 alias ...='cd ../..'

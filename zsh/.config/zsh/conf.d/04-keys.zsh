@@ -7,8 +7,11 @@ ZLE_RPROMPT_INDENT=0
 bindkey -r '^Q'
 # Alt-Enter / ESC-Enter (some terminals send this accidentally)
 bindkey -r '^[^M'
-# Alt-H (run-help — opens man page unexpectedly)
-bindkey -r '^[H' '^[h'
+# Alt-H → enhanced run-help (context-aware: `git commit` opens man git-commit)
+autoload -Uz run-help run-help-git run-help-sudo run-help-openssl run-help-ip
+unalias run-help 2>/dev/null
+bindkey '^[H' run-help
+bindkey '^[h' run-help
 # Alt-? (which-command — easy to fat-finger)
 bindkey -r '^[?'
 # Alt-L (downcase-word — easy to hit instead of Ctrl-L)
@@ -22,11 +25,15 @@ autoload -Uz select-word-style
 select-word-style bash
 WORDCHARS=''
 
-bindkey '^p' history-search-backward
-bindkey '^n' history-search-forward
-bindkey '^[[A' history-search-backward # Up arrow
-bindkey '^[[B' history-search-forward  # Down arrow
-bindkey '^[[3~' delete-char            # Delete key
+# History search: handles multi-line commands + prefix matching
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey '^p' up-line-or-beginning-search
+bindkey '^n' down-line-or-beginning-search
+bindkey '^[[A' up-line-or-beginning-search  # Up arrow
+bindkey '^[[B' down-line-or-beginning-search # Down arrow
+bindkey '^[[3~' delete-char                  # Delete key
 
 # Edit command line in $EDITOR
 autoload -Uz edit-command-line
@@ -44,6 +51,12 @@ fg-bg-toggle() {
 }
 zle -N fg-bg-toggle
 bindkey '^Z' fg-bg-toggle
+
+# Smart last-word insertion: skips operators/redirections, finds real args
+autoload -Uz smart-insert-last-word copy-earlier-word
+zle -N insert-last-word smart-insert-last-word
+zle -N copy-earlier-word
+bindkey '^[,' copy-earlier-word
 
 bindkey ' ' magic-space
 

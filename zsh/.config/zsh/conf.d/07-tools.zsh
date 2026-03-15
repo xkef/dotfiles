@@ -1,6 +1,6 @@
 # ── Shell utilities ───────────────────────────────────
 
-autoload -Uz zmv
+autoload -Uz zmv zargs zcalc regexp-replace
 
 auto-ls() {
   if (( $+commands[eza] )); then
