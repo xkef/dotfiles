@@ -108,13 +108,14 @@ local config = {
     m("<leader>ct", jdtls.test_nearest_method, "Test method (jdtls)")
 
     m("<leader>cR", function()
-      Snacks.terminal("mvnd clean spring-boot:run", { cwd = root_dir })
+      vim.cmd("split | terminal cd " .. vim.fn.fnameescape(root_dir) .. " && mvnd clean spring-boot:run")
     end, "Run Spring Boot")
 
     m("<leader>cD", function()
-      Snacks.terminal(
-        "mvnd clean spring-boot:run -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005'",
-        { cwd = root_dir }
+      vim.cmd(
+        "split | terminal cd "
+          .. vim.fn.fnameescape(root_dir)
+          .. " && mvnd clean spring-boot:run -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005'"
       )
     end, "Run Spring Boot (debug)")
   end,

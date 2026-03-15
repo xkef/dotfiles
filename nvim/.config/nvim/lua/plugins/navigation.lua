@@ -46,7 +46,7 @@ return {
       scope = { enabled = false },
       scroll = { enabled = false },
       statuscolumn = { enabled = false },
-      terminal = { enabled = true, win = { style = "float" } },
+      terminal = { enabled = false },
       words = { enabled = false },
     },
     keys = {
@@ -121,11 +121,18 @@ return {
         desc = "Which-key (all keybindings)",
       },
       {
-        "<leader>t",
+        "<leader>tt",
         function()
-          Snacks.terminal()
+          Snacks.picker.lsp_symbols()
         end,
-        desc = "Floating terminal",
+        desc = "Document symbols",
+      },
+      {
+        "<leader>tT",
+        function()
+          Snacks.picker.lsp_workspace_symbols()
+        end,
+        desc = "Workspace symbols",
       },
     },
   },
