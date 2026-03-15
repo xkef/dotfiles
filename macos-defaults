@@ -3,8 +3,10 @@
 # Curated from mathiasbynens/dotfiles, wincent/wincent, and paulirish/dotfiles.
 #
 # Usage:
-#   ./macos-defaults           Apply all settings
-#   ./macos-defaults --dry-run Show what would change without applying
+#   ./macos-defaults               Apply all settings (backs up previous values)
+#   ./macos-defaults --dry-run     Show what would change without applying
+#   ./macos-defaults --restore     Restore from most recent backup
+#   ./macos-defaults --restore F   Restore from specific backup file F
 set -euo pipefail
 
 if [[ "$(uname -s)" != Darwin ]]; then
@@ -13,7 +15,11 @@ if [[ "$(uname -s)" != Darwin ]]; then
 fi
 
 DRY_RUN=false
+RESTORE=false
 [[ "${1:-}" == "--dry-run" || "${1:-}" == "-n" ]] && DRY_RUN=true
+[[ "${1:-}" == "--restore" ]] && RESTORE=true
+
+BACKUP_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/macos-defaults"
 
 log() { printf '  %s\n' "$1"; }
 
@@ -80,14 +86,38 @@ apply() {
       ((skipped++)) || true
     fi
   else
+    local current
+    current=$(read_default $flag "$domain" "$key")
+    if [[ -n "$current" ]]; then
+      printf '%s\t%s\t%s\t%s\t%s\n' "$flag" "$domain" "$key" "$type" "$current" >> "$BACKUP_FILE"
+    fi
     defaults $flag write "$domain" "$key" "$type" "$value"
   fi
 }
 
+if $RESTORE; then
+  backup="${2:-$(ls -t "$BACKUP_DIR"/*.tsv 2>/dev/null | head -1)}"
+  if [[ -z "$backup" || ! -f "$backup" ]]; then
+    echo "No backup found." >&2
+    exit 1
+  fi
+  printf '\n  Restoring from %s\n\n' "$backup"
+  while IFS=$'\t' read -r flag domain key type value; do
+    log "$domain $key -> $value"
+    defaults $flag write "$domain" "$key" "$type" "$value"
+  done < "$backup"
+  printf '\n  Restored. Some changes require a logout/restart.\n\n'
+  exit 0
+fi
+
 if $DRY_RUN; then
   printf '\n  macOS defaults (dry run)\n\n'
 else
-  printf '\n  Applying macOS defaults...\n\n'
+  mkdir -p "$BACKUP_DIR"
+  BACKUP_FILE="$BACKUP_DIR/$(date +%Y%m%d-%H%M%S).tsv"
+  printf '\n  Applying macOS defaults...\n'
+  log "Backup: $BACKUP_FILE"
+  printf '\n'
   osascript -e 'tell application "System Preferences" to quit' 2>/dev/null || true
   sudo -v
   while true; do
