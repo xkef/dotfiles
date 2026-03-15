@@ -140,6 +140,39 @@ apply NSGlobalDomain KeyRepeat -int 2
 apply NSGlobalDomain InitialKeyRepeat -int 15
 apply NSGlobalDomain AppleKeyboardUIMode -int 3
 
+# CapsLock → Escape (hidutil persisted via LaunchAgent)
+HIDUTIL_PLIST="$HOME/Library/LaunchAgents/com.local.KeyRemapping.plist"
+if $DRY_RUN; then
+  if [[ -f "$HIDUTIL_PLIST" ]]; then
+    ((skipped++)) || true
+  else
+    printf '  \033[33m+\033[0m %s \033[2m(CapsLock -> Escape via hidutil LaunchAgent)\033[0m\n' "$HIDUTIL_PLIST"
+    ((missing++)) || true
+  fi
+else
+  mkdir -p "$HOME/Library/LaunchAgents"
+  cat >"$HIDUTIL_PLIST" <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.local.KeyRemapping</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/hidutil</string>
+    <string>property</string>
+    <string>--set</string>
+    <string>{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x700000029}]}</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+</dict>
+</plist>
+PLIST
+  hidutil property --set '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x700000029}]}' >/dev/null
+fi
+
 # ── Finder ────────────────────────────────────────────
 
 $DRY_RUN || log "Finder..."
