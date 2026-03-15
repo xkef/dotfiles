@@ -215,14 +215,6 @@ apply com.apple.ActivityMonitor ShowCategory -int 0
 apply com.apple.ActivityMonitor SortColumn -string "CPUUsage"
 apply com.apple.ActivityMonitor SortDirection -int 0
 
-# ── Safari (dev) ──────────────────────────────────────
-
-$DRY_RUN || log "Safari dev tools..."
-apply com.apple.Safari IncludeDevelopMenu -bool true
-apply com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true
-apply com.apple.Safari "com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled" -bool true
-apply NSGlobalDomain WebKitDeveloperExtras -bool true
-
 # ── Time Machine ─────────────────────────────────────
 
 $DRY_RUN || log "Time Machine..."
@@ -246,7 +238,7 @@ if $DRY_RUN; then
     "$total" "$changed" "$missing" "$skipped"
 else
   log "Restarting affected apps..."
-  for app in "Activity Monitor" "Dock" "Finder" "Safari" "SystemUIServer"; do
+  for app in "Activity Monitor" "Dock" "Finder" "SystemUIServer"; do
     killall "$app" &>/dev/null || true
   done
   printf '\n  Done. Some changes require a logout/restart.\n\n'
