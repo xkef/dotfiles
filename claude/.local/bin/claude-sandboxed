@@ -14,6 +14,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
     -D "CLAUDE_CACHE=$HOME/Library/Caches/claude-cli-nodejs" \
     -D "LOCAL_BIN=$HOME/.local/bin" \
     -D "MISE_SHIMS=$HOME/.local/share/mise/shims" \
+    -D "MISE_STATE=$HOME/.local/state/mise" \
     -D "GIT_CONFIG=$HOME/.config/git" \
     -D "GH_CONFIG=$HOME/.config/gh" \
     -D "DOTFILES=$DOTFILES_DIR" \
