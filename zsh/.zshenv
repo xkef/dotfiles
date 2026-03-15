@@ -40,7 +40,7 @@ if [[ -z "${DOTFILES_DIR:-}" && -f "$HOME/.config/dotfiles/dir" ]]; then
   export DOTFILES_DIR="$(<"$HOME/.config/dotfiles/dir")"
 fi
 
-# Path — also re-asserted in .zprofile to override macOS path_helper.
+# Path
 typeset -U path
 path=(
   "$HOME/.local/bin"

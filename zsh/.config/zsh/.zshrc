@@ -10,7 +10,6 @@ done
 
 # ── Local overrides ──────────────────────────────────
 [[ -f "$ZDOTDIR/local.zsh" ]] && source "$ZDOTDIR/local.zsh"
-[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
 
 # ── Profiling output ────────────────────────────────
 [[ -n "$ZPROFRC" ]] && zprof

@@ -58,8 +58,6 @@ zle -N insert-last-word smart-insert-last-word
 zle -N copy-earlier-word
 bindkey '^[,' copy-earlier-word
 
-bindkey ' ' magic-space
-
 # Ctrl-S → yazi (cd-on-quit, delegates to y() in 07-tools.zsh)
 yazi-widget() { y < /dev/tty; zle reset-prompt; }
 zle -N yazi-widget
