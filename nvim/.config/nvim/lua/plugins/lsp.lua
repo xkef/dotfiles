@@ -86,6 +86,8 @@ return {
         preset = "default",
         ["<C-n>"] = { "show", "select_next", "fallback" },
         ["<C-p>"] = { "show", "select_prev", "fallback" },
+        ["<CR>"] = { "accept", "fallback" },
+        ["<Tab>"] = { "accept", "fallback" },
       },
       appearance = { nerd_font_variant = "mono" },
       sources = {
