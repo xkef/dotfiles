@@ -50,6 +50,9 @@ fi
 log "Updating neovim plugins..."
 run_quiet "nvim plugin sync" nvim --headless "+Lazy! sync" +qa || true
 
+log "Updating mason tools..."
+run_quiet "mason tool update" nvim --headless "+MasonToolsUpdateSync" +qa || true
+
 log "Formatting lazy-lock.json..."
 lazy_lock="$DOTFILES_DIR/nvim/.config/nvim/lazy-lock.json"
 if [[ -f "$lazy_lock" ]] && command -v jq &>/dev/null; then

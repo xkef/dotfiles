@@ -10,6 +10,24 @@ return {
   },
 
   {
+    "WhoIsSethDaniel/mason-tool-installer.nvim",
+    dependencies = { "williamboman/mason.nvim" },
+    opts = {
+      ensure_installed = {
+        "google-java-format",
+        "java-debug-adapter",
+        "java-test",
+        "lemminx",
+        "prettierd",
+        "ruff",
+        "shfmt",
+        "stylua",
+        "vscode-spring-boot-tools",
+      },
+    },
+  },
+
+  {
     "neovim/nvim-lspconfig",
     event = { "BufReadPost", "BufNewFile", "VeryLazy" },
     dependencies = {
@@ -19,20 +37,6 @@ return {
     },
     config = function()
       require("mason").setup()
-
-      local mr = require("mason-registry")
-      for _, pkg_name in ipairs({
-        "java-debug-adapter",
-        "java-test",
-        "lemminx",
-        "google-java-format",
-        "vscode-spring-boot-tools",
-      }) do
-        local ok, pkg = pcall(mr.get_package, pkg_name)
-        if ok and not pkg:is_installed() then
-          pkg:install()
-        end
-      end
 
       vim.lsp.config("*", {
         capabilities = require("blink.cmp").get_lsp_capabilities(),
@@ -75,7 +79,11 @@ return {
     dependencies = { "L3MON4D3/LuaSnip" },
     opts = {
       snippets = { preset = "luasnip" },
-      keymap = { preset = "default" },
+      keymap = {
+        preset = "default",
+        ["<C-n>"] = { "show", "select_next", "fallback" },
+        ["<C-p>"] = { "show", "select_prev", "fallback" },
+      },
       appearance = { nerd_font_variant = "mono" },
       sources = {
         default = { "lazydev", "lsp", "path", "snippets", "buffer" },
