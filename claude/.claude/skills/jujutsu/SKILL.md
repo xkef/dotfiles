@@ -25,19 +25,19 @@ Be careful with any `jj` command that creates or modifies a change. Always speci
 
 ## Specifying revisions
 
-| Revset   | Meaning                                     |
-| -------- | ------------------------------------------- |
-| `@`      | Current revision (working copy)             |
-| `@-`     | Parent of current revision                  |
-| `a-`     | Parent(s) of `a`                            |
-| `a--`    | Grandparent(s) of `a`                       |
-| `a+`     | Child(ren) of `a`                           |
-| `::a`    | Ancestors of `a` (including `a`)            |
-| `a::`    | Descendants of `a` (including `a`)          |
-| `a..b`   | Reachable from `b` but not from `a`         |
-| `a \| b` | Union of `a` and `b`                        |
-| `a & b`  | Intersection of `a` and `b`                 |
-| `~a`     | Not in `a`                                  |
+| Revset   | Meaning                             |
+| -------- | ----------------------------------- |
+| `@`      | Current revision (working copy)     |
+| `@-`     | Parent of current revision          |
+| `a-`     | Parent(s) of `a`                    |
+| `a--`    | Grandparent(s) of `a`               |
+| `a+`     | Child(ren) of `a`                   |
+| `::a`    | Ancestors of `a` (including `a`)    |
+| `a::`    | Descendants of `a` (including `a`)  |
+| `a..b`   | Reachable from `b` but not from `a` |
+| `a \| b` | Union of `a` and `b`                |
+| `a & b`  | Intersection of `a` and `b`         |
+| `~a`     | Not in `a`                          |
 
 ## Creating commits
 
@@ -75,7 +75,7 @@ For commit message formatting, see the `/commit` skill.
 
 ## Custom revset aliases
 
-| Alias        | Description                                            |
-| ------------ | ------------------------------------------------------ |
-| `stack()`    | Ancestors of reachable mutable changes from `@`        |
-| `stack(x)`   | Ancestors of reachable mutable changes from `x`        |
+| Alias      | Description                                     |
+| ---------- | ----------------------------------------------- |
+| `stack()`  | Ancestors of reachable mutable changes from `@` |
+| `stack(x)` | Ancestors of reachable mutable changes from `x` |

@@ -7,10 +7,9 @@ git clone https://github.com/YOUR_USER/dotfiles.git ~/dotfiles
 cd ~/dotfiles && ./install
 ```
 
-The install script auto-detects your OS and installs packages using the native format (`Brewfile` on macOS, `pkgs.arch`
+The `install` script auto-detects your OS and installs packages using the native format (`Brewfile` on macOS,
+`pkgs.arch`
 on Arch, pre-built binaries elsewhere). Then it symlinks configs via stow and sets zsh as default shell.
-
-Every top-level directory is a stow package — add a new one and it gets picked up automatically.
 
 ## What's included
 
