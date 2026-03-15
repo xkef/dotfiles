@@ -37,7 +37,6 @@ return {
       picker = { enabled = true },
       lazygit = { enabled = true },
       image = { enabled = true },
-      explorer = { enabled = true },
       bigfile = { enabled = false },
       dashboard = { enabled = false },
       indent = { enabled = false },
@@ -135,20 +134,51 @@ return {
         end,
         desc = "Workspace symbols",
       },
-      {
-        "<leader>e",
-        function()
-          Snacks.explorer()
-        end,
-        desc = "Explorer",
+    },
+  },
+
+  {
+    "nvim-tree/nvim-tree.lua",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    keys = {
+      { "<leader>e", "<cmd>NvimTreeToggle<cr>", desc = "Tree explorer" },
+      { "-", "<cmd>NvimTreeToggle<cr>", desc = "File browser" },
+    },
+    opts = {
+      renderer = {
+        group_empty = true,
+        indent_markers = { enable = true },
+        icons = {
+          show = { folder_arrow = false },
+        },
       },
-      {
-        "-",
-        function()
-          Snacks.explorer()
-        end,
-        desc = "Explorer",
+      view = {
+        width = 35,
+        side = "right",
       },
+      sync_root_with_cwd = true,
+      respect_buf_cwd = true,
+      update_focused_file = {
+        enable = true,
+        update_root = true,
+      },
+      filters = { dotfiles = false },
+      actions = {
+        open_file = { quit_on_open = true },
+        change_dir = { restrict_above_cwd = true },
+      },
+      on_attach = function(bufnr)
+        local api = require("nvim-tree.api")
+        local function map(key, fn, desc)
+          vim.keymap.set("n", key, fn, { buffer = bufnr, desc = desc })
+        end
+        api.config.mappings.default_on_attach(bufnr)
+        map("l", api.node.open.edit, "Open")
+        map("h", api.node.navigate.parent_close, "Close folder")
+        map("q", api.tree.close, "Close")
+        map("<C-v>", api.node.open.vertical, "Open in vsplit")
+        map("<C-s>", api.node.open.horizontal, "Open in split")
+      end,
     },
   },
 
