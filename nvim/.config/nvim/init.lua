@@ -13,6 +13,8 @@ vim.opt.smartcase = true
 vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 250
 vim.opt.undofile = true
+vim.opt.undolevels = 10000
+vim.opt.autowriteall = true
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.clipboard = "unnamedplus"
@@ -112,6 +114,18 @@ map("n", "]d", function()
 end, { desc = "Next diagnostic" })
 map("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 map("n", "<leader>xl", vim.diagnostic.setloclist, { desc = "Diagnostic list" })
+
+-- Autosave on focus loss and idle
+vim.api.nvim_create_autocmd({ "FocusLost", "BufLeave", "CursorHold", "InsertLeave" }, {
+  group = vim.api.nvim_create_augroup("Autosave", { clear = true }),
+  callback = function(ev)
+    if vim.bo[ev.buf].modified and vim.bo[ev.buf].buftype == "" and vim.fn.expand("%") ~= "" then
+      vim.api.nvim_buf_call(ev.buf, function()
+        vim.cmd("silent! write")
+      end)
+    end
+  end,
+})
 
 -- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"

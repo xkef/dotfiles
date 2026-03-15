@@ -1,5 +1,7 @@
 vim.opt_local.shiftwidth = 4
 vim.opt_local.tabstop = 4
+vim.opt_local.makeprg = "mvnd clean compile"
+vim.opt_local.errorformat = "[ERROR] %f:[%l\\,%c] %m"
 
 local jdtls = require("jdtls")
 
@@ -34,8 +36,19 @@ for _, jar in ipairs(test_jars) do
   end
 end
 
+local spring_boot_ok, spring_boot = pcall(require, "spring_boot")
+if spring_boot_ok then
+  vim.list_extend(bundles, spring_boot.java_extensions())
+end
+
+local lombok_jar = mason_path .. "/jdtls/lombok.jar"
+local cmd = { "jdtls", "-data", data_dir }
+if vim.uv.fs_stat(lombok_jar) then
+  table.insert(cmd, "--jvm-arg=-javaagent:" .. lombok_jar)
+end
+
 local config = {
-  cmd = { "jdtls", "-data", data_dir },
+  cmd = cmd,
   root_dir = root_dir,
   capabilities = require("blink.cmp").get_lsp_capabilities(),
 
@@ -65,8 +78,22 @@ local config = {
     bundles = bundles,
   },
 
-  on_attach = function(_, bufnr)
+  on_attach = function(client, bufnr)
+    vim.api.nvim_set_current_dir(root_dir)
     jdtls.setup_dap({ hotcodereplace = "auto" })
+
+    if not client._spring_dap_configured then
+      client._spring_dap_configured = true
+      local dap = require("dap")
+      dap.configurations.java = dap.configurations.java or {}
+      table.insert(dap.configurations.java, {
+        type = "java",
+        request = "attach",
+        name = "Attach to Spring Boot (port 5005)",
+        hostName = "127.0.0.1",
+        port = 5005,
+      })
+    end
 
     local m = function(keys, func, desc)
       vim.keymap.set("n", keys, func, { buffer = bufnr, desc = desc })
@@ -79,6 +106,17 @@ local config = {
     end, { buffer = bufnr, desc = "Extract method" })
     m("<leader>cT", jdtls.test_class, "Test class (jdtls)")
     m("<leader>ct", jdtls.test_nearest_method, "Test method (jdtls)")
+
+    m("<leader>cR", function()
+      Snacks.terminal("mvnd clean spring-boot:run", { cwd = root_dir })
+    end, "Run Spring Boot")
+
+    m("<leader>cD", function()
+      Snacks.terminal(
+        "mvnd clean spring-boot:run -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005'",
+        { cwd = root_dir }
+      )
+    end, "Run Spring Boot (debug)")
   end,
 }
 

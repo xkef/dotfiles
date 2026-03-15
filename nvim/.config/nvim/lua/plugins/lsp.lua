@@ -21,7 +21,13 @@ return {
       require("mason").setup()
 
       local mr = require("mason-registry")
-      for _, pkg_name in ipairs({ "java-debug-adapter", "java-test" }) do
+      for _, pkg_name in ipairs({
+        "java-debug-adapter",
+        "java-test",
+        "lemminx",
+        "google-java-format",
+        "spring-boot-tools",
+      }) do
         local ok, pkg = pcall(mr.get_package, pkg_name)
         if ok and not pkg:is_installed() then
           pkg:install()
@@ -43,6 +49,12 @@ return {
           exclude = { "jdtls" },
         },
       })
+
+      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].filetype ~= "" then
+          vim.api.nvim_exec_autocmds("FileType", { buffer = buf })
+        end
+      end
 
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(ev)

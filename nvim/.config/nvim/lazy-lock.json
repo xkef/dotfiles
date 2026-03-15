@@ -75,13 +75,17 @@
     "branch": "master",
     "commit": "a9d8cb68ee7184111dc66156c4a2ebabfbe01bc5"
   },
+  "nvim-dap-ui": {
+    "branch": "master",
+    "commit": "cf91d5e2d07c72903d052f5207511bf7ecdb7122"
+  },
   "nvim-jdtls": {
     "branch": "master",
     "commit": "77ccaeb422f8c81b647605da5ddb4a7f725cda90"
   },
   "nvim-lspconfig": {
     "branch": "master",
-    "commit": "4d0724be90b633ddce51b328a631060e6acd7d66"
+    "commit": "dd261ad5266ab5bbec249d21efeceda98ff3e1a6"
   },
   "nvim-nio": {
     "branch": "master",
@@ -122,6 +126,10 @@
   "snacks.nvim": {
     "branch": "main",
     "commit": "a049339328e2599ad6e85a69fa034ac501e921b2"
+  },
+  "spring-boot.nvim": {
+    "branch": "main",
+    "commit": "5d206bdfeb0865ea97bfbc18f9e08e2f26ac4707"
   },
   "tokyonight.nvim": {
     "branch": "main",

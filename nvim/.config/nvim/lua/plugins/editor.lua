@@ -27,6 +27,7 @@ return {
         sh = { "shfmt" },
         go = { "gofmt" },
         rust = { "rustfmt" },
+        java = { "google-java-format" },
       },
       format_on_save = { timeout_ms = 500, lsp_fallback = true },
     },

@@ -149,9 +149,16 @@ return {
         width = 35,
         side = "right",
       },
+      sync_root_with_cwd = true,
+      respect_buf_cwd = true,
+      update_focused_file = {
+        enable = true,
+        update_root = true,
+      },
       filters = { dotfiles = false },
       actions = {
         open_file = { quit_on_open = true },
+        change_dir = { restrict_above_cwd = true },
       },
       on_attach = function(bufnr)
         local api = require("nvim-tree.api")
