@@ -1,8 +1,9 @@
 # ── Key bindings ──────────────────────────────────────
 bindkey -e # emacs mode
+ZLE_RPROMPT_INDENT=0
 
 # Defensive unbinds: disable sequences that cause mysterious behavior
-# Ctrl-Q (flow control resume — redundant with stty -ixon)
+# Ctrl-Q (flow control resume — redundant with NO_FLOW_CONTROL)
 bindkey -r '^Q'
 # Alt-Enter / ESC-Enter (some terminals send this accidentally)
 bindkey -r '^[^M'
