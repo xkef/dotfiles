@@ -13,15 +13,8 @@ if (( $+commands[fd] )); then
       fd --type f --hidden --follow --exclude .git; \
     } | $dedup"
 
-  # Alt-C: zoxide frecency dirs first, then all dirs from fd (deduped)
-  if (( $+commands[zoxide] )); then
-    export FZF_ALT_C_COMMAND="\
-      { zoxide query -l 2>/dev/null; \
-        fd --type d --hidden --follow --exclude .git; \
-      } | $dedup"
-  else
-    export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
-  fi
+  # Alt-C: directories under cwd
+  export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git .'
 
   # ** tab completion
   _fzf_compgen_path() { fd --hidden --follow --exclude .git . "$1"; }

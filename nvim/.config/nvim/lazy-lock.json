@@ -55,6 +55,10 @@
     "branch": "main",
     "commit": "a676ab7282da8d651e175118bcf54483ca11e46d"
   },
+  "mason-tool-installer.nvim": {
+    "branch": "main",
+    "commit": "443f1ef8b5e6bf47045cb2217b6f748a223cf7dc"
+  },
   "mason.nvim": {
     "branch": "main",
     "commit": "44d1e90e1f66e077268191e3ee9d2ac97cc18e65"
