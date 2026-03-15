@@ -5,7 +5,7 @@
   },
   "blink.cmp": {
     "branch": "main",
-    "commit": "4b18c32adef2898f95cdef6192cbd5796c1a332d"
+    "commit": "451168851e8e2466bc97ee3e026c3dcb9141ce07"
   },
   "catppuccin": {
     "branch": "main",
@@ -93,11 +93,11 @@
   },
   "nvim-tree.lua": {
     "branch": "master",
-    "commit": "9197f3ee3f0c9a754aab5b16500db6d7da5f68fd"
+    "commit": "b3772adec8db61ba9098c5624a0823a77be3a23d"
   },
   "nvim-treesitter": {
     "branch": "main",
-    "commit": "eb1f8e80cb28eb7892f347609e0bdc5eb574b945"
+    "commit": "2f5d4c3f3c675962242096bcc8e586d76dd72eb2"
   },
   "nvim-treesitter-textobjects": {
     "branch": "main",
@@ -121,7 +121,7 @@
   },
   "snacks.nvim": {
     "branch": "main",
-    "commit": "b2cb00ef7d12da7f2d6e0684c43e2965896309dd"
+    "commit": "a049339328e2599ad6e85a69fa034ac501e921b2"
   },
   "tokyonight.nvim": {
     "branch": "main",
