@@ -66,7 +66,7 @@ map("n", "<leader>p", function()
 end, { desc = "Show file path" })
 map("n", "<leader>q", "<cmd>quit<cr>", { desc = "Quit window" })
 map("n", "<leader>w", "<cmd>write<cr>", { desc = "Write file" })
-map("n", "<leader>x", "<cmd>xit<cr>", { desc = "Write and quit" })
+map("n", "<leader>W", "<cmd>xit<cr>", { desc = "Write and quit" })
 map("n", "<leader>v", "gv", { desc = "Reselect last visual" })
 map("n", "<leader>zz", function()
   local pos = vim.api.nvim_win_get_cursor(0)
@@ -113,7 +113,7 @@ map("n", "]d", function()
   vim.diagnostic.jump({ count = 1 })
 end, { desc = "Next diagnostic" })
 map("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
-map("n", "<leader>xl", vim.diagnostic.setloclist, { desc = "Diagnostic list" })
+
 
 -- Autosave on focus loss and idle
 vim.api.nvim_create_autocmd({ "FocusLost", "BufLeave", "CursorHold", "InsertLeave" }, {
@@ -156,10 +156,10 @@ require("lazy").setup("plugins", {
   },
 })
 
--- Diagnostics: virtual line below current line avoids clashing with gitsigns blame
+-- Diagnostics: inline virtual text on current line only (no line jumping)
 vim.diagnostic.config({
-  virtual_text = false,
-  virtual_lines = { current_line = true },
+  virtual_text = { current_line = true },
+  virtual_lines = false,
   signs = true,
   underline = true,
   update_in_insert = false,

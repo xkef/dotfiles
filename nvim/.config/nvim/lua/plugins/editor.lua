@@ -7,7 +7,7 @@ return {
       {
         "<leader>cf",
         function()
-          require("conform").format({ async = true, lsp_fallback = true })
+          require("conform").format({ async = true, lsp_format = "fallback" })
         end,
         desc = "Format",
       },
@@ -29,7 +29,7 @@ return {
         rust = { "rustfmt" },
         java = { "google-java-format" },
       },
-      format_on_save = { timeout_ms = 500, lsp_fallback = true },
+      format_on_save = { timeout_ms = 500, lsp_format = "fallback" },
     },
   },
 
@@ -76,6 +76,29 @@ return {
     version = "*",
     event = "VeryLazy",
     opts = {},
+  },
+
+  {
+    "mfussenegger/nvim-lint",
+    event = { "BufReadPost", "BufNewFile", "BufWritePost" },
+    config = function()
+      local lint = require("lint")
+      lint.linters_by_ft = {
+        python = { "ruff" },
+        javascript = { "eslint_d" },
+        typescript = { "eslint_d" },
+        javascriptreact = { "eslint_d" },
+        typescriptreact = { "eslint_d" },
+        sh = { "shellcheck" },
+        bash = { "shellcheck" },
+      }
+      vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost", "InsertLeave" }, {
+        group = vim.api.nvim_create_augroup("Linting", { clear = true }),
+        callback = function()
+          lint.try_lint()
+        end,
+      })
+    end,
   },
 
   {

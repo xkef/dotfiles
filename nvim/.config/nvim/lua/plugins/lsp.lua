@@ -14,12 +14,14 @@ return {
     dependencies = { "williamboman/mason.nvim" },
     opts = {
       ensure_installed = {
+        "eslint_d",
         "google-java-format",
         "java-debug-adapter",
         "java-test",
         "lemminx",
         "prettierd",
         "ruff",
+        "shellcheck",
         "shfmt",
         "stylua",
         "vscode-spring-boot-tools",
