@@ -26,7 +26,7 @@ return {
         "java-test",
         "lemminx",
         "google-java-format",
-        "spring-boot-tools",
+        "vscode-spring-boot-tools",
       }) do
         local ok, pkg = pcall(mr.get_package, pkg_name)
         if ok and not pkg:is_installed() then
