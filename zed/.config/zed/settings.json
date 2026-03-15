@@ -162,7 +162,7 @@
           "format": {
             "enabled": true,
             "settings": {
-              "tabSize": 4,
+              "tabSize": 2,
               "insertSpaces": true
             }
           },
