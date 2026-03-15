@@ -27,6 +27,26 @@ theme_config() {
       585b70 f38ba8 a6e3a1 f9e2af 89b4fa cba6f7 94e2d5 a6adc8)
     theme_bg=1e1e2e theme_fg=cdd6f4 theme_cursor=f5e0dc
     ;;
+  catppuccin-macchiato)
+    ghostty_theme="Catppuccin Macchiato"
+    nvim_scheme="catppuccin-macchiato"
+    background="dark"
+    bat_theme="Catppuccin Macchiato"
+    pair="catppuccin-latte"
+    palette=(494d64 ed8796 a6da95 eed49f 8aadf4 c6a0f6 8bd5ca b8c0e0
+      5b6078 ed8796 a6da95 eed49f 8aadf4 c6a0f6 8bd5ca a5adcb)
+    theme_bg=24273a theme_fg=cad3f5 theme_cursor=f4dbd6
+    ;;
+  catppuccin-frappe)
+    ghostty_theme="Catppuccin Frappe"
+    nvim_scheme="catppuccin-frappe"
+    background="dark"
+    bat_theme="Catppuccin Frappe"
+    pair="catppuccin-latte"
+    palette=(51576d e78284 a6d189 e5c890 8caaee ca9ee6 81c8be b5bfe2
+      626880 e78284 a6d189 e5c890 8caaee ca9ee6 81c8be a5adce)
+    theme_bg=303446 theme_fg=c6d0f5 theme_cursor=f2d5cf
+    ;;
   catppuccin-latte)
     ghostty_theme="Catppuccin Latte"
     nvim_scheme="catppuccin-latte"
@@ -193,6 +213,8 @@ theme_config() {
 
 THEMES=(
   catppuccin-mocha
+  catppuccin-macchiato
+  catppuccin-frappe
   catppuccin-latte
   tokyonight
   tokyonight-day
