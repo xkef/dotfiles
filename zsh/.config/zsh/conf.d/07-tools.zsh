@@ -2,15 +2,7 @@
 
 autoload -Uz zmv zargs zcalc regexp-replace
 
-auto-ls() {
-  if (( $+commands[eza] )); then
-    eza --group-directories-first
-  elif [[ "$OSTYPE" == darwin* ]]; then
-    command ls -G
-  else
-    command ls --color=auto
-  fi
-}
+auto-ls() { ls; }
 chpwd_functions+=( auto-ls )
 
 # ── Cached init ──────────────────────────────────────
@@ -70,7 +62,7 @@ _deferred_tool_init() {
 precmd_functions+=(_deferred_tool_init)
 
 # ── Yazi: cd-on-quit wrapper ─────────────────────────
-if command -v yazi &>/dev/null; then
+if (( $+commands[yazi] )); then
   y() {
     local tmp
     tmp=$(mktemp -t "yazi-cwd.XXXXXX")

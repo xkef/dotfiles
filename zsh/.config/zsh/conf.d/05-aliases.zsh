@@ -1,6 +1,6 @@
 # ── Aliases ───────────────────────────────────────────
 # Modern replacements
-if command -v eza &>/dev/null; then
+if (( $+commands[eza] )); then
   alias ls='eza --group-directories-first'
   alias ll='eza -la --group-directories-first --git'
   alias lt='eza -T --level=2'
@@ -15,7 +15,7 @@ else
   alias la='ls -a'
 fi
 
-if command -v bat &>/dev/null; then
+if (( $+commands[bat] )); then
   alias cat='bat -pp'
   alias catn='bat'
 fi
@@ -47,12 +47,12 @@ alias cls='clear'
 alias mkdir='mkdir -pv'
 alias grep='grep --color=auto'
 
-if command -v dust &>/dev/null; then alias du='dust'; else alias du='du -h'; fi
-if command -v duf &>/dev/null; then alias df='duf'; else alias df='df -h'; fi
-if command -v procs &>/dev/null; then alias ps='procs'; fi
+if (( $+commands[dust] )); then alias du='dust'; else alias du='du -h'; fi
+if (( $+commands[duf] )); then alias df='duf'; else alias df='df -h'; fi
+if (( $+commands[procs] )); then alias ps='procs'; fi
 
 # Universal extract/compress via ouch
-if command -v ouch &>/dev/null; then
+if (( $+commands[ouch] )); then
   alias extract='ouch decompress'
   alias compress='ouch compress'
 fi

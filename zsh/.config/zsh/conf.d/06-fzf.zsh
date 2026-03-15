@@ -1,10 +1,10 @@
 # ── FZF ──────────────────────────────────────────────
-if ! command -v fzf &>/dev/null; then
+if ! (( $+commands[fzf] )); then
   return
 fi
 
 # Use fd for file/dir search, sorted by recency (recent first, then rest, deduped)
-if command -v fd &>/dev/null; then
+if (( $+commands[fd] )); then
   local dedup='awk "!seen[\$0]++"'
 
   # Ctrl-T: recently modified files first, then all files
@@ -14,7 +14,7 @@ if command -v fd &>/dev/null; then
     } | $dedup"
 
   # Alt-C: zoxide frecency dirs first, then all dirs from fd (deduped)
-  if command -v zoxide &>/dev/null; then
+  if (( $+commands[zoxide] )); then
     export FZF_ALT_C_COMMAND="\
       { zoxide query -l 2>/dev/null; \
         fd --type d --hidden --follow --exclude .git; \

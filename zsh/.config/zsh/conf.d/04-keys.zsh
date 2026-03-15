@@ -60,16 +60,7 @@ bindkey '^[,' copy-earlier-word
 
 bindkey ' ' magic-space
 
-# Ctrl-S → yazi (cd-on-quit)
-yazi-widget() {
-  local tmp
-  tmp=$(mktemp -t "yazi-cwd.XXXXXX")
-  yazi --cwd-file="$tmp" < /dev/tty
-  if cwd=$(command cat -- "$tmp") && [[ -n "$cwd" && "$cwd" != "$PWD" ]]; then
-    builtin cd -- "$cwd"
-  fi
-  rm -f -- "$tmp"
-  zle reset-prompt
-}
+# Ctrl-S → yazi (cd-on-quit, delegates to y() in 07-tools.zsh)
+yazi-widget() { y < /dev/tty; zle reset-prompt; }
 zle -N yazi-widget
 bindkey '^S' yazi-widget

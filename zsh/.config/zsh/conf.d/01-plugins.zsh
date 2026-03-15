@@ -29,7 +29,7 @@ fi
 zinit cdreplay -q
 
 # Register missing completions (eza has no built-in zsh completions)
-command -v eza &>/dev/null && compdef _files eza
+(( $+commands[eza] )) && compdef _files eza
 
 # fzf-tab (must load after compinit, deferred to avoid ~5ms sync cost)
 zinit wait lucid for Aloxaf/fzf-tab
