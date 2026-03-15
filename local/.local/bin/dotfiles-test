@@ -2,7 +2,7 @@
 # Smoke test for dotfiles: validates configs parse correctly.
 set -uo pipefail
 
-DOTFILES="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir" 2>/dev/null || echo "$HOME/dotfiles")}"
+DOTFILES_DIR="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir" 2>/dev/null || echo "$HOME/dotfiles")}"
 
 errors=0
 check() {
@@ -19,8 +19,8 @@ check() {
 printf '\n  dotfiles smoke test\n\n'
 
 # Shell
-check "zsh syntax" zsh -n "$DOTFILES/zsh/.config/zsh/.zshrc"
-for f in "$DOTFILES"/zsh/.config/zsh/conf.d/*.zsh; do
+check "zsh syntax" zsh -n "$DOTFILES_DIR/zsh/.config/zsh/.zshrc"
+for f in "$DOTFILES_DIR"/zsh/.config/zsh/conf.d/*.zsh; do
   check "zsh syntax: $(basename "$f")" zsh -n "$f"
 done
 
@@ -31,7 +31,7 @@ fi
 
 # Tmux
 if command -v tmux &>/dev/null; then
-  check "tmux config parse" timeout 10 tmux -L _smoke -f "$DOTFILES/tmux/.config/tmux/tmux.conf" start-server \; kill-server
+  check "tmux config parse" timeout 10 tmux -L _smoke -f "$DOTFILES_DIR/tmux/.config/tmux/tmux.conf" start-server \; kill-server
 fi
 
 # Starship

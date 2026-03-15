@@ -1,6 +1,12 @@
-DOTFILES := $(shell pwd)
+DOTFILES_DIR := $(shell pwd)
 STOW_PACKAGES := $(shell ls -d */ 2>/dev/null | sed 's|/||')
 SHELL_FILES := $(shell git ls-files | xargs file --mime-type 2>/dev/null | awk -F: '/x-shellscript/ {print $$1}')
+
+define stow_each
+	@for pkg in $(STOW_PACKAGES); do \
+		stow --dir=$(DOTFILES_DIR) -t $(HOME) $(1) $$pkg || true; \
+	done
+endef
 
 .PHONY: help install update test stow unstow restow fmt lint tools clean
 
@@ -21,19 +27,13 @@ test: ## Run smoke tests
 	./test
 
 stow: ## Stow all packages into ~
-	@for pkg in $(STOW_PACKAGES); do \
-		stow --dir=$(DOTFILES) -t $(HOME) $$pkg || true; \
-	done
+	$(call stow_each)
 
 unstow: ## Remove all symlinks from ~
-	@for pkg in $(STOW_PACKAGES); do \
-		stow --dir=$(DOTFILES) -t $(HOME) -D $$pkg || true; \
-	done
+	$(call stow_each,-D)
 
 restow: ## Re-stow all packages (fixes stale symlinks)
-	@for pkg in $(STOW_PACKAGES); do \
-		stow --dir=$(DOTFILES) -t $(HOME) -R $$pkg || true; \
-	done
+	$(call stow_each,-R)
 
 tools: ## Install mise tools (languages + formatters)
 	mise install

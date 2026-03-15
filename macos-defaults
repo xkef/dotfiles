@@ -89,7 +89,7 @@ apply() {
     local current
     current=$(read_default $flag "$domain" "$key")
     if [[ -n "$current" ]]; then
-      printf '%s\t%s\t%s\t%s\t%s\n' "$flag" "$domain" "$key" "$type" "$current" >> "$BACKUP_FILE"
+      printf '%s\t%s\t%s\t%s\t%s\n' "$flag" "$domain" "$key" "$type" "$current" >>"$BACKUP_FILE"
     fi
     defaults $flag write "$domain" "$key" "$type" "$value"
   fi
@@ -105,7 +105,7 @@ if $RESTORE; then
   while IFS=$'\t' read -r flag domain key type value; do
     log "$domain $key -> $value"
     defaults $flag write "$domain" "$key" "$type" "$value"
-  done < "$backup"
+  done <"$backup"
   printf '\n  Restored. Some changes require a logout/restart.\n\n'
   exit 0
 fi

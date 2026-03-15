@@ -2,10 +2,10 @@
 # Dotfiles installer — auto-detects OS, installs packages, stows configs.
 set -uo pipefail
 
-DOTFILES="$(cd "$(dirname "$0")" && pwd)"
+DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 mkdir -p "$HOME/.config/dotfiles"
-[[ -f "$HOME/.config/dotfiles/dir" ]] || printf '%s\n' "$DOTFILES" >"$HOME/.config/dotfiles/dir"
+[[ -f "$HOME/.config/dotfiles/dir" ]] || printf '%s\n' "$DOTFILES_DIR" >"$HOME/.config/dotfiles/dir"
 
 log() { printf '  %s\n' "$1"; }
 has() { command -v "$1" &>/dev/null; }
@@ -38,18 +38,18 @@ Darwin)
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   fi
   log "brew bundle..."
-  run_quiet "brew bundle" brew bundle --file="$DOTFILES/Brewfile"
+  run_quiet "brew bundle" brew bundle --file="$DOTFILES_DIR/Brewfile"
   ;;
 Linux)
   if [[ -f /etc/arch-release ]]; then
     sudo -v
     log "pacman..."
     # shellcheck disable=SC2046
-    run_quiet "pacman install" sudo pacman -S --needed --noconfirm $(cat "$DOTFILES/pkgs.arch")
+    run_quiet "pacman install" sudo pacman -S --needed --noconfirm $(cat "$DOTFILES_DIR/pkgs.arch")
   else
     log "Enabling mise system tools..."
     mkdir -p "$HOME/.config/mise/conf.d"
-    cp "$DOTFILES/mise-system-tools.toml" "$HOME/.config/mise/conf.d/system-tools.toml"
+    cp "$DOTFILES_DIR/mise-system-tools.toml" "$HOME/.config/mise/conf.d/system-tools.toml"
   fi
   ;;
 esac
@@ -66,23 +66,23 @@ done
 
 if $adopt; then
   # --adopt + checkout overwrites uncommitted changes — abort if worktree is dirty.
-  if [[ -d "$DOTFILES/.git" ]] && ! git -C "$DOTFILES" diff --quiet 2>/dev/null; then
+  if [[ -d "$DOTFILES_DIR/.git" ]] && ! git -C "$DOTFILES_DIR" diff --quiet 2>/dev/null; then
     log "  ! Uncommitted changes detected — commit or stash before running install."
     log "    (--adopt would overwrite your in-progress work)"
     exit 1
   fi
 fi
 
-for pkg in "$DOTFILES"/*/; do
+for pkg in "$DOTFILES_DIR"/*/; do
   pkg="$(basename "$pkg")"
   if $adopt; then
-    if run_quiet "stow $pkg" stow --dir="$DOTFILES" -t "$HOME" --adopt "$pkg"; then
-      run_quiet "git restore $pkg" git -C "$DOTFILES" restore "$pkg/"
+    if run_quiet "stow $pkg" stow --dir="$DOTFILES_DIR" -t "$HOME" --adopt "$pkg"; then
+      run_quiet "git restore $pkg" git -C "$DOTFILES_DIR" restore "$pkg/"
     else
       log "  ! stow $pkg: failed — resolve manually"
     fi
   else
-    if ! run_quiet "stow $pkg" stow --dir="$DOTFILES" -t "$HOME" "$pkg"; then
+    if ! run_quiet "stow $pkg" stow --dir="$DOTFILES_DIR" -t "$HOME" "$pkg"; then
       log "  ! stow $pkg: conflict — run with --adopt to resolve"
     fi
   fi

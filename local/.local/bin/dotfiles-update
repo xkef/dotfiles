@@ -5,11 +5,28 @@ DOTFILES_DIR="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir")}"
 
 log() { printf '  %s\n' "$1"; }
 
+run_quiet() {
+  local context=${1:-}
+  shift
+  local output
+  if output=$("$@" 2>&1); then
+    return 0
+  fi
+  local rc=$?
+  log "  ! ${context} failed (exit $rc)"
+  if [[ -n "$output" ]]; then
+    while IFS= read -r line; do
+      log "    | $line"
+    done <<<"$(printf '%s\n' "$output" | tail -30)"
+  fi
+  return $rc
+}
+
 printf '\n  Updating dotfiles...\n\n'
 
 if [[ -d "$DOTFILES_DIR/.git" ]]; then
   log "Pulling latest changes..."
-  git -C "$DOTFILES_DIR" pull --rebase 2>/dev/null || true
+  run_quiet "git pull" git -C "$DOTFILES_DIR" pull --rebase || true
 fi
 
 log "Re-stowing packages..."
@@ -20,18 +37,18 @@ if ! git -C "$DOTFILES_DIR" diff --quiet 2>/dev/null; then
 else
   for pkg in "$DOTFILES_DIR"/*/; do
     pkg="$(basename "$pkg")"
-    stow --dir="$DOTFILES_DIR" -t "$HOME" --adopt "$pkg" 2>/dev/null || true
-    git -C "$DOTFILES_DIR" checkout -- "$pkg/" 2>/dev/null || true
+    run_quiet "stow $pkg" stow --dir="$DOTFILES_DIR" -t "$HOME" --adopt "$pkg" || true
+    run_quiet "git restore $pkg" git -C "$DOTFILES_DIR" restore "$pkg/" || true
   done
 fi
 
 if command -v mise &>/dev/null; then
   log "Updating mise tools..."
-  mise upgrade 2>/dev/null || true
+  run_quiet "mise upgrade" mise upgrade || true
 fi
 
 log "Updating neovim plugins..."
-nvim --headless "+Lazy! sync" +qa 2>/dev/null || true
+run_quiet "nvim plugin sync" nvim --headless "+Lazy! sync" +qa || true
 
 log "Formatting lazy-lock.json..."
 lazy_lock="$DOTFILES_DIR/nvim/.config/nvim/lazy-lock.json"
