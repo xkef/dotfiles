@@ -25,6 +25,16 @@ return {
   },
 
   {
+    "saghen/blink.cmp",
+    opts = {
+      keymap = {
+        ["<C-n>"] = { "show", "select_next", "fallback" },
+        ["<C-p>"] = { "show", "select_prev", "fallback" },
+      },
+    },
+  },
+
+  {
     "folke/snacks.nvim",
     opts = {
       picker = {
