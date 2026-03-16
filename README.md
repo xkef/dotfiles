@@ -71,3 +71,15 @@ Same physical key. Ctrl is the only difference.
 | jj     | `jj config set --user user.name "…"` |
 | Neovim | `~/.config/nvim/lua/plugins/*.lua`   |
 | tmux   | `~/.config/tmux/local.conf`          |
+
+---
+
+## Credits
+
+Heavily inspired by [wincent/wincent](https://github.com/wincent/wincent) -- tmux, zsh, neovim structure, keymaps, and
+general philosophy. Also borrows from:
+
+- [omerxx/dotfiles](https://github.com/omerxx/dotfiles) -- tooling and tmux
+- [ThePrimeagen](https://github.com/ThePrimeagen/.dotfiles) -- tmux-sessionizer
+- [mattmc3/zdotdir](https://github.com/mattmc3/zdotdir) -- zsh caching and compilation patterns
+- [folke/LazyVim](https://github.com/LazyVim/LazyVim) -- Neovim distro and plugin ecosystem
