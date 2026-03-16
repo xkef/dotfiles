@@ -39,4 +39,5 @@
     (require-not (literal (param "CLAUDE_LOCK")))
     (require-not (subpath (param "CLAUDE_AUTH")))
     (require-not (subpath (param "CLAUDE_CACHE")))
-    (require-not (subpath (param "M2_REPO")))))
+    (require-not (subpath (param "M2_REPO")))
+    (require-not (subpath (param "KEYCHAINS")))))
