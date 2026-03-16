@@ -15,7 +15,7 @@ macos-option-as-alt = left
 # ── Theme ─────────────────────────────────────────────
 # Managed by `theme` command — switches ghostty, neovim, tmux, and shell
 # coherently. Run `ghostty +list-themes` to see available theme names.
-theme = Nord
+theme = Everforest Dark Hard
 
 # ── Window ────────────────────────────────────────────
 window-padding-x = 12
