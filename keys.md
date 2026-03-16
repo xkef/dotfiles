@@ -50,70 +50,9 @@ v/V/Ctrl-v toggle VISUAL/LINE/BLOCK (press again to cancel) — y yank — Y yan
 
 ## Neovim — Space +
 
-### Files and search
+Uses [LazyVim](https://www.lazyvim.org) defaults. Press `Space` and wait for which-key to discover all bindings.
 
-| Key   | Action                        |
-| ----- | ----------------------------- |
-| Space | Alternate file (last buffer)  |
-| - / e | File browser (nvim-tree)      |
-| ff    | Find files                    |
-| fr    | Recent files                  |
-| fb    | Buffers                       |
-| fh    | Help tags                     |
-| /     | Live grep                     |
-| sG    | Grep word under cursor        |
-| sr    | Resume last search            |
-| S     | Search and replace (grug-far) |
-| sR    | Search and replace at cursor  |
-|       |                               |
-| ha    | Harpoon add                   |
-| hh    | Harpoon menu                  |
-| 1-4   | Jump to harpoon mark          |
-
-### Navigation
-
-| Key | Action                         |
-| --- | ------------------------------ |
-| s   | Flash jump (2 keystrokes)      |
-| S   | Flash treesitter (syntax node) |
-
-### Git
-
-| Key     | Action              |
-| ------- | ------------------- |
-| gs      | Lazygit             |
-| ]h / [h | Next / prev hunk    |
-| hp      | Preview hunk diff   |
-| hr      | Reset (revert) hunk |
-| hd      | Diff buffer         |
-
-### LSP
-
-| Key     | Action                 |
-| ------- | ---------------------- |
-| gd      | Go to definition       |
-| gr      | References             |
-| gI      | Implementation         |
-| gy      | Type definition        |
-| K       | Hover                  |
-| ca      | Code action            |
-| cr      | Rename                 |
-| cf      | Format                 |
-| d       | Diagnostic float       |
-| [d / ]d | Prev / next diagnostic |
-
-### Other
-
-| Key            | Action                        |
-| -------------- | ----------------------------- |
-| ?              | Which-key (all keybindings)   |
-| t              | Floating terminal             |
-| Up / Down      | Prev / next quickfix entry    |
-| Left / Right   | Prev / next quickfix file     |
-| zz             | Strip trailing whitespace     |
-| v              | Reselect last visual          |
-| J / K (visual) | Move selection down / up      |
-| Space+p (vis)  | Paste without losing register |
+Full keymap reference: <https://www.lazyvim.org/keymaps>
 
 ---
 

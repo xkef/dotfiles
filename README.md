@@ -17,7 +17,7 @@ on Arch, pre-built binaries elsewhere). Then it symlinks configs via stow and se
 | -------------------------------------------------------------------------------- | ------------------------------------------------------ |
 | [Zsh](https://www.zsh.org) + [zinit](https://github.com/zdharma-continuum/zinit) | Shell with fast plugin loading                         |
 | [Starship](https://starship.rs)                                                  | Minimal, cross-shell prompt                            |
-| [Neovim](https://neovim.io) + lazy.nvim                                          | Editor, no distro                                      |
+| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)                 | Editor with LazyVim distro                             |
 | [tmux](https://github.com/tmux/tmux)                                             | Terminal multiplexer with vim navigation               |
 | [Ghostty](https://ghostty.org)                                                   | GPU-accelerated terminal                               |
 | [fzf](https://github.com/junegunn/fzf)                                           | Fuzzy finder everywhere (shell, tmux, neovim)          |

@@ -1,58 +1,37 @@
 return {
   {
-    "folke/which-key.nvim",
-    event = "VeryLazy",
-    opts = {},
-  },
-
-  {
-    "folke/trouble.nvim",
-    cmd = "Trouble",
-    keys = {
-      { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Diagnostics" },
-      { "<leader>xX", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", desc = "Buffer diagnostics" },
-      { "<leader>xl", "<cmd>Trouble loclist toggle<cr>", desc = "Location list" },
-      { "<leader>xq", "<cmd>Trouble qflist toggle<cr>", desc = "Quickfix list" },
-      { "<leader>xs", "<cmd>Trouble symbols toggle focus=false<cr>", desc = "Symbols" },
-    },
-    opts = {},
-  },
-
-  {
     "nvim-lualine/lualine.nvim",
-    event = "VeryLazy",
     opts = {
-      options = {
-        globalstatus = true,
-        component_separators = "",
-        section_separators = "",
-        disabled_filetypes = { statusline = { "lazy" } },
-      },
       sections = {
-        lualine_a = {
-          {
-            "mode",
-            fmt = function(s)
-              return s:sub(1, 1)
-            end,
-          },
-        },
-        lualine_b = { { "branch", icon = "" } },
-        lualine_c = {
-          { "filename", path = 1, symbols = { modified = " ●", readonly = " ", unnamed = "[No Name]" } },
-          { "diagnostics", symbols = { error = "E:", warn = "W:", info = "I:", hint = "H:" } },
-        },
-        lualine_x = { "filetype" },
         lualine_y = { "progress" },
         lualine_z = { "location" },
       },
-      inactive_sections = {
-        lualine_a = {},
-        lualine_b = {},
-        lualine_c = { { "filename", path = 1, symbols = { modified = " ●", readonly = " " } } },
-        lualine_x = { "location" },
-        lualine_y = {},
-        lualine_z = {},
+    },
+  },
+
+  {
+    "nvim-neo-tree/neo-tree.nvim",
+    opts = function(_, opts)
+      opts.filesystem = opts.filesystem or {}
+      opts.filesystem.group_empty_dirs = true
+      local fi = opts.filesystem.filtered_items or {}
+      fi.visible = true
+      fi.hide_dotfiles = false
+      fi.hide_hidden = false
+      fi.hide_gitignored = true
+      fi.never_show = { ".DS_Store", ".git", ".jj", ".idea" }
+      opts.filesystem.filtered_items = fi
+    end,
+  },
+
+  {
+    "folke/snacks.nvim",
+    opts = {
+      picker = {
+        sources = {
+          files = { hidden = true },
+          grep = { hidden = true },
+        },
       },
     },
   },

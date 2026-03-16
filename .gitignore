@@ -14,7 +14,6 @@ __pycache__/
 .idea/
 /zsh/.config/zsh/.zcompdump
 /zsh/.config/zsh/.zsh_history
-/nvim/.config/nvim/lazyvim.json
 /.claude/settings.local.json
 *.tmTheme
 /git/.config/git/config.local
