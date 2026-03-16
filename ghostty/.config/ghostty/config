@@ -62,10 +62,5 @@ quick-terminal-position = top
 quick-terminal-size = 50%
 keybind = global:ctrl+grave_accent=toggle_quick_terminal
 
-# ── Notifications ────────────────────────────────────
-notify-on-command-finish = unfocused
-notify-on-command-finish-action = no-bell,notify
-notify-on-command-finish-after = 30s
-
 # ── State ─────────────────────────────────────────
 window-save-state = always
