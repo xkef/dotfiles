@@ -22,3 +22,4 @@ __pycache__/
 /zsh/.config/zsh/.zcompcache/brew_all_commands
 *.zwc
 /vcs/.config/git/delta.gitconfig
+/vcs/.config/jj/repos/*
