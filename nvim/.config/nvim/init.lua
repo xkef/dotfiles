@@ -157,7 +157,7 @@ require("lazy").setup("plugins", {
 
 -- Diagnostics: inline virtual text on current line only (no line jumping)
 vim.diagnostic.config({
-  virtual_text = { current_line = true },
+  virtual_text = { current_line = true, priority = 10000 },
   virtual_lines = false,
   signs = true,
   underline = true,

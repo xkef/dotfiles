@@ -3,19 +3,37 @@ vim.opt_local.tabstop = 2
 vim.opt_local.makeprg = "mvnd clean compile"
 vim.opt_local.errorformat = "[ERROR] %f:[%l\\,%c] %m"
 
--- Fold imports as a single block, delegate everything else to treesitter
+-- Fold imports as a single block at a high level (20) so they stay closed
+-- via foldlevel=19 regardless of treesitter timing on large files.
+local IMPORT_FOLD_LEVEL = 20
+
 _G._java_foldexpr = function()
-  local line = vim.fn.getline(vim.v.lnum)
+  local lnum = vim.v.lnum
+  local line = vim.fn.getline(lnum)
   if line:match("^import ") then
-    local prev = vim.v.lnum > 1 and vim.fn.getline(vim.v.lnum - 1) or ""
-    if not prev:match("^import ") then
-      return ">1"
-    end
-    return "1"
+    local prev = lnum > 1 and vim.fn.getline(lnum - 1) or ""
+    return prev:match("^import ") and tostring(IMPORT_FOLD_LEVEL) or ">" .. IMPORT_FOLD_LEVEL
   end
-  return vim.treesitter.foldexpr()
+  if lnum > 1 and vim.fn.getline(lnum - 1):match("^import ") then
+    return "0"
+  end
+  local next_line = vim.fn.getline(lnum + 1)
+  if next_line and next_line:match("^import ") then
+    return "0"
+  end
+  local ok, result = pcall(vim.treesitter.foldexpr)
+  return ok and result or "0"
 end
 vim.opt_local.foldexpr = "v:lua._java_foldexpr()"
+
+vim.api.nvim_create_autocmd("BufWinEnter", {
+  buffer = vim.api.nvim_get_current_buf(),
+  callback = function()
+    if vim.wo.foldlevel >= IMPORT_FOLD_LEVEL then
+      vim.wo.foldlevel = IMPORT_FOLD_LEVEL - 1
+    end
+  end,
+})
 
 local jdtls = require("jdtls")
 
@@ -59,6 +77,8 @@ local lombok_jar = mason_path .. "/jdtls/lombok.jar"
 local cmd = { "jdtls", "-data", data_dir }
 if vim.uv.fs_stat(lombok_jar) then
   table.insert(cmd, "--jvm-arg=-javaagent:" .. lombok_jar)
+else
+  vim.notify("lombok.jar not found: " .. lombok_jar, vim.log.levels.WARN)
 end
 
 local config = {
@@ -116,19 +136,6 @@ local config = {
         end
       end,
     })
-
-    vim.schedule(function()
-      local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-      for i, line in ipairs(lines) do
-        if line:match("^import ") then
-          local saved = vim.api.nvim_win_get_cursor(0)
-          vim.api.nvim_win_set_cursor(0, { i, 0 })
-          pcall(vim.cmd, "normal! zc")
-          vim.api.nvim_win_set_cursor(0, saved)
-          break
-        end
-      end
-    end)
 
     if not client._spring_dap_configured then
       client._spring_dap_configured = true
