@@ -22,10 +22,10 @@ fi
 export EDITOR="nvim"
 export VISUAL="nvim"
 
-# Man pager (use bat for colorful manpages)
-if command -v bat &>/dev/null; then
-  export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-  export MANROFFOPT="-c"
+# Man pager (use nvim for treesitter-highlighted man pages with full navigation)
+if command -v nvim &>/dev/null; then
+  export MANPAGER='nvim +Man!'
+  export MANWIDTH=999
 fi
 
 # XDG-compliant tool homes

@@ -91,7 +91,7 @@ frg() {
   local file line
   rg --color=always --line-number --no-heading "${@:-.}" |
     fzf --ansi --delimiter ':' \
-      --preview 'bat --color=always --highlight-line {2} --line-range {2}: {1} 2>/dev/null' \
+      --preview 'bat --color=always --highlight-line {2} --line-range {2}:+100 {1} 2>/dev/null' \
       --preview-window 'right:50%:+{2}-5' |
     IFS=':' read -r file line _
   [ -n "$file" ] && ${EDITOR:-nvim} "$file" +"$line"
