@@ -8,9 +8,9 @@ return {
       options = {
         indicator = { style = "underline" },
         separator_style = "thin",
-        show_buffer_close_icons = false,
-        show_close_icon = false,
-        color_icons = true,
+        show_buffer_close_icons = true,
+        show_close_icon = true,
+        color_icons = false,
       },
     },
   },

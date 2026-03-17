@@ -141,7 +141,7 @@
   },
   "nvim-lspconfig": {
     "branch": "master",
-    "commit": "dc2f86d2b66a6e01a98c37cdadd3be3e90f8ab9a"
+    "commit": "d36ace0851744c7ec20213d1c8ff229806a98234"
   },
   "nvim-nio": {
     "branch": "master",
@@ -149,7 +149,7 @@
   },
   "nvim-treesitter": {
     "branch": "main",
-    "commit": "2cc172c28e5550e00e6beead4599b1469469c1c7"
+    "commit": "2b50ab5ccbcd9e5708deb351308edd738adbf84c"
   },
   "nvim-treesitter-textobjects": {
     "branch": "main",
