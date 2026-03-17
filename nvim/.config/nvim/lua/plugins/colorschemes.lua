@@ -142,9 +142,12 @@ return {
         diagnostic_text_highlight = true,
         diagnostic_virtual_text = "coloured",
         diagnostic_line_highlight = true,
-        float_style = "bright",
+        float_style = "blend",
         inlay_hints_background = "dimmed",
         show_eob = false,
+        on_highlights = function(hl, palette)
+          hl.Normal = { fg = hl.Normal.fg, bg = palette.bg_dim }
+        end,
       })
     end,
   },

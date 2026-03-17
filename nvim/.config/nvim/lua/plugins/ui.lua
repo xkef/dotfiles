@@ -1,5 +1,29 @@
 return {
   {
+    "akinsho/bufferline.nvim",
+    opts = function(_, opts)
+      opts.options = vim.tbl_deep_extend("force", opts.options or {}, {
+        themable = false,
+        style_preset = {
+          require("bufferline").style_preset.no_bold,
+        },
+        indicator = { icon = "", style = "none" },
+        separator_style = { "", "" },
+        color_icons = true,
+        offsets = {
+          { filetype = "neo-tree", text = "", separator = false },
+          { filetype = "snacks_layout_box" },
+        },
+      })
+      opts.highlights = vim.tbl_deep_extend("force", opts.highlights or {}, {
+        fill = {
+          bg = { attribute = "bg", highlight = "NeoTreeNormal" },
+        },
+      })
+    end,
+  },
+
+  {
     "nvim-lualine/lualine.nvim",
     opts = {
       sections = {
