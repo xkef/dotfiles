@@ -13,6 +13,7 @@ if vim.env.SSH_TTY or vim.env.TMUX then
   }
 end
 
+vim.opt.wrap = true
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.list = true
