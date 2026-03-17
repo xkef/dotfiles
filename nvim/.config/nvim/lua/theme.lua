@@ -42,7 +42,6 @@ function M.apply()
 end
 
 function M.setup()
-  M.apply()
   vim.api.nvim_create_autocmd("FocusGained", {
     group = vim.api.nvim_create_augroup("ThemeAutoSwitch", { clear = true }),
     callback = function()
