@@ -4,7 +4,9 @@ return {
     ft = { "java", "yaml", "jproperties" },
     dependencies = { "mfussenegger/nvim-jdtls" },
     config = function()
-      local ls_jar = vim.fn.glob("$MASON/packages/vscode-spring-boot-tools/extension/language-server/spring-boot-language-server-*.jar")
+      local ls_jar = vim.fn.glob(
+        "$MASON/packages/vscode-spring-boot-tools/extension/language-server/spring-boot-language-server-*.jar"
+      )
       if ls_jar == "" then
         vim.notify("spring-boot-tools not installed, run :MasonInstall spring-boot-tools", vim.log.levels.WARN)
         return

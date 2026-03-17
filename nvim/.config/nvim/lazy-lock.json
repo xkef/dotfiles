@@ -141,7 +141,7 @@
   },
   "nvim-lspconfig": {
     "branch": "master",
-    "commit": "1d13d2b0df9a0a02904c76d7ad6810f71d404406"
+    "commit": "dc2f86d2b66a6e01a98c37cdadd3be3e90f8ab9a"
   },
   "nvim-nio": {
     "branch": "master",
@@ -149,7 +149,7 @@
   },
   "nvim-treesitter": {
     "branch": "main",
-    "commit": "b9f9d692f1c7f0427502a3b84fa25d4bedb29ec1"
+    "commit": "2cc172c28e5550e00e6beead4599b1469469c1c7"
   },
   "nvim-treesitter-textobjects": {
     "branch": "main",
@@ -182,6 +182,10 @@
   "rose-pine": {
     "branch": "main",
     "commit": "cf2a288696b03d0934da713d66c6d71557b5c997"
+  },
+  "smart-splits.nvim": {
+    "branch": "master",
+    "commit": "82d01bb71bc051955654b3af68355f783d872fe0"
   },
   "snacks.nvim": {
     "branch": "main",
