@@ -17,6 +17,8 @@
 	pager = delta
 	autocrlf = input
 	whitespace = trailing-space,space-before-tab
+	fsmonitor = true
+	untrackedCache = true
 
 [column]
 	ui = auto
