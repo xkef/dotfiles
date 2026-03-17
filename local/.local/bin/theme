@@ -79,7 +79,7 @@ theme_config() {
     ;;
   rose-pine)
     ghostty_theme="Rose Pine"
-    nvim_scheme="rose-pine"
+    nvim_scheme="rose-pine-main"
     background="dark"
     bat_theme="Sublime Snazzy"
     pair="rose-pine-dawn"
@@ -87,12 +87,22 @@ theme_config() {
       6e6a86 eb6f92 31748f f6c177 9ccfd8 c4a7e7 ebbcba e0def4)
     theme_bg=191724 theme_fg=e0def4 theme_cursor=524f67
     ;;
+  rose-pine-moon)
+    ghostty_theme="Rose Pine Moon"
+    nvim_scheme="rose-pine-moon"
+    background="dark"
+    bat_theme="Sublime Snazzy"
+    pair="rose-pine-dawn"
+    palette=(393552 eb6f92 3e8fb0 f6c177 9ccfd8 c4a7e7 ea9a97 e0def4
+      6e6a86 eb6f92 3e8fb0 f6c177 9ccfd8 c4a7e7 ea9a97 e0def4)
+    theme_bg=232136 theme_fg=e0def4 theme_cursor=56526e
+    ;;
   rose-pine-dawn)
     ghostty_theme="Rose Pine Dawn"
     nvim_scheme="rose-pine-dawn"
     background="light"
     bat_theme="OneHalfLight"
-    pair="rose-pine"
+    pair="rose-pine-moon"
     palette=(f2e9e1 b4637a 286983 ea9d34 56949f 907aa9 d7827e 575279
       9893a5 b4637a 286983 ea9d34 56949f 907aa9 d7827e 575279)
     theme_bg=faf4ed theme_fg=575279 theme_cursor=cecacd
@@ -219,6 +229,7 @@ THEMES=(
   tokyonight
   tokyonight-day
   rose-pine
+  rose-pine-moon
   rose-pine-dawn
   gruvbox-dark
   gruvbox-light

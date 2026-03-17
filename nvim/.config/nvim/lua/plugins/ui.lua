@@ -1,4 +1,20 @@
 return {
+  -- bufferline: underline indicator + thin separators (rose-pine-inspired).
+  -- Highlights are driven entirely by the active colorscheme so this looks
+  -- correct with every theme without any per-theme overrides.
+  {
+    "akinsho/bufferline.nvim",
+    opts = {
+      options = {
+        indicator = { style = "underline" },
+        separator_style = "thin",
+        show_buffer_close_icons = false,
+        show_close_icon = false,
+        color_icons = true,
+      },
+    },
+  },
+
   {
     "nvim-lualine/lualine.nvim",
     opts = {
