@@ -91,6 +91,10 @@
     "branch": "main",
     "commit": "4b0a6207341d895b6cfe9bcb1e4d3e8607bfe4f4"
   },
+  "mini.hipatterns": {
+    "branch": "main",
+    "commit": "2c5dce6dc7443de814d16f7470549811ee86e664"
+  },
   "mini.icons": {
     "branch": "main",
     "commit": "5b9076dae1bfbe47ba4a14bc8b967cde0ab5d77e"

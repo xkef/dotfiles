@@ -16,6 +16,7 @@
     (require-not (subpath (param "MISE_SHIMS")))
     (require-not (subpath (param "MISE_STATE")))
     (require-not (subpath (param "GIT_CONFIG")))
+    (require-not (literal (param "GITCONFIG")))
     (require-not (subpath (param "GH_CONFIG")))
     (require-not (subpath (param "DOTFILES")))
     (require-not (subpath (param "M2_REPO")))
