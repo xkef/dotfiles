@@ -58,6 +58,7 @@ _deferred_tool_init() {
   _cached_source direnv hook zsh
   _cached_source atuin init zsh --disable-up-arrow
   _cached_source navi widget zsh
+  _cached_source op completion zsh
 }
 precmd_functions+=(_deferred_tool_init)
 
