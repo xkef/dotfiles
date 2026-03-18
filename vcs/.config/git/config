@@ -7,7 +7,6 @@
 	#   [user]
 	#     name = Your Name
 	#     email = you@example.com
-	#     signingkey = ~/.ssh/id_ed25519.pub
 
 [init]
 	defaultBranch = main
@@ -90,8 +89,9 @@
 	autocorrect = prompt
 
 # ── URL shortcuts ────────────────────────────────────
-[url "git@github.com:"]
+[url "https://github.com/"]
 	insteadOf = "gh:"
+	insteadOf = "git@github.com:"
 
 [url "git@gitlab.com:"]
 	insteadOf = "gl:"

@@ -37,7 +37,7 @@ diff-expected-exit-codes = [0, 1]
 [git]
 auto-local-bookmark = false
 write-change-id-header = true
-sign-on-push = true
+sign-on-push = false
 private-commits = 'description(glob:"wip:*") | description(glob:"private:*")'
 
 # ── Revsets ──────────────────────────────────────────
