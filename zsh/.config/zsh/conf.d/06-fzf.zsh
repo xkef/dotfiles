@@ -50,6 +50,32 @@ export FZF_ALT_C_OPTS=" \
 # Alt-C works via ghostty macos-option-as-alt=left; Ctrl-X d as fallback
 bindkey '^Xd' fzf-cd-widget
 
+# Alt-/: live grep (rg + fzf) — type to search file contents; Ctrl-X g as fallback
+fzf-grep-widget() {
+  setopt localoptions pipefail no_aliases 2>/dev/null
+  local selected file line
+  local RG_PREFIX="rg --column --line-number --no-heading --color=always --smart-case"
+  selected=$(
+    : | fzf --ansi --disabled \
+      --bind "change:reload:$RG_PREFIX {q} || true" \
+      --delimiter ':' \
+      --preview 'bat --color=always --highlight-line {2} --line-range {2}:+100 {1} 2>/dev/null' \
+      --preview-window 'right:50%:+{2}-5' \
+      --header 'Live grep │ CTRL-/ toggle preview │ CTRL-Y copy'
+  )
+  if [[ -n "$selected" ]]; then
+    IFS=':' read -r file line _ <<< "$selected"
+    if [[ -n "$file" ]]; then
+      BUFFER="${EDITOR:-nvim} ${(q)file} +${line}"
+      zle accept-line
+    fi
+  fi
+  zle reset-prompt
+}
+zle -N fzf-grep-widget
+bindkey '^[/' fzf-grep-widget
+bindkey '^Xg' fzf-grep-widget
+
 # ── FZF-powered functions ────────────────────────────
 
 # Interactive git branch switch

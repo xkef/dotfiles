@@ -64,10 +64,15 @@ Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 
 | Key           | Action                                |
 | ------------- | ------------------------------------- |
-| Ctrl-S        | Yazi file manager (cd-on-quit)        |
 | Ctrl-T        | File search (fzf)                     |
-| Ctrl-X d      | Directory jump (fzf)                  |
+| Alt-C         | Directory jump (fzf)                  |
+| Alt-/         | Live grep file contents (rg + fzf)    |
+| Ctrl-R        | Atuin history search                  |
 | Ctrl-G        | Navi cheatsheet                       |
+| Ctrl-S        | Yazi file manager (cd-on-quit)        |
+|               |                                       |
+| Ctrl-X d      | Directory jump fallback               |
+| Ctrl-X g      | Live grep fallback                    |
 |               |                                       |
 | Ctrl-A / E    | Beginning / end of line               |
 | Alt-F / B     | Forward / backward one word           |
@@ -76,6 +81,7 @@ Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 | Ctrl-K        | Kill to end of line                   |
 | Ctrl-U        | Kill entire line                      |
 | Ctrl-Y        | Yank last killed text                 |
+| Ctrl-P / N    | Prefix history search (also arrows)   |
 | Ctrl-Z        | Toggle fg/bg (undo if no jobs)        |
 | Ctrl-X Ctrl-E | Edit command in nvim                  |
 | !! then Space | Expand history inline                 |
