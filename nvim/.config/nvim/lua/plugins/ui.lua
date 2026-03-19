@@ -15,11 +15,22 @@ return {
           { filetype = "snacks_layout_box" },
         },
       })
-      opts.highlights = vim.tbl_deep_extend("force", opts.highlights or {}, {
-        fill = {
-          bg = { attribute = "bg", highlight = "NeoTreeNormal" },
-        },
-      })
+      local hl = opts.highlights
+      if type(hl) == "function" then
+        opts.highlights = function(config)
+          local base = hl(config)
+          base.fill = vim.tbl_deep_extend("force", base.fill or {}, {
+            bg = { attribute = "bg", highlight = "NeoTreeNormal" },
+          })
+          return base
+        end
+      else
+        opts.highlights = vim.tbl_deep_extend("force", hl or {}, {
+          fill = {
+            bg = { attribute = "bg", highlight = "NeoTreeNormal" },
+          },
+        })
+      end
     end,
   },
 
