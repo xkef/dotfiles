@@ -30,7 +30,8 @@ export FZF_DEFAULT_OPTS=" \
   --color=info:5,prompt:4,pointer:4,marker:2,spinner:5,header:3,border:8,gutter:-1 \
   --bind 'ctrl-/:toggle-preview' \
   --bind 'ctrl-y:execute-silent(echo -n {+} | pbcopy 2>/dev/null || echo -n {+} | wl-copy 2>/dev/null || echo -n {+} | xclip -sel clip 2>/dev/null)' \
-  --bind 'ctrl-d:half-page-down,ctrl-u:half-page-up'"
+  --bind 'ctrl-d:half-page-down,ctrl-u:half-page-up' \
+  --bind 'ctrl-f:preview-page-down,ctrl-b:preview-page-up'"
 
 # Ctrl-T: file search with bat preview, path-aware scoring
 export FZF_CTRL_T_OPTS=" \
@@ -119,11 +120,24 @@ flog() {
       --bind 'enter:execute(echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs git show --color=always | less -R)'
 }
 
+# Interactive git dirty-file picker → editor (multi-select with Tab)
+fgd() {
+  git rev-parse --is-inside-work-tree &>/dev/null || return
+  local files
+  files=$(git -c color.status=always status --short |
+    fzf --ansi --multi --nth=2.. --scheme=path \
+      --preview 'git diff --color=always -- {2} 2>/dev/null' \
+      --preview-window 'right:60%:border-left' \
+      --header 'Tab select │ Enter open │ CTRL-/ preview' |
+    awk '{print $NF}')
+  [[ -n "$files" ]] && ${EDITOR:-nvim} ${(f)files}
+}
+
 # Interactive process kill
 fkill() {
   local pid
-  pid=$(ps -ef | sed 1d | fzf --height 40% --reverse -m | awk '{print $2}')
-  [ -n "$pid" ] && echo "$pid" | xargs kill -"${1:-15}"
+  pid=$(command ps -ef | sed 1d | fzf --height 40% --reverse -m | awk '{print $2}')
+  [[ -n "$pid" ]] && echo "$pid" | xargs kill "-${1:-15}"
 }
 
 # Interactive file open in editor
