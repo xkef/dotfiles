@@ -85,17 +85,20 @@ return {
         })
 
         if root_dir then
+          local mvn = vim.fn.executable("mvnd") == 1 and "mvnd" or "mvn"
           local m = function(keys, func, desc)
             vim.keymap.set("n", keys, func, { buffer = bufnr, desc = desc })
           end
           m("<leader>cR", function()
-            vim.cmd("split | terminal cd " .. vim.fn.fnameescape(root_dir) .. " && mvnd clean spring-boot:run")
+            vim.cmd("split | terminal cd " .. vim.fn.fnameescape(root_dir) .. " && " .. mvn .. " clean spring-boot:run")
           end, "Run Spring Boot")
           m("<leader>cD", function()
             vim.cmd(
               "split | terminal cd "
                 .. vim.fn.fnameescape(root_dir)
-                .. " && mvnd clean spring-boot:run -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005'"
+                .. " && "
+                .. mvn
+                .. " clean spring-boot:run -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005'"
             )
           end, "Run Spring Boot (debug)")
         end

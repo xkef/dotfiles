@@ -26,13 +26,15 @@ require("lazy").setup({
       },
     },
     { import = "lazyvim.plugins.extras.lang.java" },
+    { import = "lazyvim.plugins.extras.lang.yaml" },
+    { import = "lazyvim.plugins.extras.lang.docker" },
     { import = "lazyvim.plugins.extras.dap.core" },
     { import = "lazyvim.plugins.extras.test.core" },
     { import = "lazyvim.plugins.extras.editor.harpoon2" },
+    { import = "lazyvim.plugins.extras.editor.illuminate" },
     { import = "plugins" },
   },
 })
 
--- Register the FocusGained auto-reload autocmd.
+-- Theme auto-reload is registered in lua/config/autocmds.lua.
 -- Initial colorscheme is applied above via the LazyVim colorscheme callback.
-require("theme").setup()
