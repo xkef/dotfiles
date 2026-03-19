@@ -41,6 +41,10 @@ export LESS_TERMCAP_se=$'\E[0m'           # end standout
 export LESS_TERMCAP_ue=$'\E[0m'           # end underline
 export LESS_TERMCAP_us=$'\E[04;38;5;111m' # begin underline (light blue)
 
+# ── Directory listing on cd ─────────────────────
+auto-ls() { ls; }
+chpwd_functions+=( auto-ls )
+
 # ── Named directories ───────────────────────────
 hash -d dots="${DOTFILES_DIR:-$HOME/dotfiles}"
 hash -d cfg="$XDG_CONFIG_HOME"

@@ -1,10 +1,3 @@
-# ── Shell utilities ───────────────────────────────────
-
-autoload -Uz zmv zargs zcalc regexp-replace
-
-auto-ls() { ls; }
-chpwd_functions+=( auto-ls )
-
 # ── Cached init ──────────────────────────────────────
 # Cache output of `tool init zsh` commands. Regenerates when the
 # binary changes (mtime or path). Eliminates fork+exec on warm startup.

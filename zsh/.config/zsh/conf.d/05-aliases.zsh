@@ -35,6 +35,7 @@ alias tl='tmux list-sessions'
 alias claude='claude-sandboxed'
 
 # Batch rename
+autoload -Uz zmv zargs zcalc regexp-replace
 alias mmv='noglob zmv -W'
 
 # Misc

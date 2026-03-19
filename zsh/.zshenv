@@ -37,7 +37,8 @@ export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
 
 # Dotfiles
 if [[ -z "${DOTFILES_DIR:-}" && -f "$HOME/.config/dotfiles/dir" ]]; then
-  export DOTFILES_DIR="$(<"$HOME/.config/dotfiles/dir")"
+  DOTFILES_DIR="$(<"$HOME/.config/dotfiles/dir")"
+  export DOTFILES_DIR
 fi
 
 # Path

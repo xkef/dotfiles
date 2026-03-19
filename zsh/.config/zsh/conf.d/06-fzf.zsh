@@ -5,13 +5,11 @@ fi
 
 # Use fd for file/dir search, sorted by recency (recent first, then rest, deduped)
 if (( $+commands[fd] )); then
-  local dedup='awk "!seen[\$0]++"'
-
-  # Ctrl-T: recently modified files first, then all files
+  # Ctrl-T: recently modified files first, then all files (deduped)
   export FZF_CTRL_T_COMMAND="\
     { fd --type f --changed-within 1week --hidden --follow --exclude .git; \
       fd --type f --hidden --follow --exclude .git; \
-    } | $dedup"
+    } | awk '!seen[\$0]++'"
 
   # Alt-C: directories under cwd
   export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git .'
@@ -136,16 +134,9 @@ fgd() {
 # Interactive process kill
 fkill() {
   local pid
-  pid=$(command ps -ef | sed 1d | fzf --height 40% --reverse -m | awk '{print $2}')
+  pid=$(ps -u "$USER" -o pid,%cpu,tty,cputime,cmd | sed 1d |
+    fzf --height 40% --reverse -m | awk '{print $1}')
   [[ -n "$pid" ]] && echo "$pid" | xargs kill "-${1:-15}"
-}
-
-# Interactive file open in editor
-fe() {
-  local file
-  file=$(fzf --height 40% --reverse --scheme=path \
-    --preview 'bat --color=always --style=numbers --line-range :200 {} 2>/dev/null || cat {}')
-  [ -n "$file" ] && ${EDITOR:-nvim} "$file"
 }
 
 # Interactive ripgrep → fzf → editor (live grep)
