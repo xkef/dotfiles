@@ -1,43 +1,44 @@
-stow
-git
-curl
-zsh
-tmux
-neovim
-eza
-bat
-fd
-ripgrep
-fzf
-zoxide
-jq
-git-delta
-starship
-ghostty
-lazygit
-atuin
-glow
-navi
-github-cli
-1password
-1password-cli
-jj
-mise
-claude-code
-podman
-trash-cli
-yazi
-hyperfine
-bandwhich
-ouch
-tokei
-difftastic
-sd
-dust
-duf
-procs
-tealdeer
-xdg-ninja
-xclip
-wl-clipboard
-bubblewrap
+stow              # symlink farm manager
+git               # version control
+curl              # URL data transfer
+zsh               # shell
+tmux              # terminal multiplexer
+neovim            # text editor
+eza               # modern ls replacement
+bat               # cat with syntax highlighting
+fd                # modern find replacement
+ripgrep           # fast recursive grep
+fzf               # fuzzy finder
+zoxide            # smarter cd with frecency
+jq                # JSON processor
+git-delta         # syntax-highlighting diff pager
+starship          # cross-shell prompt
+ghostty           # GPU-accelerated terminal
+lazygit           # terminal UI for git
+atuin             # shell history search/sync
+glow              # terminal markdown renderer
+navi              # interactive cheatsheet browser
+github-cli        # GitHub from the command line
+1password         # password manager
+1password-cli     # 1Password CLI (op)
+jj                # Jujutsu version control
+mise              # dev tool version manager
+claude-code       # Anthropic Claude CLI
+podman            # rootless container engine
+trash-cli         # move files to trash instead of rm
+yazi              # terminal file manager
+hyperfine         # command-line benchmarking
+bandwhich         # per-process bandwidth monitor
+ouch              # compress/decompress archives
+tokei             # code statistics by language
+difftastic        # structural diff tool
+sd                # intuitive find-and-replace (sed alt)
+dust              # disk usage viewer (du alt)
+duf               # disk free viewer (df alt)
+procs             # modern ps replacement
+tealdeer          # fast tldr client
+xdg-ninja         # audit XDG base-dir compliance
+xclip             # X11 clipboard utility
+wl-clipboard      # Wayland clipboard utility
+fx                # terminal JSON viewer
+bubblewrap        # unprivileged sandboxing
