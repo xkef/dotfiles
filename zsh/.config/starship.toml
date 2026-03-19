@@ -1,9 +1,10 @@
+command_timeout = 5000
+
 format = """
 ${custom.cwd}\
 $character"""
 
 right_format = """
-$cmd_duration\
 $directory\
 $git_branch\
 $git_status\
@@ -61,11 +62,6 @@ symbol = ' '
 [docker_context]
 format = '[$symbol$context]($style) '
 symbol = ' '
-
-[cmd_duration]
-min_time = 2000
-show_milliseconds = true
-format = "[$duration](yellow) "
 
 [custom.cwd]
 command = 'basename "$PWD"'
