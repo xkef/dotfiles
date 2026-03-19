@@ -3,9 +3,9 @@ GITHUB_TOKEN = "{{exec(command='gh auth token')}}"
 
 [tools]
 node = "lts"
-python = "latest"
-go = "latest"
-rust = "latest"
+python = "3.14"
+go = "1.26"
+rust = "1.94"
 java = "25"
 maven = "3"
-mvnd = "latest"
+mvnd = "1"

@@ -1,7 +1,7 @@
 [tools]
-stylua = "latest"
-shfmt = "latest"
-ruff = "latest"
-prettier = "latest"
-taplo = "latest"
-shellcheck = "latest"
+stylua = "2"
+shfmt = "3"
+ruff = "0"
+prettier = "3"
+taplo = "0"
+shellcheck = "0"
