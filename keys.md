@@ -65,13 +65,15 @@ Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 | Key           | Action                                |
 | ------------- | ------------------------------------- |
 | Ctrl-T        | File search (fzf)                     |
-| Alt-C         | Directory jump (fzf)                  |
+| Alt-C         | Directory jump under cwd (fzf + fd)   |
+| Alt-Z         | Jump to visited directory (fzf+zoxide)|
 | Alt-/         | Live grep file contents (rg + fzf)    |
 | Ctrl-R        | Atuin history search                  |
 | Ctrl-G        | Navi cheatsheet                       |
 | Ctrl-S        | Yazi file manager (cd-on-quit)        |
 |               |                                       |
 | Ctrl-X d      | Directory jump fallback               |
+| Ctrl-X z      | Visited directory jump fallback       |
 | Ctrl-X g      | Live grep fallback                    |
 |               |                                       |
 | Ctrl-A / E    | Beginning / end of line               |

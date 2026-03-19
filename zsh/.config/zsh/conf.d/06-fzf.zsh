@@ -50,6 +50,28 @@ export FZF_ALT_C_OPTS=" \
 # Alt-C works via ghostty macos-option-as-alt=left; Ctrl-X d as fallback
 bindkey '^Xd' fzf-cd-widget
 
+# Alt-C global: jump to any previously visited directory (zoxide history)
+fzf-zoxide-widget() {
+  setopt localoptions pipefail no_aliases 2>/dev/null
+  local dir
+  dir=$(zoxide query --list --score 2>/dev/null |
+    awk '{print $1, $2}' |
+    fzf --scheme=default --no-sort --nth=2 \
+      --preview 'eza -T --color=always --icons --level=2 {2} 2>/dev/null || ls -la {2}' \
+      --preview-window 'right:50%:border-left' \
+      --header 'Visited directories (zoxide)' |
+    awk '{print $2}')
+  if [[ -n "$dir" ]]; then
+    zoxide add "$dir"
+    BUFFER="builtin cd -- ${(q)dir}"
+    zle accept-line
+  fi
+  zle reset-prompt
+}
+zle -N fzf-zoxide-widget
+bindkey '^[z' fzf-zoxide-widget
+bindkey '^Xz' fzf-zoxide-widget
+
 # Alt-/: live grep (rg + fzf) — type to search file contents; Ctrl-X g as fallback
 fzf-grep-widget() {
   setopt localoptions pipefail no_aliases 2>/dev/null
