@@ -267,6 +267,17 @@ list_themes() {
   done
 }
 
+# Blend two hex colors: _blend_hex bg fg weight(0-100)
+_blend_hex() {
+  local bg="$1" fg="$2" w="${3:-20}"
+  local r1=$((16#${bg:0:2})) g1=$((16#${bg:2:2})) b1=$((16#${bg:4:2}))
+  local r2=$((16#${fg:0:2})) g2=$((16#${fg:2:2})) b2=$((16#${fg:4:2}))
+  printf '%02x%02x%02x' \
+    $(( (r1 * (100 - w) + r2 * w) / 100 )) \
+    $(( (g1 * (100 - w) + g2 * w) / 100 )) \
+    $(( (b1 * (100 - w) + b2 * w) / 100 ))
+}
+
 # ── OSC escape sequences ────────────────────────────────
 # Change terminal colors live — works in ghostty, kitty, iTerm2, etc.
 # Inside tmux, writes directly to each client's terminal (bypasses
@@ -317,10 +328,27 @@ EOF
 
   local dark_or_light="true"
   [[ "$bg" == "light" ]] && dark_or_light="false"
+
+  local red="${palette[1]}" green="${palette[2]}" dim="${palette[8]}"
+  local minus_bg minus_emph plus_bg plus_emph
+  minus_bg=$(_blend_hex "$theme_bg" "$red" 15)
+  minus_emph=$(_blend_hex "$theme_bg" "$red" 30)
+  plus_bg=$(_blend_hex "$theme_bg" "$green" 15)
+  plus_emph=$(_blend_hex "$theme_bg" "$green" 30)
+
   cat >"${XDG_CONFIG_HOME:-$HOME/.config}/git/delta.gitconfig" <<EOF
 [delta]
 	syntax-theme = $bat
 	dark = $dark_or_light
+	minus-style = syntax "#$minus_bg"
+	minus-emph-style = syntax "#$minus_emph"
+	minus-empty-line-marker-style = syntax "#$minus_bg"
+	plus-style = syntax "#$plus_bg"
+	plus-emph-style = syntax "#$plus_emph"
+	plus-empty-line-marker-style = syntax "#$plus_bg"
+	line-numbers-minus-style = "#$red"
+	line-numbers-plus-style = "#$green"
+	line-numbers-zero-style = "#$dim"
 EOF
 }
 
