@@ -1,0 +1,8 @@
+gui:
+  nerdFontsVersion: "3"
+  showBottomLine: false
+  border: rounded
+
+git:
+  paging:
+    pager: delta --paging=never --side-by-side
