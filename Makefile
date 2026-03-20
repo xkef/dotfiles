@@ -55,3 +55,4 @@ lint: ## Lint shell scripts, neovim config, and markdown
 clean: ## Remove caches and generated files
 	find . -name .DS_Store -delete 2>/dev/null || true
 	rm -rf nvim/.config/nvim/.luarc.json
+	./local/.local/bin/zsh-cache-reset

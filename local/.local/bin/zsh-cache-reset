@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Reset zsh eval caches and recompile config files.
+# Run after dotfiles install/update to pick up new tool versions and config changes.
+set -euo pipefail
+
+cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+config="${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}"
+
+# Clear eval caches (tool init scripts cached by _cached_source)
+if [[ -d "$cache/eval-cache" ]]; then
+  rm -rf "$cache/eval-cache"
+fi
+
+# Clear zcompdump (completion cache)
+rm -f "$cache"/zcompdump*
+
+# Recompile config files for faster loading
+if command -v zsh &>/dev/null; then
+  for f in "$config"/**/*.zsh "$HOME"/.zshenv; do
+    [[ -f "$f" ]] && zsh -c "zcompile '$f'" 2>/dev/null || true
+  done
+fi

@@ -89,7 +89,7 @@
   },
   "mason-lspconfig.nvim": {
     "branch": "main",
-    "commit": "a676ab7282da8d651e175118bcf54483ca11e46d"
+    "commit": "a979821a975897b88493843301950c456a725982"
   },
   "mason-nvim-dap.nvim": {
     "branch": "main",
@@ -157,7 +157,7 @@
   },
   "nvim-lspconfig": {
     "branch": "master",
-    "commit": "11f730caa976a00def4387cbacb6183cec7939c7"
+    "commit": "841c6d4139aedb8a3f2baf30cef5327371385b93"
   },
   "nvim-nio": {
     "branch": "master",
@@ -165,7 +165,7 @@
   },
   "nvim-treesitter": {
     "branch": "main",
-    "commit": "2b50ab5ccbcd9e5708deb351308edd738adbf84c"
+    "commit": "877f724846f2202a16e311bd19efb954bd1c430e"
   },
   "nvim-treesitter-textobjects": {
     "branch": "main",
@@ -201,15 +201,19 @@
   },
   "smart-splits.nvim": {
     "branch": "master",
-    "commit": "82d01bb71bc051955654b3af68355f783d872fe0"
+    "commit": "96afd5d3b029ac354aaa369fb33b4613a0bbf2f0"
   },
   "snacks.nvim": {
     "branch": "main",
-    "commit": "a049339328e2599ad6e85a69fa034ac501e921b2"
+    "commit": "e6fd58c82f2f3fcddd3fe81703d47d6d48fc7b9f"
   },
   "spring-boot.nvim": {
     "branch": "main",
     "commit": "5d206bdfeb0865ea97bfbc18f9e08e2f26ac4707"
+  },
+  "television": {
+    "branch": "main",
+    "commit": "d1e996319aff1982ca83d6c85f9b0d09f598c113"
   },
   "todo-comments.nvim": {
     "branch": "main",
@@ -226,6 +230,10 @@
   "ts-comments.nvim": {
     "branch": "main",
     "commit": "123a9fb12e7229342f807ec9e6de478b1102b041"
+  },
+  "tv.nvim": {
+    "branch": "main",
+    "commit": "38fb9d794d843c927ae0b1847d4b80c06176ee35"
   },
   "vim-illuminate": {
     "branch": "master",

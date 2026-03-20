@@ -59,6 +59,9 @@ if [[ -f "$lazy_lock" ]] && command -v jq &>/dev/null; then
   jq --sort-keys . "$lazy_lock" >"$lazy_lock.tmp" && mv "$lazy_lock.tmp" "$lazy_lock"
 fi
 
+log "Resetting zsh caches..."
+"${DOTFILES_DIR}/local/.local/bin/zsh-cache-reset"
+
 if command -v theme &>/dev/null; then
   log "Regenerating theme..."
   theme "$(sed -n 's/^name=//p' "$HOME/.config/theme/current" 2>/dev/null || echo catppuccin-mocha)" >/dev/null 2>&1 || true

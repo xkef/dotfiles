@@ -105,4 +105,9 @@ if [[ -n "$zsh" && "$zsh" != "${SHELL:-}" ]]; then
   sudo chsh -s "$zsh" "$(whoami)" || log "  ! Run manually: chsh -s $zsh"
 fi
 
+# ── Reset zsh caches ──────────────────────────────────
+
+log "Resetting zsh caches..."
+"$DOTFILES_DIR/local/.local/bin/zsh-cache-reset"
+
 printf '\n  Done! Run `exec zsh` to reload.\n\n'

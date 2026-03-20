@@ -28,6 +28,9 @@ return {
   {
     "mfussenegger/nvim-jdtls",
     opts = {
+      -- Store jdtls workspace data outside the project to avoid conflicts with Maven/IntelliJ
+      data_dir = vim.fn.expand("~/.cache/jdtls/workspace/"),
+
       jdtls = function(config)
         local ok, spring_boot = pcall(require, "spring_boot")
         if ok then
@@ -38,6 +41,9 @@ return {
 
       settings = {
         java = {
+          import = {
+            generatesMetadataFilesAtProjectRoot = false,
+          },
           format = { settings = { profile = "GoogleStyle" } },
           signatureHelp = { enabled = true },
           contentProvider = { preferred = "fernflower" },
