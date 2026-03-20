@@ -22,6 +22,7 @@ github-cli        # GitHub from the command line
 1password         # password manager
 1password-cli     # 1Password CLI (op)
 jj                # Jujutsu version control
+jjui              # terminal UI for jj
 mise              # dev tool version manager
 claude-code       # Anthropic Claude CLI
 podman            # rootless container engine

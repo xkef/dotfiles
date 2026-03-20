@@ -24,6 +24,7 @@ brew "gh"                # GitHub from the command line
 cask "1password"         # password manager
 cask "1password-cli"     # 1Password CLI (op)
 brew "jj"                # Jujutsu version control
+brew "jjui"              # terminal UI for jj
 brew "mise"              # dev tool version manager
 brew "devcontainer"      # dev container CLI
 brew "podman"            # rootless container engine

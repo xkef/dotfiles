@@ -5,6 +5,8 @@
 [ui]
 default-command = "log"
 editor = "nvim"
+diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
+diff-instructions = false
 diff.format = "color-words"
 graph.style = "square"
 log-word-wrap = true
