@@ -10,6 +10,9 @@ show_tabs = false
 max_preview_height = 0
 exit_mode = "return-query"
 
+[logs]
+dir = "~/.local/share/atuin/logs"
+
 [sync]
 records = false
 
