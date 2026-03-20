@@ -97,6 +97,20 @@ zle -N fzf-grep-widget
 bindkey '^[/' fzf-grep-widget
 bindkey '^Xg' fzf-grep-widget
 
+# Alt-T: television smart picker — standalone widget, no tv init zsh needed
+tv-smart-widget() {
+  setopt localoptions pipefail no_aliases 2>/dev/null
+  local result
+  result=$(tv 2>/dev/tty)
+  if [[ -n "$result" ]]; then
+    LBUFFER+="$result"
+  fi
+  zle reset-prompt
+}
+zle -N tv-smart-widget
+bindkey '^[t' tv-smart-widget
+bindkey '^Xt' tv-smart-widget
+
 # ── FZF-powered functions ────────────────────────────
 
 # Interactive git branch switch

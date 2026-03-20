@@ -10,6 +10,7 @@ brew "fd"                # modern find replacement
 brew "ripgrep"           # fast recursive grep
 brew "fx"                # terminal JSON viewer
 brew "fzf"               # fuzzy finder
+brew "television"        # channel-oriented fuzzy finder
 brew "zoxide"            # smarter cd with frecency
 brew "jq"                # JSON processor
 brew "delta"             # syntax-highlighting diff pager

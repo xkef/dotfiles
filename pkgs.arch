@@ -9,6 +9,7 @@ bat               # cat with syntax highlighting
 fd                # modern find replacement
 ripgrep           # fast recursive grep
 fzf               # fuzzy finder
+television        # channel-oriented fuzzy finder
 zoxide            # smarter cd with frecency
 jq                # JSON processor
 git-delta         # syntax-highlighting diff pager
