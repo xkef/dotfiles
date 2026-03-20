@@ -19,6 +19,7 @@
 | F          | Switch session (fzf popup)        |
 | w          | Switch window, all sessions       |
 | g          | Lazygit (floating popup)          |
+| G          | jjui (floating popup)             |
 | R          | Scooter search & replace (popup)  |
 | ?          | This reference (floating popup)   |
 | t          | Thumbs (hint-copy visible text)   |
@@ -67,6 +68,7 @@ Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 | Key           | Action                                |
 | ------------- | ------------------------------------- |
 | Ctrl-T        | File search (fzf)                     |
+| Alt-T         | Television smart picker               |
 | Alt-C         | Directory jump under cwd (fzf + fd)   |
 | Alt-Z         | Jump to visited directory (fzf+zoxide)|
 | Alt-/         | Live grep file contents (rg + fzf)    |
@@ -77,6 +79,7 @@ Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 | Ctrl-X d      | Directory jump fallback               |
 | Ctrl-X z      | Visited directory jump fallback       |
 | Ctrl-X g      | Live grep fallback                    |
+| Ctrl-X t      | Television fallback                   |
 |               |                                       |
 | Ctrl-A / E    | Beginning / end of line               |
 | Alt-F / B     | Forward / backward one word           |
