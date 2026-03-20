@@ -5,13 +5,21 @@ description: How to use `jj`, the Jujutsu version control system
 
 # Jujutsu (`jj`)
 
-Jujutsu is a Git-compatible VCS used in "colocated" form (a `.jj` directory alongside `.git`). The presence of `.jj` indicates a jj repository. You can still use Git commands to examine objects (`git show`, `git log`, `git grep`), but use `jj` for creating commits.
+Jujutsu is a Git-compatible VCS used in "colocated" form
+(a `.jj` directory alongside `.git`). The presence of
+`.jj` indicates a jj repository. You can still use Git
+commands to examine objects (`git show`, `git log`,
+`git grep`), but use `jj` for creating commits.
 
 ## Key concept: no staging area
 
-Any `jj` command automatically snapshots the working directory. `jj` respects `.gitignore`. To stop tracking an unintentionally included file, modify `.gitignore` then run `jj file untrack <file>...`.
+Any `jj` command automatically snapshots the working
+directory. `jj` respects `.gitignore`. To stop tracking
+an unintentionally included file, modify `.gitignore`
+then run `jj file untrack <file>...`.
 
-Be careful with any `jj` command that creates or modifies a change. Always specify files explicitly.
+Be careful with any `jj` command that creates or modifies
+a change. Always specify files explicitly.
 
 ## Common commands
 
@@ -41,7 +49,9 @@ Be careful with any `jj` command that creates or modifies a change. Always speci
 
 ## Creating commits
 
-Never run `jj commit` without file arguments unless instructed to; use `jj split <file>...` or `jj commit <file>...` to select specific files.
+Never run `jj commit` without file arguments unless
+instructed to; use `jj split <file>...` or
+`jj commit <file>...` to select specific files.
 
 | Command               | Description                                                          |
 | --------------------- | -------------------------------------------------------------------- |

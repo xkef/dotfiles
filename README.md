@@ -7,9 +7,10 @@ git clone https://github.com/YOUR_USER/dotfiles.git ~/dotfiles
 cd ~/dotfiles && ./install
 ```
 
-The `install` script auto-detects your OS and installs packages using the native format (`Brewfile` on macOS,
-`pkgs.arch`
-on Arch, pre-built binaries elsewhere). Then it symlinks configs via stow and sets zsh as default shell.
+The `install` script auto-detects your OS and installs packages
+using the native format (`Brewfile` on macOS, `pkgs.arch` on Arch,
+pre-built binaries elsewhere). Then it symlinks configs via stow
+and sets zsh as default shell.
 
 ## What's included
 
@@ -28,7 +29,7 @@ on Arch, pre-built binaries elsewhere). Then it symlinks configs via stow and se
 
 ## Maintenance
 
-```
+```sh
 make install       # Full install (packages + stow + tools)
 make install-adopt # Install, adopting existing files
 make update        # Pull, re-stow, update plugins and tools
@@ -39,7 +40,8 @@ make fmt           # Format all dotfiles
 make lint          # Lint shell scripts and neovim config
 ```
 
-On macOS, run `./macos-defaults` once after a fresh install to apply developer-friendly system defaults.
+On macOS, run `./macos-defaults` once after a fresh install
+to apply developer-friendly system defaults.
 
 ---
 
@@ -76,10 +78,16 @@ Same physical key. Ctrl is the only difference.
 
 ## Credits
 
-Heavily inspired by [wincent/wincent](https://github.com/wincent/wincent) -- tmux, zsh, neovim structure, keymaps, and
-general philosophy. Also borrows from:
+Heavily inspired by
+[wincent/wincent](https://github.com/wincent/wincent) --
+tmux, zsh, neovim structure, keymaps, and general philosophy.
+Also borrows from:
 
-- [omerxx/dotfiles](https://github.com/omerxx/dotfiles) -- tooling and tmux
-- [ThePrimeagen](https://github.com/ThePrimeagen/.dotfiles) -- tmux-sessionizer
-- [mattmc3/zdotdir](https://github.com/mattmc3/zdotdir) -- zsh caching and compilation patterns
-- [folke/LazyVim](https://github.com/LazyVim/LazyVim) -- Neovim distro and plugin ecosystem
+- [omerxx/dotfiles](https://github.com/omerxx/dotfiles) --
+  tooling and tmux
+- [ThePrimeagen](https://github.com/ThePrimeagen/.dotfiles) --
+  tmux-sessionizer
+- [mattmc3/zdotdir](https://github.com/mattmc3/zdotdir) --
+  zsh caching and compilation patterns
+- [folke/LazyVim](https://github.com/LazyVim/LazyVim) --
+  Neovim distro and plugin ecosystem

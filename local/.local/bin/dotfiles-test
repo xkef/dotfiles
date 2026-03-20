@@ -39,6 +39,11 @@ if command -v starship &>/dev/null; then
   check "starship config" starship print-config
 fi
 
+# Markdown
+if command -v markdownlint-cli2 &>/dev/null; then
+  check "markdown lint" markdownlint-cli2
+fi
+
 # Git
 check "git config" git config --list
 

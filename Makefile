@@ -45,10 +45,11 @@ fmt: ## Format all dotfiles
 		--ignore-path .gitignore 2>/dev/null || true
 	taplo fmt
 
-lint: ## Lint shell scripts and neovim config
+lint: ## Lint shell scripts, neovim config, and markdown
 	@printf '\n  Linting...\n\n'
 	@shellcheck -S warning $(SHELL_FILES)
 	@nvim --headless +"lua require('lazy')" +qa
+	@markdownlint-cli2
 	@printf '\n  All clean\n\n'
 
 clean: ## Remove caches and generated files

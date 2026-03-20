@@ -36,7 +36,8 @@
 
 ### Copy mode
 
-v/V/Ctrl-v toggle VISUAL/LINE/BLOCK (press again to cancel) — y yank — Y yank-EOL — q cancel
+v/V/Ctrl-v toggle VISUAL/LINE/BLOCK (press again to cancel)
+— y yank — Y yank-EOL — q cancel
 
 | Key        | Action                    |
 | ---------- | ------------------------- |
@@ -50,7 +51,8 @@ v/V/Ctrl-v toggle VISUAL/LINE/BLOCK (press again to cancel) — y yank — Y yan
 
 ## Neovim — Space +
 
-Uses [LazyVim](https://www.lazyvim.org) defaults. Press `Space` and wait for which-key to discover all bindings.
+Uses [LazyVim](https://www.lazyvim.org) defaults.
+Press `Space` and wait for which-key to discover all bindings.
 
 Full keymap reference: <https://www.lazyvim.org/keymaps>
 
@@ -95,4 +97,5 @@ Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 
 ### Modern aliases
 
-`extract` / `compress` ouch | `cat` bat | `ls` eza | `du` dust | `df` duf | `ps` procs
+`extract` / `compress` ouch | `cat` bat | `ls` eza |
+`du` dust | `df` duf | `ps` procs

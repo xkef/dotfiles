@@ -1,0 +1,10 @@
+globs:
+  - "**/*.md"
+  - "**/.*/**/*.md"
+
+config:
+  MD013:
+    tables: false
+  MD025: false
+  MD036: false
+  MD041: false
