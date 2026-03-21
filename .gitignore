@@ -22,3 +22,5 @@ __pycache__/
 *.zwc
 /vcs/.config/git/delta.gitconfig
 /vcs/.config/jj/repos/*
+
+/tools/.config/television/cable/

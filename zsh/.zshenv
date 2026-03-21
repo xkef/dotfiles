@@ -36,6 +36,12 @@ export LESSHISTFILE="$XDG_STATE_HOME/less/history"
 export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
 export _ZO_EXCLUDE_DIRS="$HOME/Library/*:$HOME/.Trash/*:/tmp/*"
 
+# GitHub token for mise and tools that hit the GitHub API
+if [[ -z "${GITHUB_TOKEN:-}" ]] && command -v gh &>/dev/null; then
+  GITHUB_TOKEN="$(gh auth token 2>/dev/null)"
+  export GITHUB_TOKEN
+fi
+
 # Dotfiles
 if [[ -z "${DOTFILES_DIR:-}" && -f "$HOME/.config/dotfiles/dir" ]]; then
   DOTFILES_DIR="$(<"$HOME/.config/dotfiles/dir")"

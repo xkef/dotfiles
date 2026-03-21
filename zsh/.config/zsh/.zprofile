@@ -10,9 +10,3 @@ path=(
   "/usr/local/bin"
   $path
 )
-
-# GitHub token for mise and other tools that hit the GitHub API directly
-if [[ -z "${GITHUB_TOKEN:-}" ]] && (( $+commands[gh] )); then
-  GITHUB_TOKEN="$(gh auth token 2>/dev/null)"
-  export GITHUB_TOKEN
-fi
