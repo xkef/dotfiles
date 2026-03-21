@@ -34,6 +34,7 @@ export RUSTUP_HOME="$XDG_DATA_HOME/rustup"
 export GOPATH="$XDG_DATA_HOME/go"
 export LESSHISTFILE="$XDG_STATE_HOME/less/history"
 export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
+export _ZO_EXCLUDE_DIRS="$HOME/Library/*:$HOME/.Trash/*:/tmp/*"
 
 # Dotfiles
 if [[ -z "${DOTFILES_DIR:-}" && -f "$HOME/.config/dotfiles/dir" ]]; then
