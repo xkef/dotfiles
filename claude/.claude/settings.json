@@ -101,9 +101,7 @@
   "spinnerTipsEnabled": false,
   "spinnerVerbs": {
     "mode": "replace",
-    "verbs": [
-      "Processing"
-    ]
+    "verbs": ["Processing"]
   },
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",

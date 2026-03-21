@@ -65,34 +65,34 @@ Full keymap reference: <https://www.lazyvim.org/keymaps>
 
 Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history
 
-| Key           | Action                                |
-| ------------- | ------------------------------------- |
-| Ctrl-T        | File search (fzf)                     |
-| Alt-T         | Television smart picker               |
-| Alt-C         | Directory jump under cwd (fzf + fd)   |
-| Alt-Z         | Jump to visited directory (fzf+zoxide)|
-| Alt-/         | Live grep file contents (rg + fzf)    |
-| Ctrl-R        | Atuin history search                  |
-| Ctrl-G        | Navi cheatsheet                       |
-| Ctrl-S        | Yazi file manager (cd-on-quit)        |
-|               |                                       |
-| Ctrl-X d      | Directory jump fallback               |
-| Ctrl-X z      | Visited directory jump fallback       |
-| Ctrl-X g      | Live grep fallback                    |
-| Ctrl-X t      | Television fallback                   |
-|               |                                       |
-| Ctrl-A / E    | Beginning / end of line               |
-| Alt-F / B     | Forward / backward one word           |
-| Ctrl-W        | Delete word backward (stops at /.\_-) |
-| Alt-D         | Delete word forward                   |
-| Ctrl-K        | Kill to end of line                   |
-| Ctrl-U        | Kill entire line                      |
-| Ctrl-Y        | Yank last killed text                 |
-| Ctrl-P / N    | Prefix history search (also arrows)   |
-| Ctrl-Z        | Toggle fg/bg (undo if no jobs)        |
-| Ctrl-X Ctrl-E | Edit command in nvim                  |
-| !! then Space | Expand history inline                 |
-| Esc Esc       | Sudo last command                     |
+| Key           | Action                                 |
+| ------------- | -------------------------------------- |
+| Ctrl-T        | File search (fzf)                      |
+| Alt-T         | Television smart picker                |
+| Alt-C         | Directory jump under cwd (fzf + fd)    |
+| Alt-Z         | Jump to visited directory (fzf+zoxide) |
+| Alt-/         | Live grep file contents (rg + fzf)     |
+| Ctrl-R        | Atuin history search                   |
+| Ctrl-G        | Navi cheatsheet                        |
+| Ctrl-S        | Yazi file manager (cd-on-quit)         |
+|               |                                        |
+| Ctrl-X d      | Directory jump fallback                |
+| Ctrl-X z      | Visited directory jump fallback        |
+| Ctrl-X g      | Live grep fallback                     |
+| Ctrl-X t      | Television fallback                    |
+|               |                                        |
+| Ctrl-A / E    | Beginning / end of line                |
+| Alt-F / B     | Forward / backward one word            |
+| Ctrl-W        | Delete word backward (stops at /.\_-)  |
+| Alt-D         | Delete word forward                    |
+| Ctrl-K        | Kill to end of line                    |
+| Ctrl-U        | Kill entire line                       |
+| Ctrl-Y        | Yank last killed text                  |
+| Ctrl-P / N    | Prefix history search (also arrows)    |
+| Ctrl-Z        | Toggle fg/bg (undo if no jobs)         |
+| Ctrl-X Ctrl-E | Edit command in nvim                   |
+| !! then Space | Expand history inline                  |
+| Esc Esc       | Sudo last command                      |
 
 ### Named directories
 

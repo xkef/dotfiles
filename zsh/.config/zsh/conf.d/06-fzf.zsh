@@ -1,26 +1,53 @@
 # ── FZF ──────────────────────────────────────────────
+# fzf is a general-purpose fuzzy finder for the terminal.
+# It reads lines from stdin (or a command), lets you search interactively,
+# and outputs the selected line(s) to stdout.
+# See: https://github.com/junegunn/fzf
+#
+# fzf is used here for:
+#   1. Shell keybindings (Ctrl-T, Alt-C) — via `fzf --zsh` in 07-tools.zsh
+#   2. fzf-tab completion UI — configured in 03-completion.zsh
+#   3. Custom widgets and functions (below)
+#
+# Television (tv) is also used as a complementary picker on Alt-T.
+# See: https://github.com/alexpasmantier/television
 if ! (( $+commands[fzf] )); then
   return
 fi
 
-# Use fd for file/dir search, sorted by recency (recent first, then rest, deduped)
+# ── Source command (fd) ──────────────────────────────
+# fd is a faster alternative to find. When available, fzf uses it instead
+# of the default `find` command.
+# See: https://github.com/sharkdp/fd
 if (( $+commands[fd] )); then
-  # Ctrl-T: recently modified files first, then all files (deduped)
+  # Ctrl-T source: show recently modified files first (within 1 week),
+  # then all files. awk deduplicates (recent wins over the full listing).
   export FZF_CTRL_T_COMMAND="\
     { fd --type f --changed-within 1week --hidden --follow --exclude .git; \
       fd --type f --hidden --follow --exclude .git; \
     } | awk '!seen[\$0]++'"
 
-  # Alt-C: directories under cwd
+  # Alt-C source: directories only
   export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git .'
 
-  # ** tab completion
+  # ** tab completion generators — used by fzf's built-in completion system
+  # (e.g., `vim **<Tab>` triggers _fzf_compgen_path)
   _fzf_compgen_path() { fd --hidden --follow --exclude .git . "$1"; }
   _fzf_compgen_dir() { fd --type d --hidden --follow --exclude .git . "$1"; }
 fi
 
-# Colors use ANSI references (0-15) so they follow the terminal theme automatically.
-# No hardcoded hex — change ghostty theme and FZF adapts.
+# ── Default fzf options ─────────────────────────────
+# FZF_DEFAULT_OPTS applies to every fzf invocation (widgets, fzf-tab, scripts).
+#
+# Colors use ANSI indices (0-15) which map to the terminal's palette.
+# When you run `theme <name>`, the terminal palette changes via OSC sequences,
+# and fzf automatically adapts — no hex codes to maintain per theme.
+#   fg:-1  = terminal default foreground
+#   bg:-1  = terminal default background (transparent)
+#   hl:6   = highlight matches in cyan (ANSI 6)
+#   bg+:8  = selected line background = bright black (ANSI 8)
+#   gutter:-1 = transparent gutter (no background strip on the left)
+# See: https://github.com/junegunn/fzf/wiki/Color-schemes
 export FZF_DEFAULT_OPTS=" \
   --height 60% --layout=reverse --border --info=inline-right \
   --tiebreak=chunk,length \
@@ -31,25 +58,40 @@ export FZF_DEFAULT_OPTS=" \
   --bind 'ctrl-d:half-page-down,ctrl-u:half-page-up' \
   --bind 'ctrl-f:preview-page-down,ctrl-b:preview-page-up'"
 
-# Ctrl-T: file search with bat preview, path-aware scoring
+# Ctrl-T options: file search with bat preview
+# --scheme=path: score paths by their components (exact basename match ranks highest)
 export FZF_CTRL_T_OPTS=" \
   --scheme=path \
   --preview 'bat --color=always --style=numbers --line-range :300 {} 2>/dev/null || cat {}' \
   --preview-window 'right:50%:border-left' \
   --header 'CTRL-/ toggle preview │ CTRL-Y copy'"
 
-# Alt-C: directory search with tree preview, path-aware scoring
+# Alt-C options: directory search with eza tree preview
 export FZF_ALT_C_OPTS=" \
   --scheme=path \
   --preview 'eza -T --color=always --icons --level=2 {} 2>/dev/null || ls -la {}' \
   --preview-window 'right:50%:border-left'"
 
-# fzf shell integration is deferred — see _deferred_tool_init in 07-tools.zsh
+# fzf shell integration (Ctrl-T, Ctrl-R, Alt-C widgets) is loaded in
+# _deferred_tool_init (07-tools.zsh) via `_cached_source fzf --zsh`.
+# The widgets defined by `fzf --zsh` use the FZF_*_COMMAND and FZF_*_OPTS
+# variables set above.
 
-# Alt-C works via ghostty macos-option-as-alt=left; Ctrl-X d as fallback
+# Alt-C fallback: Ctrl-X d (for terminals where Alt doesn't work).
+# fzf-cd-widget is defined by `fzf --zsh` (deferred, so this bindkey
+# is a forward reference — zsh handles this gracefully).
 bindkey '^Xd' fzf-cd-widget
 
-# Alt-C global: jump to any previously visited directory (zoxide history)
+# ── Custom widgets ───────────────────────────────────
+# ZLE widgets: functions registered with `zle -N` that can be bound to keys.
+# They modify BUFFER/LBUFFER (the command line) and call `zle accept-line`
+# to execute, or `zle reset-prompt` to redraw without executing.
+# See: man zshzle "WIDGETS", man zshzle "SPECIAL PARAMETERS"
+
+# Alt-Z: jump to any previously visited directory using zoxide's frecency data.
+# Pipes zoxide's scored directory list into fzf with a tree preview.
+# --nth=2: fuzzy match only on the path (column 2), not the score (column 1).
+# See: https://github.com/ajeetdsouza/zoxide
 fzf-zoxide-widget() {
   setopt localoptions pipefail no_aliases 2>/dev/null
   local dir
@@ -68,10 +110,14 @@ fzf-zoxide-widget() {
   zle reset-prompt
 }
 zle -N fzf-zoxide-widget
-bindkey '^[z' fzf-zoxide-widget
-bindkey '^Xz' fzf-zoxide-widget
+bindkey '^[z' fzf-zoxide-widget   # Alt-Z
+bindkey '^Xz' fzf-zoxide-widget   # Ctrl-X z (fallback)
 
-# Alt-/: live grep (rg + fzf) — type to search file contents; Ctrl-X g as fallback
+# Alt-/: live grep — searches file contents interactively using ripgrep.
+# fzf starts with --disabled (no fuzzy filtering); instead, every keystroke
+# triggers `rg {query}` via the change:reload binding. This provides true
+# live search rather than filtering a static list.
+# See: https://github.com/junegunn/fzf/blob/master/ADVANCED.md#using-fzf-as-interactive-ripgrep-launcher
 fzf-grep-widget() {
   setopt localoptions pipefail no_aliases 2>/dev/null
   local selected file line
@@ -94,10 +140,15 @@ fzf-grep-widget() {
   zle reset-prompt
 }
 zle -N fzf-grep-widget
-bindkey '^[/' fzf-grep-widget
-bindkey '^Xg' fzf-grep-widget
+bindkey '^[/' fzf-grep-widget    # Alt-/
+bindkey '^Xg' fzf-grep-widget   # Ctrl-X g (fallback)
 
-# Alt-T: television smart picker — standalone widget, no tv init zsh needed
+# Alt-T: television channel picker.
+# tv is a channel-oriented fuzzy finder — press Alt-T to open it, then
+# Ctrl-T inside tv to switch between channels (files, git-branch, env, etc.).
+# tv renders its TUI to stderr; `2>/dev/tty` redirects it to the terminal
+# so it displays properly inside a $(command substitution).
+# See: https://github.com/alexpasmantier/television
 tv-smart-widget() {
   setopt localoptions pipefail no_aliases 2>/dev/null
   local result
@@ -108,12 +159,13 @@ tv-smart-widget() {
   zle reset-prompt
 }
 zle -N tv-smart-widget
-bindkey '^[t' tv-smart-widget
-bindkey '^Xt' tv-smart-widget
+bindkey '^[t' tv-smart-widget    # Alt-T
+bindkey '^Xt' tv-smart-widget    # Ctrl-X t (fallback)
 
 # ── FZF-powered functions ────────────────────────────
+# These are regular shell functions (not ZLE widgets) invoked by name.
 
-# Interactive git branch switch
+# fbr: interactive git branch switch — sorted by most recent commit
 fbr() {
   local branch
   branch=$(git for-each-ref --sort=-committerdate refs/heads/ \
@@ -124,7 +176,7 @@ fbr() {
   [ -n "$branch" ] && git switch "$branch"
 }
 
-# Interactive git log browser
+# flog: interactive git log browser — navigate commits with preview
 flog() {
   git log --oneline --graph --color=always --decorate |
     fzf --ansi --no-sort --reverse --height 80% \
@@ -132,7 +184,7 @@ flog() {
       --bind 'enter:execute(echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs git show --color=always | less -R)'
 }
 
-# Interactive git dirty-file picker → editor (multi-select with Tab)
+# fgd: pick dirty files to edit — multi-select with Tab, preview shows diff
 fgd() {
   git rev-parse --is-inside-work-tree &>/dev/null || return
   local files
@@ -145,7 +197,7 @@ fgd() {
   [[ -n "$files" ]] && ${EDITOR:-nvim} ${(f)files}
 }
 
-# Interactive process kill
+# fkill: interactive process kill — multi-select, default signal SIGTERM (15)
 fkill() {
   local pid
   pid=$(ps -u "$USER" -o pid,%cpu,tty,cputime,cmd | sed 1d |
@@ -153,7 +205,7 @@ fkill() {
   [[ -n "$pid" ]] && echo "$pid" | xargs kill "-${1:-15}"
 }
 
-# Interactive ripgrep → fzf → editor (live grep)
+# frg: ripgrep → fzf → editor — search files, pick a match, open at that line
 frg() {
   local file line
   rg --color=always --line-number --no-heading "${@:-.}" |

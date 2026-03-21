@@ -38,7 +38,7 @@ elif command -v bwrap &>/dev/null; then
     --bind "$HOME/.m2" "$HOME/.m2" \
     --ro-bind "$HOME/.local/bin" "$HOME/.local/bin" \
     --ro-bind "$HOME/.config/git" "$HOME/.config/git" \
-    $( [[ -f "$HOME/.gitconfig" ]] && echo "--ro-bind $HOME/.gitconfig $HOME/.gitconfig" ) \
+    $([[ -f "$HOME/.gitconfig" ]] && echo "--ro-bind $HOME/.gitconfig $HOME/.gitconfig") \
     --ro-bind "$HOME/.config/gh" "$HOME/.config/gh" \
     --ro-bind "$HOME/.config/dotfiles" "$HOME/.config/dotfiles" \
     --ro-bind "$DOTFILES_DIR" "$DOTFILES_DIR" \

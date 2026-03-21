@@ -20,7 +20,19 @@ smart_autocomplete = "alt-t"
 
 [shell_integration.channel_triggers]
 "dirs" = ["cd", "ls", "rmdir", "z"]
-"files" = ["cat", "less", "head", "tail", "bat", "cp", "mv", "rm", "touch", "chmod", "ln"]
+"files" = [
+  "cat",
+  "less",
+  "head",
+  "tail",
+  "bat",
+  "cp",
+  "mv",
+  "rm",
+  "touch",
+  "chmod",
+  "ln",
+]
 "git-diff" = ["git add", "git restore"]
 "git-branch" = ["git checkout", "git branch", "git merge", "git rebase"]
 "git-log" = ["git log", "git show"]

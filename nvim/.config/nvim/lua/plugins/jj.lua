@@ -51,10 +51,34 @@ return {
       diff_opts = { algorithm = "histogram" },
     },
     keys = {
-      { "[c", function() require("vcsigns.actions").hunk_prev(0, vim.v.count1) end, desc = "Previous hunk (vcs)" },
-      { "]c", function() require("vcsigns.actions").hunk_next(0, vim.v.count1) end, desc = "Next hunk (vcs)" },
-      { "<leader>hu", function() require("vcsigns.actions").hunk_undo(0) end, desc = "Undo hunk (vcs)" },
-      { "<leader>hd", function() require("vcsigns.actions").toggle_hunk_diff(0) end, desc = "Inline hunk diff (vcs)" },
+      {
+        "[c",
+        function()
+          require("vcsigns.actions").hunk_prev(0, vim.v.count1)
+        end,
+        desc = "Previous hunk (vcs)",
+      },
+      {
+        "]c",
+        function()
+          require("vcsigns.actions").hunk_next(0, vim.v.count1)
+        end,
+        desc = "Next hunk (vcs)",
+      },
+      {
+        "<leader>hu",
+        function()
+          require("vcsigns.actions").hunk_undo(0)
+        end,
+        desc = "Undo hunk (vcs)",
+      },
+      {
+        "<leader>hd",
+        function()
+          require("vcsigns.actions").toggle_hunk_diff(0)
+        end,
+        desc = "Inline hunk diff (vcs)",
+      },
     },
   },
 }
