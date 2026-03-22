@@ -45,11 +45,11 @@ Linux)
     sudo -v
     log "pacman..."
     # shellcheck disable=SC2046
-    run_quiet "pacman install" sudo pacman -S --needed --noconfirm $(cat "$DOTFILES_DIR/pkgs.arch")
+    run_quiet "pacman install" sudo pacman -S --needed --noconfirm \
+      $(sed 's/#.*//; /^[[:space:]]*$/d' "$DOTFILES_DIR/pkgs.arch")
   else
-    log "Enabling mise system tools..."
-    mkdir -p "$HOME/.config/mise/conf.d"
-    cp "$DOTFILES_DIR/mise-system-tools.toml" "$HOME/.config/mise/conf.d/system-tools.toml"
+    log "Unsupported Linux distribution (only Arch is supported)."
+    exit 1
   fi
   ;;
 esac
