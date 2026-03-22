@@ -63,8 +63,25 @@ return {
           files = { hidden = true },
           grep = { hidden = true },
         },
+        previewers = {
+          diff = {
+            builtin = false,
+            cmd = { "git", "diff", "--no-ext-diff" },
+          },
+        },
       },
     },
+    init = function()
+      -- Patch Snacks diff renderer to hide hunk headers
+      local ok, diff = pcall(require, "snacks.picker.util.diff")
+      if ok and diff.render then
+        local orig = diff.render
+        diff.render = function(buf, ns, d, opts)
+          opts = vim.tbl_deep_extend("force", opts or {}, { hunk_header = false })
+          return orig(buf, ns, d, opts)
+        end
+      end
+    end,
   },
 
   {

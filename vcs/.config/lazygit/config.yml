@@ -4,4 +4,4 @@ gui:
   border: rounded
 git:
   pagers:
-    - pager: delta --paging=never --side-by-side
+    - pager: delta --paging=never --side-by-side --hunk-header-style=omit

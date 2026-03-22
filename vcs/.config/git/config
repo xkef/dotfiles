@@ -34,14 +34,16 @@
 	colorMoved = plain
 	mnemonicPrefix = true
 	renames = true
+	external = difft
 
 [diff "bin"]
 	textconv = hexdump -ve '1/1 "%.2x "'
 
 # ── Delta (pager) ────────────────────────────────────
 [delta]
-	navigate = true
+	navigate = false
 	line-numbers = true
+	hunk-header-style = omit
 	side-by-side = false
 	hyperlinks = true
 	hyperlinks-file-link-format = "file://{path}:{line}"
@@ -110,6 +112,7 @@
 	cp = cherry-pick
 	unstage = reset HEAD --
 	last = log -1 HEAD
+	dl = diff --no-ext-diff
 	ds = diff --shortstat
 	lg = log --oneline --graph --decorate --all -20
 	ll = log --pretty=format:'%C(yellow)%h%Creset %C(blue)%ad%Creset %C(green)%an%Creset %s%C(red)%d%Creset' --date=short
