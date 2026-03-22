@@ -4,6 +4,7 @@ brew "curl"              # URL data transfer
 brew "zsh"               # shell
 brew "tmux"              # terminal multiplexer
 brew "neovim"            # text editor
+brew "tree-sitter-cli"   # parser generator CLI (nvim-treesitter build)
 brew "eza"               # modern ls replacement
 brew "bat"               # cat with syntax highlighting
 brew "fd"                # modern find replacement

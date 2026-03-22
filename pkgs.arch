@@ -4,6 +4,7 @@ curl              # URL data transfer
 zsh               # shell
 tmux              # terminal multiplexer
 neovim            # text editor
+tree-sitter-cli   # parser generator CLI (nvim-treesitter build)
 eza               # modern ls replacement
 bat               # cat with syntax highlighting
 fd                # modern find replacement
