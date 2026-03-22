@@ -31,6 +31,11 @@ fi
 export EDITOR="nvim"
 export VISUAL="nvim"
 
+# NVIM_APPNAME selects which config directory neovim uses (~/.config/$NVIM_APPNAME).
+# "lazyvim" is the default; kickstart is available via the `knvim` wrapper.
+# See: :help NVIM_APPNAME
+export NVIM_APPNAME="lazyvim"
+
 # Man pager — nvim's :Man plugin provides treesitter syntax highlighting,
 # search, tag navigation (Ctrl-]), and persistent scrollback.
 # MANWIDTH=999 prevents hard-wrapping so nvim can soft-wrap to window width.

@@ -17,7 +17,7 @@
   },
   "catppuccin": {
     "branch": "main",
-    "commit": "384f304c8b04664c9e0091fbfb3923c5f97c1bcf"
+    "commit": "a7788416689dbefea659d9e9415c87926b0ba5d8"
   },
   "conform.nvim": {
     "branch": "master",
@@ -61,7 +61,7 @@
   },
   "hunk.nvim": {
     "branch": "master",
-    "commit": "478d0efcf373b274ec5c952c1459981536c0f773"
+    "commit": "a73c34934e87af4f2e615fea3a57ee28b2dceec8"
   },
   "jj.nvim": {
     "branch": "main",
@@ -165,11 +165,11 @@
   },
   "nvim-treesitter": {
     "branch": "main",
-    "commit": "877f724846f2202a16e311bd19efb954bd1c430e"
+    "commit": "0e0db770f2a3691fae478798342f4ac431accefd"
   },
   "nvim-treesitter-textobjects": {
     "branch": "main",
-    "commit": "7359dfcefa38db632541e1f9b5b5f291626a1d47"
+    "commit": "93d60a475f0b08a8eceb99255863977d3a25f310"
   },
   "nvim-ts-autotag": {
     "branch": "main",
@@ -205,7 +205,7 @@
   },
   "snacks.nvim": {
     "branch": "main",
-    "commit": "e6fd58c82f2f3fcddd3fe81703d47d6d48fc7b9f"
+    "commit": "ad9ede6a9cddf16cedbd31b8932d6dcdee9b716e"
   },
   "spring-boot.nvim": {
     "branch": "main",
@@ -213,7 +213,7 @@
   },
   "television": {
     "branch": "main",
-    "commit": "d1e996319aff1982ca83d6c85f9b0d09f598c113"
+    "commit": "f937ebb15e65aa118fdbb34329c03d1768d992f8"
   },
   "todo-comments.nvim": {
     "branch": "main",
@@ -233,7 +233,7 @@
   },
   "tv.nvim": {
     "branch": "main",
-    "commit": "38fb9d794d843c927ae0b1847d4b80c06176ee35"
+    "commit": "c0603ca8f31299c83deaa9a24a63d67116db25cd"
   },
   "vim-illuminate": {
     "branch": "master",

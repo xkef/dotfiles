@@ -39,7 +39,7 @@ tools: ## Install mise tools (languages + formatters)
 	mise install
 
 fmt: ## Format all dotfiles
-	stylua nvim/.config/nvim/
+	stylua nvim/.config/lazyvim/ nvim/.config/kickstart/
 	shfmt -w $(SHELL_FILES)
 	prettier --write '**/*.{json,yaml,yml,css,html,md}' \
 		--ignore-path .gitignore 2>/dev/null || true
@@ -48,11 +48,11 @@ fmt: ## Format all dotfiles
 lint: ## Lint shell scripts, neovim config, and markdown
 	@printf '\n  Linting...\n\n'
 	@shellcheck -S warning $(SHELL_FILES)
-	@nvim --headless +"lua require('lazy')" +qa
+	@NVIM_APPNAME=lazyvim nvim --headless +"lua require('lazy')" +qa
 	@markdownlint-cli2
 	@printf '\n  All clean\n\n'
 
 clean: ## Remove caches and generated files
 	find . -name .DS_Store -delete 2>/dev/null || true
-	rm -rf nvim/.config/nvim/.luarc.json
+	rm -rf nvim/.config/lazyvim/.luarc.json
 	./local/.local/bin/zsh-cache-reset
