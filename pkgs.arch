@@ -1,47 +1,66 @@
+# ── Core ────────────────────────────────────────────────
 stow              # symlink farm manager
 git               # version control
 curl              # URL data transfer
+github-cli        # GitHub from the command line
+jq                # JSON processor
+
+# ── Shell & prompt ──────────────────────────────────────
 zsh               # shell
-tmux              # terminal multiplexer
+starship          # cross-shell prompt
+atuin             # shell history search/sync
+navi              # interactive cheatsheet browser
+fzf               # fuzzy finder
+television        # channel-oriented fuzzy finder
+zoxide            # smarter cd with frecency
+
+# ── Editors & multiplexer ──────────────────────────────
 neovim            # text editor
 tree-sitter-cli   # parser generator CLI (nvim-treesitter build)
+tmux              # terminal multiplexer
+
+# ── Modern unix replacements ───────────────────────────
 eza               # modern ls replacement
 bat               # cat with syntax highlighting
 fd                # modern find replacement
 ripgrep           # fast recursive grep
-fzf               # fuzzy finder
-television        # channel-oriented fuzzy finder
-zoxide            # smarter cd with frecency
-jq                # JSON processor
-git-delta         # syntax-highlighting diff pager
-starship          # cross-shell prompt
-ghostty           # GPU-accelerated terminal
-lazygit           # terminal UI for git
-atuin             # shell history search/sync
-glow              # terminal markdown renderer
-navi              # interactive cheatsheet browser
-github-cli        # GitHub from the command line
-1password         # password manager
-1password-cli     # 1Password CLI (op)
-jj                # Jujutsu version control
-jjui              # terminal UI for jj
-mise              # dev tool version manager
-claude-code       # Anthropic Claude CLI
-podman            # rootless container engine
-trash-cli         # move files to trash instead of rm
-yazi              # terminal file manager
-hyperfine         # command-line benchmarking
-bandwhich         # per-process bandwidth monitor
-ouch              # compress/decompress archives
-tokei             # code statistics by language
-difftastic        # structural diff tool
 sd                # intuitive find-and-replace (sed alt)
 dust              # disk usage viewer (du alt)
 duf               # disk free viewer (df alt)
 procs             # modern ps replacement
-tealdeer          # fast tldr client
-xdg-ninja         # audit XDG base-dir compliance
-xclip             # X11 clipboard utility
-wl-clipboard      # Wayland clipboard utility
+trash-cli         # move files to trash instead of rm
+ouch              # compress/decompress archives
+
+# ── Git & VCS tools ────────────────────────────────────
+git-delta         # syntax-highlighting diff pager
+difftastic        # structural diff tool
+lazygit           # terminal UI for git
+jj                # Jujutsu version control
+jjui              # terminal UI for jj
+
+# ── Development ────────────────────────────────────────
+mise              # dev tool version manager
+podman            # rootless container engine
 fx                # terminal JSON viewer
 bubblewrap        # unprivileged sandboxing
+
+# ── File management & info ─────────────────────────────
+yazi              # terminal file manager
+glow              # terminal markdown renderer
+tokei             # code statistics by language
+tealdeer          # fast tldr client
+
+# ── Diagnostics & benchmarking ─────────────────────────
+hyperfine         # command-line benchmarking
+bandwhich         # per-process bandwidth monitor
+xdg-ninja         # audit XDG base-dir compliance
+
+# ── Clipboard (X11 / Wayland) ──────────────────────────
+xclip             # X11 clipboard utility
+wl-clipboard      # Wayland clipboard utility
+
+# ── GUI apps ───────────────────────────────────────────
+ghostty           # GPU-accelerated terminal
+1password         # password manager
+1password-cli     # 1Password CLI (op)
+claude-code       # Anthropic Claude CLI
