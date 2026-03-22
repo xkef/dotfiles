@@ -8,7 +8,7 @@ define stow_each
 	done
 endef
 
-.PHONY: help install update test stow unstow restow fmt lint tools clean
+.PHONY: help install update test stow unstow restow fmt lint tools macos-defaults uninstall clean
 
 help: ## Show this help
 	@grep -E '^[a-z][a-z_-]+:.*## ' $(MAKEFILE_LIST) | \
@@ -51,6 +51,13 @@ lint: ## Lint shell scripts, neovim config, and markdown
 	@NVIM_APPNAME=lazyvim nvim --headless +"lua require('lazy')" +qa
 	@markdownlint-cli2
 	@printf '\n  All clean\n\n'
+
+macos-defaults: ## Apply macOS system defaults
+	./macos-defaults
+
+uninstall: ## Remove all symlinks from ~ (inverse of stow)
+	$(call stow_each,-D)
+	@printf '\n  All packages unstowed.\n\n'
 
 clean: ## Remove caches and generated files
 	find . -name .DS_Store -delete 2>/dev/null || true
