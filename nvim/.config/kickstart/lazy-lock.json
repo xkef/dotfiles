@@ -17,7 +17,7 @@
   },
   "lazy.nvim": {
     "branch": "main",
-    "commit": "85c7ff3711b730b4030d03144f6db6375044ae82"
+    "commit": "306a05526ada86a7b30af95c5cc81ffba93fef97"
   },
   "lazydev.nvim": {
     "branch": "main",
@@ -60,8 +60,8 @@
     "commit": "6e51d7da30bd139a6950adf2a47fda6df9fa06d2"
   },
   "telescope.nvim": {
-    "branch": "0.1.x",
-    "commit": "a0bbec21143c7bc5f8bb02e0005fa0b982edc026"
+    "branch": "master",
+    "commit": "5255aa27c422de944791318024167ad5d40aad20"
   },
   "which-key.nvim": {
     "branch": "main",
