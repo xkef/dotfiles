@@ -1,6 +1,9 @@
 # dotfiles
 
+![screenshot](scrot.png)
+
 Managed with [GNU Stow](https://www.gnu.org/software/stow/).
+Supports macOS (Homebrew) and Arch Linux (pacman).
 
 ```bash
 git clone https://github.com/YOUR_USER/dotfiles.git ~/dotfiles
@@ -8,9 +11,8 @@ cd ~/dotfiles && ./install
 ```
 
 The `install` script auto-detects your OS and installs packages
-using the native format (`Brewfile` on macOS, `pkgs.arch` on Arch,
-pre-built binaries elsewhere). Then it symlinks configs via stow
-and sets zsh as default shell.
+using the native format (`Brewfile` on macOS, `pkgs.arch` on Arch).
+Then it symlinks configs via stow and sets zsh as default shell.
 
 ## What's included
 
@@ -30,18 +32,17 @@ and sets zsh as default shell.
 ## Maintenance
 
 ```sh
-make install       # Full install (packages + stow + tools)
-make install-adopt # Install, adopting existing files
-make update        # Pull, re-stow, update plugins and tools
-make test          # Run smoke tests
-make stow          # Stow all packages into ~
-make restow        # Re-stow (fixes stale symlinks)
-make fmt           # Format all dotfiles
-make lint          # Lint shell scripts and neovim config
+make install        # Full install (packages + stow + tools)
+make install-adopt  # Install, adopting existing files
+make update         # Pull, re-stow, update plugins and tools
+make test           # Run smoke tests
+make stow           # Stow all packages into ~
+make restow         # Re-stow (fixes stale symlinks)
+make uninstall      # Remove all symlinks from ~
+make macos-defaults # Apply macOS system defaults
+make fmt            # Format all dotfiles
+make lint           # Lint shell scripts and neovim config
 ```
-
-On macOS, run `./macos-defaults` once after a fresh install
-to apply developer-friendly system defaults.
 
 ---
 
