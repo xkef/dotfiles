@@ -67,6 +67,13 @@ if [[ -z "${GITHUB_TOKEN:-}" ]] && command -v gh &>/dev/null; then
   export GITHUB_TOKEN
 fi
 
+# HuggingFace token — used by parry-guard (prompt injection scanner) to
+# download ML models. Token is stored by `huggingface-cli login`.
+if [[ -z "${HF_TOKEN:-}" && -r "${XDG_CACHE_HOME:-$HOME/.cache}/huggingface/token" ]]; then
+  HF_TOKEN="$(<"${XDG_CACHE_HOME:-$HOME/.cache}/huggingface/token")"
+  export HF_TOKEN
+fi
+
 # Dotfiles directory — read from a marker file written by ./install.
 # Used by shell functions, neovim pickers, and the theme system.
 if [[ -z "${DOTFILES_DIR:-}" && -f "$HOME/.config/dotfiles/dir" ]]; then
@@ -88,3 +95,20 @@ path=(
   "/usr/local/bin"
   $path
 )
+
+# GitHub token — used by mise, gh, and other tools that hit the GitHub API.
+# Without this, unauthenticated requests are limited to 60/hour (vs 5,000).
+# Placed in .zshenv (not .zprofile) so it's available in non-login shells
+# like tmux panes, neovim terminals, and CI subshells.
+# Must come after PATH so `gh` is findable.
+if [[ -z "${GITHUB_TOKEN:-}" ]] && command -v gh &>/dev/null; then
+  GITHUB_TOKEN="$(gh auth token 2>/dev/null)"
+  export GITHUB_TOKEN
+fi
+
+# HuggingFace token — used by parry-guard (prompt injection scanner) to
+# download ML models. Token is stored by `huggingface-cli login`.
+if [[ -z "${HF_TOKEN:-}" && -r "${XDG_CACHE_HOME:-$HOME/.cache}/huggingface/token" ]]; then
+  HF_TOKEN="$(<"${XDG_CACHE_HOME:-$HOME/.cache}/huggingface/token")"
+  export HF_TOKEN
+fi
