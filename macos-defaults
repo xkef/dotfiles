@@ -183,6 +183,13 @@ apply com.apple.finder _FXSortFoldersFirst -bool true
 apply com.apple.finder FXDefaultSearchScope -string "SCcf"
 apply com.apple.finder FXPreferredViewStyle -string "Nlsv"
 apply com.apple.finder FXEnableExtensionChangeWarning -bool false
+apply com.apple.finder FXPreferredGroupBy -string "Kind"
+apply com.apple.finder FXArrangeGroupViewBy -string "Name"
+apply com.apple.finder NewWindowTarget -string "PfHm"
+apply com.apple.finder NewWindowTargetPath -string "file://$HOME/"
+apply com.apple.finder ShowRemovableMediaOnDesktop -bool false
+apply com.apple.finder ShowMountedServersOnDesktop -bool true
+apply com.apple.finder ShowRecentTags -bool false
 apply com.apple.finder DisableAllAnimations -bool true
 apply com.apple.finder QuitMenuItem -bool true
 apply com.apple.desktopservices DSDontWriteNetworkStores -bool true
