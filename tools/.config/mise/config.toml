@@ -1,9 +1,6 @@
 [settings]
 fetch_remote_versions_cache = "7d"
 
-[env]
-GITHUB_TOKEN = "{{exec(command='gh auth token')}}"
-
 [tools]
 node = "lts"
 python = "3.14"
