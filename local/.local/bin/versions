@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ver() {
+  local name=$1
+  shift
+  if ! command -v "$1" &>/dev/null; then
+    printf '  \033[2m%-14s not installed\033[0m\n' "$name"
+    return
+  fi
+  local raw v
+  raw=$("$@" 2>/dev/null | head -1) || true
+  v=$(grep -oE '[0-9]+\.[0-9][0-9a-z.]*' <<<"$raw" | head -1) || true
+  printf '  %-14s %s\n' "$name" "${v:-unknown}"
+}
+
+printf '\n'
+
+# Shell & prompt
+ver zsh          zsh --version
+ver starship     starship --version
+ver atuin        atuin --version
+ver fzf          fzf --version
+ver television   tv --version
+
+# Editors & multiplexer
+ver neovim       nvim --version
+ver tmux         tmux -V
+ver ghostty      ghostty --version
+ver zed          zed --version
+
+# VCS
+ver git          git --version
+ver delta        delta --version
+ver jj           jj version
+
+# File management
+ver yazi         yazi --version
+
+# Dev tools
+ver mise         mise --version
+
+printf '\n'
