@@ -17,27 +17,30 @@ ver() {
 printf '\n'
 
 # Shell & prompt
-ver zsh          zsh --version
-ver starship     starship --version
-ver atuin        atuin --version
-ver fzf          fzf --version
-ver television   tv --version
+ver zsh zsh --version
+ver starship starship --version
+ver atuin atuin --version
+ver fzf fzf --version
+ver television tv --version
 
 # Editors & multiplexer
-ver neovim       nvim --version
-ver tmux         tmux -V
-ver ghostty      ghostty --version
-ver zed          zed --version
+ver neovim nvim --version
+ver tmux tmux -V
+ver ghostty ghostty --version
+ver zed zed --version
 
 # VCS
-ver git          git --version
-ver delta        delta --version
-ver jj           jj version
+ver git git --version
+ver delta delta --version
+ver jj jj version
 
 # File management
-ver yazi         yazi --version
+ver yazi yazi --version
 
 # Dev tools
-ver mise         mise --version
+ver mise mise --version
+
+# Claude Code
+ver claude claude --version
 
 printf '\n'
