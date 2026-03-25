@@ -96,17 +96,18 @@ return {
             vim.keymap.set("n", keys, func, { buffer = bufnr, desc = desc })
           end
           m("<leader>cR", function()
-            vim.cmd("split | terminal cd " .. vim.fn.fnameescape(root_dir) .. " && " .. mvn .. " clean spring-boot:run")
-          end, "Run Spring Boot")
-          m("<leader>cD", function()
             vim.cmd(
               "split | terminal cd "
                 .. vim.fn.fnameescape(root_dir)
                 .. " && "
                 .. mvn
-                .. " clean spring-boot:run -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005'"
+                .. " clean package -DskipTests -q && exec java -jar target/*.jar"
             )
-          end, "Run Spring Boot (debug)")
+            vim.cmd.startinsert()
+          end, "Run Spring Boot")
+          m("<leader>cD", function()
+            require("dap").continue()
+          end, "Debug Spring Boot")
         end
       end,
     },
