@@ -9,6 +9,8 @@ $directory\
 $git_branch\
 $git_status\
 $git_metrics\
+${custom.jj_change}\
+${custom.jj_status}\
 $java\
 $python\
 $nodejs\
@@ -62,6 +64,33 @@ symbol = ' '
 [docker_context]
 format = '[$symbol$context]($style) '
 symbol = ' '
+
+[custom.jj_change]
+command = '''jj log --no-graph -r @ -T 'separate(" ", change_id.shortest(8), bookmarks.join(", "))' 2>/dev/null'''
+when = 'jj root 2>/dev/null'
+format = '[ $output]($style) '
+style = 'purple'
+
+[custom.jj_status]
+command = '''
+o=""
+flags=$(jj log --no-graph -r @ -T 'separate(",", if(conflict, "c"), if(empty, "e"))' 2>/dev/null)
+case "$flags" in *c*) o="${o}⚠ ";; esac
+case "$flags" in *e*) o="${o}∅ ";; esac
+s=$(jj diff --summary 2>/dev/null)
+if [ -n "$s" ]; then
+  a=$(printf '%s\n' "$s" | grep -c '^A')
+  m=$(printf '%s\n' "$s" | grep -c '^M')
+  d=$(printf '%s\n' "$s" | grep -c '^D')
+  [ "$a" -gt 0 ] && o="${o}+${a} "
+  [ "$m" -gt 0 ] && o="${o}!${m} "
+  [ "$d" -gt 0 ] && o="${o}-${d} "
+fi
+printf '%s' "$o"
+'''
+when = 'jj root 2>/dev/null'
+format = '($output)'
+style = 'yellow'
 
 [custom.cwd]
 command = 'basename "$PWD"'
