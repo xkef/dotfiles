@@ -18,6 +18,8 @@ if [[ "$(uname)" == "Darwin" ]]; then
     -D "GIT_CONFIG=$HOME/.config/git" \
     -D "GITCONFIG=$HOME/.gitconfig" \
     -D "GH_CONFIG=$HOME/.config/gh" \
+    -D "JJ_CONFIG=$HOME/.config/jj" \
+    -D "NPM_CACHE=$HOME/.npm" \
     -D "DOTFILES=$DOTFILES_DIR" \
     -D "M2_REPO=$HOME/.m2" \
     -D "LIBRARY=$HOME/Library" \
@@ -40,6 +42,8 @@ elif command -v bwrap &>/dev/null; then
     --ro-bind "$HOME/.config/git" "$HOME/.config/git" \
     $([[ -f "$HOME/.gitconfig" ]] && echo "--ro-bind $HOME/.gitconfig $HOME/.gitconfig") \
     --ro-bind "$HOME/.config/gh" "$HOME/.config/gh" \
+    --bind "$HOME/.config/jj" "$HOME/.config/jj" \
+    --bind "$HOME/.npm" "$HOME/.npm" \
     --ro-bind "$HOME/.config/dotfiles" "$HOME/.config/dotfiles" \
     --ro-bind "$DOTFILES_DIR" "$DOTFILES_DIR" \
     claude "$@"

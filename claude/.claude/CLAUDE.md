@@ -2,8 +2,8 @@
 
 This session runs inside a macOS Seatbelt sandbox. Only
 the current working directory, `~/.claude/`,
-`~/.config/claude-code/`, `~/.config/git/`, and
-`~/.local/bin/` are accessible. Everything else under
+`~/.config/claude-code/`, `~/.config/git/`,
+`~/.config/jj/`, and `~/.local/bin/` are accessible. Everything else under
 `$HOME` is blocked at the OS level. Do not attempt to
 read, search, or traverse paths outside these allowed
 directories — the commands will silently return nothing.

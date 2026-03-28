@@ -18,6 +18,8 @@
     (require-not (subpath (param "GIT_CONFIG")))
     (require-not (literal (param "GITCONFIG")))
     (require-not (subpath (param "GH_CONFIG")))
+    (require-not (subpath (param "JJ_CONFIG")))
+    (require-not (subpath (param "NPM_CACHE")))
     (require-not (subpath (param "DOTFILES")))
     (require-not (subpath (param "M2_REPO")))
     ;; Read-only keychain access for OAuth credentials. Per-item ACLs
@@ -41,4 +43,6 @@
     (require-not (subpath (param "CLAUDE_AUTH")))
     (require-not (subpath (param "CLAUDE_CACHE")))
     (require-not (subpath (param "M2_REPO")))
+    (require-not (subpath (param "JJ_CONFIG")))
+    (require-not (subpath (param "NPM_CACHE")))
     (require-not (subpath (param "KEYCHAINS")))))
