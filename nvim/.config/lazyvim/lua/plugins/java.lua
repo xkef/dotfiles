@@ -1,8 +1,20 @@
 return {
   {
     "JavaHello/spring-boot.nvim",
-    ft = { "java", "yaml", "jproperties" },
+    ft = { "java", "jproperties" },
     dependencies = { "mfussenegger/nvim-jdtls" },
+    init = function()
+      vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
+        pattern = { "**/application*.yml", "**/application*.yaml" },
+        callback = function(args)
+          local root = vim.fs.root(args.buf, { "pom.xml", "build.gradle", "build.gradle.kts" })
+          if root then
+            require("lazy").load({ plugins = { "spring-boot.nvim" } })
+            return true
+          end
+        end,
+      })
+    end,
     config = function()
       local ls_jar = vim.fn.glob(
         "$MASON/packages/vscode-spring-boot-tools/extension/language-server/spring-boot-language-server-*.jar"
