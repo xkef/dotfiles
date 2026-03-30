@@ -1,8 +1,5 @@
 % shell, fzf functions
 
-# Find and open file in editor (fzf)
-fe
-
 # Live grep with fzf (ripgrep -> fzf -> editor)
 frg
 
