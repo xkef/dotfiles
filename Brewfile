@@ -26,6 +26,8 @@ brew "eza"               # modern ls replacement
 brew "bat"               # cat with syntax highlighting
 brew "fd"                # modern find replacement
 brew "ripgrep"           # fast recursive grep
+brew "xh"                # fast HTTP client (HTTPie-compatible)
+brew "hurl"              # HTTP request testing with plain text files
 brew "sd"                # intuitive find-and-replace (sed alt)
 brew "dust"              # disk usage viewer (du alt)
 brew "duf"               # disk free viewer (df alt)

@@ -26,6 +26,8 @@ eza               # modern ls replacement
 bat               # cat with syntax highlighting
 fd                # modern find replacement
 ripgrep           # fast recursive grep
+xh                # fast HTTP client (HTTPie-compatible)
+hurl              # HTTP request testing with plain text files
 sd                # intuitive find-and-replace (sed alt)
 dust              # disk usage viewer (du alt)
 duf               # disk free viewer (df alt)
