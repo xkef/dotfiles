@@ -18,6 +18,7 @@ brew "zoxide"            # smarter cd with frecency
 brew "neovim"            # text editor
 brew "tree-sitter-cli"   # parser generator CLI (nvim-treesitter build)
 brew "tmux"              # terminal multiplexer
+brew "sesh"              # smart tmux session manager
 
 # ── Modern unix replacements ───────────────────────────
 brew "eza"               # modern ls replacement

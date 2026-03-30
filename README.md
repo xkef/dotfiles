@@ -74,6 +74,7 @@ Same physical key. Ctrl is the only difference.
 | jj     | `jj config set --user user.name "…"` |
 | Neovim | `~/.config/nvim/lua/plugins/*.lua`   |
 | tmux   | `~/.config/tmux/local.conf`          |
+| sesh   | `~/.config/sesh/local.toml`          |
 
 ---
 

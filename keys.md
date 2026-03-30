@@ -15,8 +15,8 @@
 | < / >      | Swap window left / right          |
 | c          | New window                        |
 |            |                                   |
-| f          | Sessionizer (fzf project picker)  |
-| F          | Switch session (fzf popup)        |
+| f          | Sesh picker (sessions + projects) |
+| F          | Toggle last session (sesh)        |
 | w          | Switch window, all sessions       |
 | g          | Lazygit (floating popup)          |
 | G          | jjui (floating popup)             |

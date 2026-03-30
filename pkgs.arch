@@ -18,6 +18,7 @@ zoxide            # smarter cd with frecency
 neovim            # text editor
 tree-sitter-cli   # parser generator CLI (nvim-treesitter build)
 tmux              # terminal multiplexer
+sesh              # smart tmux session manager
 
 # ── Modern unix replacements ───────────────────────────
 eza               # modern ls replacement
