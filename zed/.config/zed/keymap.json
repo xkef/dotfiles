@@ -3,7 +3,7 @@
     "context": "Editor && vim_mode == normal && !menu",
     "bindings": {
       "space f f": "file_finder::Toggle",
-      "space e": "workspace::ToggleLeftDock",
+      "space e": "project_panel::ToggleFocus",
       "space t": "terminal_panel::ToggleFocus",
       "space c a": "editor::ToggleCodeActions",
       "space c r": "editor::Rename",
@@ -36,9 +36,33 @@
     }
   },
   {
+    "context": "vim_mode == normal || vim_mode == visual",
+    "bindings": {
+      "s": "vim::PushSneak",
+      "shift-s": "vim::PushSneakBackward"
+    }
+  },
+  {
     "context": "Editor && vim_mode == insert",
     "bindings": {
       "j k": "vim::SwitchToNormalMode"
+    }
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-h": "workspace::ActivatePaneLeft",
+      "ctrl-l": "workspace::ActivatePaneRight",
+      "ctrl-j": "workspace::ActivatePaneDown",
+      "ctrl-k": "workspace::ActivatePaneUp"
+    }
+  },
+  {
+    "context": "ProjectPanel",
+    "bindings": {
+      "space e": "workspace::ToggleLeftDock",
+      "ctrl-l": "workspace::ActivatePaneRight",
+      "ctrl-h": "workspace::ToggleLeftDock"
     }
   }
 ]

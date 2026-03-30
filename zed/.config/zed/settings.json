@@ -3,6 +3,10 @@
   "ui_font_weight": 500.0,
   "buffer_line_height": "standard",
   "vim_mode": true,
+  "which_key": {
+    "enabled": true,
+    "delay_ms": 0
+  },
   "relative_line_numbers": "enabled",
   "cursor_shape": "block",
   "cursor_blink": false,
