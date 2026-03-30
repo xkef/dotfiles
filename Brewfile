@@ -4,6 +4,7 @@ brew "git"               # version control
 brew "curl"              # URL data transfer
 brew "gh"                # GitHub from the command line
 brew "jq"                # JSON processor
+brew "age"               # simple file encryption
 
 # ── Shell & prompt ──────────────────────────────────────
 brew "zsh"               # shell

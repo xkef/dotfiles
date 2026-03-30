@@ -4,6 +4,7 @@ git               # version control
 curl              # URL data transfer
 github-cli        # GitHub from the command line
 jq                # JSON processor
+age               # simple file encryption
 
 # ── Shell & prompt ──────────────────────────────────────
 zsh               # shell
