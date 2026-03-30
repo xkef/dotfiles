@@ -48,6 +48,7 @@ brew "mise"              # dev tool version manager
 brew "jdtls"             # Java language server
 brew "devcontainer"      # dev container CLI
 brew "podman"            # rootless container engine
+brew "lazydocker"        # terminal UI for Docker/Podman
 brew "fx"                # terminal JSON viewer
 brew "scooter"           # interactive find-and-replace TUI
 

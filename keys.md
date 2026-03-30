@@ -21,6 +21,7 @@
 | g          | Lazygit (floating popup)          |
 | G          | jjui (floating popup)             |
 | R          | Scooter search & replace (popup)  |
+| d          | Lazydocker (floating popup)       |
 | ?          | This reference (floating popup)   |
 | t          | Thumbs (hint-copy visible text)   |
 | u          | Open URL from scrollback (fzf)    |

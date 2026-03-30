@@ -45,6 +45,7 @@ jjui              # terminal UI for jj
 # ── Development ────────────────────────────────────────
 mise              # dev tool version manager
 podman            # rootless container engine
+lazydocker        # terminal UI for Docker/Podman
 fx                # terminal JSON viewer
 bubblewrap        # unprivileged sandboxing
 

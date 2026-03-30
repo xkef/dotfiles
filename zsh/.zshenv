@@ -58,6 +58,16 @@ export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
 # See: https://github.com/ajeetdsouza/zoxide#environment-variables
 export _ZO_EXCLUDE_DIRS="$HOME/Library/*:$HOME/.Trash/*:/tmp/*"
 
+# Podman compatibility — lazydocker and other Docker tools use DOCKER_HOST
+# to communicate with the container runtime. Platform-specific socket paths.
+if command -v podman &>/dev/null; then
+  if [[ "$OSTYPE" == darwin* ]]; then
+    export DOCKER_HOST="unix://$HOME/.local/share/containers/podman/machine/podman.sock"
+  else
+    export DOCKER_HOST="unix://${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/podman/podman.sock"
+  fi
+fi
+
 # GitHub token — used by mise, gh, and other tools that hit the GitHub API.
 # Without this, unauthenticated requests are limited to 60/hour (vs 5,000).
 # Placed in .zshenv (not .zprofile) so it's available in non-login shells
