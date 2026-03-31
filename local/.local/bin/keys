@@ -1,6 +1,112 @@
 #!/usr/bin/env bash
+# Auto-generates the keybinding reference from @key tags in config files.
+# Tags have the format: # @key <section> :: <key> :: <description>
+# Sections: tmux, copy, shell
 set -euo pipefail
 
 DOTFILES_DIR="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir")}"
 
-exec glow -p -w "${COLUMNS:-$(tput cols)}" "${DOTFILES_DIR}/keys.md"
+SOURCES=(
+  "$DOTFILES_DIR/tmux/.config/tmux/conf.d/00-options.conf"
+  "$DOTFILES_DIR/tmux/.config/tmux/conf.d/01-keys.conf"
+  "$DOTFILES_DIR/tmux/.config/tmux/conf.d/02-copy-mode.conf"
+  "$DOTFILES_DIR/tmux/.config/tmux/conf.d/04-plugins.conf"
+  "$DOTFILES_DIR/zsh/.config/zsh/conf.d/04-keys.zsh"
+  "$DOTFILES_DIR/zsh/.config/zsh/conf.d/06-fzf.zsh"
+)
+
+generate() {
+  awk '
+    /^# @key / {
+      line = $0
+      sub(/^# @key /, "", line)
+      n = split(line, parts, "::")
+      if (n >= 3) {
+        section = parts[1]; gsub(/^[ \t]+|[ \t]+$/, "", section)
+        key = parts[2]; gsub(/^[ \t]+|[ \t]+$/, "", key)
+        gsub(/\|/, "\\|", key)
+        desc = parts[3]; gsub(/^[ \t]+|[ \t]+$/, "", desc)
+        sections[section] = sections[section] key "\t" desc "\n"
+        if (!(section in order)) { order[section] = ++count }
+      }
+    }
+    END {
+      print "# Keybinding Reference"
+      print ""
+      print "**tmux prefix = Ctrl-Space | nvim leader = Space**"
+      print ""
+
+      # tmux
+      print "## tmux -- Ctrl-Space +"
+      print ""
+      print "| Key        | Action                            |"
+      print "| ---------- | --------------------------------- |"
+      n = split(sections["tmux"], lines, "\n")
+      for (i = 1; i < n; i++) {
+        split(lines[i], f, "\t")
+        printf "| %-10s | %-33s |\n", f[1], f[2]
+      }
+
+      # copy mode
+      print ""
+      print "### Copy mode"
+      print ""
+      print "v/V/Ctrl-v toggle VISUAL/LINE/BLOCK (press again to cancel)"
+      print "-- y yank -- Y yank-EOL -- q cancel"
+      print ""
+      print "| Key        | Action                    |"
+      print "| ---------- | ------------------------- |"
+      n = split(sections["copy"], lines, "\n")
+      for (i = 1; i < n; i++) {
+        split(lines[i], f, "\t")
+        printf "| %-10s | %-25s |\n", f[1], f[2]
+      }
+
+      # neovim (static)
+      print ""
+      print "---"
+      print ""
+      print "## Neovim -- Space +"
+      print ""
+      print "Uses [LazyVim](https://www.lazyvim.org) defaults."
+      print "Press `Space` and wait for which-key to discover all bindings."
+      print ""
+      print "Full keymap reference: <https://www.lazyvim.org/keymaps>"
+      print ""
+      print "---"
+
+      # shell
+      print ""
+      print "## Shell"
+      print ""
+      print "### Zsh line editing"
+      print ""
+      print "Ctrl-R atuin | Ctrl-G navi | Ctrl-P/N prefix history"
+      print ""
+      print "| Key           | Action                                 |"
+      print "| ------------- | -------------------------------------- |"
+      n = split(sections["shell"], lines, "\n")
+      for (i = 1; i < n; i++) {
+        split(lines[i], f, "\t")
+        printf "| %-13s | %-38s |\n", f[1], f[2]
+      }
+
+      # static footer
+      print ""
+      print "### Named directories"
+      print ""
+      print "`~dots` dotfiles | `~cfg` ~/.config | `~data` ~/.local/share | `~cache` ~/.cache"
+      print ""
+      print "### Modern aliases"
+      print ""
+      print "`extract` / `compress` ouch | `cat` bat | `ls` eza |"
+      print "`du` dust | `df` duf | `ps` procs"
+    }
+  ' "${SOURCES[@]}"
+}
+
+if [[ "${1:-}" == "--raw" ]]; then
+  generate
+else
+  generate | glow -p -w "${COLUMNS:-$(tput cols)}" -
+fi

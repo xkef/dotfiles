@@ -77,9 +77,9 @@ export FZF_ALT_C_OPTS=" \
 # The widgets defined by `fzf --zsh` use the FZF_*_COMMAND and FZF_*_OPTS
 # variables set above.
 
-# Alt-C fallback: Ctrl-X d (for terminals where Alt doesn't work).
-# fzf-cd-widget is defined by `fzf --zsh` (deferred, so this bindkey
-# is a forward reference — zsh handles this gracefully).
+# @key shell :: Ctrl-T :: File search (fzf)
+# @key shell :: Alt-C :: Directory jump under cwd (fzf + fd)
+# @key shell :: Ctrl-X d :: Directory jump fallback
 bindkey '^Xd' fzf-cd-widget
 
 # ── Custom widgets ───────────────────────────────────
@@ -88,7 +88,7 @@ bindkey '^Xd' fzf-cd-widget
 # to execute, or `zle reset-prompt` to redraw without executing.
 # See: man zshzle "WIDGETS", man zshzle "SPECIAL PARAMETERS"
 
-# Alt-Z: jump to any previously visited directory using zoxide's frecency data.
+# @key shell :: Alt-Z :: Jump to visited directory (fzf+zoxide)
 # Pipes zoxide's scored directory list into fzf with a tree preview.
 # --nth=2: fuzzy match only on the path (column 2), not the score (column 1).
 # See: https://github.com/ajeetdsouza/zoxide
@@ -110,13 +110,13 @@ fzf-zoxide-widget() {
   zle reset-prompt
 }
 zle -N fzf-zoxide-widget
+# @key shell :: Ctrl-X z :: Visited directory jump fallback
 bindkey '^[z' fzf-zoxide-widget   # Alt-Z
 bindkey '^Xz' fzf-zoxide-widget   # Ctrl-X z (fallback)
 
-# Alt-/: live grep — searches file contents interactively using ripgrep.
+# @key shell :: Alt-/ :: Live grep file contents (rg + fzf)
 # fzf starts with --disabled (no fuzzy filtering); instead, every keystroke
-# triggers `rg {query}` via the change:reload binding. This provides true
-# live search rather than filtering a static list.
+# triggers `rg {query}` via the change:reload binding.
 # See: https://github.com/junegunn/fzf/blob/master/ADVANCED.md#using-fzf-as-interactive-ripgrep-launcher
 fzf-grep-widget() {
   setopt localoptions pipefail no_aliases 2>/dev/null
@@ -140,14 +140,13 @@ fzf-grep-widget() {
   zle reset-prompt
 }
 zle -N fzf-grep-widget
+# @key shell :: Ctrl-X g :: Live grep fallback
 bindkey '^[/' fzf-grep-widget    # Alt-/
 bindkey '^Xg' fzf-grep-widget   # Ctrl-X g (fallback)
 
-# Alt-T: television channel picker.
+# @key shell :: Alt-T :: Television smart picker
 # tv is a channel-oriented fuzzy finder — press Alt-T to open it, then
 # Ctrl-T inside tv to switch between channels (files, git-branch, env, etc.).
-# tv renders its TUI to stderr; `2>/dev/tty` redirects it to the terminal
-# so it displays properly inside a $(command substitution).
 # See: https://github.com/alexpasmantier/television
 tv-smart-widget() {
   setopt localoptions pipefail no_aliases 2>/dev/null
@@ -159,6 +158,7 @@ tv-smart-widget() {
   zle reset-prompt
 }
 zle -N tv-smart-widget
+# @key shell :: Ctrl-X t :: Television fallback
 bindkey '^[t' tv-smart-widget    # Alt-T
 bindkey '^Xt' tv-smart-widget    # Ctrl-X t (fallback)
 

@@ -16,9 +16,8 @@ bindkey -r '^Q'
 # Alt-Enter / ESC-Enter: some terminals send this accidentally
 bindkey -r '^[^M'
 
-# Alt-H/h → run-help: context-aware man page viewer. Pressing Alt-H while
-# typing "git commit" opens man git-commit (not man git).
-# run-help-* modules add support for specific commands.
+# @key shell :: Alt-H :: Context-aware man page (run-help)
+# Pressing Alt-H while typing "git commit" opens man git-commit (not man git).
 # See: man zshcontrib "ACCESSING ON-LINE HELP"
 autoload -Uz run-help run-help-git run-help-sudo run-help-openssl run-help-ip
 unalias run-help 2>/dev/null
@@ -49,6 +48,7 @@ WORDCHARS=''
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
+# @key shell :: Ctrl-P / N :: Prefix history search (also arrows)
 bindkey '^p' up-line-or-beginning-search    # Ctrl-P
 bindkey '^n' down-line-or-beginning-search  # Ctrl-N
 bindkey '^[[A' up-line-or-beginning-search  # Up arrow (CSI A)
@@ -56,7 +56,7 @@ bindkey '^[[B' down-line-or-beginning-search # Down arrow (CSI B)
 bindkey '^[[3~' delete-char                  # Delete key (CSI 3~)
 
 # ── Edit command in $EDITOR ──────────────────────
-# Ctrl-X Ctrl-E opens the current command line in $EDITOR (nvim).
+# @key shell :: Ctrl-X Ctrl-E :: Edit command in nvim
 # Save and quit to execute; empty buffer cancels.
 # See: man zshzle "edit-command-line"
 autoload -Uz edit-command-line
@@ -64,8 +64,7 @@ zle -N edit-command-line
 bindkey '^X^E' edit-command-line
 
 # ── Ctrl-Z toggle ────────────────────────────────
-# Normally Ctrl-Z suspends the foreground process. This widget makes it a
-# toggle: if there's a suspended job, fg it; otherwise, undo the last edit.
+# @key shell :: Ctrl-Z :: Toggle fg/bg (undo if no jobs)
 fg-bg-toggle() {
   if (( ${#jobstates} )); then
     fg
@@ -88,8 +87,7 @@ zle -N copy-earlier-word
 bindkey '^[,' copy-earlier-word
 
 # ── Ctrl-S → yazi cd-on-quit ────────────────────
-# Opens yazi file manager. When you quit yazi, the shell cds to whatever
-# directory yazi was in (cd-on-quit). The `y` function is defined in 07-tools.zsh.
+# @key shell :: Ctrl-S :: Yazi file manager (cd-on-quit)
 # `< /dev/tty` ensures yazi gets terminal input even inside a ZLE widget.
 yazi-widget() { y < /dev/tty; zle reset-prompt; }
 zle -N yazi-widget
