@@ -6,7 +6,7 @@ Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 Supports macOS (Homebrew) and Arch Linux (pacman).
 
 ```bash
-git clone https://github.com/YOUR_USER/dotfiles.git ~/dotfiles
+git clone https://github.com/xkef/dotfiles.git ~/dotfiles
 cd ~/dotfiles && ./install
 ```
 
@@ -25,7 +25,7 @@ Then it symlinks configs via stow and sets zsh as default shell.
 | [Ghostty](https://ghostty.org)                                                   | GPU-accelerated terminal                               |
 | [fzf](https://github.com/junegunn/fzf)                                           | Fuzzy finder everywhere (shell, tmux, neovim)          |
 | [atuin](https://atuin.sh)                                                        | Searchable shell history with sync                     |
-| [Claude Code](https://claude.ai/)                                                | AI coding agent with Seatbelt sandbox and custom hooks |
+| [Claude Code](https://claude.ai/)                                                | AI coding agent with nono sandbox                      |
 | [jj (Jujutsu)](https://github.com/jj-vcs/jj)                                     | Git-compatible VCS with simpler mental model           |
 | eza, bat, fd, ripgrep, zoxide                                                    | Modern unix replacements                               |
 
@@ -35,7 +35,7 @@ Then it symlinks configs via stow and sets zsh as default shell.
 make install        # Full install (packages + stow + tools)
 make install-adopt  # Install, adopting existing files
 make update         # Pull, re-stow, update plugins and tools
-make test           # Run smoke tests
+make doctor         # Check dotfiles health (binaries, symlinks, configs)
 make stow           # Stow all packages into ~
 make restow         # Re-stow (fixes stale symlinks)
 make uninstall      # Remove all symlinks from ~
@@ -67,14 +67,15 @@ Same physical key. Ctrl is the only difference.
 
 ## Local overrides
 
-| What   | File                                 |
-| ------ | ------------------------------------ |
-| Shell  | `~/.config/zsh/local.zsh`            |
-| Git    | `~/.config/git/config.local`         |
-| jj     | `jj config set --user user.name "…"` |
-| Neovim | `~/.config/nvim/lua/plugins/*.lua`   |
-| tmux   | `~/.config/tmux/local.conf`          |
-| sesh   | `~/.config/sesh/local.toml`          |
+| What   | File                                   |
+| ------ | -------------------------------------- |
+| Shell  | `~/.config/zsh/local.zsh`              |
+| Git    | `~/.config/git/config.local`           |
+| jj     | `jj config set --user user.name "…"`   |
+| Neovim | `~/.config/lazyvim/lua/plugins/*.lua`  |
+| tmux   | `~/.config/tmux/local.conf`            |
+| sesh   | `~/.config/sesh/local.toml`            |
+| SSH    | `~/.ssh/conf.d/*.conf`                 |
 
 ---
 
