@@ -8,7 +8,7 @@ define stow_each
 	done
 endef
 
-.PHONY: help install update test stow unstow restow fmt lint tools macos-defaults uninstall clean
+.PHONY: help install update doctor test stow unstow restow fmt lint tools macos-defaults uninstall clean
 
 help: ## Show this help
 	@grep -E '^[a-z][a-z_-]+:.*## ' $(MAKEFILE_LIST) | \
@@ -23,8 +23,10 @@ install-adopt: ## Install, adopting existing files into the repo
 update: ## Pull, re-stow, update plugins and tools
 	dotfiles-update
 
-test: ## Run smoke tests
-	./test
+doctor: ## Check dotfiles health (binaries, symlinks, configs)
+	dotfiles-doctor
+
+test: doctor ## Alias for doctor
 
 stow: ## Stow all packages into ~
 	$(call stow_each)

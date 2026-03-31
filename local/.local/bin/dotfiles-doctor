@@ -1,0 +1,256 @@
+#!/usr/bin/env bash
+# dotfiles-doctor — verify that the dotfiles setup is healthy.
+# Checks: required binaries, symlinks, config parsing, XDG dirs, SSH setup.
+set -uo pipefail
+
+DOTFILES_DIR="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir" 2>/dev/null || echo "$HOME/dotfiles")}"
+
+warnings=0
+errors=0
+
+pass()  { printf '  \033[32m✓\033[0m %s\n' "$1"; }
+warn()  { printf '  \033[33m!\033[0m %s\n' "$1"; ((warnings++)); }
+fail()  { printf '  \033[31m✗\033[0m %s\n' "$1"; ((errors++)); }
+header(){ printf '\n  \033[1m%s\033[0m\n\n' "$1"; }
+
+has() { command -v "$1" &>/dev/null; }
+
+check_cmd() {
+  if has "$1"; then
+    pass "$1"
+  else
+    "$2" "$1 not found"
+  fi
+}
+
+# ── Required binaries ─────────────────────────────────
+
+header "Required binaries"
+
+required_cmds=(
+  stow git gh zsh nvim tmux
+  starship fzf atuin zoxide navi
+  eza bat fd rg delta jq
+  mise yazi glow
+)
+
+for cmd in "${required_cmds[@]}"; do
+  check_cmd "$cmd" fail
+done
+
+header "Optional binaries"
+
+optional_cmds=(
+  jj jjui lazygit lazydocker difft
+  tv sesh hyperfine tokei dust duf procs
+  xh hurl sd ouch trash age scooter
+  nono op podman devcontainer
+)
+
+for cmd in "${optional_cmds[@]}"; do
+  check_cmd "$cmd" warn
+done
+
+# ── Symlinks ──────────────────────────────────────────
+
+header "Symlinks"
+
+check_link() {
+  local target=$1
+  if [[ -L "$target" ]]; then
+    local dest
+    dest=$(readlink "$target")
+    if [[ -e "$target" ]]; then
+      pass "$(basename "$target") → $dest"
+    else
+      fail "$(basename "$target") → $dest (broken)"
+    fi
+  elif [[ -e "$target" ]]; then
+    warn "$target exists but is not a symlink"
+  else
+    fail "$target missing"
+  fi
+}
+
+symlinks=(
+  "$HOME/.config/zsh"
+  "$HOME/.config/tmux"
+  "$HOME/.config/git"
+  "$HOME/.config/starship.toml"
+  "$HOME/.ssh/config"
+)
+
+# Add nvim configs if they exist in the repo
+[[ -d "$DOTFILES_DIR/nvim/.config/lazyvim" ]] && symlinks+=("$HOME/.config/lazyvim")
+[[ -d "$DOTFILES_DIR/nvim/.config/kickstart" ]] && symlinks+=("$HOME/.config/kickstart")
+[[ -d "$DOTFILES_DIR/tools/.config/yazi" ]] && symlinks+=("$HOME/.config/yazi")
+[[ -d "$DOTFILES_DIR/tools/.config/atuin" ]] && symlinks+=("$HOME/.config/atuin")
+[[ -d "$DOTFILES_DIR/ghostty/.config/ghostty" ]] && symlinks+=("$HOME/.config/ghostty")
+[[ -d "$DOTFILES_DIR/zed/.config/zed" ]] && symlinks+=("$HOME/.config/zed")
+[[ -d "$DOTFILES_DIR/vcs/.config/jj" ]] && symlinks+=("$HOME/.config/jj")
+
+for link in "${symlinks[@]}"; do
+  check_link "$link"
+done
+
+# ── XDG directories ──────────────────────────────────
+
+header "XDG directories"
+
+xdg_dirs=(
+  "${XDG_CONFIG_HOME:-$HOME/.config}"
+  "${XDG_DATA_HOME:-$HOME/.local/share}"
+  "${XDG_STATE_HOME:-$HOME/.local/state}"
+  "${XDG_CACHE_HOME:-$HOME/.cache}"
+)
+
+for dir in "${xdg_dirs[@]}"; do
+  if [[ -d "$dir" ]]; then
+    pass "$dir"
+  else
+    fail "$dir missing"
+  fi
+done
+
+# ── SSH ───────────────────────────────────────────────
+
+header "SSH"
+
+if [[ -d "$HOME/.ssh" ]]; then
+  pass "~/.ssh exists"
+else
+  fail "~/.ssh missing"
+fi
+
+if [[ -d "$HOME/.ssh/sockets" ]]; then
+  pass "~/.ssh/sockets exists (ControlPath)"
+else
+  warn "~/.ssh/sockets missing — run: mkdir -p ~/.ssh/sockets"
+fi
+
+if [[ -d "$HOME/.ssh/conf.d" ]]; then
+  pass "~/.ssh/conf.d exists"
+  count=$(find "$HOME/.ssh/conf.d" -name '*.conf' 2>/dev/null | wc -l | tr -d ' ')
+  pass "$count host config(s) in conf.d"
+else
+  warn "~/.ssh/conf.d missing — no host-specific configs"
+fi
+
+ssh_perms=$(stat -f '%A' "$HOME/.ssh" 2>/dev/null || stat -c '%a' "$HOME/.ssh" 2>/dev/null)
+if [[ "$ssh_perms" == "700" ]]; then
+  pass "~/.ssh permissions: $ssh_perms"
+else
+  warn "~/.ssh permissions: $ssh_perms (expected 700)"
+fi
+
+if [[ -f "$HOME/.ssh/config" ]]; then
+  config_perms=$(stat -f '%A' "$HOME/.ssh/config" 2>/dev/null || stat -c '%a' "$HOME/.ssh/config" 2>/dev/null)
+  if [[ "$config_perms" == "600" || "$config_perms" == "644" ]]; then
+    pass "~/.ssh/config permissions: $config_perms"
+  else
+    warn "~/.ssh/config permissions: $config_perms (expected 600 or 644)"
+  fi
+fi
+
+# ── Config parsing ────────────────────────────────────
+
+header "Config parsing"
+
+if has zsh; then
+  if zsh -n "$DOTFILES_DIR/zsh/.config/zsh/.zshrc" 2>/dev/null; then
+    pass "zsh syntax: .zshrc"
+  else
+    fail "zsh syntax: .zshrc"
+  fi
+  for f in "$DOTFILES_DIR"/zsh/.config/zsh/conf.d/*.zsh; do
+    if zsh -n "$f" 2>/dev/null; then
+      pass "zsh syntax: $(basename "$f")"
+    else
+      fail "zsh syntax: $(basename "$f")"
+    fi
+  done
+fi
+
+if has nvim; then
+  if nvim --headless +"lua require('lazy')" +qa 2>/dev/null; then
+    pass "nvim loads (LazyVim)"
+  else
+    warn "nvim failed to load LazyVim"
+  fi
+fi
+
+if has tmux; then
+  if timeout 10 tmux -L _doctor -f "$DOTFILES_DIR/tmux/.config/tmux/tmux.conf" start-server \; kill-server 2>/dev/null; then
+    pass "tmux config parses"
+  else
+    fail "tmux config parse error"
+  fi
+fi
+
+if has starship; then
+  if starship print-config &>/dev/null; then
+    pass "starship config"
+  else
+    fail "starship config error"
+  fi
+fi
+
+if has git; then
+  if git config --list &>/dev/null; then
+    pass "git config"
+  else
+    fail "git config error"
+  fi
+fi
+
+# ── Shell scripts ─────────────────────────────────────
+
+header "Shell scripts"
+
+for f in "$DOTFILES_DIR"/local/.local/bin/*; do
+  [[ -f "$f" ]] || continue
+  if [[ -x "$f" ]]; then
+    pass "$(basename "$f") is executable"
+  else
+    warn "$(basename "$f") is not executable"
+  fi
+done
+
+# ── Default shell ─────────────────────────────────────
+
+header "Environment"
+
+zsh_path=$(command -v zsh 2>/dev/null || true)
+if [[ -n "$zsh_path" && "${SHELL:-}" == *zsh* ]]; then
+  pass "default shell is zsh ($SHELL)"
+elif [[ -n "$zsh_path" ]]; then
+  warn "default shell is $SHELL (expected zsh)"
+fi
+
+if [[ -n "${DOTFILES_DIR:-}" ]]; then
+  pass "DOTFILES_DIR=$DOTFILES_DIR"
+else
+  warn "DOTFILES_DIR not set"
+fi
+
+if [[ -n "${XDG_CONFIG_HOME:-}" ]]; then
+  pass "XDG_CONFIG_HOME=$XDG_CONFIG_HOME"
+else
+  warn "XDG_CONFIG_HOME not set (using default ~/.config)"
+fi
+
+# ── Summary ───────────────────────────────────────────
+
+printf '\n'
+if ((errors)); then
+  printf '  \033[31m%d error(s)\033[0m' "$errors"
+  ((warnings)) && printf ', \033[33m%d warning(s)\033[0m' "$warnings"
+  printf '\n\n'
+  exit 1
+elif ((warnings)); then
+  printf '  \033[33m%d warning(s)\033[0m, no errors\n\n' "$warnings"
+  exit 0
+else
+  printf '  All checks passed\n\n'
+  exit 0
+fi
