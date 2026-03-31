@@ -1,15 +1,16 @@
 # Sandbox restrictions
 
-This session runs inside a macOS Seatbelt sandbox. Only
-the current working directory, `~/.claude/`,
-`~/.config/claude-code/`, `~/.config/git/`,
-`~/.config/jj/`, and `~/.local/bin/` are accessible. Everything else under
-`$HOME` is blocked at the OS level. Do not attempt to
-read, search, or traverse paths outside these allowed
-directories — the commands will silently return nothing.
-If the user asks about files outside the sandbox, inform
-them of the restriction and suggest they run the command
-directly in their terminal.
+This session runs inside a nono sandbox (Seatbelt on
+macOS, Landlock on Linux). The sandbox is deny-default:
+only the working directory, `~/.claude/`,
+`~/.config/claude-code/`, toolchain paths, and a few
+explicitly granted directories are accessible. Everything
+else is blocked at the OS level. Do not attempt to read,
+search, or traverse paths outside the working directory
+and standard tool config directories — the commands will
+fail or return nothing. If the user asks about files
+outside the sandbox, inform them of the restriction and
+suggest they run the command directly in their terminal.
 
 # Always use skills when available
 

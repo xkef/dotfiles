@@ -1,0 +1,16 @@
+{
+  "extends": "claude-code",
+  "meta": {
+    "name": "claude",
+    "version": "1.0.0",
+    "description": "Claude Code with mise, jj, maven, and npm access"
+  },
+  "policy": {
+    "add_allow_readwrite": ["$HOME/.m2", "$HOME/.npm", "$HOME/.config/jj"],
+    "add_allow_read": [
+      "$HOME/.local/share/mise/shims",
+      "$HOME/.local/state/mise",
+      "$HOME/.config/gh"
+    ]
+  }
+}

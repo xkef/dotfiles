@@ -48,6 +48,7 @@ podman            # rootless container engine
 lazydocker        # terminal UI for Docker/Podman
 fx                # terminal JSON viewer
 bubblewrap        # unprivileged sandboxing
+nono              # capability-based sandbox
 
 # ── File management & info ─────────────────────────────
 yazi              # terminal file manager
