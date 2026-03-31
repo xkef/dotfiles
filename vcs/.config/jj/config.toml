@@ -73,3 +73,7 @@ streamline = ["simplify-parents"]
 [snapshot]
 auto-update-stale = true
 max-new-file-size = "2MiB"
+
+[user]
+name = "xkef"
+email = "xkef@pm.me"

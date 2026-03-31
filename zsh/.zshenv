@@ -58,11 +58,16 @@ export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
 # See: https://github.com/ajeetdsouza/zoxide#environment-variables
 export _ZO_EXCLUDE_DIRS="$HOME/Library/*:$HOME/.Trash/*:/tmp/*"
 
-# Podman compatibility — lazydocker and other Docker tools use DOCKER_HOST
-# to communicate with the container runtime. Platform-specific socket paths.
+# Podman compatibility — on Linux the socket path is stable; on macOS it
+# lives in a temp dir that changes per boot, so we resolve it lazily via a
+# wrapper function to avoid forking `podman machine inspect` on every shell.
 if command -v podman &>/dev/null; then
   if [[ "$OSTYPE" == darwin* ]]; then
-    export DOCKER_HOST="unix://$HOME/.local/share/containers/podman/machine/podman.sock"
+    lazydocker() {
+      local sock
+      sock=$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}' 2>/dev/null)
+      DOCKER_HOST="unix://$sock" command lazydocker "$@"
+    }
   else
     export DOCKER_HOST="unix://${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/podman/podman.sock"
   fi
