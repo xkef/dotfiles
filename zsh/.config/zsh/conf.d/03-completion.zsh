@@ -38,9 +38,33 @@ zstyle ':completion:*:kill:*' force-list always
 zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 
+# Verbose: show descriptions alongside candidates (e.g., "git add -- Add file contents to the index")
+zstyle ':completion:*' verbose yes
+
+# Treat // as a single slash instead of globbing (e.g., cd //usr → /usr)
+zstyle ':completion:*' squeeze-slashes true
+
 # Skip path completion for components that already resolve as directories
 # (avoids slow stat calls on network mounts)
 zstyle ':completion:*' accept-exact-dirs true
+
+# Don't complete . and .. as directory entries — cd .. still works via AUTO_CD
+zstyle ':completion:*' special-dirs false
+
+# Complete dotfiles without requiring an explicit leading dot
+zstyle ':completion:*' glob-dots true
+
+# Man pages: group by section with meaningful headers
+zstyle ':completion:*:manuals'   separate-sections true
+zstyle ':completion:*:manuals.*' insert-sections true
+
+# SSH/SCP: pull hostnames from ~/.ssh/config and known_hosts
+zstyle ':completion:*:(ssh|scp|rsync):*' hosts \
+  ${${${(f)"$(cat ~/.ssh/config 2>/dev/null)"}:#[\|#]*}%%[# ]*}
+zstyle ':completion:*:(ssh|scp|rsync):*' tag-order 'hosts:-host:host hosts:-domain:domain *'
+
+# Don't complete users other than the current user (avoids long list from /etc/passwd)
+zstyle ':completion:*' users
 
 # Cache expensive completions (dpkg, apt, brew, etc.)
 # See: man zshcompsys "USE OF COMPINIT WITH A CACHE"
