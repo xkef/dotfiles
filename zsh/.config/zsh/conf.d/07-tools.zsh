@@ -103,6 +103,27 @@ _deferred_tool_init() {
 }
 precmd_functions+=(_deferred_tool_init)
 
+# ── Jujutsu: commit message length check ─────────────
+# GitHub truncates subject lines beyond 72 characters. Warn after any
+# command that sets a description so the author can fix it immediately.
+jj() {
+  command jj "$@"
+  local rc=$?
+  case "$1" in
+    commit|describe)
+      if (( rc == 0 )); then
+        local rev subject
+        [[ "$1" == commit ]] && rev='@-' || rev='@'
+        subject=$(command jj log -r "$rev" --no-graph -T 'description.first_line()' 2>/dev/null)
+        if (( ${#subject} > 72 )); then
+          printf '\e[33mwarning:\e[0m subject is %d chars (GitHub truncates at 72)\n' ${#subject}
+        fi
+      fi
+      ;;
+  esac
+  return $rc
+}
+
 # ── Yazi: cd-on-quit wrapper ─────────────────────────
 # Yazi is a terminal file manager. This wrapper captures the directory yazi
 # was in when you quit (via --cwd-file) and cds to it, enabling the
