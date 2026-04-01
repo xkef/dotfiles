@@ -3,10 +3,8 @@
 # Personal overrides: ~/.config/git/config.local
 
 [user]
-	# Set your identity in ~/.config/git/config.local:
-	#   [user]
-	#     name = Your Name
-	#     email = you@example.com
+	name = xkef
+	email = xkef@pm.me
 
 [init]
 	defaultBranch = main

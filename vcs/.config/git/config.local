@@ -1,6 +1,6 @@
-[user]
-  name = xkef
-  email = xkef@pm.me
+# Machine-local git overrides (identity, signing, credential helpers).
+# This file is included by ~/.config/git/config.
+# On a new machine, edit this to match the local environment.
 
 [credential "https://github.com"]
   helper =
