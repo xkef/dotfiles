@@ -8,10 +8,16 @@ DOTFILES_DIR="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir" 2>/dev/null || ech
 warnings=0
 errors=0
 
-pass()  { printf '  \033[32m✓\033[0m %s\n' "$1"; }
-warn()  { printf '  \033[33m!\033[0m %s\n' "$1"; ((warnings++)); }
-fail()  { printf '  \033[31m✗\033[0m %s\n' "$1"; ((errors++)); }
-header(){ printf '\n  \033[1m%s\033[0m\n\n' "$1"; }
+pass() { printf '  \033[32m✓\033[0m %s\n' "$1"; }
+warn() {
+  printf '  \033[33m!\033[0m %s\n' "$1"
+  ((warnings++))
+}
+fail() {
+  printf '  \033[31m✗\033[0m %s\n' "$1"
+  ((errors++))
+}
+header() { printf '\n  \033[1m%s\033[0m\n\n' "$1"; }
 
 has() { command -v "$1" &>/dev/null; }
 

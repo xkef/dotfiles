@@ -7,15 +7,7 @@
     "BASH_DEFAULT_TIMEOUT_MS": "120000"
   },
   "permissions": {
-    "allow": [
-      "Bash",
-      "Read",
-      "Grep",
-      "Glob",
-      "Edit",
-      "Write",
-      "Skill(commit)"
-    ],
+    "allow": ["Bash", "Read", "Grep", "Glob", "Edit", "Write", "Skill(commit)"],
     "deny": [
       "Bash(*rm -rf*)",
       "Bash(*git push --force*)",

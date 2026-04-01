@@ -3,7 +3,7 @@
 ![screenshot](scrot.png)
 
 Managed with [GNU Stow](https://www.gnu.org/software/stow/).
-Supports macOS (Homebrew) and Arch Linux (pacman).
+Supports macOS and Arch Linux (btw).
 
 ```bash
 git clone https://github.com/xkef/dotfiles.git ~/dotfiles
@@ -16,18 +16,18 @@ Then it symlinks configs via stow and sets zsh as default shell.
 
 ## What's included
 
-| Tool                                                                             | What it does                                           |
-| -------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| [Zsh](https://www.zsh.org) + [zinit](https://github.com/zdharma-continuum/zinit) | Shell with fast plugin loading                         |
-| [Starship](https://starship.rs)                                                  | Minimal, cross-shell prompt                            |
-| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)                 | Editor with LazyVim distro                             |
-| [tmux](https://github.com/tmux/tmux)                                             | Terminal multiplexer with vim navigation               |
-| [Ghostty](https://ghostty.org)                                                   | GPU-accelerated terminal                               |
-| [fzf](https://github.com/junegunn/fzf)                                           | Fuzzy finder everywhere (shell, tmux, neovim)          |
-| [atuin](https://atuin.sh)                                                        | Searchable shell history with sync                     |
-| [Claude Code](https://claude.ai/)                                                | AI coding agent with nono sandbox                      |
-| [jj (Jujutsu)](https://github.com/jj-vcs/jj)                                     | Git-compatible VCS with simpler mental model           |
-| eza, bat, fd, ripgrep, zoxide                                                    | Modern unix replacements                               |
+| Tool                                                                             | What it does                                  |
+| -------------------------------------------------------------------------------- | --------------------------------------------- |
+| [Zsh](https://www.zsh.org) + [zinit](https://github.com/zdharma-continuum/zinit) | Shell with fast plugin loading                |
+| [Starship](https://starship.rs)                                                  | Minimal, cross-shell prompt                   |
+| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)                 | Editor with LazyVim distro                    |
+| [tmux](https://github.com/tmux/tmux)                                             | Terminal multiplexer with vim navigation      |
+| [Ghostty](https://ghostty.org)                                                   | GPU-accelerated terminal                      |
+| [fzf](https://github.com/junegunn/fzf)                                           | Fuzzy finder everywhere (shell, tmux, neovim) |
+| [atuin](https://atuin.sh)                                                        | Searchable shell history with sync            |
+| [Claude Code](https://claude.ai/)                                                | AI coding agent with nono sandbox             |
+| [jj (Jujutsu)](https://github.com/jj-vcs/jj)                                     | Git-compatible VCS with simpler mental model  |
+| eza, bat, fd, ripgrep, zoxide                                                    | Modern unix replacements                      |
 
 ## Maintenance
 
@@ -67,15 +67,15 @@ Same physical key. Ctrl is the only difference.
 
 ## Local overrides
 
-| What   | File                                   |
-| ------ | -------------------------------------- |
-| Shell  | `~/.config/zsh/local.zsh`              |
-| Git    | `~/.config/git/config.local`           |
-| jj     | `jj config set --user user.name "…"`   |
-| Neovim | `~/.config/lazyvim/lua/plugins/*.lua`  |
-| tmux   | `~/.config/tmux/local.conf`            |
-| sesh   | `~/.config/sesh/local.toml`            |
-| SSH    | `~/.ssh/conf.d/*.conf`                 |
+| What   | File                                  |
+| ------ | ------------------------------------- |
+| Shell  | `~/.config/zsh/local.zsh`             |
+| Git    | `~/.config/git/config.local`          |
+| jj     | `jj config set --user user.name "…"`  |
+| Neovim | `~/.config/lazyvim/lua/plugins/*.lua` |
+| tmux   | `~/.config/tmux/local.conf`           |
+| sesh   | `~/.config/sesh/local.toml`           |
+| SSH    | `~/.ssh/conf.d/*.conf`                |
 
 ---
 
