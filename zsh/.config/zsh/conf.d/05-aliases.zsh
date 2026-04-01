@@ -6,10 +6,11 @@
 # eza: modern ls replacement with git integration, icons, and tree view.
 # See: https://github.com/eza-community/eza
 if (( $+commands[eza] )); then
-  alias ls='eza --group-directories-first'
-  alias ll='eza -la --group-directories-first --git'
+  alias eza='eza --group-directories-first'
+  alias ls='eza'
+  alias ll='eza -la --git'
   alias lt='eza -T --level=2'
-  alias la='eza -a --group-directories-first'
+  alias la='eza -a'
 elif [[ "$OSTYPE" == darwin* ]]; then
   alias ls='ls -G'
   alias ll='ls -Gla'
@@ -52,9 +53,6 @@ alias mmv='noglob zmv -W'
 # Misc
 alias help='run-help'
 alias reload='exec zsh'
-alias ..='cd ..'
-alias ...='cd ../..'
-alias ....='cd ../../..'
 alias cls='clear'
 alias mkdir='mkdir -pv'
 alias grep='grep --color=auto'

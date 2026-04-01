@@ -1,58 +1,23 @@
 return {
   {
     "mrjones2014/smart-splits.nvim",
-    keys = {
-      -- Navigation (works across tmux panes too via smart-splits tmux integration)
-      {
-        "<C-h>",
-        function()
-          require("smart-splits").move_cursor_left()
-        end,
-      },
-      {
-        "<C-j>",
-        function()
-          require("smart-splits").move_cursor_down()
-        end,
-      },
-      {
-        "<C-k>",
-        function()
-          require("smart-splits").move_cursor_up()
-        end,
-      },
-      {
-        "<C-l>",
-        function()
-          require("smart-splits").move_cursor_right()
-        end,
-      },
-      -- Resize
-      {
-        "<A-h>",
-        function()
-          require("smart-splits").resize_left()
-        end,
-      },
-      {
-        "<A-j>",
-        function()
-          require("smart-splits").resize_down()
-        end,
-      },
-      {
-        "<A-k>",
-        function()
-          require("smart-splits").resize_up()
-        end,
-      },
-      {
-        "<A-l>",
-        function()
-          require("smart-splits").resize_right()
-        end,
-      },
-    },
+    keys = (function()
+      local ss = "smart-splits"
+      local keys = {}
+      for _, m in ipairs({
+        { "<C-h>", "move_cursor_left" },
+        { "<C-j>", "move_cursor_down" },
+        { "<C-k>", "move_cursor_up" },
+        { "<C-l>", "move_cursor_right" },
+        { "<A-h>", "resize_left" },
+        { "<A-j>", "resize_down" },
+        { "<A-k>", "resize_up" },
+        { "<A-l>", "resize_right" },
+      }) do
+        keys[#keys + 1] = { m[1], function() require(ss)[m[2]]() end }
+      end
+      return keys
+    end)(),
   },
 
   {
