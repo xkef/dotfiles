@@ -221,27 +221,11 @@ theme_config() {
   esac
 }
 
-THEMES=(
-  catppuccin-mocha
-  catppuccin-macchiato
-  catppuccin-frappe
-  catppuccin-latte
-  tokyonight
-  tokyonight-day
-  rose-pine
-  rose-pine-moon
-  rose-pine-dawn
-  gruvbox-dark
-  gruvbox-light
-  nord
-  nord-light
-  onedark
-  onelight
-  kanagawa
-  kanagawa-lotus
-  everforest-dark
-  everforest-light
-  dracula
+# Derive theme list from the case branches in theme_config() so there's
+# only one place to add a new theme.
+THEMES=()
+while IFS= read -r t; do THEMES+=("$t"); done < <(
+  declare -f theme_config | sed -n 's/^  *\([a-z][a-z0-9-]*\))$/\1/p'
 )
 
 # ── Helpers ──────────────────────────────────────────────
