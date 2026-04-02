@@ -18,7 +18,7 @@ set -gx FZF_DEFAULT_OPTS "\
     --color=info:5,prompt:4,pointer:4,marker:2,spinner:5,header:3,border:8,gutter:-1 \
     --bind 'ctrl-/:toggle-preview' \
     --bind 'ctrl-y:execute-silent(echo -n {+} | pbcopy 2>/dev/null || echo -n {+} | wl-copy 2>/dev/null || echo -n {+} | xclip -sel clip 2>/dev/null)' \
-    --bind 'ctrl-d:half-page-down,ctrl-u:half-page-up' \
+    --bind 'ctrl-d:preview-half-page-down,ctrl-u:preview-half-page-up' \
     --bind 'ctrl-f:preview-page-down,ctrl-b:preview-page-up'"
 
 set -gx FZF_CTRL_T_OPTS "\
@@ -35,8 +35,11 @@ set -gx FZF_ALT_C_OPTS "\
 # fzf shell integration (Ctrl-T, Ctrl-R, Alt-C)
 fzf --fish | source
 
-# atuin: initialized in config.fish (after all conf.d, including the
-# fzf.fish plugin) so atuin's Ctrl-R wins over fzf's history widget.
+# atuin replaces fzf's Ctrl-R history widget
+if command -q atuin
+    set -gx ATUIN_TMUX_POPUP false
+    atuin init fish --disable-up-arrow | source
+end
 
 # Custom widgets
 bind \ez __fzf_zoxide # Alt-Z: zoxide jump

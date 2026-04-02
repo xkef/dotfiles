@@ -18,7 +18,7 @@ Then it symlinks configs via stow and sets fish as default shell.
 
 | Tool                                                                             | What it does                                  |
 | -------------------------------------------------------------------------------- | --------------------------------------------- |
-| [Fish](https://fishshell.com) + [Fisher](https://github.com/jorgebucaran/fisher) | Shell with fzf completions, sane defaults     |
+| [Fish](https://fishshell.com)                                                    | Shell with fzf completions, sane defaults     |
 | [Starship](https://starship.rs)                                                  | Minimal, cross-shell prompt                   |
 | [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)                 | Editor with LazyVim distro                    |
 | [tmux](https://github.com/tmux/tmux)                                             | Terminal multiplexer with vim navigation      |

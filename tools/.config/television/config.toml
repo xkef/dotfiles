@@ -1,5 +1,11 @@
 default_channel = "files"
 
+[keybindings]
+ctrl-d = "scroll_preview_half_page_down"
+ctrl-u = "scroll_preview_half_page_up"
+ctrl-f = "scroll_preview_half_page_down"
+ctrl-b = "scroll_preview_half_page_up"
+
 [ui]
 theme = "catppuccin"
 

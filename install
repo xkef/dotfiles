@@ -105,11 +105,4 @@ if [[ -n "$fish" && "$fish" != "${SHELL:-}" ]]; then
   sudo chsh -s "$fish" "$(whoami)" || log "  ! Run manually: chsh -s $fish"
 fi
 
-# ── Fish plugins ──────────────────────────────────────
-
-if has fish; then
-  log "Installing fish plugins..."
-  fish -c 'fisher update 2>/dev/null' || log "  ! Fisher not yet installed — run: fish then it auto-installs"
-fi
-
 printf '\n  Done! Run `exec fish` to reload.\n\n'

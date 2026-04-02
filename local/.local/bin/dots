@@ -214,11 +214,6 @@ function _update
         jq --sort-keys . $lazy_lock >$lazy_lock.tmp && mv $lazy_lock.tmp $lazy_lock
     end
 
-    if command -q fisher
-        _log "Updating fish plugins..."
-        fisher update 2>/dev/null || true
-    end
-
     if command -q theme
         _log "Regenerating theme..."
         set -l name (sed -n 's/^name=//p' $HOME/.config/theme/current 2>/dev/null || echo catppuccin-mocha)
