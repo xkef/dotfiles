@@ -8,18 +8,15 @@ Thumbs.db
 *~
 
 # Local overrides (not tracked)
-zsh/.config/zsh/local.zsh
+shell/.config/fish/local.fish
+shell/.config/fish/fish_variables
 __pycache__/
 
 .idea/
-/zsh/.config/zsh/.zcompdump
-/zsh/.config/zsh/.zsh_history
 /.claude/settings.local.json
 *.tmTheme
 /git/.config/git/config.local
 /.nvimlog
-/zsh/.config/zsh/.zcompcache/brew_all_commands
-*.zwc
 /vcs/.config/git/delta.gitconfig
 /vcs/.config/jj/repos/*
 

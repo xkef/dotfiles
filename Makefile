@@ -1,6 +1,7 @@
 DOTFILES_DIR := $(shell pwd)
 STOW_PACKAGES := $(shell ls -d */ 2>/dev/null | sed 's|/||')
-SHELL_FILES := $(shell git ls-files | xargs file --mime-type 2>/dev/null | awk -F: '/x-shellscript/ {print $$1}')
+SHELL_FILES := $(shell git ls-files | xargs file --mime-type 2>/dev/null | awk -F: '/x-shellscript/ {print $$1}' | xargs grep -rL 'env fish' 2>/dev/null)
+FISH_FILES := $(shell git ls-files '*.fish'; git ls-files | xargs file --mime-type 2>/dev/null | awk -F: '/x-shellscript/ {print $$1}' | xargs grep -rl 'env fish' 2>/dev/null)
 
 define stow_each
 	@for pkg in $(STOW_PACKAGES); do \
@@ -21,10 +22,10 @@ install-adopt: ## Install, adopting existing files into the repo
 	./install --adopt
 
 update: ## Pull, re-stow, update plugins and tools
-	dotfiles-update
+	dots update
 
 doctor: ## Check dotfiles health (binaries, symlinks, configs)
-	dotfiles-doctor
+	dots doctor
 
 test: doctor ## Alias for doctor
 
@@ -43,6 +44,7 @@ tools: ## Install mise tools (languages + formatters)
 fmt: ## Format all dotfiles
 	stylua nvim/.config/lazyvim/ nvim/.config/kickstart/
 	shfmt -w $(SHELL_FILES)
+	fish_indent -w $(FISH_FILES)
 	prettier --write '**/*.{json,yaml,yml,css,html,md}' \
 		--ignore-path .gitignore 2>/dev/null || true
 	taplo fmt
@@ -64,4 +66,3 @@ uninstall: ## Remove all symlinks from ~ (inverse of stow)
 clean: ## Remove caches and generated files
 	find . -name .DS_Store -delete 2>/dev/null || true
 	rm -rf nvim/.config/lazyvim/.luarc.json
-	./local/.local/bin/zsh-cache-reset

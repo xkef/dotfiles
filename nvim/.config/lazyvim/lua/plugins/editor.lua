@@ -14,7 +14,12 @@ return {
         { "<A-k>", "resize_up" },
         { "<A-l>", "resize_right" },
       }) do
-        keys[#keys + 1] = { m[1], function() require(ss)[m[2]]() end }
+        keys[#keys + 1] = {
+          m[1],
+          function()
+            require(ss)[m[2]]()
+          end,
+        }
       end
       return keys
     end)(),

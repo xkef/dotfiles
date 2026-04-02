@@ -1,0 +1,367 @@
+#!/usr/bin/env fish
+# dots — unified dotfiles management command.
+# Usage: dots <subcommand> [args]
+
+set -g DOTS_DIR (test -f $HOME/.config/dotfiles/dir && cat $HOME/.config/dotfiles/dir || echo $HOME/dotfiles)
+
+# ── Helpers ──────────────────────────────────────────
+
+function _pass
+    printf '  \e[32m✓\e[0m %s\n' $argv
+end
+function _warn
+    printf '  \e[33m!\e[0m %s\n' $argv
+    set -g _warnings (math $_warnings + 1)
+end
+function _fail
+    printf '  \e[31m✗\e[0m %s\n' $argv
+    set -g _errors (math $_errors + 1)
+end
+function _header
+    printf '\n  \e[1m%s\e[0m\n\n' $argv
+end
+function _log
+    printf '  %s\n' $argv
+end
+
+function _run_quiet
+    set -l ctx $argv[1]
+    set -l out (eval $argv[2..-1] 2>&1)
+    or begin
+        _log "  ! $ctx failed"
+        for line in (echo $out | tail -10)
+            _log "    | $line"
+        end
+        return 1
+    end
+end
+
+# ── doctor ───────────────────────────────────────────
+
+function _doctor
+    set -g _warnings 0
+    set -g _errors 0
+
+    _header "Required binaries"
+    for cmd in stow git gh fish nvim tmux starship fzf atuin zoxide navi eza bat fd rg delta jq mise yazi glow
+        if command -q $cmd
+            _pass $cmd
+        else
+            _fail "$cmd not found"
+        end
+    end
+
+    _header "Optional binaries"
+    for cmd in jj jjui lazygit lazydocker difft tv sesh hyperfine tokei dust duf procs xh hurl sd ouch trash age scooter nono op podman devcontainer
+        if command -q $cmd
+            _pass $cmd
+        else
+            _warn "$cmd not found"
+        end
+    end
+
+    _header Symlinks
+    for link in $HOME/.config/fish $HOME/.config/tmux $HOME/.config/git $HOME/.config/starship.toml $HOME/.ssh/config
+        if test -L $link
+            set -l dest (readlink $link)
+            if test -e $link
+                _pass (basename $link)" → $dest"
+            else
+                _fail (basename $link)" → $dest (broken)"
+            end
+        else if test -e $link
+            _warn "$link exists but is not a symlink"
+        else
+            _fail "$link missing"
+        end
+    end
+    for dir in lazyvim kickstart yazi atuin ghostty zed jj
+        set -l repo_dir (find $DOTS_DIR -path "*/.config/$dir" -type d 2>/dev/null | head -1)
+        test -n "$repo_dir" && test -e $HOME/.config/$dir && _pass "$dir → "(readlink $HOME/.config/$dir 2>/dev/null || echo "exists")
+    end
+
+    _header "XDG directories"
+    for dir in $XDG_CONFIG_HOME $XDG_DATA_HOME $XDG_STATE_HOME $XDG_CACHE_HOME
+        if test -d $dir
+            _pass $dir
+        else
+            _fail "$dir missing"
+        end
+    end
+
+    _header SSH
+    if test -d $HOME/.ssh
+        _pass "~/.ssh exists"
+    else
+        _fail "~/.ssh missing"
+    end
+    if test -d $HOME/.ssh/sockets
+        _pass "~/.ssh/sockets exists"
+    else
+        _warn "~/.ssh/sockets missing"
+    end
+    if test -d $HOME/.ssh/conf.d
+        _pass "~/.ssh/conf.d exists"
+    else
+        _warn "~/.ssh/conf.d missing"
+    end
+
+    _header "Config parsing"
+    if command -q fish
+        if fish -n $DOTS_DIR/shell/.config/fish/config.fish 2>/dev/null
+            _pass "fish: config.fish"
+        else
+            _fail "fish: config.fish"
+        end
+        for f in $DOTS_DIR/shell/.config/fish/conf.d/*.fish
+            if fish -n $f 2>/dev/null
+                _pass "fish: "(basename $f)
+            else
+                _fail "fish: "(basename $f)
+            end
+        end
+    end
+    if command -q nvim
+        if nvim --headless +"lua require('lazy')" +qa 2>/dev/null
+            _pass "nvim loads (LazyVim)"
+        else
+            _warn "nvim failed to load"
+        end
+    end
+    if command -q tmux
+        if timeout 10 tmux -L _doctor -f $DOTS_DIR/tmux/.config/tmux/tmux.conf start-server \; kill-server 2>/dev/null
+            _pass "tmux config parses"
+        else
+            _fail "tmux config error"
+        end
+    end
+    if command -q starship
+        if starship print-config &>/dev/null
+            _pass "starship config"
+        else
+            _fail "starship config error"
+        end
+    end
+    if command -q git
+        if git config --list &>/dev/null
+            _pass "git config"
+        else
+            _fail "git config error"
+        end
+    end
+
+    _header Environment
+    if string match -q '*fish*' $SHELL
+        _pass "default shell is fish ($SHELL)"
+    else
+        _warn "default shell is $SHELL (expected fish)"
+    end
+    if test -n "$DOTFILES_DIR"
+        _pass "DOTFILES_DIR=$DOTFILES_DIR"
+    else
+        _warn "DOTFILES_DIR not set"
+    end
+
+    printf '\n'
+    if test $_errors -gt 0
+        printf '  \e[31m%d error(s)\e[0m' $_errors
+        test $_warnings -gt 0 && printf ', \e[33m%d warning(s)\e[0m' $_warnings
+        printf '\n\n'
+        return 1
+    else if test $_warnings -gt 0
+        printf '  \e[33m%d warning(s)\e[0m, no errors\n\n' $_warnings
+    else
+        printf '  All checks passed\n\n'
+    end
+end
+
+# ── update ───────────────────────────────────────────
+
+function _update
+    printf '\n  Updating dotfiles...\n\n'
+
+    if test -d $DOTS_DIR/.git
+        _log "Pulling latest changes..."
+        _run_quiet "git pull" git -C $DOTS_DIR pull --rebase || true
+    end
+
+    _log "Re-stowing packages..."
+    find $DOTS_DIR -name .DS_Store -delete 2>/dev/null
+    if not git -C $DOTS_DIR diff --quiet 2>/dev/null
+        _log "  ! Uncommitted changes — skipping stow"
+    else
+        for pkg in $DOTS_DIR/*/
+            set -l name (basename $pkg)
+            _run_quiet "stow $name" stow --dir=$DOTS_DIR -t $HOME --adopt $name || true
+            _run_quiet "git restore" git -C $DOTS_DIR restore "$name/" || true
+        end
+    end
+
+    if command -q mise
+        _log "Updating mise tools..."
+        _run_quiet "mise upgrade" mise upgrade || true
+    end
+
+    _log "Updating neovim plugins..."
+    _run_quiet "nvim sync" nvim --headless "+Lazy! sync" +qa || true
+
+    _log "Updating mason tools..."
+    _run_quiet "mason update" nvim --headless "+MasonToolsUpdateSync" +qa || true
+
+    set -l lazy_lock $DOTS_DIR/nvim/.config/lazyvim/lazy-lock.json
+    if test -f $lazy_lock && command -q jq
+        _log "Formatting lazy-lock.json..."
+        jq --sort-keys . $lazy_lock >$lazy_lock.tmp && mv $lazy_lock.tmp $lazy_lock
+    end
+
+    if command -q fisher
+        _log "Updating fish plugins..."
+        fisher update 2>/dev/null || true
+    end
+
+    if command -q theme
+        _log "Regenerating theme..."
+        set -l name (sed -n 's/^name=//p' $HOME/.config/theme/current 2>/dev/null || echo catppuccin-mocha)
+        theme $name >/dev/null 2>&1 || true
+    end
+
+    printf '\n  Done!\n\n'
+end
+
+# ── versions ─────────────────────────────────────────
+
+function _versions
+    printf '\n'
+    for pair in \
+        "fish:fish --version" \
+        "starship:starship --version" \
+        "atuin:atuin --version" \
+        "fzf:fzf --version" \
+        "television:tv --version" \
+        "neovim:nvim --version" \
+        "tmux:tmux -V" \
+        "ghostty:ghostty --version" \
+        "zed:zed --version" \
+        "git:git --version" \
+        "delta:delta --version" \
+        "jj:jj version" \
+        "yazi:yazi --version" \
+        "mise:mise --version" \
+        "claude:claude --version"
+        set -l parts (string split ':' $pair)
+        set -l name $parts[1]
+        set -l cmd (string split ' ' $parts[2])
+        if not command -q $cmd[1]
+            printf '  \e[2m%-14s not installed\e[0m\n' $name
+            continue
+        end
+        set -l raw (eval $parts[2] 2>/dev/null | head -1)
+        set -l v (string match -r '[0-9]+\.[0-9][0-9a-z.]*' $raw)[1]
+        printf '  %-14s %s\n' $name (test -n "$v" && echo $v || echo "unknown")
+    end
+    printf '\n'
+end
+
+# ── keys ─────────────────────────────────────────────
+
+function _keys
+    set -l sources \
+        $DOTS_DIR/tmux/.config/tmux/conf.d/00-options.conf \
+        $DOTS_DIR/tmux/.config/tmux/conf.d/01-keys.conf \
+        $DOTS_DIR/tmux/.config/tmux/conf.d/02-copy-mode.conf \
+        $DOTS_DIR/tmux/.config/tmux/conf.d/04-plugins.conf \
+        $DOTS_DIR/shell/.config/fish/conf.d/04-keys.fish
+
+    awk '
+    /^# @key / {
+      line = $0
+      sub(/^# @key /, "", line)
+      n = split(line, parts, "::")
+      if (n >= 3) {
+        section = parts[1]; gsub(/^[ \t]+|[ \t]+$/, "", section)
+        key = parts[2]; gsub(/^[ \t]+|[ \t]+$/, "", key)
+        gsub(/\|/, "\\|", key)
+        desc = parts[3]; gsub(/^[ \t]+|[ \t]+$/, "", desc)
+        sections[section] = sections[section] key "\t" desc "\n"
+      }
+    }
+    END {
+      print "# Keybinding Reference"
+      print ""
+      print "**tmux prefix = Ctrl-Space | nvim leader = Space**"
+      print ""
+      print "## tmux -- Ctrl-Space +"
+      print ""
+      print "| Key        | Action                            |"
+      print "| ---------- | --------------------------------- |"
+      n = split(sections["tmux"], lines, "\n")
+      for (i = 1; i < n; i++) { split(lines[i], f, "\t"); printf "| %-10s | %-33s |\n", f[1], f[2] }
+      print ""
+      print "### Copy mode"
+      print ""
+      print "v/V/Ctrl-v toggle VISUAL/LINE/BLOCK (press again to cancel)"
+      print "-- y yank -- Y yank-EOL -- q cancel"
+      print ""
+      print "| Key        | Action                    |"
+      print "| ---------- | ------------------------- |"
+      n = split(sections["copy"], lines, "\n")
+      for (i = 1; i < n; i++) { split(lines[i], f, "\t"); printf "| %-10s | %-25s |\n", f[1], f[2] }
+      print ""
+      print "---"
+      print ""
+      print "## Neovim -- Space +"
+      print ""
+      print "Uses [LazyVim](https://www.lazyvim.org) defaults."
+      print "Press `Space` and wait for which-key to discover all bindings."
+      print ""
+      print "Full keymap reference: <https://www.lazyvim.org/keymaps>"
+      print ""
+      print "---"
+      print ""
+      print "## Shell (fish)"
+      print ""
+      print "| Key           | Action                                 |"
+      print "| ------------- | -------------------------------------- |"
+      n = split(sections["shell"], lines, "\n")
+      for (i = 1; i < n; i++) { split(lines[i], f, "\t"); printf "| %-13s | %-38s |\n", f[1], f[2] }
+      print ""
+      print "### Modern aliases"
+      print ""
+      print "`extract` / `compress` ouch | `cat` bat | `ls` eza |"
+      print "`du` dust | `df` duf | `ps` procs"
+    }
+  ' $sources
+end
+
+# ── main ─────────────────────────────────────────────
+
+switch $argv[1]
+    case doctor check
+        _doctor
+    case update up
+        _update
+    case versions ver
+        _versions
+    case keys
+        if test "$argv[2]" = --raw
+            _keys
+        else
+            _keys | glow -p -w (tput cols) -
+        end
+    case theme
+        theme $argv[2..-1]
+    case help -h --help ''
+        echo "Usage: dots <command>"
+        echo ""
+        echo "Commands:"
+        echo "  doctor    Check dotfiles health (binaries, symlinks, configs)"
+        echo "  update    Pull, re-stow, update plugins and tools"
+        echo "  versions  Show installed tool versions"
+        echo "  keys      Show keybinding reference"
+        echo "  theme     Switch terminal + editor theme"
+        echo ""
+    case '*'
+        echo "Unknown command: $argv[1]"
+        echo "Run 'dots help' for usage."
+        return 1
+end

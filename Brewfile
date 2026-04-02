@@ -7,7 +7,7 @@ brew "jq"                # JSON processor
 brew "age"               # simple file encryption
 
 # ── Shell & prompt ──────────────────────────────────────
-brew "zsh"               # shell
+brew "fish"              # shell
 brew "starship"          # cross-shell prompt
 brew "atuin"             # shell history search/sync
 brew "navi"              # interactive cheatsheet browser

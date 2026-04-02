@@ -12,13 +12,13 @@ cd ~/dotfiles && ./install
 
 The `install` script auto-detects your OS and installs packages
 using the native format (`Brewfile` on macOS, `pkgs.arch` on Arch).
-Then it symlinks configs via stow and sets zsh as default shell.
+Then it symlinks configs via stow and sets fish as default shell.
 
 ## What's included
 
 | Tool                                                                             | What it does                                  |
 | -------------------------------------------------------------------------------- | --------------------------------------------- |
-| [Zsh](https://www.zsh.org) + [zinit](https://github.com/zdharma-continuum/zinit) | Shell with fast plugin loading                |
+| [Fish](https://fishshell.com) + [Fisher](https://github.com/jorgebucaran/fisher) | Shell with fzf completions, sane defaults     |
 | [Starship](https://starship.rs)                                                  | Minimal, cross-shell prompt                   |
 | [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)                 | Editor with LazyVim distro                    |
 | [tmux](https://github.com/tmux/tmux)                                             | Terminal multiplexer with vim navigation      |
@@ -33,15 +33,18 @@ Then it symlinks configs via stow and sets zsh as default shell.
 
 ```sh
 make install        # Full install (packages + stow + tools)
-make install-adopt  # Install, adopting existing files
 make update         # Pull, re-stow, update plugins and tools
 make doctor         # Check dotfiles health (binaries, symlinks, configs)
-make stow           # Stow all packages into ~
 make restow         # Re-stow (fixes stale symlinks)
-make uninstall      # Remove all symlinks from ~
-make macos-defaults # Apply macOS system defaults
-make fmt            # Format all dotfiles
-make lint           # Lint shell scripts and neovim config
+```
+
+Or use the `dots` command directly:
+
+```sh
+dots doctor         # Check health
+dots update         # Update everything
+dots versions       # Show tool versions
+dots keys           # Keybinding reference
 ```
 
 ---
@@ -69,7 +72,7 @@ Same physical key. Ctrl is the only difference.
 
 | What   | File                                  |
 | ------ | ------------------------------------- |
-| Shell  | `~/.config/zsh/local.zsh`             |
+| Fish   | `~/.config/fish/local.fish`           |
 | Git    | `~/.config/git/config.local`          |
 | jj     | `jj config set --user user.name "…"`  |
 | Neovim | `~/.config/lazyvim/lua/plugins/*.lua` |
@@ -83,14 +86,12 @@ Same physical key. Ctrl is the only difference.
 
 Heavily inspired by
 [wincent/wincent](https://github.com/wincent/wincent) --
-tmux, zsh, neovim structure, keymaps, and general philosophy.
+tmux, neovim structure, keymaps, and general philosophy.
 Also borrows from:
 
 - [omerxx/dotfiles](https://github.com/omerxx/dotfiles) --
   tooling and tmux
 - [ThePrimeagen](https://github.com/ThePrimeagen/.dotfiles) --
   tmux-sessionizer
-- [mattmc3/zdotdir](https://github.com/mattmc3/zdotdir) --
-  zsh caching and compilation patterns
 - [folke/LazyVim](https://github.com/LazyVim/LazyVim) --
   Neovim distro and plugin ecosystem

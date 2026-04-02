@@ -7,7 +7,7 @@ jq                # JSON processor
 age               # simple file encryption
 
 # ── Shell & prompt ──────────────────────────────────────
-zsh               # shell
+fish              # shell
 starship          # cross-shell prompt
 atuin             # shell history search/sync
 navi              # interactive cheatsheet browser

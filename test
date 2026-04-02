@@ -1,5 +1,2 @@
-#!/usr/bin/env bash
-# Thin wrapper — the real script lives at local/.local/bin/dotfiles-doctor
-# so it is on PATH alongside dotfiles-update. This file exists for
-# `make test` and `./test` convenience at the repo root.
-exec "$(dirname "$0")/local/.local/bin/dotfiles-doctor" "$@"
+#!/usr/bin/env fish
+exec dots doctor

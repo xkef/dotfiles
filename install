@@ -97,17 +97,19 @@ fi
 
 # ── Default shell ─────────────────────────────────────
 
-zsh="$(command -v zsh 2>/dev/null || true)"
-if [[ -n "$zsh" && "$zsh" != "${SHELL:-}" ]]; then
-  if [[ -f /etc/shells ]] && ! grep -qx "$zsh" /etc/shells; then
-    echo "$zsh" | sudo tee -a /etc/shells >/dev/null
+fish="$(command -v fish 2>/dev/null || true)"
+if [[ -n "$fish" && "$fish" != "${SHELL:-}" ]]; then
+  if [[ -f /etc/shells ]] && ! grep -qx "$fish" /etc/shells; then
+    echo "$fish" | sudo tee -a /etc/shells >/dev/null
   fi
-  sudo chsh -s "$zsh" "$(whoami)" || log "  ! Run manually: chsh -s $zsh"
+  sudo chsh -s "$fish" "$(whoami)" || log "  ! Run manually: chsh -s $fish"
 fi
 
-# ── Reset zsh caches ──────────────────────────────────
+# ── Fish plugins ──────────────────────────────────────
 
-log "Resetting zsh caches..."
-"$DOTFILES_DIR/local/.local/bin/zsh-cache-reset"
+if has fish; then
+  log "Installing fish plugins..."
+  fish -c 'fisher update 2>/dev/null' || log "  ! Fisher not yet installed — run: fish then it auto-installs"
+fi
 
-printf '\n  Done! Run `exec zsh` to reload.\n\n'
+printf '\n  Done! Run `exec fish` to reload.\n\n'
