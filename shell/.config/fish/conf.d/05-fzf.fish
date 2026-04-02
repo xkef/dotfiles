@@ -32,8 +32,28 @@ set -gx FZF_ALT_C_OPTS "\
     --preview 'eza -T --color=always --icons --level=2 {} 2>/dev/null || ls -la {}' \
     --preview-window 'right:50%:border-left'"
 
+# Tab completion options (parsed as a string by fzf, so embedded quotes work)
+set -gx FZF_COMPLETION_OPTS "\
+    --preview 'fzf-preview {1}' \
+    --preview-window right:50%:border-left \
+    --bind 'tab:down,btab:up,enter:accept'"
+
 # fzf shell integration (Ctrl-T, Ctrl-R, Alt-C)
 fzf --fish | source
+
+# Override fzf's built-in multi-select completion with single-select
+function fzf-completion --description 'fzf tab completion (single-select)'
+    set -l tokens (__fzf_cmd_tokens)
+    set -l current_token (commandline -t)
+    set -l cmd_name $tokens[1]
+
+    if test -n "$tokens"; and functions -q _fzf_complete_$cmd_name
+        _fzf_complete_$cmd_name $tokens
+    else
+        set -l fzf_opt --query=$current_token
+        __fzf_complete_native "$tokens $current_token" $fzf_opt
+    end
+end
 
 # atuin replaces fzf's Ctrl-R history widget
 if command -q atuin
