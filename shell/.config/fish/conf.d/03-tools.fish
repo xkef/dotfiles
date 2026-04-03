@@ -4,7 +4,7 @@
 
 # mise: add shims to PATH directly (saves ~26ms vs `mise activate`)
 # The mise wrapper in functions/mise.fish runs `mise reshim` after install/use.
-fish_add_path -gP $HOME/.local/share/mise/shims
+fish_add_path -gP $XDG_DATA_HOME/mise/shims
 
 # starship: cross-shell prompt
 if command -q starship
