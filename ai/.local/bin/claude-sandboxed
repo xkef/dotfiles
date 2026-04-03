@@ -7,6 +7,7 @@ if command -v nono &>/dev/null; then
   exec nono run \
     --profile claude-code \
     --allow-cwd \
+    --allow-launch-services \
     --read "$DOTFILES_DIR" \
     --allow "$HOME/.cache/mise" \
     --allow "$HOME/.npm" \
