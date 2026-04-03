@@ -46,7 +46,9 @@ for cmd in jj jjui lazygit lazydocker difft tv sesh hyperfine tokei dust duf pro
 end
 
 _header Symlinks
-for link in $HOME/.config/fish $HOME/.config/tmux $HOME/.config/git $HOME/.config/starship.toml $HOME/.ssh/config
+# Directories may not be symlinks themselves — stow links individual files
+# inside when the directory already exists. Only files must be symlinks.
+for link in $HOME/.config/starship.toml $HOME/.ssh/config
     if test -L $link
         set -l dest (readlink $link)
         if test -e $link
@@ -58,6 +60,17 @@ for link in $HOME/.config/fish $HOME/.config/tmux $HOME/.config/git $HOME/.confi
         _warn "$link exists but is not a symlink"
     else
         _fail "$link missing"
+    end
+end
+for dir in $HOME/.config/fish $HOME/.config/tmux $HOME/.config/git
+    if test -d $dir
+        if test -L $dir
+            _pass (basename $dir)" → "(readlink $dir)
+        else
+            _pass (basename $dir)" (stow-managed)"
+        end
+    else
+        _fail "$dir missing"
     end
 end
 for dir in lazyvim kickstart yazi atuin ghostty zed jj
