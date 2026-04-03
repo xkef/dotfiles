@@ -30,8 +30,18 @@ return {
     "nvim-lualine/lualine.nvim",
     opts = {
       sections = {
-        lualine_y = { "progress" },
-        lualine_z = { "location" },
+        lualine_y = {
+          function()
+            local height = vim.fn.line("$")
+            local width = #tostring(height)
+            return "ℓ " .. string.format("%" .. width .. "d/%d", vim.fn.line("."), height)
+          end,
+        },
+        lualine_z = {
+          function()
+            return "𝚌" .. string.format(" %2d", vim.fn.virtcol("."))
+          end,
+        },
       },
     },
   },
