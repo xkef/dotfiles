@@ -1,0 +1,69 @@
+#!/usr/bin/env fish
+# shellcheck disable=all
+# dots update — pull latest changes, re-stow packages, update plugins and tools.
+
+set -g DOTS_DIR (test -f $HOME/.config/dotfiles/dir && cat $HOME/.config/dotfiles/dir || echo $HOME/dotfiles)
+
+function _log
+    printf '  %s\n' $argv
+end
+
+function _run_quiet
+    set -l ctx $argv[1]
+    set -l out (eval $argv[2..-1] 2>&1)
+    or begin
+        _log "  ! $ctx failed"
+        for line in (echo $out | tail -10)
+            _log "    | $line"
+        end
+        return 1
+    end
+end
+
+# ── Update steps ──────────────────────────────────────
+
+printf '\n  Updating dotfiles...\n\n'
+
+if test -d $DOTS_DIR/.git
+    _log "Pulling latest changes..."
+    _run_quiet "git pull" git -C $DOTS_DIR pull --rebase || true
+end
+
+_log "Re-stowing packages..."
+find $DOTS_DIR -name .DS_Store -delete 2>/dev/null
+if not git -C $DOTS_DIR diff --quiet 2>/dev/null
+    _log "  ! Uncommitted changes — skipping stow"
+else
+    for pkg in $DOTS_DIR/*/
+        set -l name (basename $pkg)
+        _run_quiet "stow $name" stow --dir=$DOTS_DIR -t $HOME --adopt $name || true
+        _run_quiet "git restore" git -C $DOTS_DIR restore "$name/" || true
+    end
+end
+
+if command -q mise
+    _log "Updating mise tools..."
+    _run_quiet "mise upgrade" mise upgrade || true
+end
+
+_log "Updating neovim plugins..."
+_run_quiet "nvim sync" nvim --headless "+Lazy! sync" +qa || true
+
+_log "Updating mason tools..."
+_run_quiet "mason update" nvim --headless "+MasonToolsUpdateSync" +qa || true
+
+# Keep lazy-lock.json deterministically sorted
+set -l lazy_lock $DOTS_DIR/nvim/.config/lazyvim/lazy-lock.json
+if test -f $lazy_lock && command -q jq
+    _log "Formatting lazy-lock.json..."
+    jq --sort-keys . $lazy_lock >$lazy_lock.tmp && mv $lazy_lock.tmp $lazy_lock
+end
+
+# Re-apply current theme to regenerate derived configs (delta, OSC cache)
+if command -q theme
+    _log "Regenerating theme..."
+    set -l name (sed -n 's/^name=//p' $HOME/.config/theme/current 2>/dev/null || echo catppuccin-mocha)
+    theme $name >/dev/null 2>&1 || true
+end
+
+printf '\n  Done!\n\n'

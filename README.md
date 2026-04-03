@@ -16,18 +16,18 @@ Then it symlinks configs via stow and sets fish as default shell.
 
 ## What's included
 
-| Tool                                                                             | What it does                                  |
-| -------------------------------------------------------------------------------- | --------------------------------------------- |
-| [Fish](https://fishshell.com)                                                    | Shell with fzf completions, sane defaults     |
-| [Starship](https://starship.rs)                                                  | Minimal, cross-shell prompt                   |
-| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)                 | Editor with LazyVim distro                    |
-| [tmux](https://github.com/tmux/tmux)                                             | Terminal multiplexer with vim navigation      |
-| [Ghostty](https://ghostty.org)                                                   | GPU-accelerated terminal                      |
-| [fzf](https://github.com/junegunn/fzf)                                           | Fuzzy finder everywhere (shell, tmux, neovim) |
-| [atuin](https://atuin.sh)                                                        | Searchable shell history with sync            |
-| [Claude Code](https://claude.ai/)                                                | AI coding agent with nono sandbox             |
-| [jj (Jujutsu)](https://github.com/jj-vcs/jj)                                     | Git-compatible VCS with simpler mental model  |
-| eza, bat, fd, ripgrep, zoxide                                                    | Modern unix replacements                      |
+| Tool                                                             | What it does                                  |
+| ---------------------------------------------------------------- | --------------------------------------------- |
+| [Fish](https://fishshell.com)                                    | Shell with fzf completions, sane defaults     |
+| [Starship](https://starship.rs)                                  | Minimal, cross-shell prompt                   |
+| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org) | Editor with LazyVim distro                    |
+| [tmux](https://github.com/tmux/tmux)                             | Terminal multiplexer with vim navigation      |
+| [Ghostty](https://ghostty.org)                                   | GPU-accelerated terminal                      |
+| [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder everywhere (shell, tmux, neovim) |
+| [atuin](https://atuin.sh)                                        | Searchable shell history with sync            |
+| [Claude Code](https://claude.ai/)                                | AI coding agent with nono sandbox             |
+| [jj (Jujutsu)](https://github.com/jj-vcs/jj)                     | Git-compatible VCS with simpler mental model  |
+| eza, bat, fd, ripgrep, zoxide                                    | Modern unix replacements                      |
 
 ## Maintenance
 

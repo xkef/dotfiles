@@ -8,13 +8,13 @@ export PATH="/opt/homebrew/bin:$HOME/.local/bin:$PATH"
 p="${1%%	*}"
 
 if [ -d "$p" ]; then
-    eza -1a --color=always --icons --group-directories-first "$p" 2>/dev/null || ls -la "$p"
+  eza -1a --color=always --icons --group-directories-first "$p" 2>/dev/null || ls -la "$p"
 elif [ -f "$p" ]; then
-    bat --color=always --style=numbers --line-range :100 "$p" 2>/dev/null || cat "$p"
+  bat --color=always --style=numbers --line-range :100 "$p" 2>/dev/null || cat "$p"
 elif command -v "$p" >/dev/null 2>&1; then
-    whatis "$p" 2>/dev/null
-    echo ""
-    "$p" --help 2>&1 | head -30
+  whatis "$p" 2>/dev/null
+  echo ""
+  "$p" --help 2>&1 | head -30
 else
-    echo "$p"
+  echo "$p"
 fi

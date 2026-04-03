@@ -1,0 +1,162 @@
+#!/usr/bin/env fish
+# shellcheck disable=all
+# dots doctor — validate dotfiles health.
+# Checks required/optional binaries, symlinks, XDG dirs, SSH setup,
+# config file parsing, and environment variables.
+
+set -g DOTS_DIR (test -f $HOME/.config/dotfiles/dir && cat $HOME/.config/dotfiles/dir || echo $HOME/dotfiles)
+set -g _warnings 0
+set -g _errors 0
+
+# ── Output helpers ────────────────────────────────────
+
+function _pass
+    printf '  \e[32m✓\e[0m %s\n' $argv
+end
+function _warn
+    printf '  \e[33m!\e[0m %s\n' $argv
+    set -g _warnings (math $_warnings + 1)
+end
+function _fail
+    printf '  \e[31m✗\e[0m %s\n' $argv
+    set -g _errors (math $_errors + 1)
+end
+function _header
+    printf '\n  \e[1m%s\e[0m\n\n' $argv
+end
+
+# ── Checks ────────────────────────────────────────────
+
+_header "Required binaries"
+for cmd in stow git gh fish nvim tmux starship fzf atuin zoxide navi eza bat fd rg delta jq mise yazi glow
+    if command -q $cmd
+        _pass $cmd
+    else
+        _fail "$cmd not found"
+    end
+end
+
+_header "Optional binaries"
+for cmd in jj jjui lazygit lazydocker difft tv sesh hyperfine tokei dust duf procs xh hurl sd ouch trash age scooter nono op podman devcontainer
+    if command -q $cmd
+        _pass $cmd
+    else
+        _warn "$cmd not found"
+    end
+end
+
+_header Symlinks
+for link in $HOME/.config/fish $HOME/.config/tmux $HOME/.config/git $HOME/.config/starship.toml $HOME/.ssh/config
+    if test -L $link
+        set -l dest (readlink $link)
+        if test -e $link
+            _pass (basename $link)" → $dest"
+        else
+            _fail (basename $link)" → $dest (broken)"
+        end
+    else if test -e $link
+        _warn "$link exists but is not a symlink"
+    else
+        _fail "$link missing"
+    end
+end
+for dir in lazyvim kickstart yazi atuin ghostty zed jj
+    set -l repo_dir (find $DOTS_DIR -path "*/.config/$dir" -type d 2>/dev/null | head -1)
+    test -n "$repo_dir" && test -e $HOME/.config/$dir && _pass "$dir → "(readlink $HOME/.config/$dir 2>/dev/null || echo "exists")
+end
+
+_header "XDG directories"
+for dir in $XDG_CONFIG_HOME $XDG_DATA_HOME $XDG_STATE_HOME $XDG_CACHE_HOME
+    if test -d $dir
+        _pass $dir
+    else
+        _fail "$dir missing"
+    end
+end
+
+_header SSH
+if test -d $HOME/.ssh
+    _pass "~/.ssh exists"
+else
+    _fail "~/.ssh missing"
+end
+if test -d $HOME/.ssh/sockets
+    _pass "~/.ssh/sockets exists"
+else
+    _warn "~/.ssh/sockets missing"
+end
+if test -d $HOME/.ssh/conf.d
+    _pass "~/.ssh/conf.d exists"
+else
+    _warn "~/.ssh/conf.d missing"
+end
+
+_header "Config parsing"
+if command -q fish
+    if fish -n $DOTS_DIR/shell/.config/fish/config.fish 2>/dev/null
+        _pass "fish: config.fish"
+    else
+        _fail "fish: config.fish"
+    end
+    for f in $DOTS_DIR/shell/.config/fish/conf.d/*.fish
+        if fish -n $f 2>/dev/null
+            _pass "fish: "(basename $f)
+        else
+            _fail "fish: "(basename $f)
+        end
+    end
+end
+if command -q nvim
+    if nvim --headless +"lua require('lazy')" +qa 2>/dev/null
+        _pass "nvim loads (LazyVim)"
+    else
+        _warn "nvim failed to load"
+    end
+end
+if command -q tmux
+    if timeout 10 tmux -L _doctor -f $DOTS_DIR/tmux/.config/tmux/tmux.conf start-server \; kill-server 2>/dev/null
+        _pass "tmux config parses"
+    else
+        _fail "tmux config error"
+    end
+end
+if command -q starship
+    if starship print-config &>/dev/null
+        _pass "starship config"
+    else
+        _fail "starship config error"
+    end
+end
+if command -q git
+    if git config --list &>/dev/null
+        _pass "git config"
+    else
+        _fail "git config error"
+    end
+end
+
+_header Environment
+if string match -q '*fish*' $SHELL
+    _pass "default shell is fish ($SHELL)"
+else
+    _warn "default shell is $SHELL (expected fish)"
+end
+if test -n "$DOTFILES_DIR"
+    _pass "DOTFILES_DIR=$DOTFILES_DIR"
+else
+    _warn "DOTFILES_DIR not set"
+end
+
+# ── Summary ───────────────────────────────────────────
+
+printf '\n'
+if test $_errors -gt 0
+    printf '  \e[31m%d error(s)\e[0m' $_errors
+    test $_warnings -gt 0 && printf ', \e[33m%d warning(s)\e[0m' $_warnings
+    printf '\n\n'
+    exit 1
+else if test $_warnings -gt 0
+    printf '  \e[33m%d warning(s)\e[0m, no errors\n\n' $_warnings
+else
+    printf '  All checks passed\n\n'
+end

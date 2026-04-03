@@ -1,0 +1,80 @@
+#!/usr/bin/env fish
+# shellcheck disable=all
+# dots keys — show keybinding reference.
+# Collects @key annotations from tmux and fish config files and renders
+# them as a markdown table, piped through glow for terminal display.
+
+set -g DOTS_DIR (test -f $HOME/.config/dotfiles/dir && cat $HOME/.config/dotfiles/dir || echo $HOME/dotfiles)
+
+set -l sources \
+    $DOTS_DIR/tmux/.config/tmux/conf.d/00-options.conf \
+    $DOTS_DIR/tmux/.config/tmux/conf.d/01-keys.conf \
+    $DOTS_DIR/tmux/.config/tmux/conf.d/02-copy-mode.conf \
+    $DOTS_DIR/tmux/.config/tmux/conf.d/04-plugins.conf \
+    $DOTS_DIR/shell/.config/fish/conf.d/04-keys.fish
+
+set -l output (awk '
+/^# @key / {
+  line = $0
+  sub(/^# @key /, "", line)
+  n = split(line, parts, "::")
+  if (n >= 3) {
+    section = parts[1]; gsub(/^[ \t]+|[ \t]+$/, "", section)
+    key = parts[2]; gsub(/^[ \t]+|[ \t]+$/, "", key)
+    gsub(/\|/, "\\|", key)
+    desc = parts[3]; gsub(/^[ \t]+|[ \t]+$/, "", desc)
+    sections[section] = sections[section] key "\t" desc "\n"
+  }
+}
+END {
+  print "# Keybinding Reference"
+  print ""
+  print "**tmux prefix = Ctrl-Space | nvim leader = Space**"
+  print ""
+  print "## tmux -- Ctrl-Space +"
+  print ""
+  print "| Key        | Action                            |"
+  print "| ---------- | --------------------------------- |"
+  n = split(sections["tmux"], lines, "\n")
+  for (i = 1; i < n; i++) { split(lines[i], f, "\t"); printf "| %-10s | %-33s |\n", f[1], f[2] }
+  print ""
+  print "### Copy mode"
+  print ""
+  print "v/V/Ctrl-v toggle VISUAL/LINE/BLOCK (press again to cancel)"
+  print "-- y yank -- Y yank-EOL -- q cancel"
+  print ""
+  print "| Key        | Action                    |"
+  print "| ---------- | ------------------------- |"
+  n = split(sections["copy"], lines, "\n")
+  for (i = 1; i < n; i++) { split(lines[i], f, "\t"); printf "| %-10s | %-25s |\n", f[1], f[2] }
+  print ""
+  print "---"
+  print ""
+  print "## Neovim -- Space +"
+  print ""
+  print "Uses [LazyVim](https://www.lazyvim.org) defaults."
+  print "Press `Space` and wait for which-key to discover all bindings."
+  print ""
+  print "Full keymap reference: <https://www.lazyvim.org/keymaps>"
+  print ""
+  print "---"
+  print ""
+  print "## Shell (fish)"
+  print ""
+  print "| Key           | Action                                 |"
+  print "| ------------- | -------------------------------------- |"
+  n = split(sections["shell"], lines, "\n")
+  for (i = 1; i < n; i++) { split(lines[i], f, "\t"); printf "| %-13s | %-38s |\n", f[1], f[2] }
+  print ""
+  print "### Modern aliases"
+  print ""
+  print "`extract` / `compress` ouch | `cat` bat | `ls` eza |"
+  print "`du` dust | `df` duf | `ps` procs"
+}
+' $sources)
+
+if test "$argv[1]" = --raw
+    echo $output
+else
+    echo $output | glow -p -w (tput cols) -
+end

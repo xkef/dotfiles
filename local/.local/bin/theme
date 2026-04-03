@@ -1,449 +1,285 @@
-#!/usr/bin/env bash
-# Unified theme switcher for ghostty, neovim, tmux, and shell tools.
-# Usage: theme [name|--list|--toggle]
+#!/usr/bin/env fish
+# shellcheck disable=all
+# theme — unified theme switcher for ghostty, neovim, tmux, and shell tools.
 #
-# Changes terminal colors immediately via OSC escape sequences (works in
-# ghostty, kitty, iTerm2, etc.) and updates config files for persistence.
+# Reads theme definitions from ~/.local/share/theme/themes.conf and applies
+# colors across all tools: terminal (via OSC), ghostty config, neovim remote,
+# tmux styles, bat theme, and git-delta diff colors.
+#
+# Usage: theme [name|--list|--toggle]
 
-set -euo pipefail
+set -g THEME_DIR (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/theme
+set -g THEMES_CONF (set -q XDG_DATA_HOME && echo $XDG_DATA_HOME || echo $HOME/.local/share)/theme/themes.conf
+set -g GHOSTTY_CONFIG (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/ghostty/config
+set -g CURRENT_FILE $THEME_DIR/current
 
-THEME_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/theme"
-GHOSTTY_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config"
-CURRENT_FILE="$THEME_DIR/current"
+# ── Theme loader ──────────────────────────────────────
+# Parses the INI-style themes.conf and populates t_* globals for the
+# requested theme. Returns 1 if the theme name was not found.
 
-# ── Theme definitions ────────────────────────────────────
-# Each call sets: ghostty_theme, nvim_scheme, background, bat_theme, pair,
-# palette[0-15], theme_bg, theme_fg, theme_cursor
+function _load_theme -a name
+    set -g t_ghostty ""
+    set -g t_nvim ""
+    set -g t_background ""
+    set -g t_bat ""
+    set -g t_pair ""
+    set -g t_palette
+    set -g t_bg ""
+    set -g t_fg ""
+    set -g t_cursor ""
 
-theme_config() {
-  case "$1" in
-  catppuccin-mocha)
-    ghostty_theme="Catppuccin Mocha"
-    nvim_scheme="catppuccin-mocha"
-    background="dark"
-    bat_theme="Catppuccin Mocha"
-    pair="catppuccin-latte"
-    palette=(45475a f38ba8 a6e3a1 f9e2af 89b4fa cba6f7 94e2d5 bac2de
-      585b70 f38ba8 a6e3a1 f9e2af 89b4fa cba6f7 94e2d5 a6adc8)
-    theme_bg=1e1e2e theme_fg=cdd6f4 theme_cursor=f5e0dc
-    ;;
-  catppuccin-macchiato)
-    ghostty_theme="Catppuccin Macchiato"
-    nvim_scheme="catppuccin-macchiato"
-    background="dark"
-    bat_theme="Catppuccin Macchiato"
-    pair="catppuccin-latte"
-    palette=(494d64 ed8796 a6da95 eed49f 8aadf4 c6a0f6 8bd5ca b8c0e0
-      5b6078 ed8796 a6da95 eed49f 8aadf4 c6a0f6 8bd5ca a5adcb)
-    theme_bg=24273a theme_fg=cad3f5 theme_cursor=f4dbd6
-    ;;
-  catppuccin-frappe)
-    ghostty_theme="Catppuccin Frappe"
-    nvim_scheme="catppuccin-frappe"
-    background="dark"
-    bat_theme="Catppuccin Frappe"
-    pair="catppuccin-latte"
-    palette=(51576d e78284 a6d189 e5c890 8caaee ca9ee6 81c8be b5bfe2
-      626880 e78284 a6d189 e5c890 8caaee ca9ee6 81c8be a5adce)
-    theme_bg=303446 theme_fg=c6d0f5 theme_cursor=f2d5cf
-    ;;
-  catppuccin-latte)
-    ghostty_theme="Catppuccin Latte"
-    nvim_scheme="catppuccin-latte"
-    background="light"
-    bat_theme="Catppuccin Latte"
-    pair="catppuccin-mocha"
-    palette=(5c5f77 d20f39 40a02b df8e1d 1e66f5 8839ef 179299 acb0be
-      6c6f85 d20f39 40a02b df8e1d 1e66f5 8839ef 179299 bcc0cc)
-    theme_bg=eff1f5 theme_fg=4c4f69 theme_cursor=dc8a78
-    ;;
-  tokyonight)
-    ghostty_theme="TokyoNight"
-    nvim_scheme="tokyonight-night"
-    background="dark"
-    bat_theme="OneHalfDark"
-    pair="tokyonight-day"
-    palette=(15161e f7768e 9ece6a e0af68 7aa2f7 bb9af7 7dcfff a9b1d6
-      414868 f7768e 9ece6a e0af68 7aa2f7 bb9af7 7dcfff c0caf5)
-    theme_bg=1a1b26 theme_fg=c0caf5 theme_cursor=c0caf5
-    ;;
-  tokyonight-day)
-    ghostty_theme="TokyoNight Day"
-    nvim_scheme="tokyonight-day"
-    background="light"
-    bat_theme="OneHalfLight"
-    pair="tokyonight"
-    palette=(e9e9ed f52a65 587539 8c6c3e 2e7de9 9854f1 007197 6172b0
-      a1a6c5 f52a65 587539 8c6c3e 2e7de9 9854f1 007197 3760bf)
-    theme_bg=e1e2e7 theme_fg=3760bf theme_cursor=3760bf
-    ;;
-  rose-pine)
-    ghostty_theme="Rose Pine"
-    nvim_scheme="rose-pine-main"
-    background="dark"
-    bat_theme="Sublime Snazzy"
-    pair="rose-pine-dawn"
-    palette=(26233a eb6f92 31748f f6c177 9ccfd8 c4a7e7 ebbcba e0def4
-      6e6a86 eb6f92 31748f f6c177 9ccfd8 c4a7e7 ebbcba e0def4)
-    theme_bg=191724 theme_fg=e0def4 theme_cursor=524f67
-    ;;
-  rose-pine-moon)
-    ghostty_theme="Rose Pine Moon"
-    nvim_scheme="rose-pine-moon"
-    background="dark"
-    bat_theme="Sublime Snazzy"
-    pair="rose-pine-dawn"
-    palette=(393552 eb6f92 3e8fb0 f6c177 9ccfd8 c4a7e7 ea9a97 e0def4
-      6e6a86 eb6f92 3e8fb0 f6c177 9ccfd8 c4a7e7 ea9a97 e0def4)
-    theme_bg=232136 theme_fg=e0def4 theme_cursor=56526e
-    ;;
-  rose-pine-dawn)
-    ghostty_theme="Rose Pine Dawn"
-    nvim_scheme="rose-pine-dawn"
-    background="light"
-    bat_theme="OneHalfLight"
-    pair="rose-pine-moon"
-    palette=(f2e9e1 b4637a 286983 ea9d34 56949f 907aa9 d7827e 575279
-      9893a5 b4637a 286983 ea9d34 56949f 907aa9 d7827e 575279)
-    theme_bg=faf4ed theme_fg=575279 theme_cursor=cecacd
-    ;;
-  gruvbox-dark)
-    ghostty_theme="Gruvbox Dark"
-    nvim_scheme="gruvbox"
-    background="dark"
-    bat_theme="gruvbox-dark"
-    pair="gruvbox-light"
-    palette=(282828 cc241d 98971a d79921 458588 b16286 689d6a a89984
-      928374 fb4934 b8bb26 fabd2f 83a598 d3869b 8ec07c ebdbb2)
-    theme_bg=282828 theme_fg=ebdbb2 theme_cursor=ebdbb2
-    ;;
-  gruvbox-light)
-    ghostty_theme="Gruvbox Light"
-    nvim_scheme="gruvbox"
-    background="light"
-    bat_theme="gruvbox-light"
-    pair="gruvbox-dark"
-    palette=(fbf1c7 cc241d 98971a d79921 458588 b16286 689d6a 7c6f64
-      928374 9d0006 79740e b57614 076678 8f3f71 427b58 3c3836)
-    theme_bg=fbf1c7 theme_fg=3c3836 theme_cursor=3c3836
-    ;;
-  nord)
-    ghostty_theme="Nord"
-    nvim_scheme="nord"
-    background="dark"
-    bat_theme="Nord"
-    pair="nord-light"
-    palette=(3b4252 bf616a a3be8c ebcb8b 81a1c1 b48ead 88c0d0 e5e9f0
-      4c566a bf616a a3be8c ebcb8b 81a1c1 b48ead 8fbcbb eceff4)
-    theme_bg=2e3440 theme_fg=d8dee9 theme_cursor=d8dee9
-    ;;
-  nord-light)
-    ghostty_theme="Nord Light"
-    nvim_scheme="nord"
-    background="light"
-    bat_theme="OneHalfLight"
-    pair="nord"
-    palette=(e5e9f0 bf616a a3be8c ebcb8b 81a1c1 b48ead 88c0d0 3b4252
-      d8dee9 bf616a a3be8c ebcb8b 81a1c1 b48ead 8fbcbb 2e3440)
-    theme_bg=eceff4 theme_fg=2e3440 theme_cursor=4c566a
-    ;;
-  onedark)
-    ghostty_theme="Atom One Dark"
-    nvim_scheme="onedark"
-    background="dark"
-    bat_theme="OneHalfDark"
-    pair="onelight"
-    palette=(21252b e06c75 98c379 e5c07b 61afef c678dd 56b6c2 abb2bf
-      767676 e06c75 98c379 e5c07b 61afef c678dd 56b6c2 abb2bf)
-    theme_bg=21252b theme_fg=abb2bf theme_cursor=abb2bf
-    ;;
-  onelight)
-    ghostty_theme="Atom One Light"
-    nvim_scheme="onelight"
-    background="light"
-    bat_theme="OneHalfLight"
-    pair="onedark"
-    palette=(000000 de3e35 3f953a d2b67c 2f5af3 950095 3f953a bbbbbb
-      000000 de3e35 3f953a d2b67c 2f5af3 a00095 3f953a ffffff)
-    theme_bg=f9f9f9 theme_fg=2a2c33 theme_cursor=bbbbbb
-    ;;
-  kanagawa)
-    ghostty_theme="Kanagawa Wave"
-    nvim_scheme="kanagawa-wave"
-    background="dark"
-    bat_theme="Sublime Snazzy"
-    pair="kanagawa-lotus"
-    palette=(090618 c34043 76946a c0a36e 7e9cd8 957fb8 6a9589 c8c093
-      727169 e82424 98bb6c e6c384 7fb4ca 938aa9 7aa89f dcd7ba)
-    theme_bg=1f1f28 theme_fg=dcd7ba theme_cursor=dcd7ba
-    ;;
-  kanagawa-lotus)
-    ghostty_theme="Kanagawa Lotus"
-    nvim_scheme="kanagawa-lotus"
-    background="light"
-    bat_theme="OneHalfLight"
-    pair="kanagawa"
-    palette=(1f1f28 c84053 6f894e 77713f 4d699b b35b79 597b75 545464
-      8a8980 d7474b 6e915f 836f4a 6693bf 624c83 5e857a 43436c)
-    theme_bg=f2ecbc theme_fg=545464 theme_cursor=43436c
-    ;;
-  everforest-dark)
-    ghostty_theme="Everforest Dark Hard"
-    nvim_scheme="everforest"
-    background="dark"
-    bat_theme="gruvbox-dark"
-    pair="everforest-light"
-    palette=(7a8478 e67e80 a7c080 dbbc7f 7fbbb3 d699b6 83c092 f2efdf
-      a6b0a0 f85552 8da101 dfa000 3a94c5 df69ba 35a77c fffbef)
-    theme_bg=1e2326 theme_fg=d3c6aa theme_cursor=e69875
-    ;;
-  everforest-light)
-    ghostty_theme="Everforest Light Med"
-    nvim_scheme="everforest"
-    background="light"
-    bat_theme="gruvbox-light"
-    pair="everforest-dark"
-    palette=(7a8478 e67e80 9ab373 c1a266 7fbbb3 d699b6 83c092 b2af9f
-      a6b0a0 f85552 8da101 dfa000 3a94c5 df69ba 35a77c fffbef)
-    theme_bg=efebd4 theme_fg=5c6a72 theme_cursor=f57d26
-    ;;
-  dracula)
-    ghostty_theme="Dracula"
-    nvim_scheme="dracula"
-    background="dark"
-    bat_theme="Dracula"
-    pair=""
-    palette=(21222c ff5555 50fa7b f1fa8c bd93f9 ff79c6 8be9fd f8f8f2
-      6272a4 ff6e6e 69ff94 ffffa5 d6acff ff92df a4ffff ffffff)
-    theme_bg=282a36 theme_fg=f8f8f2 theme_cursor=f8f8f2
-    ;;
-  *) return 1 ;;
-  esac
-}
+    set -l in_section false
+    while read -l line
+        if test "$line" = "[$name]"
+            set in_section true
+            continue
+        end
+        if $in_section
+            # Stop at the next section header
+            if string match -qr '^\[' $line
+                break
+            end
+            test -z "$line" && continue
+            set -l kv (string split -m1 '=' $line)
+            switch $kv[1]
+                case ghostty
+                    set -g t_ghostty $kv[2]
+                case nvim
+                    set -g t_nvim $kv[2]
+                case background
+                    set -g t_background $kv[2]
+                case bat
+                    set -g t_bat $kv[2]
+                case pair
+                    set -g t_pair $kv[2]
+                case palette
+                    set -g t_palette (string split ' ' $kv[2])
+                case bg
+                    set -g t_bg $kv[2]
+                case fg
+                    set -g t_fg $kv[2]
+                case cursor
+                    set -g t_cursor $kv[2]
+            end
+        end
+    end <$THEMES_CONF
 
-# Derive theme list from the case branches in theme_config() so there's
-# only one place to add a new theme.
-THEMES=()
-while IFS= read -r t; do THEMES+=("$t"); done < <(
-  declare -f theme_config | sed -n 's/^  *\([a-z][a-z0-9-]*\))$/\1/p'
-)
+    test -n "$t_nvim"
+end
 
-# ── Helpers ──────────────────────────────────────────────
+# Extract all theme names from section headers in themes.conf.
+function _list_theme_names
+    string match -r '(?<=^\[)[a-z][-a-z0-9]*(?=\]$)' <$THEMES_CONF
+end
 
-current_theme() {
-  if [[ -f "$CURRENT_FILE" ]]; then
-    sed -n 's/^name=//p' "$CURRENT_FILE"
-  else
-    echo "catppuccin-mocha"
-  fi
-}
+# ── Helpers ───────────────────────────────────────────
 
-list_themes() {
-  local current
-  current=$(current_theme)
-  for t in "${THEMES[@]}"; do
-    theme_config "$t" 2>/dev/null
-    if [[ "$t" == "$current" ]]; then
-      echo "* $t ($background)"
+function _current_theme
+    if test -f $CURRENT_FILE
+        string replace 'name=' '' (string match 'name=*' <$CURRENT_FILE)
     else
-      echo "  $t ($background)"
-    fi
-  done
-}
+        echo catppuccin-mocha
+    end
+end
 
-# Blend two hex colors: _blend_hex bg fg weight(0-100)
-_blend_hex() {
-  local bg="$1" fg="$2" w="${3:-20}"
-  local r1=$((16#${bg:0:2})) g1=$((16#${bg:2:2})) b1=$((16#${bg:4:2}))
-  local r2=$((16#${fg:0:2})) g2=$((16#${fg:2:2})) b2=$((16#${fg:4:2}))
-  printf '%02x%02x%02x' \
-    $(((r1 * (100 - w) + r2 * w) / 100)) \
-    $(((g1 * (100 - w) + g2 * w) / 100)) \
-    $(((b1 * (100 - w) + b2 * w) / 100))
-}
+# Convert a 6-char hex color to the rr/gg/bb format used by OSC sequences.
+function _hex_rgb -a hex
+    echo (string sub -l 2 $hex)/(string sub -s 3 -l 2 $hex)/(string sub -s 5 -l 2 $hex)
+end
 
-# ── OSC escape sequences ────────────────────────────────
-# Change terminal colors live — works in ghostty, kitty, iTerm2, etc.
-# Inside tmux, writes directly to each client's terminal (bypasses
-# the need for allow-passthrough).
+# Blend two hex colors: _blend_hex bg fg weight(0-100).
+# Used to generate translucent diff highlight backgrounds for git-delta.
+function _blend_hex -a bg_hex fg_hex weight
+    set -l w (test -n "$weight" && echo $weight || echo 20)
+    set -l r1 (math "0x"(string sub -l 2 $bg_hex))
+    set -l g1 (math "0x"(string sub -s 3 -l 2 $bg_hex))
+    set -l b1 (math "0x"(string sub -s 5 -l 2 $bg_hex))
+    set -l r2 (math "0x"(string sub -l 2 $fg_hex))
+    set -l g2 (math "0x"(string sub -s 3 -l 2 $fg_hex))
+    set -l b2 (math "0x"(string sub -s 5 -l 2 $fg_hex))
+    printf '%02x%02x%02x' \
+        (math "($r1 * (100 - $w) + $r2 * $w) / 100") \
+        (math "($g1 * (100 - $w) + $g2 * $w) / 100") \
+        (math "($b1 * (100 - $w) + $b2 * $w) / 100")
+end
 
-_send_osc() {
-  if [[ -n "${TMUX:-}" ]]; then
-    local tty
-    while IFS= read -r tty; do
-      printf '%s' "$1" >"$tty"
-    done < <(tmux list-clients -F '#{client_tty}')
-  else
-    printf '%s' "$1" >/dev/tty
-  fi
-}
+# ── OSC escape sequences ─────────────────────────────
+# Change terminal colors live via OSC 4/10/11/12. Works in ghostty, kitty,
+# iTerm2, etc. Inside tmux, writes directly to each client's tty.
 
-_hex_rgb() { echo "${1:0:2}/${1:2:2}/${1:4:2}"; }
-
-apply_terminal_colors() {
-  [[ -t 0 ]] || return 0 # skip if not interactive
-
-  # Build all OSC sequences into a single string, then write once per
-  # tty. This reduces 19 separate writes to 1 (significant in tmux
-  # with multiple clients).
-  local seq="" i
-  for i in {0..15}; do
-    seq+=$(printf '\033]4;%d;rgb:%s\033\\' "$i" "$(_hex_rgb "${palette[$i]}")")
-  done
-  seq+=$(printf '\033]10;rgb:%s\033\\' "$(_hex_rgb "$theme_fg")")
-  seq+=$(printf '\033]11;rgb:%s\033\\' "$(_hex_rgb "$theme_bg")")
-  seq+=$(printf '\033]12;rgb:%s\033\\' "$(_hex_rgb "$theme_cursor")")
-
-  # Save for shell startup replay (new terminals apply this on init)
-  printf '%s' "$seq" >"$THEME_DIR/osc-palette"
-
-  _send_osc "$seq"
-}
-
-write_current() {
-  local name="$1" bg="$2" bat="$3" nvim="$4"
-  mkdir -p "$THEME_DIR"
-  cat >"$CURRENT_FILE" <<EOF
-name=$name
-variant=$bg
-nvim=$nvim
-bat_theme=$bat
-EOF
-
-  local dark_or_light="true"
-  [[ "$bg" == "light" ]] && dark_or_light="false"
-
-  local red="${palette[1]}" green="${palette[2]}" dim="${palette[8]}"
-  local minus_bg minus_emph plus_bg plus_emph
-  minus_bg=$(_blend_hex "$theme_bg" "$red" 15)
-  minus_emph=$(_blend_hex "$theme_bg" "$red" 30)
-  plus_bg=$(_blend_hex "$theme_bg" "$green" 15)
-  plus_emph=$(_blend_hex "$theme_bg" "$green" 30)
-
-  cat >"${XDG_CONFIG_HOME:-$HOME/.config}/git/delta.gitconfig" <<EOF
-[delta]
-	syntax-theme = $bat
-	dark = $dark_or_light
-	minus-style = syntax "#$minus_bg"
-	minus-emph-style = syntax "#$minus_emph"
-	minus-empty-line-marker-style = syntax "#$minus_bg"
-	plus-style = syntax "#$plus_bg"
-	plus-emph-style = syntax "#$plus_emph"
-	plus-empty-line-marker-style = syntax "#$plus_bg"
-	line-numbers-minus-style = "#$red"
-	line-numbers-plus-style = "#$green"
-	line-numbers-zero-style = "#$dim"
-EOF
-}
-
-# ── Reloaders ────────────────────────────────────────────
-
-update_ghostty() {
-  local ghostty_theme="$1"
-  [[ -f "$GHOSTTY_CONFIG" ]] || return 0
-  local tmp
-  tmp=$(mktemp)
-  sed "s/^theme = .*/theme = $ghostty_theme/" "$GHOSTTY_CONFIG" >"$tmp"
-  mv "$tmp" "$GHOSTTY_CONFIG"
-}
-
-reload_neovim() {
-  local scheme="$1" bg="$2"
-  local dir
-  for dir in "${XDG_RUNTIME_DIR:-}" "${TMPDIR:-}" "/tmp"; do
-    [[ -n "$dir" && -d "$dir" ]] || continue
-    for sock in "$dir"/nvim.*.0; do
-      [[ -S "$sock" ]] || continue
-      nvim --server "$sock" --remote-send \
-        "<Cmd>set background=$bg<CR><Cmd>colorscheme $scheme<CR>" 2>/dev/null || true
-    done
-  done
-}
-
-reload_tmux() {
-  command -v tmux &>/dev/null && tmux list-sessions &>/dev/null 2>&1 || return 0
-
-  # Only dark/light-dependent styles need updating here. Window formatting
-  # is handled by catppuccin/tmux using ANSI colour references that
-  # auto-adapt when the terminal palette changes via OSC.
-  local pill_fg="colour0" border_dim="colour8"
-  if [[ "$background" == "light" ]]; then
-    pill_fg="colour7"
-    border_dim="colour7"
-  fi
-
-  tmux set -g pane-border-style "fg=$border_dim" 2>/dev/null || true
-  tmux set -g pane-active-border-style "fg=$border_dim" 2>/dev/null || true
-  tmux set -g mode-style "bg=colour4,fg=$pill_fg" 2>/dev/null || true
-  tmux set -g copy-mode-match-style "bg=colour3,fg=$pill_fg" 2>/dev/null || true
-  tmux set -g copy-mode-current-match-style "bg=colour6,fg=$pill_fg" 2>/dev/null || true
-  tmux set -g copy-mode-mark-style "bg=colour5,fg=$pill_fg" 2>/dev/null || true
-
-  tmux refresh-client -S 2>/dev/null || true
-}
-
-# ── Apply ────────────────────────────────────────────────
-
-apply_theme() {
-  local name="$1"
-
-  if ! theme_config "$name"; then
-    echo "Unknown theme: $name"
-    echo ""
-    echo "Available themes:"
-    list_themes
-    return 1
-  fi
-
-  apply_terminal_colors
-  write_current "$name" "$background" "$bat_theme" "$nvim_scheme"
-  update_ghostty "$ghostty_theme"
-
-  reload_neovim "$nvim_scheme" "$background"
-  reload_tmux
-
-  echo "Switched to: $name ($background)"
-}
-
-# ── Main ─────────────────────────────────────────────────
-
-case "${1:-}" in
---list | -l)
-  list_themes
-  ;;
---toggle | -t)
-  current=$(current_theme)
-  if theme_config "$current"; then
-    if [[ -z "$pair" ]]; then
-      echo "No alternate variant for $current"
+function _send_osc -a seq
+    if test -n "$TMUX"
+        for tty in (tmux list-clients -F '#{client_tty}')
+            printf '%s' $seq >$tty
+        end
     else
-      apply_theme "$pair"
-    fi
-  fi
-  ;;
---completions)
-  for t in "${THEMES[@]}"; do
-    theme_config "$t" 2>/dev/null
-    echo "$t:$background"
-  done
-  ;;
---help | -h)
-  echo "Usage: theme [name|--list|--toggle]"
-  echo ""
-  echo "  theme           Show current theme and list available"
-  echo "  theme <name>    Switch to theme"
-  echo "  theme --list    List available themes"
-  echo "  theme --toggle  Toggle between dark/light variant"
-  echo ""
-  echo "Themes:"
-  list_themes
-  ;;
-"")
-  echo "Current: $(current_theme)"
-  echo ""
-  list_themes
-  ;;
-*)
-  apply_theme "$1"
-  ;;
-esac
+        printf '%s' $seq >/dev/tty
+    end
+end
+
+function _apply_terminal_colors
+    test -t 0 || return 0
+
+    # Build all OSC sequences into a single string to minimize writes
+    set -l seq ""
+    for i in (seq 0 15)
+        set -l idx (math $i + 1)
+        set seq $seq(printf '\033]4;%d;rgb:%s\033\\' $i (_hex_rgb $t_palette[$idx]))
+    end
+    set seq $seq(printf '\033]10;rgb:%s\033\\' (_hex_rgb $t_fg))
+    set seq $seq(printf '\033]11;rgb:%s\033\\' (_hex_rgb $t_bg))
+    set seq $seq(printf '\033]12;rgb:%s\033\\' (_hex_rgb $t_cursor))
+
+    # Cache for replay on new shell sessions (see 06-theme.fish)
+    mkdir -p $THEME_DIR
+    printf '%s' $seq >$THEME_DIR/osc-palette
+
+    _send_osc $seq
+end
+
+# ── Persistence ───────────────────────────────────────
+
+# Write theme state and generate git-delta config with blended diff colors.
+function _write_current -a name
+    mkdir -p $THEME_DIR
+    printf 'name=%s\nvariant=%s\nnvim=%s\nbat_theme=%s\n' \
+        $name $t_background $t_nvim $t_bat >$CURRENT_FILE
+
+    set -l dark_or_light true
+    test $t_background = light && set dark_or_light false
+
+    # Blend palette colors into the background for subtle diff highlights
+    set -l red $t_palette[2]
+    set -l green $t_palette[3]
+    set -l dim $t_palette[9]
+    set -l minus_bg (_blend_hex $t_bg $red 15)
+    set -l minus_emph (_blend_hex $t_bg $red 30)
+    set -l plus_bg (_blend_hex $t_bg $green 15)
+    set -l plus_emph (_blend_hex $t_bg $green 30)
+
+    set -l delta_conf (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/git/delta.gitconfig
+    printf '[delta]
+\tsyntax-theme = %s
+\tdark = %s
+\tminus-style = syntax "#%s"
+\tminus-emph-style = syntax "#%s"
+\tminus-empty-line-marker-style = syntax "#%s"
+\tplus-style = syntax "#%s"
+\tplus-emph-style = syntax "#%s"
+\tplus-empty-line-marker-style = syntax "#%s"
+\tline-numbers-minus-style = "#%s"
+\tline-numbers-plus-style = "#%s"
+\tline-numbers-zero-style = "#%s"
+' $t_bat $dark_or_light $minus_bg $minus_emph $minus_bg $plus_bg $plus_emph $plus_bg $red $green $dim >$delta_conf
+end
+
+# ── Reloaders ─────────────────────────────────────────
+
+function _update_ghostty
+    test -f $GHOSTTY_CONFIG || return 0
+    set -l tmp (mktemp)
+    sed "s/^theme = .*/theme = $t_ghostty/" $GHOSTTY_CONFIG >$tmp
+    mv $tmp $GHOSTTY_CONFIG
+end
+
+# Send colorscheme command to all running neovim instances via their sockets.
+function _reload_neovim
+    for dir in $XDG_RUNTIME_DIR $TMPDIR /tmp
+        test -n "$dir" -a -d "$dir" || continue
+        for sock in $dir/nvim.*.0
+            test -S $sock || continue
+            nvim --server $sock --remote-send \
+                "<Cmd>set background=$t_background<CR><Cmd>colorscheme $t_nvim<CR>" 2>/dev/null || true
+        end
+    end
+end
+
+# Update tmux styles that depend on dark/light variant. Window formatting
+# uses ANSI colour references that auto-adapt when the palette changes.
+function _reload_tmux
+    command -q tmux && tmux list-sessions &>/dev/null || return 0
+
+    set -l pill_fg colour0
+    set -l border_dim colour8
+    if test $t_background = light
+        set pill_fg colour7
+        set border_dim colour7
+    end
+
+    tmux set -g pane-border-style "fg=$border_dim" 2>/dev/null || true
+    tmux set -g pane-active-border-style "fg=$border_dim" 2>/dev/null || true
+    tmux set -g mode-style "bg=colour4,fg=$pill_fg" 2>/dev/null || true
+    tmux set -g copy-mode-match-style "bg=colour3,fg=$pill_fg" 2>/dev/null || true
+    tmux set -g copy-mode-current-match-style "bg=colour6,fg=$pill_fg" 2>/dev/null || true
+    tmux set -g copy-mode-mark-style "bg=colour5,fg=$pill_fg" 2>/dev/null || true
+    tmux refresh-client -S 2>/dev/null || true
+end
+
+# ── Apply ─────────────────────────────────────────────
+
+function _apply_theme -a name
+    if not _load_theme $name
+        echo "Unknown theme: $name"
+        echo ""
+        echo "Available themes:"
+        _list_themes
+        return 1
+    end
+
+    _apply_terminal_colors
+    _write_current $name
+    _update_ghostty
+    _reload_neovim
+    _reload_tmux
+
+    echo "Switched to: $name ($t_background)"
+end
+
+function _list_themes
+    set -l current (_current_theme)
+    for t in (_list_theme_names)
+        _load_theme $t
+        if test $t = $current
+            echo "* $t ($t_background)"
+        else
+            echo "  $t ($t_background)"
+        end
+    end
+end
+
+# ── Main ──────────────────────────────────────────────
+
+switch "$argv[1]"
+    case --list -l
+        _list_themes
+    case --toggle -t
+        set -l current (_current_theme)
+        if _load_theme $current
+            if test -z "$t_pair"
+                echo "No alternate variant for $current"
+            else
+                _apply_theme $t_pair
+            end
+        end
+    case --completions
+        for t in (_list_theme_names)
+            _load_theme $t
+            echo "$t:$t_background"
+        end
+    case --help -h
+        echo "Usage: theme [name|--list|--toggle]"
+        echo ""
+        echo "  theme           Show current theme and list available"
+        echo "  theme <name>    Switch to theme"
+        echo "  theme --list    List available themes"
+        echo "  theme --toggle  Toggle between dark/light variant"
+        echo ""
+        echo "Themes:"
+        _list_themes
+    case ''
+        echo "Current: "(_current_theme)
+        echo ""
+        _list_themes
+    case '*'
+        _apply_theme $argv[1]
+end
