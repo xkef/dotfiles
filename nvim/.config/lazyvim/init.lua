@@ -1,6 +1,16 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
+-- Global debug helpers backed by snacks.debug (via folke/dot).
+-- Usage: dd(some_table), bt() for backtrace.
+_G.dd = function(...)
+  Snacks.debug.inspect(...)
+end
+_G.bt = function()
+  Snacks.debug.backtrace()
+end
+vim.print = _G.dd
+
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.uv.fs_stat(lazypath) then
   vim.fn.system({
