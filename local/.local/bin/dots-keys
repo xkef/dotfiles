@@ -74,7 +74,7 @@ END {
 ' $sources)
 
 if test "$argv[1]" = --raw
-    echo $output
+    printf '%s\n' $output
 else
-    echo $output | glow -p -w (tput cols) -
+    printf '%s\n' $output | glow -p -w (tput cols) -
 end
