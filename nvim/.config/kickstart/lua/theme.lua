@@ -71,6 +71,7 @@ local function derive_colorscheme(ghostty_name)
     end
   end
 
+  pcall(vim.cmd.colorscheme, "default")
   return "default"
 end
 
