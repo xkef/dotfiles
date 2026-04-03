@@ -47,6 +47,35 @@ function _parse_ghostty_theme -a name
     end <$theme_file
 end
 
+# ── Supported themes ──────────────────────────────────
+# Only Ghostty themes with a matching nvim colorscheme plugin are offered.
+# Update this when adding/removing nvim colorscheme plugins.
+
+function _is_supported -a name
+    switch $name
+        case "Catppuccin *"
+            return 0
+        case "TokyoNight" "TokyoNight *"
+            return 0
+        case "Rose Pine" "Rose Pine *"
+            return 0
+        case "Gruvbox Dark" "Gruvbox Dark Hard" "Gruvbox Light" "Gruvbox Light Hard"
+            return 0
+        case "Nord" "Nord Light"
+            return 0
+        case "Atom One Dark" "Atom One Light"
+            return 0
+        case "Kanagawa Wave" "Kanagawa Lotus" "Kanagawa Dragon"
+            return 0
+        case "Everforest *"
+            return 0
+        case "Dracula"
+            return 0
+        case '*'
+            return 1
+    end
+end
+
 # ── Helpers ───────────────────────────────────────────
 
 function _current_theme
@@ -223,9 +252,13 @@ end
 # ── Apply ─────────────────────────────────────────────
 
 function _apply_theme -a name
-    if not _parse_ghostty_theme $name
-        echo "Unknown theme: $name"
+    if not _is_supported $name
+        echo "Unsupported theme: $name (no nvim colorscheme plugin)"
         echo "Run 'theme --list' to see available themes."
+        return 1
+    end
+    if not _parse_ghostty_theme $name
+        echo "Unknown Ghostty theme: $name"
         return 1
     end
 
@@ -246,6 +279,7 @@ function _list_themes
         test -d "$dir" || continue
         for f in $dir/*
             set -l name (path basename $f)
+            _is_supported $name || continue
             if test "$name" = "$current"
                 echo "* $name"
             else
@@ -273,7 +307,8 @@ switch "$argv[1]"
         for dir in (_ghostty_theme_dirs)
             test -d "$dir" || continue
             for f in $dir/*
-                path basename $f
+                set -l name (path basename $f)
+                _is_supported $name && echo $name
             end
             return 0
         end
