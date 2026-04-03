@@ -1,6 +1,3 @@
-[settings]
-fetch_remote_versions_cache = "7d"
-
 [tools]
 stylua = "2"
 shfmt = "3"

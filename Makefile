@@ -59,9 +59,7 @@ lint: ## Lint shell scripts, neovim config, and markdown
 macos-defaults: ## Apply macOS system defaults
 	./macos-defaults
 
-uninstall: ## Remove all symlinks from ~ (inverse of stow)
-	$(call stow_each,-D)
-	@printf '\n  All packages unstowed.\n\n'
+uninstall: unstow ## Remove all symlinks from ~ (alias for unstow)
 
 clean: ## Remove caches and generated files
 	find . -name .DS_Store -delete 2>/dev/null || true
