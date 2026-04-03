@@ -151,6 +151,10 @@
     "branch": "master",
     "commit": "fbdb48c2ed45f4a8293d0d483f7730d24467ccb6"
   },
+  "nvim-highlight-colors": {
+    "branch": "main",
+    "commit": "e2cb22089cc2358b2b995c09578224f142de6039"
+  },
   "nvim-jdtls": {
     "branch": "master",
     "commit": "77ccaeb422f8c81b647605da5ddb4a7f725cda90"

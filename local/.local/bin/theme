@@ -2,74 +2,49 @@
 # shellcheck disable=all
 # theme — unified theme switcher for ghostty, neovim, tmux, and shell tools.
 #
-# Reads theme definitions from ~/.local/share/theme/themes.conf and applies
+# Reads theme definitions from ~/.local/share/theme/themes.json and applies
 # colors across all tools: terminal (via OSC), ghostty config, neovim remote,
 # tmux styles, bat theme, and git-delta diff colors.
 #
 # Usage: theme [name|--list|--toggle]
 
 set -g THEME_DIR (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/theme
-set -g THEMES_CONF (set -q XDG_DATA_HOME && echo $XDG_DATA_HOME || echo $HOME/.local/share)/theme/themes.conf
+set -g THEMES_JSON (set -q XDG_DATA_HOME && echo $XDG_DATA_HOME || echo $HOME/.local/share)/theme/themes.json
 set -g GHOSTTY_CONFIG (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/ghostty/config
 set -g CURRENT_FILE $THEME_DIR/current
 
 # ── Theme loader ──────────────────────────────────────
-# Parses the INI-style themes.conf and populates t_* globals for the
-# requested theme. Returns 1 if the theme name was not found.
+# Loads a theme by name from themes.json into t_* globals.
+# Returns 1 if the theme name was not found.
 
 function _load_theme -a name
-    set -g t_ghostty ""
-    set -g t_nvim ""
-    set -g t_background ""
-    set -g t_bat ""
-    set -g t_pair ""
-    set -g t_palette
-    set -g t_bg ""
-    set -g t_fg ""
-    set -g t_cursor ""
+    set -l vals (jq -r --arg n "$name" '
+        .[$n] // empty |
+        .ghostty,
+        .nvim,
+        .background,
+        .bat,
+        (.pair // ""),
+        (.palette | map(ltrimstr("#")) | join(" ")),
+        (.bg | ltrimstr("#")),
+        (.fg | ltrimstr("#")),
+        (.cursor | ltrimstr("#"))
+    ' $THEMES_JSON) || return 1
+    test (count $vals) -ge 9 || return 1
 
-    set -l in_section false
-    while read -l line
-        if test "$line" = "[$name]"
-            set in_section true
-            continue
-        end
-        if $in_section
-            # Stop at the next section header
-            if string match -qr '^\[' $line
-                break
-            end
-            test -z "$line" && continue
-            set -l kv (string split -m1 '=' $line)
-            switch $kv[1]
-                case ghostty
-                    set -g t_ghostty $kv[2]
-                case nvim
-                    set -g t_nvim $kv[2]
-                case background
-                    set -g t_background $kv[2]
-                case bat
-                    set -g t_bat $kv[2]
-                case pair
-                    set -g t_pair $kv[2]
-                case palette
-                    set -g t_palette (string split ' ' $kv[2])
-                case bg
-                    set -g t_bg $kv[2]
-                case fg
-                    set -g t_fg $kv[2]
-                case cursor
-                    set -g t_cursor $kv[2]
-            end
-        end
-    end <$THEMES_CONF
-
-    test -n "$t_nvim"
+    set -g t_ghostty $vals[1]
+    set -g t_nvim $vals[2]
+    set -g t_background $vals[3]
+    set -g t_bat $vals[4]
+    set -g t_pair $vals[5]
+    set -g t_palette (string split ' ' $vals[6])
+    set -g t_bg $vals[7]
+    set -g t_fg $vals[8]
+    set -g t_cursor $vals[9]
 end
 
-# Extract all theme names from section headers in themes.conf.
 function _list_theme_names
-    string match -r '(?<=^\[)[a-z][-a-z0-9]*(?=\]$)' <$THEMES_CONF
+    jq -r 'keys[]' $THEMES_JSON
 end
 
 # ── Helpers ───────────────────────────────────────────
@@ -98,9 +73,9 @@ function _blend_hex -a bg_hex fg_hex weight
     set -l g2 (math "0x"(string sub -s 3 -l 2 $fg_hex))
     set -l b2 (math "0x"(string sub -s 5 -l 2 $fg_hex))
     printf '%02x%02x%02x' \
-        (math "($r1 * (100 - $w) + $r2 * $w) / 100") \
-        (math "($g1 * (100 - $w) + $g2 * $w) / 100") \
-        (math "($b1 * (100 - $w) + $b2 * $w) / 100")
+        (math "round(($r1 * (100 - $w) + $r2 * $w) / 100)") \
+        (math "round(($g1 * (100 - $w) + $g2 * $w) / 100)") \
+        (math "round(($b1 * (100 - $w) + $b2 * $w) / 100)")
 end
 
 # ── OSC escape sequences ─────────────────────────────
@@ -237,12 +212,12 @@ end
 
 function _list_themes
     set -l current (_current_theme)
-    for t in (_list_theme_names)
-        _load_theme $t
-        if test $t = $current
-            echo "* $t ($t_background)"
+    for line in (jq -r 'to_entries[] | "\(.key)=\(.value.background)"' $THEMES_JSON)
+        set -l kv (string split -m1 '=' $line)
+        if test $kv[1] = $current
+            echo "* $kv[1] ($kv[2])"
         else
-            echo "  $t ($t_background)"
+            echo "  $kv[1] ($kv[2])"
         end
     end
 end
@@ -262,10 +237,7 @@ switch "$argv[1]"
             end
         end
     case --completions
-        for t in (_list_theme_names)
-            _load_theme $t
-            echo "$t:$t_background"
-        end
+        jq -r 'to_entries[] | "\(.key):\(.value.background)"' $THEMES_JSON
     case --help -h
         echo "Usage: theme [name|--list|--toggle]"
         echo ""
