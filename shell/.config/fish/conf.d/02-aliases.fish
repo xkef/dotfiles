@@ -3,9 +3,9 @@
 # Use `abbr` for commands you type; `alias` for transparent replacements.
 
 # Quick edit
-alias v nvim
-alias vi nvim
-alias vim nvim
+abbr -a v nvim
+abbr -a vi nvim
+abbr -a vim nvim
 
 # Tmux
 abbr -a t tmux
@@ -21,12 +21,14 @@ abbr -a --position anywhere --set-cursor -- -h "-h 2>&1 | bat --plain --language
 
 # Misc
 abbr -a reload 'exec fish'
-alias cls clear
+abbr -a cls clear
 alias mkdir 'mkdir -pv'
 alias grep 'grep --color=auto'
-alias help man
+abbr -a help man
+abbr -a extract 'ouch decompress'
+abbr -a compress 'ouch compress'
 
-# ── Modern replacements ─────────────────────────────
+# ── Modern replacements (transparent — alias, not abbr) ──
 if command -q eza
     alias eza 'eza --group-directories-first'
     alias ls eza
@@ -60,9 +62,4 @@ else
 end
 if command -q procs
     alias ps procs
-end
-
-if command -q ouch
-    alias extract 'ouch decompress'
-    alias compress 'ouch compress'
 end
