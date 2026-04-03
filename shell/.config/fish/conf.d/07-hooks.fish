@@ -1,5 +1,4 @@
 # ── Auto-ls on cd ────────────────────────────────────
-# Matches zsh's chpwd_functions += ( auto-ls ) in 02-options.zsh
 function __auto_ls --on-variable PWD
     ls
 end

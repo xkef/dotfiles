@@ -1,6 +1,4 @@
 # ── FZF ──────────────────────────────────────────────
-# Fish equivalents of the zsh fzf widgets in 06-fzf.zsh.
-# @key tags omitted — these mirror the zsh bindings shown in `keys`.
 command -q fzf || return
 
 if command -q fd
@@ -64,6 +62,9 @@ if command -q atuin
     set -gx ATUIN_TMUX_POPUP false
     atuin init fish --disable-up-arrow | source
 end
+
+# Replace default Tab with fzf-powered completion
+bind \t fzf-completion
 
 # Custom widgets
 bind \ez __fzf_zoxide # Alt-Z: zoxide jump

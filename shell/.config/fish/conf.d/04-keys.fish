@@ -38,5 +38,3 @@ bind \e. history-token-search-backward
 bind \e, history-token-search-forward
 # @key shell :: Esc Esc :: Prepend sudo
 bind \e\e __fish_toggle_sudo
-
-bind \t fzf-completion
