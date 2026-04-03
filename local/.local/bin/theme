@@ -3,11 +3,10 @@
 # theme — unified theme switcher for ghostty, neovim, tmux, and shell tools.
 #
 # Accepts any Ghostty theme name. Palette colors are read from Ghostty's
-# built-in theme files. Dark/light is computed from background luminance.
-# bat and delta use terminal ANSI colors; nvim derives its colorscheme
-# from the Ghostty theme name via convention.
+# built-in theme files. bat and delta use terminal ANSI colors; nvim derives
+# its colorscheme from the Ghostty theme name via convention.
 #
-# Usage: theme [name|--list|--toggle]
+# Usage: theme [name|--list]
 
 set -g GHOSTTY_CONFIG (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/ghostty/config
 
@@ -91,15 +90,6 @@ function _current_theme
     end
 end
 
-# Compute relative luminance and return "dark" or "light".
-function _detect_variant -a hex
-    set -l r (math "0x"(string sub -l 2 $hex))
-    set -l g (math "0x"(string sub -s 3 -l 2 $hex))
-    set -l b (math "0x"(string sub -s 5 -l 2 $hex))
-    set -l lum (math "0.299 * $r + 0.587 * $g + 0.114 * $b")
-    test (math "floor($lum)") -gt 128 && echo light || echo dark
-end
-
 # Blend two hex colors: _blend_hex bg fg weight(0-100).
 function _blend_hex -a bg_hex fg_hex weight
     set -l w (test -n "$weight" && echo $weight || echo 20)
@@ -118,9 +108,6 @@ end
 # ── Delta config ──────────────────────────────────────
 
 function _write_delta_config
-    set -l dark_or_light true
-    test $t_background = light && set dark_or_light false
-
     set -l red $t_palette[2]
     set -l green $t_palette[3]
     set -l dim $t_palette[9]
@@ -132,7 +119,6 @@ function _write_delta_config
     set -l delta_conf (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/git/delta.gitconfig
     printf '[delta]
 \tsyntax-theme = ansi
-\tdark = %s
 \tminus-style = syntax "#%s"
 \tminus-emph-style = syntax "#%s"
 \tminus-empty-line-marker-style = syntax "#%s"
@@ -142,7 +128,7 @@ function _write_delta_config
 \tline-numbers-minus-style = "#%s"
 \tline-numbers-plus-style = "#%s"
 \tline-numbers-zero-style = "#%s"
-' $dark_or_light $minus_bg $minus_emph $minus_bg $plus_bg $plus_emph $plus_bg $red $green $dim >$delta_conf
+' $minus_bg $minus_emph $minus_bg $plus_bg $plus_emph $plus_bg $red $green $dim >$delta_conf
 end
 
 # ── Terminal colors ───────────────────────────────────
@@ -194,59 +180,7 @@ end
 
 function _reload_tmux
     command -q tmux && tmux list-sessions &>/dev/null || return 0
-
-    set -l pill_fg colour0
-    set -l border_dim colour8
-    if test $t_background = light
-        set pill_fg colour7
-        set border_dim colour7
-    end
-
-    tmux set -g pane-border-style "fg=$border_dim" 2>/dev/null || true
-    tmux set -g pane-active-border-style "fg=$border_dim" 2>/dev/null || true
-    tmux set -g mode-style "bg=colour4,fg=$pill_fg" 2>/dev/null || true
-    tmux set -g copy-mode-match-style "bg=colour3,fg=$pill_fg" 2>/dev/null || true
-    tmux set -g copy-mode-current-match-style "bg=colour6,fg=$pill_fg" 2>/dev/null || true
-    tmux set -g copy-mode-mark-style "bg=colour5,fg=$pill_fg" 2>/dev/null || true
     tmux refresh-client -S 2>/dev/null || true
-end
-
-# ── Toggle ────────────────────────────────────────────
-# Find the dark/light counterpart of a theme by name heuristics.
-
-function _find_pair -a name
-    set -l candidate
-
-    # Catppuccin: dark flavours ↔ latte
-    switch $name
-        case "Catppuccin Latte"
-            set candidate "Catppuccin Mocha"
-        case "Catppuccin *"
-            set candidate "Catppuccin Latte"
-    end
-
-    # Generic Dark ↔ Light swap
-    if test -z "$candidate"
-        if string match -q "* Light*" -- $name
-            set candidate (string replace " Light" " Dark" $name)
-        else if string match -q "* Dark*" -- $name
-            set candidate (string replace " Dark" " Light" $name)
-        else if string match -q "* Day*" -- $name
-            set candidate (string replace " Day" "" $name)
-        else if string match -q "* Dawn" -- $name
-            set candidate (string replace " Dawn" " Moon" $name)
-        else if string match -q "* Moon" -- $name
-            set candidate (string replace " Moon" " Dawn" $name)
-        end
-    end
-
-    # Verify the candidate exists as a Ghostty theme
-    if test -n "$candidate"
-        for dir in (_ghostty_theme_dirs)
-            test -f "$dir/$candidate" && echo $candidate && return 0
-        end
-    end
-    return 1
 end
 
 # ── Apply ─────────────────────────────────────────────
@@ -262,15 +196,13 @@ function _apply_theme -a name
         return 1
     end
 
-    set -g t_background (_detect_variant $t_bg)
-
     _update_ghostty $name
     _apply_terminal_colors
     _write_delta_config
     _reload_neovim
     _reload_tmux
 
-    echo "Switched to: $name ($t_background)"
+    echo "Switched to: $name"
 end
 
 function _list_themes
@@ -295,14 +227,6 @@ end
 switch "$argv[1]"
     case --list -l
         _list_themes
-    case --toggle -t
-        set -l current (_current_theme)
-        set -l pair (_find_pair $current)
-        if test -n "$pair"
-            _apply_theme $pair
-        else
-            echo "No alternate variant found for: $current"
-        end
     case --completions
         for dir in (_ghostty_theme_dirs)
             test -d "$dir" || continue
@@ -313,12 +237,11 @@ switch "$argv[1]"
             return 0
         end
     case --help -h
-        echo "Usage: theme [name|--list|--toggle]"
+        echo "Usage: theme [name|--list]"
         echo ""
         echo "  theme              Show current theme"
         echo "  theme <name>       Switch to any Ghostty theme"
         echo "  theme --list       List available themes"
-        echo "  theme --toggle     Toggle between dark/light variant"
     case ''
         echo "Current: "(_current_theme)
     case '*'

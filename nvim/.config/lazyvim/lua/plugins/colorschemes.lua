@@ -1,13 +1,9 @@
 return {
-  -- flavour = "auto": reads vim.o.background (set by theme.lua before colorscheme
-  -- load) so dark→mocha and light→latte without needing separate colorscheme names.
   {
     "catppuccin/nvim",
     name = "catppuccin",
     lazy = true,
     opts = {
-      flavour = "auto",
-      background = { light = "latte", dark = "mocha" },
       show_end_of_buffer = false,
       dim_inactive = { enabled = true, shade = "dark", percentage = 0.15 },
       styles = {
@@ -41,15 +37,11 @@ return {
     },
   },
 
-  -- style = "night" matches the theme script's nvim_scheme="tokyonight-night".
-  -- light_style = "day": when vim.o.background = "light", calling
-  -- vim.cmd.colorscheme("tokyonight") picks "day" automatically.
   {
     "folke/tokyonight.nvim",
     lazy = true,
     opts = {
       style = "night",
-      light_style = "day",
       dim_inactive = true,
       lualine_bold = true,
       styles = {
@@ -61,15 +53,11 @@ return {
     },
   },
 
-  -- variant = "auto": reads vim.o.background; dark_variant picks main vs moon
-  -- when the generic "rose-pine" name is used. Explicit names (rose-pine-moon,
-  -- rose-pine-dawn) override variant regardless of this setting.
   {
     "rose-pine/neovim",
     name = "rose-pine",
     lazy = true,
     opts = {
-      variant = "auto",
       dark_variant = "moon",
       dim_inactive_windows = true,
       styles = {
@@ -80,7 +68,6 @@ return {
     },
   },
 
-  -- contrast = "hard"; dark/light is driven by vim.o.background automatically.
   {
     "ellisonleao/gruvbox.nvim",
     lazy = true,
@@ -116,7 +103,6 @@ return {
     },
   },
 
-  -- background = { dark = "wave", light = "lotus" }: follows vim.o.background.
   {
     "rebelot/kanagawa.nvim",
     lazy = true,
