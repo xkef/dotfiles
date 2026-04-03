@@ -93,7 +93,7 @@
     "cursor_shape": "block",
     "blinking": "off",
     "shell": {
-      "program": "zsh"
+      "program": "fish"
     }
   },
   "project_panel": {
@@ -176,13 +176,14 @@
               "org.junit.Assert.*",
               "org.junit.jupiter.api.Assertions.*",
               "org.mockito.Mockito.*",
-              "org.mockito.ArgumentMatchers.*"
+              "java.util.Objects.requireNonNull",
+              "java.util.Objects.requireNonNullElse"
             ]
           },
           "sources": {
             "organizeImports": {
-              "starThreshold": 5,
-              "staticStarThreshold": 3
+              "starThreshold": 9999,
+              "staticStarThreshold": 9999
             }
           },
           "codeGeneration": {
