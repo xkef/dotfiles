@@ -2,68 +2,76 @@
 # shellcheck disable=all
 # theme — unified theme switcher for ghostty, neovim, tmux, and shell tools.
 #
-# Reads theme definitions from ~/.local/share/theme/themes.json and applies
-# colors across all tools: terminal (via OSC), ghostty config, neovim remote,
-# tmux styles, bat theme, and git-delta diff colors.
+# Accepts any Ghostty theme name. Palette colors are read from Ghostty's
+# built-in theme files. Dark/light is computed from background luminance.
+# bat and delta use terminal ANSI colors; nvim derives its colorscheme
+# from the Ghostty theme name via convention.
 #
 # Usage: theme [name|--list|--toggle]
 
-set -g THEME_DIR (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/theme
-set -g THEMES_JSON (set -q XDG_DATA_HOME && echo $XDG_DATA_HOME || echo $HOME/.local/share)/theme/themes.json
 set -g GHOSTTY_CONFIG (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/ghostty/config
-set -g CURRENT_FILE $THEME_DIR/current
 
-# ── Theme loader ──────────────────────────────────────
-# Loads a theme by name from themes.json into t_* globals.
-# Returns 1 if the theme name was not found.
+# ── Ghostty theme parser ─────────────────────────────
+# Parses a Ghostty theme file and sets t_palette, t_bg, t_fg, t_cursor.
 
-function _load_theme -a name
-    set -l vals (jq -r --arg n "$name" '
-        .[$n] // empty |
-        .ghostty,
-        .nvim,
-        .background,
-        .bat,
-        (.pair // ""),
-        (.palette | map(ltrimstr("#")) | join(" ")),
-        (.bg | ltrimstr("#")),
-        (.fg | ltrimstr("#")),
-        (.cursor | ltrimstr("#"))
-    ' $THEMES_JSON) || return 1
-    test (count $vals) -ge 9 || return 1
-
-    set -g t_ghostty $vals[1]
-    set -g t_nvim $vals[2]
-    set -g t_background $vals[3]
-    set -g t_bat $vals[4]
-    set -g t_pair $vals[5]
-    set -g t_palette (string split ' ' $vals[6])
-    set -g t_bg $vals[7]
-    set -g t_fg $vals[8]
-    set -g t_cursor $vals[9]
+function _ghostty_theme_dirs
+    echo (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/ghostty/themes
+    test -n "$GHOSTTY_RESOURCES_DIR" && echo $GHOSTTY_RESOURCES_DIR/themes
+    echo /Applications/Ghostty.app/Contents/Resources/ghostty/themes
 end
 
-function _list_theme_names
-    jq -r 'keys[]' $THEMES_JSON
+function _parse_ghostty_theme -a name
+    set -l theme_file
+    for dir in (_ghostty_theme_dirs)
+        test -f "$dir/$name" && set theme_file "$dir/$name" && break
+    end
+    test -n "$theme_file" || return 1
+
+    set -g t_palette (seq 16 | while read; echo 000000; end)
+    while read -l line
+        set -l m (string match -r '(\d+)=#([0-9a-fA-F]{6})' -- $line)
+        if test (count $m) -ge 3; and string match -q 'palette*' -- $line
+            set t_palette[(math $m[2] + 1)] (string lower $m[3])
+        else
+            set m (string match -r '^(\w[\w-]*)\s*=\s*#?([0-9a-fA-F]{6})' -- $line)
+            test (count $m) -ge 3 || continue
+            switch $m[2]
+                case background
+                    set -g t_bg (string lower $m[3])
+                case foreground
+                    set -g t_fg (string lower $m[3])
+                case cursor-color
+                    set -g t_cursor (string lower $m[3])
+            end
+        end
+    end <$theme_file
 end
 
 # ── Helpers ───────────────────────────────────────────
 
 function _current_theme
-    if test -f $CURRENT_FILE
-        string replace 'name=' '' (string match 'name=*' <$CURRENT_FILE)
+    if not test -f $GHOSTTY_CONFIG
+        echo "Catppuccin Mocha"
+        return
+    end
+    set -l m (string match -r '^\s*theme\s*=\s*(.+)' <$GHOSTTY_CONFIG)
+    if test (count $m) -ge 2
+        string trim $m[2]
     else
-        echo catppuccin-mocha
+        echo "Catppuccin Mocha"
     end
 end
 
-# Convert a 6-char hex color to the rr/gg/bb format used by OSC sequences.
-function _hex_rgb -a hex
-    echo (string sub -l 2 $hex)/(string sub -s 3 -l 2 $hex)/(string sub -s 5 -l 2 $hex)
+# Compute relative luminance and return "dark" or "light".
+function _detect_variant -a hex
+    set -l r (math "0x"(string sub -l 2 $hex))
+    set -l g (math "0x"(string sub -s 3 -l 2 $hex))
+    set -l b (math "0x"(string sub -s 5 -l 2 $hex))
+    set -l lum (math "0.299 * $r + 0.587 * $g + 0.114 * $b")
+    test (math "floor($lum)") -gt 128 && echo light || echo dark
 end
 
 # Blend two hex colors: _blend_hex bg fg weight(0-100).
-# Used to generate translucent diff highlight backgrounds for git-delta.
 function _blend_hex -a bg_hex fg_hex weight
     set -l w (test -n "$weight" && echo $weight || echo 20)
     set -l r1 (math "0x"(string sub -l 2 $bg_hex))
@@ -78,52 +86,12 @@ function _blend_hex -a bg_hex fg_hex weight
         (math "round(($b1 * (100 - $w) + $b2 * $w) / 100)")
 end
 
-# ── OSC escape sequences ─────────────────────────────
-# Change terminal colors live via OSC 4/10/11/12. Works in ghostty, kitty,
-# iTerm2, etc. Inside tmux, writes directly to each client's tty.
+# ── Delta config ──────────────────────────────────────
 
-function _send_osc -a seq
-    if test -n "$TMUX"
-        for tty in (tmux list-clients -F '#{client_tty}')
-            printf '%s' $seq >$tty
-        end
-    else
-        printf '%s' $seq >/dev/tty
-    end
-end
-
-function _apply_terminal_colors
-    test -t 0 || return 0
-
-    # Build all OSC sequences into a single string to minimize writes
-    set -l seq ""
-    for i in (seq 0 15)
-        set -l idx (math $i + 1)
-        set seq $seq(printf '\033]4;%d;rgb:%s\033\\' $i (_hex_rgb $t_palette[$idx]))
-    end
-    set seq $seq(printf '\033]10;rgb:%s\033\\' (_hex_rgb $t_fg))
-    set seq $seq(printf '\033]11;rgb:%s\033\\' (_hex_rgb $t_bg))
-    set seq $seq(printf '\033]12;rgb:%s\033\\' (_hex_rgb $t_cursor))
-
-    # Cache for replay on new shell sessions (see 06-theme.fish)
-    mkdir -p $THEME_DIR
-    printf '%s' $seq >$THEME_DIR/osc-palette
-
-    _send_osc $seq
-end
-
-# ── Persistence ───────────────────────────────────────
-
-# Write theme state and generate git-delta config with blended diff colors.
-function _write_current -a name
-    mkdir -p $THEME_DIR
-    printf 'name=%s\nvariant=%s\nnvim=%s\nbat_theme=%s\n' \
-        $name $t_background $t_nvim $t_bat >$CURRENT_FILE
-
+function _write_delta_config
     set -l dark_or_light true
     test $t_background = light && set dark_or_light false
 
-    # Blend palette colors into the background for subtle diff highlights
     set -l red $t_palette[2]
     set -l green $t_palette[3]
     set -l dim $t_palette[9]
@@ -134,7 +102,7 @@ function _write_current -a name
 
     set -l delta_conf (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/git/delta.gitconfig
     printf '[delta]
-\tsyntax-theme = %s
+\tsyntax-theme = ansi
 \tdark = %s
 \tminus-style = syntax "#%s"
 \tminus-emph-style = syntax "#%s"
@@ -145,7 +113,34 @@ function _write_current -a name
 \tline-numbers-minus-style = "#%s"
 \tline-numbers-plus-style = "#%s"
 \tline-numbers-zero-style = "#%s"
-' $t_bat $dark_or_light $minus_bg $minus_emph $minus_bg $plus_bg $plus_emph $plus_bg $red $green $dim >$delta_conf
+' $dark_or_light $minus_bg $minus_emph $minus_bg $plus_bg $plus_emph $plus_bg $red $green $dim >$delta_conf
+end
+
+# ── Terminal colors ───────────────────────────────────
+# Push palette changes to the terminal via OSC 4/10/11/12.
+# Ghostty's config reload handles persistence for new windows, but OSC
+# sequences are needed to update the running terminal (especially inside tmux).
+
+function _hex_rgb -a hex
+    echo (string sub -l 2 $hex)/(string sub -s 3 -l 2 $hex)/(string sub -s 5 -l 2 $hex)
+end
+
+function _apply_terminal_colors
+    set -l seq ""
+    for i in (seq 0 15)
+        set seq $seq(printf '\033]4;%d;rgb:%s\033\\' $i (_hex_rgb $t_palette[(math $i + 1)]))
+    end
+    set seq $seq(printf '\033]10;rgb:%s\033\\' (_hex_rgb $t_fg))
+    set seq $seq(printf '\033]11;rgb:%s\033\\' (_hex_rgb $t_bg))
+    set seq $seq(printf '\033]12;rgb:%s\033\\' (_hex_rgb $t_cursor))
+
+    if test -n "$TMUX"
+        for tty in (tmux list-clients -F '#{client_tty}')
+            printf '%s' $seq >$tty
+        end
+    else if test -t 0
+        printf '%s' $seq >/dev/tty
+    end
 end
 
 # ── Reloaders ─────────────────────────────────────────
@@ -153,24 +148,21 @@ end
 function _update_ghostty
     test -f $GHOSTTY_CONFIG || return 0
     set -l tmp (mktemp)
-    sed "s/^theme = .*/theme = $t_ghostty/" $GHOSTTY_CONFIG >$tmp
+    sed "s/^theme = .*/theme = $argv[1]/" $GHOSTTY_CONFIG >$tmp
     mv $tmp $GHOSTTY_CONFIG
 end
 
-# Send colorscheme command to all running neovim instances via their sockets.
 function _reload_neovim
     for dir in $XDG_RUNTIME_DIR $TMPDIR /tmp
         test -n "$dir" -a -d "$dir" || continue
         for sock in $dir/nvim.*.0
             test -S $sock || continue
             nvim --server $sock --remote-send \
-                "<Cmd>set background=$t_background<CR><Cmd>colorscheme $t_nvim<CR>" 2>/dev/null || true
+                "<Cmd>lua require('theme').apply()<CR>" 2>/dev/null || true
         end
     end
 end
 
-# Update tmux styles that depend on dark/light variant. Window formatting
-# uses ANSI colour references that auto-adapt when the palette changes.
 function _reload_tmux
     command -q tmux && tmux list-sessions &>/dev/null || return 0
 
@@ -190,20 +182,58 @@ function _reload_tmux
     tmux refresh-client -S 2>/dev/null || true
 end
 
+# ── Toggle ────────────────────────────────────────────
+# Find the dark/light counterpart of a theme by name heuristics.
+
+function _find_pair -a name
+    set -l candidate
+
+    # Catppuccin: dark flavours ↔ latte
+    switch $name
+        case "Catppuccin Latte"
+            set candidate "Catppuccin Mocha"
+        case "Catppuccin *"
+            set candidate "Catppuccin Latte"
+    end
+
+    # Generic Dark ↔ Light swap
+    if test -z "$candidate"
+        if string match -q "* Light*" -- $name
+            set candidate (string replace " Light" " Dark" $name)
+        else if string match -q "* Dark*" -- $name
+            set candidate (string replace " Dark" " Light" $name)
+        else if string match -q "* Day*" -- $name
+            set candidate (string replace " Day" "" $name)
+        else if string match -q "* Dawn" -- $name
+            set candidate (string replace " Dawn" " Moon" $name)
+        else if string match -q "* Moon" -- $name
+            set candidate (string replace " Moon" " Dawn" $name)
+        end
+    end
+
+    # Verify the candidate exists as a Ghostty theme
+    if test -n "$candidate"
+        for dir in (_ghostty_theme_dirs)
+            test -f "$dir/$candidate" && echo $candidate && return 0
+        end
+    end
+    return 1
+end
+
 # ── Apply ─────────────────────────────────────────────
 
 function _apply_theme -a name
-    if not _load_theme $name
+    if not _parse_ghostty_theme $name
         echo "Unknown theme: $name"
-        echo ""
-        echo "Available themes:"
-        _list_themes
+        echo "Run 'theme --list' to see available themes."
         return 1
     end
 
+    set -g t_background (_detect_variant $t_bg)
+
+    _update_ghostty $name
     _apply_terminal_colors
-    _write_current $name
-    _update_ghostty
+    _write_delta_config
     _reload_neovim
     _reload_tmux
 
@@ -212,13 +242,17 @@ end
 
 function _list_themes
     set -l current (_current_theme)
-    for line in (jq -r 'to_entries[] | "\(.key)=\(.value.background)"' $THEMES_JSON)
-        set -l kv (string split -m1 '=' $line)
-        if test $kv[1] = $current
-            echo "* $kv[1] ($kv[2])"
-        else
-            echo "  $kv[1] ($kv[2])"
+    for dir in (_ghostty_theme_dirs)
+        test -d "$dir" || continue
+        for f in $dir/*
+            set -l name (path basename $f)
+            if test "$name" = "$current"
+                echo "* $name"
+            else
+                echo "  $name"
+            end
         end
+        return 0
     end
 end
 
@@ -229,29 +263,29 @@ switch "$argv[1]"
         _list_themes
     case --toggle -t
         set -l current (_current_theme)
-        if _load_theme $current
-            if test -z "$t_pair"
-                echo "No alternate variant for $current"
-            else
-                _apply_theme $t_pair
-            end
+        set -l pair (_find_pair $current)
+        if test -n "$pair"
+            _apply_theme $pair
+        else
+            echo "No alternate variant found for: $current"
         end
     case --completions
-        jq -r 'to_entries[] | "\(.key):\(.value.background)"' $THEMES_JSON
+        for dir in (_ghostty_theme_dirs)
+            test -d "$dir" || continue
+            for f in $dir/*
+                path basename $f
+            end
+            return 0
+        end
     case --help -h
         echo "Usage: theme [name|--list|--toggle]"
         echo ""
-        echo "  theme           Show current theme and list available"
-        echo "  theme <name>    Switch to theme"
-        echo "  theme --list    List available themes"
-        echo "  theme --toggle  Toggle between dark/light variant"
-        echo ""
-        echo "Themes:"
-        _list_themes
+        echo "  theme              Show current theme"
+        echo "  theme <name>       Switch to any Ghostty theme"
+        echo "  theme --list       List available themes"
+        echo "  theme --toggle     Toggle between dark/light variant"
     case ''
         echo "Current: "(_current_theme)
-        echo ""
-        _list_themes
     case '*'
-        _apply_theme $argv[1]
+        _apply_theme (string join " " $argv)
 end

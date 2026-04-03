@@ -26,6 +26,6 @@ require("lazy").setup({
   checker = { enabled = true, notify = false },
 })
 
--- Apply theme from ~/.config/theme/current and auto-reload on focus
+-- Apply theme from Ghostty config and auto-reload on focus
 require("theme").apply()
 require("theme").setup()

@@ -59,10 +59,10 @@ if test -f $lazy_lock && command -q jq
     jq --sort-keys . $lazy_lock >$lazy_lock.tmp && mv $lazy_lock.tmp $lazy_lock
 end
 
-# Re-apply current theme to regenerate derived configs (delta, OSC cache)
+# Re-apply current theme to regenerate derived configs (delta)
 if command -q theme
     _log "Regenerating theme..."
-    set -l name (sed -n 's/^name=//p' $HOME/.config/theme/current 2>/dev/null || echo catppuccin-mocha)
+    set -l name (sed -n 's/^theme = //p' $HOME/.config/ghostty/config 2>/dev/null || echo "Catppuccin Mocha")
     theme $name >/dev/null 2>&1 || true
 end
 

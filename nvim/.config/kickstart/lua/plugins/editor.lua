@@ -1,6 +1,6 @@
 return {
   -- Catppuccin colorscheme (matches the `theme` command's terminal palette).
-  -- The theme system in lua/theme.lua reads ~/.config/theme/current and applies
+  -- The theme system in lua/theme.lua reads the Ghostty config and derives
   -- the colorscheme + background, so init.lua handles the initial apply.
   {
     "catppuccin/nvim",
