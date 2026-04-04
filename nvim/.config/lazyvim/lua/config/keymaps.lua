@@ -2,20 +2,23 @@ local map = vim.keymap.set
 
 -- Cowboy mode: warn on 10+ repeated hjkl without count (via folke/dot).
 -- Smart jump counting: j/k >5 lines with count added to jumplist (via wincent).
+vim.g.cowboy_mode = true
+
 for _, key in ipairs({ "h", "j", "k", "l" }) do
   local count = 0
   local timer = assert(vim.uv.new_timer())
   map("n", key, function()
-    if vim.v.count > 0 then
-      count = 0
-    end
-    if count >= 10 then
-      vim.notify("Hold it, cowboy!", vim.log.levels.WARN, { title = "Cowboy Mode" })
+    if vim.g.cowboy_mode and vim.v.count == 0 then
+      if count >= 10 then
+        vim.notify("Hold it, cowboy!", vim.log.levels.WARN, { title = "Cowboy Mode" })
+      else
+        count = count + 1
+        timer:start(2000, 0, function()
+          count = 0
+        end)
+      end
     else
-      count = count + 1
-      timer:start(2000, 0, function()
-        count = 0
-      end)
+      count = 0
     end
     if (key == "j" or key == "k") and vim.v.count > 5 then
       return "m'" .. vim.v.count .. key
@@ -23,6 +26,11 @@ for _, key in ipairs({ "h", "j", "k", "l" }) do
     return key
   end, { expr = true })
 end
+
+map("n", "<leader>uC", function()
+  vim.g.cowboy_mode = not vim.g.cowboy_mode
+  vim.notify("Cowboy mode: " .. (vim.g.cowboy_mode and "on" or "off"), vim.log.levels.INFO)
+end, { desc = "Toggle cowboy mode" })
 
 -- Jump to config files via snacks picker (shows up under <leader>f in which-key)
 map("n", "<leader>fc", function()
