@@ -7,7 +7,15 @@
     "BASH_DEFAULT_TIMEOUT_MS": "120000"
   },
   "permissions": {
-    "allow": ["Bash", "Read", "Grep", "Glob", "Edit", "Write", "Skill(commit)"],
+    "allow": [
+      "Bash",
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Write",
+      "Skill(commit)"
+    ],
     "deny": [
       "Bash(*rm -rf*)",
       "Bash(*git push --force*)",
@@ -94,6 +102,7 @@
     "hookify@claude-plugins-official": true,
     "jdtls-lsp@claude-plugins-official": true,
     "lua-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
     "pr-review-toolkit@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
@@ -103,10 +112,13 @@
   "spinnerTipsEnabled": false,
   "spinnerVerbs": {
     "mode": "replace",
-    "verbs": ["Processing"]
+    "verbs": [
+      "Processing"
+    ]
   },
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
   "autoUpdatesChannel": "stable",
-  "plansDirectory": ".claude-notes"
+  "plansDirectory": ".claude-notes",
+  "skipDangerousModePermissionPrompt": true
 }
