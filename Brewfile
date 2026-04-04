@@ -16,6 +16,7 @@ brew "television"        # channel-oriented fuzzy finder
 brew "zoxide"            # smarter cd with frecency
 
 # ── Editors & multiplexer ──────────────────────────────
+brew "helix"             # modal text editor (Rust)
 brew "neovim"            # text editor
 brew "tree-sitter-cli"   # parser generator CLI (nvim-treesitter build)
 brew "tmux"              # terminal multiplexer

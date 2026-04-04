@@ -6,6 +6,7 @@
 abbr -a v nvim
 abbr -a vi nvim
 abbr -a vim nvim
+abbr -a helix hx
 
 # Tmux
 abbr -a t tmux

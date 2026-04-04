@@ -16,6 +16,7 @@ television        # channel-oriented fuzzy finder
 zoxide            # smarter cd with frecency
 
 # ── Editors & multiplexer ──────────────────────────────
+helix             # modal text editor (Rust)
 neovim            # text editor
 tree-sitter-cli   # parser generator CLI (nvim-treesitter build)
 tmux              # terminal multiplexer

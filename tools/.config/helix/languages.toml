@@ -1,0 +1,56 @@
+# ── Language servers ─────────────────────────────────
+# Helix has built-in LSP support. Override or add servers here.
+# See: https://docs.helix-editor.com/languages.html
+
+# ── Java (jdtls, matching nvim config) ──────────────
+[language-server.jdtls]
+command = "jdtls"
+
+[[language]]
+name = "java"
+language-servers = ["jdtls"]
+auto-format = true
+
+# ── Go ──────────────────────────────────────────────
+[[language]]
+name = "go"
+auto-format = true
+formatter = { command = "goimports" }
+
+# ── Rust ────────────────────────────────────────────
+[[language]]
+name = "rust"
+auto-format = true
+
+# ── Python ──────────────────────────────────────────
+[[language]]
+name = "python"
+auto-format = true
+formatter = { command = "ruff", args = ["format", "-"] }
+
+# ── TypeScript / JavaScript ─────────────────────────
+[[language]]
+name = "typescript"
+auto-format = true
+
+[[language]]
+name = "javascript"
+auto-format = true
+
+# ── Lua ─────────────────────────────────────────────
+[[language]]
+name = "lua"
+auto-format = true
+formatter = { command = "stylua", args = ["-"] }
+
+# ── TOML ────────────────────────────────────────────
+[[language]]
+name = "toml"
+auto-format = true
+formatter = { command = "taplo", args = ["fmt", "-"] }
+
+# ── Markdown ────────────────────────────────────────
+[[language]]
+name = "markdown"
+auto-format = true
+formatter = { command = "prettier", args = ["--parser", "markdown"] }

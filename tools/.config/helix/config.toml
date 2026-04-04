@@ -1,0 +1,74 @@
+# ── Theme ────────────────────────────────────────────
+# Match Ghostty: `theme = Catppuccin Frappe`
+theme = "catppuccin_frappe"
+
+# ── Editor ──────────────────────────────────────────
+[editor]
+line-number = "relative"
+mouse = true
+scrolloff = 8
+shell = ["fish", "-c"]
+bufferline = "multiple"
+color-modes = true
+true-color = true
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.file-picker]
+hidden = false
+
+[editor.lsp]
+display-messages = true
+display-inlay-hints = true
+
+[editor.statusline]
+left = ["mode", "spinner", "file-name", "file-modification-indicator"]
+center = []
+right = ["diagnostics", "selections", "register", "position", "file-encoding", "file-type"]
+separator = "│"
+
+[editor.indent-guides]
+render = true
+character = "┆"
+
+[editor.soft-wrap]
+enable = true
+
+[editor.whitespace.render]
+tab = "all"
+nbsp = "all"
+newline = "none"
+space = "none"
+
+# ── Keybindings ─────────────────────────────────────
+# Keep muscle memory close to neovim where possible.
+
+[keys.normal]
+";" = "command_mode"
+C-s = ":write"
+
+# Window navigation (match tmux/nvim smart-splits C-hjkl)
+C-h = "jump_view_left"
+C-j = "jump_view_down"
+C-k = "jump_view_up"
+C-l = "jump_view_right"
+
+[keys.normal.space]
+e = "file_picker_in_current_buffer_directory"
+E = "file_picker_in_current_directory"
+q = ":quit"
+Q = ":quit!"
+w = ":write"
+
+[keys.normal.space.g]
+d = "goto_definition"
+D = "goto_declaration"
+r = "goto_reference"
+i = "goto_implementation"
+t = "goto_type_definition"
+
+[keys.insert]
+j = { k = "normal_mode" }
