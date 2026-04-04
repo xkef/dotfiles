@@ -54,13 +54,13 @@ function _is_supported -a name
     switch $name
         case "Catppuccin *"
             return 0
-        case "TokyoNight" "TokyoNight *"
+        case TokyoNight "TokyoNight *"
             return 0
         case "Rose Pine" "Rose Pine *"
             return 0
         case "Gruvbox Dark" "Gruvbox Dark Hard" "Gruvbox Light" "Gruvbox Light Hard"
             return 0
-        case "Nord" "Nord Light"
+        case Nord "Nord Light"
             return 0
         case "Atom One Dark" "Atom One Light"
             return 0
@@ -68,7 +68,7 @@ function _is_supported -a name
             return 0
         case "Everforest *"
             return 0
-        case "Dracula"
+        case Dracula
             return 0
         case '*'
             return 1

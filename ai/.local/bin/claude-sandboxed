@@ -12,6 +12,7 @@ if command -v nono &>/dev/null; then
     --allow "$HOME/.cache/mise" \
     --allow "$HOME/.npm" \
     --allow "$HOME/.config/jj" \
+    --read "$HOME/.config/gh" \
     -- claude "$@"
 else
   printf '\033[33m⚠ No sandbox available (install nono)\033[0m\n' >&2
