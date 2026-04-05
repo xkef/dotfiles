@@ -5,6 +5,9 @@
     "version": "1.0.0",
     "description": "Claude Code with mise, jj, maven, and npm access"
   },
+  "filesystem": {
+    "allow_file": ["$HOME/Library/Keychains/login.keychain-db"]
+  },
   "policy": {
     "add_allow_readwrite": ["$HOME/.m2", "$HOME/.npm", "$HOME/.config/jj"],
     "add_allow_read": [

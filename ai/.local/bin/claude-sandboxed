@@ -5,7 +5,7 @@ DOTFILES_DIR="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir")}"
 
 if command -v nono &>/dev/null; then
   exec nono run \
-    --profile claude-code \
+    --profile claude \
     --allow-cwd \
     --allow-launch-services \
     --read "$DOTFILES_DIR" \
