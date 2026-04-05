@@ -1,0 +1,80 @@
+# Alacritty configuration
+# https://alacritty.org/config-alacritty.html
+
+[general]
+import = ["~/.config/alacritty/catppuccin-frappe.toml"]
+
+# ── Scrollback ────────────────────────────────────────
+[scrolling]
+history = 50000
+
+# ── Font ──────────────────────────────────────────────
+[font]
+size = 14.0
+
+[font.normal]
+family = "JetBrainsMono Nerd Font"
+style = "Regular"
+
+[font.bold]
+family = "JetBrainsMono Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "JetBrainsMono Nerd Font"
+style = "Italic"
+
+[font.bold_italic]
+family = "JetBrainsMono Nerd Font"
+style = "Bold Italic"
+
+# ── Window ────────────────────────────────────────────
+[window]
+padding = { x = 12, y = 0 }
+dynamic_padding = true
+decorations = "Buttonless"
+option_as_alt = "OnlyLeft"
+
+# ── Cursor ────────────────────────────────────────────
+[cursor.style]
+shape = "Block"
+blinking = "Never"
+
+# ── Mouse ─────────────────────────────────────────────
+[mouse]
+hide_when_typing = true
+
+# ── Keyboard ─────────────────────────────────────────
+[[keyboard.bindings]]
+key = "C"
+mods = "Control|Shift"
+action = "Copy"
+
+[[keyboard.bindings]]
+key = "V"
+mods = "Control|Shift"
+action = "Paste"
+
+[[keyboard.bindings]]
+key = "N"
+mods = "Control|Shift"
+action = "CreateNewWindow"
+
+[[keyboard.bindings]]
+key = "Plus"
+mods = "Control|Shift"
+action = "IncreaseFontSize"
+
+[[keyboard.bindings]]
+key = "Minus"
+mods = "Control|Shift"
+action = "DecreaseFontSize"
+
+[[keyboard.bindings]]
+key = "Key0"
+mods = "Control|Shift"
+action = "ResetFontSize"
+
+[[keyboard.bindings]]
+key = "F11"
+action = "ToggleFullscreen"

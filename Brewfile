@@ -66,6 +66,7 @@ brew "bandwhich"         # per-process bandwidth monitor
 brew "xdg-ninja"         # audit XDG base-dir compliance
 
 # ── GUI apps (macOS) ───────────────────────────────────
+cask "alacritty"         # GPU-accelerated terminal (OpenGL)
 cask "ghostty"           # GPU-accelerated terminal
 cask "zed"               # GPU-accelerated code editor
 cask "1password"         # password manager
