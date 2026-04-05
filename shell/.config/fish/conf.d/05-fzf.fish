@@ -44,6 +44,14 @@ set -gx FZF_COMPLETION_OPTS "\
 fzf --fish | source
 
 # Override fzf's built-in multi-select completion with single-select
+function __fzf_cmd_tokens
+    commandline --tokenize --cut-at-cursor
+end
+
+function __fzf_complete_native
+    fzf_complete
+end
+
 function fzf-completion --description 'fzf tab completion (single-select)'
     set -l tokens (__fzf_cmd_tokens)
     set -l current_token (commandline -t)
