@@ -12,7 +12,7 @@
     "override_deny": ["$HOME/Library/Keychains/login.keychain-db"],
     "add_allow_readwrite": ["$HOME/.m2", "$HOME/.npm", "$HOME/.config/jj"],
     "add_allow_read": [
-      "$HOME/.local/share/mise/shims",
+      "$HOME/.local/share/mise",
       "$HOME/.local/state/mise",
       "$HOME/.config/gh"
     ]
