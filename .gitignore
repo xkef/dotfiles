@@ -23,4 +23,5 @@ shell/.config/fish/fish_variables
 # Build artifacts
 __pycache__/
 *.tmTheme
+/nvim.log
 /.nvimlog
