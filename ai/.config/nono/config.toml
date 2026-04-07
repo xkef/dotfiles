@@ -1,6 +1,9 @@
 [meta]
 version = 1
 
+[ui]
+theme = "minimal"
+
 [rollback]
 max_sessions = 10
 max_storage_gb = 5.0

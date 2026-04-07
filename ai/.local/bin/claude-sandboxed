@@ -5,17 +5,20 @@ DOTFILES_DIR="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir")}"
 
 if command -v nono &>/dev/null; then
   touch "$HOME/.claude.json.lock"
-  exec nono run \
-    --profile claude \
-    --allow-cwd \
-    --allow-launch-services \
-    --read "$DOTFILES_DIR" \
-    --allow "$HOME/.cache/mise" \
-    --allow "$HOME/.npm" \
-    --allow "$HOME/.config/jj" \
-    --read "$HOME/.config/gh" \
-    --allow "$HOME/.local/share/cargo" \
-    -- claude "$@"
+
+  nono_args=(
+    --silent
+    --log-file /dev/null
+    --profile claude
+    --allow-cwd
+    --read "$DOTFILES_DIR"
+  )
+
+  if [[ "${CLAUDE_ALLOW_LAUNCH_SERVICES:-}" == 1 ]]; then
+    nono_args+=(--allow-launch-services)
+  fi
+
+  exec nono run "${nono_args[@]}" -- claude "$@"
 else
   printf '\033[33m⚠ No sandbox available (install nono)\033[0m\n' >&2
   read -r -p "Continue without sandbox? [y/N] " reply
