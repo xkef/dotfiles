@@ -2,22 +2,25 @@
 .DS_Store
 Thumbs.db
 
-# Editor
+# Editor / IDE
+.idea/
 *.swp
 *.swo
 *~
 
+# AI tooling
+/.claude/
+/.claude-notes/
+
 # Local overrides (not tracked)
 shell/.config/fish/local.fish
 shell/.config/fish/fish_variables
-__pycache__/
-
-.idea/
-/.claude/settings.local.json
-*.tmTheme
 /git/.config/git/config.local
-/.nvimlog
 /vcs/.config/git/delta.gitconfig
 /vcs/.config/jj/repos/*
-
 /tools/.config/television/cable/
+
+# Build artifacts
+__pycache__/
+*.tmTheme
+/.nvimlog
