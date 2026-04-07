@@ -13,7 +13,7 @@ function _run_quiet
     set -l out (eval $argv[2..-1] 2>&1)
     or begin
         _log "  ! $ctx failed"
-        for line in (echo $out | tail -10)
+        for line in $out[-10..-1]
             _log "    | $line"
         end
         return 1
@@ -24,20 +24,23 @@ end
 
 printf '\n  Updating dotfiles...\n\n'
 
-if test -d $DOTS_DIR/.git
+if test -d $DOTS_DIR/.jj
+    _log "Fetching latest changes..."
+    _run_quiet "jj fetch" jj git fetch --all-remotes -R $DOTS_DIR || true
+else if test -d $DOTS_DIR/.git
     _log "Pulling latest changes..."
     _run_quiet "git pull" git -C $DOTS_DIR pull --rebase || true
 end
 
 _log "Re-stowing packages..."
 find $DOTS_DIR -name .DS_Store -delete 2>/dev/null
-if not git -C $DOTS_DIR diff --quiet 2>/dev/null
+if test -n "$(jj diff -R $DOTS_DIR 2>/dev/null | string collect)"
     _log "  ! Uncommitted changes — skipping stow"
 else
     for pkg in $DOTS_DIR/*/
         set -l name (basename $pkg)
         _run_quiet "stow $name" stow --dir=$DOTS_DIR -t $HOME --adopt $name || true
-        _run_quiet "git restore" git -C $DOTS_DIR restore "$name/" || true
+        _run_quiet "restore $name" jj restore --from @- -R $DOTS_DIR -- "$name/" || true
     end
 end
 
