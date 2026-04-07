@@ -26,8 +26,7 @@ for pair in \
         printf '  \e[2m%-14s not installed\e[0m\n' $name
         continue
     end
-    set -l v (eval $parts[2] 2>/dev/null | string match -r '[0-9]+\.[0-9][0-9a-z.]*')
-    set v $v[-1]
+    set -l v (eval $parts[2] 2>/dev/null | string match -rv 'WARN|ERROR|INFO|DEBUG' | head -1 | string match -r '[0-9]+\.[0-9][0-9a-z.]*')
     printf '  %-14s %s\n' $name (test -n "$v" && echo $v || echo "unknown")
 end
 printf '\n'
