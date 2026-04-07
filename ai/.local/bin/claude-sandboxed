@@ -4,6 +4,7 @@ set -e
 DOTFILES_DIR="${DOTFILES_DIR:-$(<"$HOME/.config/dotfiles/dir")}"
 
 if command -v nono &>/dev/null; then
+  touch "$HOME/.claude.json.lock"
   exec nono run \
     --profile claude \
     --allow-cwd \
