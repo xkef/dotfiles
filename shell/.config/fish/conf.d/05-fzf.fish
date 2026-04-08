@@ -31,11 +31,7 @@ set -gx FZF_ALT_C_OPTS "\
     --preview-window 'right:50%:border-left'"
 
 # Tab completion options (parsed as a string by fzf, so embedded quotes work)
-# Use tmux popup when available to avoid prompt jumping on exit.
-set -l _fzf_tmux ""
-test -n "$TMUX" && set _fzf_tmux "--tmux center,80%,60%"
 set -gx FZF_COMPLETION_OPTS "\
-    $_fzf_tmux \
     --preview 'fzf-preview {1}' \
     --preview-window right:50%:border-left \
     --bind 'tab:down,btab:up,enter:accept'"
