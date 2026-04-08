@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Codex notify hook. Codex invokes:
+#   codex-notify-hook '<json-payload>'
+# Payload schema (agent-turn-complete):
+#   {"type":"agent-turn-complete","turn-id":"...","thread-id":"...",
+#    "cwd":"...","input-messages":[...],"last-assistant-message":"..."}
+
+payload="${1:-}"
+[[ -z "$payload" ]] && exit 0
+
+type=$(jq -r '.type // empty' <<<"$payload")
+[[ "$type" != "agent-turn-complete" ]] && exit 0
+
+msg=$(jq -r '."last-assistant-message" // "Turn complete"' <<<"$payload")
+
+if command -v terminal-notifier &>/dev/null; then
+  terminal-notifier -title Codex -subtitle Notification \
+    -activate com.mitchellh.ghostty -message "$msg"
+elif command -v notify-send &>/dev/null; then
+  notify-send Codex "$msg"
+fi

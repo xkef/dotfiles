@@ -1,0 +1,7 @@
+/auth.json
+/history.jsonl
+/log
+/sessions
+/.last_session
+/version.json
+__store.db

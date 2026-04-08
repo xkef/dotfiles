@@ -1,0 +1,27 @@
+{
+  "$schema": "https://nono.dev/schemas/nono-profile.schema.json",
+  "extends": "codex",
+  "meta": {
+    "name": "codex",
+    "version": "1.0.0",
+    "description": "Codex with mise, jj, maven, npm, and cargo access"
+  },
+  "filesystem": {
+    "allow_file": ["$HOME/Library/Keychains/login.keychain-db"]
+  },
+  "policy": {
+    "override_deny": ["$HOME/Library/Keychains/login.keychain-db"],
+    "add_allow_readwrite": [
+      "$HOME/.m2",
+      "$HOME/.npm",
+      "$XDG_CACHE_HOME/mise",
+      "$XDG_CONFIG_HOME/jj",
+      "$XDG_DATA_HOME/cargo"
+    ],
+    "add_allow_read": [
+      "$XDG_DATA_HOME/mise",
+      "$XDG_STATE_HOME/mise",
+      "$XDG_CONFIG_HOME/gh"
+    ]
+  }
+}
