@@ -3,14 +3,14 @@
   "extends": "claude-code",
   "meta": {
     "name": "claude",
-    "version": "1.1.0",
-    "description": "Claude Code with mise, jj, maven, npm, and cargo access"
+    "version": "1.1.1",
+    "description": "Claude Code with mise, jj, maven, npm, cargo, and keychain access"
   },
   "filesystem": {
-    "allow_file": ["$HOME/Library/Keychains/login.keychain-db"]
+    "allow": ["$HOME/Library/Keychains"]
   },
   "policy": {
-    "override_deny": ["$HOME/Library/Keychains/login.keychain-db"],
+    "override_deny": ["$HOME/Library/Keychains"],
     "add_allow_readwrite": [
       "$HOME/.m2",
       "$HOME/.npm",
