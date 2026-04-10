@@ -1,0 +1,13 @@
+complete -c vm -f
+complete -c vm -n __fish_use_subcommand -a pull -d 'Pull latest Arch base image from GHCR'
+complete -c vm -n __fish_use_subcommand -a create -d 'Create VM from base image'
+complete -c vm -n __fish_use_subcommand -a start -d 'Start the VM headless'
+complete -c vm -n __fish_use_subcommand -a stop -d 'Stop the VM'
+complete -c vm -n __fish_use_subcommand -a ssh -d 'SSH in (forwards agent + API keys)'
+complete -c vm -n __fish_use_subcommand -a sync -d 'Rsync dotfiles + re-install'
+complete -c vm -n __fish_use_subcommand -a status -d 'Show VM state'
+complete -c vm -n __fish_use_subcommand -a ip -d 'Show VM IP address'
+complete -c vm -n __fish_use_subcommand -a destroy -d 'Delete the VM'
+complete -c vm -n __fish_use_subcommand -a clean -d 'Delete all local VMs'
+complete -c vm -n __fish_use_subcommand -a help -d 'Show help'
+complete -c vm -n '__fish_seen_subcommand_from create' -l force -d 'Destroy existing VM first'

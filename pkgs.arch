@@ -21,7 +21,6 @@ helix             # modal text editor (Rust)
 neovim            # text editor
 tree-sitter-cli   # parser generator CLI (nvim-treesitter build)
 tmux              # terminal multiplexer
-sesh              # smart tmux session manager
 
 # ── Modern unix replacements ───────────────────────────
 eza               # modern ls replacement
@@ -41,7 +40,7 @@ ouch              # compress/decompress archives
 git-delta         # syntax-highlighting diff pager
 difftastic        # structural diff tool
 lazygit           # terminal UI for git
-jj                # Jujutsu version control
+jujutsu           # Jujutsu version control
 jjui              # terminal UI for jj
 
 # ── Development ────────────────────────────────────────
@@ -64,15 +63,3 @@ htop              # interactive process viewer
 hyperfine         # command-line benchmarking
 bandwhich         # per-process bandwidth monitor
 xdg-ninja         # audit XDG base-dir compliance
-
-# ── Clipboard (X11 / Wayland) ──────────────────────────
-xclip             # X11 clipboard utility
-wl-clipboard      # Wayland clipboard utility
-
-# ── GUI apps ───────────────────────────────────────────
-alacritty         # GPU-accelerated terminal (OpenGL)
-ghostty           # GPU-accelerated terminal
-kitty             # GPU-accelerated terminal (OpenGL)
-1password         # password manager
-1password-cli     # 1Password CLI (op)
-claude-code       # Anthropic Claude CLI

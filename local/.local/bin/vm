@@ -1,0 +1,228 @@
+#!/usr/bin/env fish
+# Arch Linux ARM64 dev VM on Tart.
+
+set -g VM_NAME (set -q VM_NAME; and echo $VM_NAME; or echo archlinux-tart)
+set -g BASE_NAME archlinux-base
+set -g VM_USER (set -q VM_USER; and echo $VM_USER; or echo dev)
+set -g REMOTE_IMAGE (set -q REMOTE_IMAGE; and echo $REMOTE_IMAGE; or echo ghcr.io/xkef/archlinux-tart:latest)
+set -g DOTFILES_DIR (test -f $HOME/.config/dotfiles/dir; and cat $HOME/.config/dotfiles/dir; or path resolve (status dirname)/../../..)
+set -g VM_DIR $DOTFILES_DIR/local/.local/share/vm
+set -g VM_SHARE_DIR (set -q VM_SHARE_DIR; and echo $VM_SHARE_DIR; or echo $HOME/code)
+set -g VM_SHARE_MOUNT /home/$VM_USER/code
+
+# -- SSH --
+
+function _ssh_key_file
+    if set -q VM_SSH_PUBKEY_FILE
+        test -f $VM_SSH_PUBKEY_FILE; and echo $VM_SSH_PUBKEY_FILE; and return
+    end
+    for p in $HOME/.ssh/id_ed25519.pub $HOME/.ssh/id_ecdsa.pub $HOME/.ssh/id_rsa.pub
+        test -f $p; and echo $p; and return
+    end
+    echo "  No SSH public key found." >&2; return 1
+end
+
+function _ssh_opts
+    set -l pub (_ssh_key_file); or return 1
+    set -l key (string replace -r '\.pub$' '' -- $pub)
+    test -f $key; or begin; echo "  Private key not found for $pub" >&2; return 1; end
+    printf '%s\n' -i $key -o IdentitiesOnly=yes -o BatchMode=yes \
+        -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$VM_DIR/known_hosts \
+        -o ServerAliveInterval=10 -o ServerAliveCountMax=6
+end
+
+function _vm_ip
+    tart ip $VM_NAME --resolver agent 2>/dev/null
+end
+
+function _wait_ip
+    for i in (seq 1 30)
+        set -l ip (_vm_ip); test -n "$ip"; and echo $ip; and return
+        sleep 2
+    end
+    echo "  Timeout waiting for IP." >&2; return 1
+end
+
+function _wait_ssh
+    set -l opts (_ssh_opts); or return 1
+    for i in (seq 1 30)
+        ssh $opts $VM_USER@$argv[1] true 2>/dev/null; and return
+        sleep 2
+    end
+    echo "  Timeout waiting for SSH." >&2; return 1
+end
+
+function _inject_ssh_key
+    set -l pub (_ssh_key_file); or return 1
+    set -l key (string trim (cat $pub))
+    set -l esc (string escape --style=script -- $key)
+    tart exec $VM_NAME sh -lc "\
+        install -d -m 700 -o $VM_USER -g $VM_USER /home/$VM_USER/.ssh \
+        && printf '%s\n' $esc >> /home/$VM_USER/.ssh/authorized_keys \
+        && sort -u -o /home/$VM_USER/.ssh/authorized_keys /home/$VM_USER/.ssh/authorized_keys \
+        && chown $VM_USER:$VM_USER /home/$VM_USER/.ssh/authorized_keys \
+        && chmod 600 /home/$VM_USER/.ssh/authorized_keys"
+end
+
+function _setup_guest
+    set -l ip $argv[1]
+    set -l opts (_ssh_opts); or return 1
+    infocmp -x 2>/dev/null | ssh $opts $VM_USER@$ip 'tic -x - 2>/dev/null' ; or true
+    ssh $opts $VM_USER@$ip "
+        grep -q 'en_US.UTF-8' /etc/locale.gen || {
+            sudo sed -i 's/^#en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
+            sudo locale-gen
+            echo 'LANG=en_US.UTF-8' | sudo tee /etc/locale.conf >/dev/null
+        }
+        grep -q 'AcceptEnv ANTHROPIC_API_KEY' /etc/ssh/sshd_config || {
+            echo 'AcceptEnv ANTHROPIC_API_KEY CLAUDE_CODE_OAUTH_TOKEN' | sudo tee -a /etc/ssh/sshd_config >/dev/null
+            sudo systemctl reload sshd
+        }
+        if ! mountpoint -q /mnt/virtiofs 2>/dev/null; then
+            sudo mkdir -p /mnt/virtiofs $VM_SHARE_MOUNT
+            sudo chown $VM_USER:$VM_USER $VM_SHARE_MOUNT
+            printf '[Unit]\nDescription=VirtioFS automount root\n\n[Mount]\nWhat=com.apple.virtio-fs.automount\nWhere=/mnt/virtiofs\nType=virtiofs\n\n[Install]\nWantedBy=multi-user.target\n' | sudo tee /etc/systemd/system/mnt-virtiofs.mount >/dev/null
+            unit=\$(systemd-escape --path --suffix=mount '$VM_SHARE_MOUNT')
+            printf '[Unit]\nDescription=Bind-mount shared code\nAfter=mnt-virtiofs.mount\nRequires=mnt-virtiofs.mount\n\n[Mount]\nWhat=/mnt/virtiofs/code\nWhere=$VM_SHARE_MOUNT\nType=none\nOptions=bind\n\n[Install]\nWantedBy=multi-user.target\n' | sudo tee /etc/systemd/system/\$unit >/dev/null
+            sudo systemctl daemon-reload
+            sudo systemctl enable --now mnt-virtiofs.mount \$unit
+        fi
+    "
+end
+
+# -- Commands --
+
+function cmd_pull
+    tart list --source local --quiet 2>/dev/null | grep -qx $BASE_NAME; and tart delete $BASE_NAME
+    echo "  Pulling $REMOTE_IMAGE..."
+    tart clone $REMOTE_IMAGE $BASE_NAME; or return 1
+    echo "  Base image ready."
+end
+
+function cmd_create
+    if tart list --source local --quiet 2>/dev/null | grep -qx $VM_NAME
+        if contains -- --force $argv
+            tart stop $VM_NAME 2>/dev/null; tart delete $VM_NAME
+        else
+            echo "  VM '$VM_NAME' already exists. Use --force to recreate." >&2; return 1
+        end
+    end
+
+    rm -f $VM_DIR/known_hosts
+    tart clone $BASE_NAME $VM_NAME; or begin
+        echo "  Base image not found. Run: vm pull" >&2; return 1
+    end
+    tart set $VM_NAME --cpu (set -q CPUS; and echo $CPUS; or echo 4) \
+        --memory (set -q MEMORY; and echo $MEMORY; or echo 8192) --random-mac
+
+    echo "  Booting for initial setup..."
+    cmd_start; or return 1
+    set -l ip (_vm_ip)
+
+    echo "  Installing SSH key..."
+    _inject_ssh_key; or begin; cmd_stop; return 1; end
+    _wait_ssh $ip; or begin; cmd_stop; return 1; end
+
+    echo "  Configuring guest..."
+    set -l opts (_ssh_opts)
+    ssh $opts $VM_USER@$ip "sudo pacman -Syu --noconfirm --needed rsync"
+    test -d $VM_SHARE_DIR; and _setup_guest $ip
+
+    echo "  Syncing dotfiles..."
+    cmd_sync; or begin; cmd_stop; return 1; end
+
+    cmd_stop
+    echo "  VM ready."
+end
+
+function cmd_start
+    set -l ip (_vm_ip); test -n "$ip"; and echo "  Already running ($ip)."; and return 0
+    set -l args $VM_NAME --no-graphics
+    test -d $VM_SHARE_DIR; and set -a args --dir="code:$VM_SHARE_DIR"
+    tart run $args &
+    set -l ip (_wait_ip); or return 1
+    echo "  Running ($ip)."
+end
+
+function cmd_stop
+    tart stop $VM_NAME 2>/dev/null
+end
+
+function cmd_ssh
+    set -l ip (_vm_ip)
+    test -n "$ip"; or begin; echo "  Not running. Run: vm start" >&2; return 1; end
+    set -l opts (_ssh_opts); or return 1
+    if test (count $argv) -eq 0
+        ssh -At $opts -o SendEnv="ANTHROPIC_API_KEY CLAUDE_CODE_OAUTH_TOKEN" $VM_USER@$ip fish -l
+    else
+        ssh -A $opts -o SendEnv="ANTHROPIC_API_KEY CLAUDE_CODE_OAUTH_TOKEN" $VM_USER@$ip $argv
+    end
+end
+
+function cmd_sync
+    set -l ip (_vm_ip)
+    test -n "$ip"; or begin; echo "  Not running. Run: vm start" >&2; return 1; end
+    set -l opts (_ssh_opts); or return 1
+    ssh $opts $VM_USER@$ip 'mkdir -p ~/dotfiles'
+    rsync -az --delete \
+        $DOTFILES_DIR/ $VM_USER@$ip:~/dotfiles/
+    ssh -tt $opts $VM_USER@$ip 'cd ~/dotfiles && ./install'
+end
+
+function cmd_status
+    if not tart list --source local --quiet 2>/dev/null | grep -qx $VM_NAME
+        echo "  VM does not exist. Run: vm pull && vm create"; return 1
+    end
+    set -l ip (_vm_ip)
+    echo "  VM:    $VM_NAME"(test -n "$ip"; and echo " (running, $ip)"; or echo " (stopped)")
+    if test -d $VM_SHARE_DIR
+        echo "  Share: $VM_SHARE_DIR -> $VM_SHARE_MOUNT"
+    end
+end
+
+function cmd_destroy
+    tart stop $VM_NAME 2>/dev/null; tart delete $VM_NAME 2>/dev/null; or true
+    rm -f $VM_DIR/known_hosts
+end
+
+function cmd_clean
+    tart list --source local --quiet 2>/dev/null | while read -l name
+        echo "  Deleting: $name"; tart delete $name
+    end
+    rm -f $VM_DIR/known_hosts
+end
+
+function cmd_ip
+    _vm_ip
+end
+
+function cmd_help
+    echo "Usage: vm <command>
+
+Commands:
+  pull       Pull latest Arch base image from GHCR
+  create     Create VM from base image (--force to recreate)
+  start      Start the VM headless
+  stop       Stop the VM
+  ssh        SSH in (forwards agent + API keys)
+  sync       Rsync dotfiles and run ./install in guest
+  status     Show VM state
+  ip         Show VM IP address
+  destroy    Delete the VM (keeps base image)
+  clean      Delete all local VMs
+
+Environment:
+  VM_NAME       VM name        (default: archlinux-tart)
+  VM_USER       Guest user     (default: dev)
+  VM_SHARE_DIR  Shared dir     (default: ~/code)
+  CPUS          CPU cores      (default: 4)
+  MEMORY        Memory in MB   (default: 8192)"
+end
+
+set -l cmd (test (count $argv) -gt 0; and echo $argv[1]; or echo help)
+switch $cmd
+    case pull create start stop ssh sync status ip destroy clean help
+        cmd_$cmd $argv[2..-1]
+    case '*'
+        echo "Unknown: $cmd" >&2; cmd_help; return 1
+end

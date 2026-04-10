@@ -7,6 +7,7 @@ brew "gh"                # GitHub from the command line
 brew "jq"                # JSON processor
 brew "age"               # simple file encryption
 brew "terminal-notifier" # macOS notifications from scripts
+brew "xz"                # xz compression for VM image archives
 
 # ── Shell & prompt ──────────────────────────────────────
 brew "fish"              # shell
@@ -56,6 +57,9 @@ brew "podman"            # rootless container engine
 brew "lazydocker"        # terminal UI for Docker/Podman
 brew "fx"                # terminal JSON viewer
 brew "scooter"           # interactive find-and-replace TUI
+brew "qemu"              # qemu-img for Tart disk conversion/resizing
+brew "cdrtools"          # mkisofs for cloud-init cidata images
+brew "cirruslabs/cli/tart" # Tart VM manager
 
 # ── File management & info ─────────────────────────────
 brew "yazi"              # terminal file manager

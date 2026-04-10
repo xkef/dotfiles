@@ -25,3 +25,4 @@ __pycache__/
 *.tmTheme
 /nvim.log
 /.nvimlog
+/local/.local/share/vm/known_hosts

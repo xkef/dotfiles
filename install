@@ -14,16 +14,44 @@ run_quiet() {
   local context=${1:-}
   shift
   local output
-  if output=$("$@" 2>&1); then
+  local log_file
+  local rc
+  log_file="$(mktemp "${TMPDIR:-/tmp}/dotfiles-install.XXXXXX.log")"
+  output=$("$@" 2>&1 | tee "$log_file")
+  rc=$?
+  if [[ $rc -eq 0 ]]; then
+    rm -f "$log_file"
     return 0
   fi
-  local rc=$?
   log "  ! ${context} failed (exit $rc)"
   if [[ -n "$output" ]]; then
     while IFS= read -r line; do
       log "    | $line"
     done <<<"$(printf '%s\n' "$output" | tail -30)"
   fi
+  log "    | full log: $log_file"
+  return $rc
+}
+
+read_pkg_file() {
+  sed 's/#.*//; s/[[:space:]]*$//; /^[[:space:]]*$/d' "$1"
+}
+
+ensure_paru() {
+  if has paru; then
+    return 0
+  fi
+
+  local tmpdir
+  tmpdir="$(mktemp -d)"
+  run_quiet "install base-devel" sudo pacman -S --needed --noconfirm base-devel
+  run_quiet "clone paru" git clone https://aur.archlinux.org/paru-bin.git "$tmpdir/paru-bin" || return $?
+  (
+    cd "$tmpdir/paru-bin" || exit 1
+    makepkg -si --noconfirm
+  )
+  local rc=$?
+  rm -rf "$tmpdir"
   return $rc
 }
 
@@ -43,10 +71,17 @@ Darwin)
 Linux)
   if [[ -f /etc/arch-release ]]; then
     sudo -v
-    log "pacman..."
-    # shellcheck disable=SC2046
-    run_quiet "pacman install" sudo pacman -S --needed --noconfirm \
-      $(sed 's/#.*//; /^[[:space:]]*$/d' "$DOTFILES_DIR/pkgs.arch")
+    run_quiet "refresh pacman databases" sudo pacman -Sy --noconfirm || exit $?
+    mapfile -t packages < <(read_pkg_file "$DOTFILES_DIR/pkgs.arch")
+    if ! systemd-detect-virt -q 2>/dev/null && [[ -f "$DOTFILES_DIR/pkgs.arch.gui" ]]; then
+      mapfile -t gui_packages < <(read_pkg_file "$DOTFILES_DIR/pkgs.arch.gui")
+      packages+=("${gui_packages[@]}")
+    fi
+    log "paru..."
+    run_quiet "bootstrap paru" ensure_paru || exit $?
+    paru_flags=(--needed --noconfirm)
+    systemd-detect-virt -q 2>/dev/null && paru_flags+=(--mflags="-A")
+    run_quiet "paru install" paru -S "${paru_flags[@]}" "${packages[@]}" || exit $?
   else
     log "Unsupported Linux distribution (only Arch is supported)."
     exit 1
@@ -92,17 +127,18 @@ done
 
 if has mise; then
   log "Installing mise tools..."
-  run_quiet "mise install" mise install
+  mise trust 2>/dev/null
+  mise install 2>&1 | sed 's/^mise ERROR/  ! mise:/' || true
 fi
 
 # ── Default shell ─────────────────────────────────────
 
 fish="$(command -v fish 2>/dev/null || true)"
 if [[ -n "$fish" && "$fish" != "${SHELL:-}" ]]; then
-  if [[ -f /etc/shells ]] && ! grep -qx "$fish" /etc/shells; then
+  if [[ -f /etc/shells ]] && ! grep -qxF "$fish" /etc/shells; then
     echo "$fish" | sudo tee -a /etc/shells >/dev/null
   fi
-  sudo chsh -s "$fish" "$(whoami)" || log "  ! Run manually: chsh -s $fish"
+  sudo usermod -s "$fish" "$(whoami)" || log "  ! Run manually: chsh -s $fish"
 fi
 
-printf '\n  Done! Run `exec fish` to reload.\n\n'
+printf '\n  Done. Run exec fish to reload.\n\n'

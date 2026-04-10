@@ -1,8 +1,12 @@
 model = "gpt-5.4"
+model_reasoning_effort = "xhigh"
 [projects."/Users/kk/code/sbtest"]
 trust_level = "trusted"
 
 [projects."/Users/kk/dotfiles"]
+trust_level = "trusted"
+
+[projects."/private/tmp/archlinux-tart"]
 trust_level = "trusted"
 
 [notice.model_migrations]
