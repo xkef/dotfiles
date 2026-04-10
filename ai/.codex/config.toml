@@ -10,3 +10,14 @@ trust_level = "trusted"
 
 [plugins."github@openai-curated"]
 enabled = true
+
+[tui]
+status_line = [
+  "model-with-reasoning",
+  "context-remaining",
+  "current-dir",
+  "model-name",
+  "project-root",
+  "context-used",
+  "five-hour-limit",
+]

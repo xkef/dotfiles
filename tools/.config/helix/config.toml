@@ -27,7 +27,14 @@ display-inlay-hints = true
 [editor.statusline]
 left = ["mode", "spinner", "file-name", "file-modification-indicator"]
 center = []
-right = ["diagnostics", "selections", "register", "position", "file-encoding", "file-type"]
+right = [
+  "diagnostics",
+  "selections",
+  "register",
+  "position",
+  "file-encoding",
+  "file-type",
+]
 separator = "│"
 
 [editor.indent-guides]
