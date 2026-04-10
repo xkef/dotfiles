@@ -2,6 +2,7 @@
 stow              # symlink farm manager
 git               # version control
 curl              # URL data transfer
+less              # pager (used as $PAGER)
 github-cli        # GitHub from the command line
 jq                # JSON processor
 age               # simple file encryption
@@ -50,6 +51,7 @@ lazydocker        # terminal UI for Docker/Podman
 fx                # terminal JSON viewer
 bubblewrap        # unprivileged sandboxing
 nono              # capability-based sandbox
+opencode          # AI coding agent (terminal)
 
 # ── File management & info ─────────────────────────────
 yazi              # terminal file manager
@@ -57,7 +59,8 @@ glow              # terminal markdown renderer
 tokei             # code statistics by language
 tealdeer          # fast tldr client
 
-# ── Diagnostics & benchmarking ─────────────────────────
+# ── Diagnostics & monitoring ───────────────────────────
+htop              # interactive process viewer
 hyperfine         # command-line benchmarking
 bandwhich         # per-process bandwidth monitor
 xdg-ninja         # audit XDG base-dir compliance

@@ -2,9 +2,11 @@
 brew "stow"              # symlink farm manager
 brew "git"               # version control
 brew "curl"              # URL data transfer
+brew "less"              # pager (used as $PAGER)
 brew "gh"                # GitHub from the command line
 brew "jq"                # JSON processor
 brew "age"               # simple file encryption
+brew "terminal-notifier" # macOS notifications from scripts
 
 # ── Shell & prompt ──────────────────────────────────────
 brew "fish"              # shell
@@ -48,6 +50,7 @@ brew "onefetch"          # git repo summary in terminal
 brew "mise"              # dev tool version manager
 brew "jdtls"             # Java language server
 brew "nono"              # capability-based sandbox for AI agents
+brew "opencode"          # AI coding agent (terminal)
 brew "devcontainer"      # dev container CLI
 brew "podman"            # rootless container engine
 brew "lazydocker"        # terminal UI for Docker/Podman
@@ -60,7 +63,8 @@ brew "glow"              # terminal markdown renderer
 brew "tokei"             # code statistics by language
 brew "tealdeer"          # fast tldr client
 
-# ── Diagnostics & benchmarking ─────────────────────────
+# ── Diagnostics & monitoring ───────────────────────────
+brew "htop"              # interactive process viewer
 brew "hyperfine"         # command-line benchmarking
 brew "bandwhich"         # per-process bandwidth monitor
 brew "xdg-ninja"         # audit XDG base-dir compliance
