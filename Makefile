@@ -1,7 +1,7 @@
 DOTFILES_DIR := $(shell pwd)
 STOW_PACKAGES := $(shell ls -d */ 2>/dev/null | sed 's|/||')
-SHELL_FILES := $(shell git ls-files | xargs file --mime-type 2>/dev/null | awk -F: '/x-shellscript/ {print $$1}' | xargs grep -rL 'env fish' 2>/dev/null)
-FISH_FILES := $(shell git ls-files '*.fish'; git ls-files | xargs file --mime-type 2>/dev/null | awk -F: '/x-shellscript/ {print $$1}' | xargs grep -rl 'env fish' 2>/dev/null)
+SHELL_FILES := $(shell git ls-files '*.sh' '*.bash' install macos-defaults 2>/dev/null)
+FISH_FILES := $(shell git ls-files '*.fish' 'local/.local/bin/vm' 'local/.local/bin/dots-*' 2>/dev/null)
 
 define stow_each
 	@for pkg in $(STOW_PACKAGES); do \

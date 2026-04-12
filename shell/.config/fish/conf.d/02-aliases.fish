@@ -14,8 +14,8 @@ abbr -a ta 'tmux attach -t'
 abbr -a tn 'tmux new -s'
 abbr -a tl 'tmux list-sessions'
 
-# Claude Code
-alias claude claude-sandboxed
+# AI tools
+# Use `sb <tool>` for an explicit nono sandbox.
 
 # Pipe --help through bat with syntax highlighting (via folke/dot)
 abbr -a --position anywhere --set-cursor -- -h "-h 2>&1 | bat --plain --language=help"

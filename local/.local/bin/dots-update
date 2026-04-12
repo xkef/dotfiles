@@ -10,7 +10,7 @@ end
 
 function _run_quiet
     set -l ctx $argv[1]
-    set -l out (eval $argv[2..-1] 2>&1)
+    set -l out ($argv[2..-1] 2>&1)
     or begin
         _log "  ! $ctx failed"
         for line in $out[-10..-1]

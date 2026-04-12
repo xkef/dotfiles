@@ -25,7 +25,7 @@ Then it symlinks configs via stow and sets fish as default shell.
 | [Ghostty](https://ghostty.org)                                   | GPU-accelerated terminal                      |
 | [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder everywhere (shell, tmux, neovim) |
 | [atuin](https://atuin.sh)                                        | Searchable shell history with sync            |
-| [Claude Code](https://claude.ai/)                                | AI coding agent with nono sandbox             |
+| [Claude Code](https://claude.ai/), Codex, OpenCode               | AI coding agents (`sb claude` for sandbox)    |
 | [jj (Jujutsu)](https://github.com/jj-vcs/jj)                     | Git-compatible VCS with simpler mental model  |
 | eza, bat, fd, ripgrep, zoxide                                    | Modern unix replacements                      |
 

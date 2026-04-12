@@ -1,13 +1,5 @@
 model = "gpt-5.4"
 model_reasoning_effort = "xhigh"
-[projects."/Users/kk/code/sbtest"]
-trust_level = "trusted"
-
-[projects."/Users/kk/dotfiles"]
-trust_level = "trusted"
-
-[projects."/private/tmp/archlinux-tart"]
-trust_level = "trusted"
 
 [notice.model_migrations]
 "gpt-5.3-codex" = "gpt-5.4"
@@ -25,3 +17,6 @@ status_line = [
   "context-used",
   "five-hour-limit",
 ]
+
+[projects."~/dotfiles"]
+trust_level = "trusted"

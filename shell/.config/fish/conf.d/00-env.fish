@@ -27,6 +27,7 @@ end
 set -gx CARGO_HOME $XDG_DATA_HOME/cargo
 set -gx RUSTUP_HOME $XDG_DATA_HOME/rustup
 set -gx GOPATH $XDG_DATA_HOME/go
+set -gx GOBIN $GOPATH/bin
 set -gx LESSHISTFILE $XDG_STATE_HOME/less/history
 set -gx NODE_REPL_HISTORY $XDG_DATA_HOME/node_repl_history
 set -gx _ZO_EXCLUDE_DIRS "$HOME/Library/*:$HOME/.Trash/*:/tmp/*"

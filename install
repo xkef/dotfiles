@@ -5,7 +5,7 @@ set -uo pipefail
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 mkdir -p "$HOME/.config/dotfiles"
-[[ -f "$HOME/.config/dotfiles/dir" ]] || printf '%s\n' "$DOTFILES_DIR" >"$HOME/.config/dotfiles/dir"
+printf '%s\n' "$DOTFILES_DIR" >"$HOME/.config/dotfiles/dir"
 
 log() { printf '  %s\n' "$1"; }
 has() { command -v "$1" &>/dev/null; }
@@ -16,7 +16,7 @@ run_quiet() {
   local output
   local log_file
   local rc
-  log_file="$(mktemp "${TMPDIR:-/tmp}/dotfiles-install.XXXXXX.log")"
+  log_file="$(mktemp "${TMPDIR:-/tmp}/dotfiles-install.XXXXXX")"
   output=$("$@" 2>&1 | tee "$log_file")
   rc=$?
   if [[ $rc -eq 0 ]]; then
