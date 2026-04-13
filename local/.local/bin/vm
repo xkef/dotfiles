@@ -80,6 +80,9 @@ end
 # -- Commands --
 
 function cmd_pull
+    if command -q gh
+        gh auth token 2>/dev/null | tart login ghcr.io --username xkef --password-stdin 2>/dev/null
+    end
     tart list --source local --quiet 2>/dev/null | grep -qx $BASE_NAME; and tart delete $BASE_NAME
     echo "  Pulling $REMOTE_IMAGE..."
     tart clone $REMOTE_IMAGE $BASE_NAME; or return 1
