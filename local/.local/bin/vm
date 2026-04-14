@@ -81,7 +81,8 @@ end
 
 function cmd_pull
     if command -q gh
-        gh auth token 2>/dev/null | tart login ghcr.io --username xkef --password-stdin 2>/dev/null
+        set -l gh_user (gh api user --jq .login 2>/dev/null)
+        test -n "$gh_user"; and gh auth token 2>/dev/null | tart login ghcr.io --username $gh_user --password-stdin 2>/dev/null
     end
     tart list --source local --quiet 2>/dev/null | grep -qx $BASE_NAME; and tart delete $BASE_NAME
     echo "  Pulling $REMOTE_IMAGE..."
@@ -227,6 +228,7 @@ Commands:
 Environment:
   VM_NAME       VM name        (default: archlinux-tart)
   VM_USER       Guest user     (default: dev)
+  REMOTE_IMAGE  OCI image      (default: ghcr.io/xkef/archlinux-tart:latest)
   VM_SHARE_DIR  Shared dir     (default: ~/code)
   CPUS          CPU cores      (default: 4)
   MEMORY        Memory in MB   (default: 8192)"
