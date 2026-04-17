@@ -50,7 +50,6 @@ lazydocker        # terminal UI for Docker/Podman
 fx                # terminal JSON viewer
 bubblewrap        # unprivileged sandboxing
 nono              # capability-based sandbox
-claude-code       # AI coding agent (Anthropic)
 openai-codex-bin  # AI coding agent (OpenAI)
 opencode          # AI coding agent (terminal)
 
