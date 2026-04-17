@@ -13,7 +13,7 @@ function sb -d "Run a command inside a nono sandbox"
     if not command -q nono
         printf '\033[33mNo sandbox available (install nono)\033[0m\n' >&2
         read -P "Continue without sandbox? [y/N] " reply
-        string match -qi 'y' -- $reply; or return 1
+        string match -qi y -- $reply; or return 1
         exec $cmd $rest
     end
 
