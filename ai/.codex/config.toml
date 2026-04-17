@@ -20,3 +20,6 @@ status_line = [
 
 [projects."~/dotfiles"]
 trust_level = "trusted"
+
+[projects."~/code/seance"]
+trust_level = "trusted"
