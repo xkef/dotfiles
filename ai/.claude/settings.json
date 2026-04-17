@@ -107,8 +107,8 @@
     "verbs": ["Processing"]
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
-  "autoUpdatesChannel": "stable",
+  "effortLevel": "max",
+  "autoUpdatesChannel": "latest",
   "plansDirectory": ".claude-notes",
   "skipDangerousModePermissionPrompt": true
 }
