@@ -1,3 +1,6 @@
+-- Colorschemes. All lazy-loaded; activated via require("theme").apply() which
+-- derives the colorscheme name from the current Ghostty theme. If you pick a
+-- Ghostty theme without a matching scheme here, the fallback is `default`.
 return {
   {
     "catppuccin/nvim",
@@ -69,41 +72,6 @@ return {
   },
 
   {
-    "ellisonleao/gruvbox.nvim",
-    lazy = true,
-    opts = {
-      undercurl = true,
-      underline = true,
-      bold = true,
-      italic = {
-        strings = true,
-        emphasis = true,
-        comments = true,
-        operators = false,
-        folds = true,
-      },
-      strikethrough = true,
-      contrast = "hard",
-      dim_inactive = true,
-    },
-  },
-
-  { "shaunsingh/nord.nvim", lazy = true },
-
-  {
-    "olimorris/onedarkpro.nvim",
-    lazy = true,
-    opts = {
-      styles = {
-        comments = "italic",
-        keywords = "italic",
-        functions = "bold",
-        virtual_text = "italic",
-      },
-    },
-  },
-
-  {
     "rebelot/kanagawa.nvim",
     lazy = true,
     opts = {
@@ -113,37 +81,6 @@ return {
       statementStyle = { bold = true },
       dimInactive = true,
       background = { dark = "wave", light = "lotus" },
-    },
-  },
-
-  {
-    "neanias/everforest-nvim",
-    lazy = true,
-    config = function()
-      require("everforest").setup({
-        background = "hard",
-        italics = true,
-        ui_contrast = "high",
-        dim_inactive_windows = true,
-        diagnostic_text_highlight = true,
-        diagnostic_virtual_text = "coloured",
-        diagnostic_line_highlight = true,
-        float_style = "blend",
-        inlay_hints_background = "dimmed",
-        show_eob = false,
-        on_highlights = function(hl, palette)
-          hl.Normal = { fg = hl.Normal.fg, bg = palette.bg_dim }
-        end,
-      })
-    end,
-  },
-
-  {
-    "Mofiqul/dracula.nvim",
-    lazy = true,
-    opts = {
-      italic_comment = true,
-      show_end_of_buffer = false,
     },
   },
 }
