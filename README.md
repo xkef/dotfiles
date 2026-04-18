@@ -1,6 +1,6 @@
 # dotfiles
 
-![screenshot](scrot.png)
+![screenshot](docs/scrot.png)
 
 Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 Supports macOS and Arch Linux (btw).

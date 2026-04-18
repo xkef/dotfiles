@@ -138,7 +138,14 @@ if [[ -n "$fish" && "$fish" != "${SHELL:-}" ]]; then
   if [[ -f /etc/shells ]] && ! grep -qxF "$fish" /etc/shells; then
     echo "$fish" | sudo tee -a /etc/shells >/dev/null
   fi
-  sudo usermod -s "$fish" "$(whoami)" || log "  ! Run manually: chsh -s $fish"
+  case "$(uname -s)" in
+  Darwin)
+    chsh -s "$fish" || log "  ! Run manually: chsh -s $fish"
+    ;;
+  *)
+    sudo usermod -s "$fish" "$(whoami)" || log "  ! Run manually: chsh -s $fish"
+    ;;
+  esac
 fi
 
 printf '\n  Done. Run exec fish to reload.\n\n'
