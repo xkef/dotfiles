@@ -19,9 +19,12 @@ if command -q zoxide
     zoxide init fish --cmd z | source
 end
 
-# direnv: per-directory .envrc loader
-if command -q direnv
-    direnv hook fish | source
+# carapace: universal completion spec, provides fish completions for ~1000
+# CLIs that have no native fish support. Bridge mode so native fish
+# completions still win where they exist.
+if command -q carapace
+    set -gx CARAPACE_BRIDGES 'inshellisense,fish,zsh,bash'
+    carapace _carapace fish | source
 end
 
 # navi: interactive cheatsheets (Ctrl-G)
