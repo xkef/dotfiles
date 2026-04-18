@@ -25,6 +25,7 @@ brew "neovim"            # text editor
 brew "tree-sitter-cli"   # parser generator CLI (nvim-treesitter build)
 brew "tmux"              # terminal multiplexer
 brew "sesh"              # smart tmux session manager
+brew "presenterm"        # markdown-driven terminal slides
 
 # ── Modern unix replacements ───────────────────────────
 brew "eza"               # modern ls replacement

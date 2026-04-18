@@ -22,6 +22,7 @@ helix             # modal text editor (Rust)
 neovim            # text editor
 tree-sitter-cli   # parser generator CLI (nvim-treesitter build)
 tmux              # terminal multiplexer
+presenterm        # markdown-driven terminal slides
 
 # ── Modern unix replacements ───────────────────────────
 eza               # modern ls replacement
