@@ -205,6 +205,37 @@ function _apply_theme -a name
     echo "Switched to: $name"
 end
 
+# ── Auto mode ─────────────────────────────────────────
+# Pick a light or dark default based on system appearance.
+
+function _system_is_dark
+    switch (uname)
+        case Darwin
+            # `defaults read -g AppleInterfaceStyle` prints "Dark" when dark
+            # mode is active, and errors otherwise. Capture into a variable
+            # so an empty result doesn't collapse the `test` arguments.
+            set -l style (defaults read -g AppleInterfaceStyle 2>/dev/null)
+            test "$style" = Dark
+        case Linux
+            set -l scheme (gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null)
+            string match -q "*dark*" -- $scheme
+        case '*'
+            return 1
+    end
+end
+
+function _auto_theme
+    # Defaults: Catppuccin Latte (light) / Catppuccin Mocha (dark). Override
+    # via DOTS_THEME_LIGHT / DOTS_THEME_DARK in the environment.
+    set -l light_default (set -q DOTS_THEME_LIGHT && echo $DOTS_THEME_LIGHT || echo "Catppuccin Latte")
+    set -l dark_default (set -q DOTS_THEME_DARK && echo $DOTS_THEME_DARK || echo "Catppuccin Mocha")
+    if _system_is_dark
+        _apply_theme $dark_default
+    else
+        _apply_theme $light_default
+    end
+end
+
 function _list_themes
     set -l current (_current_theme)
     for dir in (_ghostty_theme_dirs)
@@ -227,6 +258,8 @@ end
 switch "$argv[1]"
     case --list -l
         _list_themes
+    case auto
+        _auto_theme
     case --completions
         for dir in (_ghostty_theme_dirs)
             test -d "$dir" || continue
@@ -237,10 +270,11 @@ switch "$argv[1]"
             return 0
         end
     case --help -h
-        echo "Usage: theme [name|--list]"
+        echo "Usage: theme [name|--list|auto]"
         echo ""
         echo "  theme              Show current theme"
         echo "  theme <name>       Switch to any Ghostty theme"
+        echo "  theme auto         Match system light/dark appearance"
         echo "  theme --list       List available themes"
     case ''
         echo "Current: "(_current_theme)

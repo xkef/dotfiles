@@ -1,5 +1,8 @@
 DOTFILES_DIR := $(shell pwd)
-STOW_PACKAGES := $(shell ls -d */ 2>/dev/null | sed 's|/||')
+# Top-level dirs that are NOT stow packages (repo assets, docs, …).
+# Keep in sync with STOW_IGNORE in the install script.
+STOW_IGNORE_RE := ^(docs)$$
+STOW_PACKAGES := $(shell ls -d */ 2>/dev/null | sed 's|/||' | grep -Ev '$(STOW_IGNORE_RE)')
 SHELL_FILES := $(shell git ls-files '*.sh' '*.bash' install macos-defaults 2>/dev/null)
 FISH_FILES := $(shell git ls-files '*.fish' 'local/.local/bin/vm' 'local/.local/bin/dots-*' 2>/dev/null)
 

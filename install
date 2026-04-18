@@ -110,6 +110,10 @@ fi
 
 for pkg in "$DOTFILES_DIR"/*/; do
   pkg="$(basename "$pkg")"
+  # Skip non-stow assets (kept in sync with STOW_IGNORE_RE in Makefile).
+  case "$pkg" in
+  docs) continue ;;
+  esac
   if $adopt; then
     if run_quiet "stow $pkg" stow --dir="$DOTFILES_DIR" -t "$HOME" --adopt "$pkg"; then
       run_quiet "git restore $pkg" git -C "$DOTFILES_DIR" restore "$pkg/"
