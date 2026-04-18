@@ -2,6 +2,12 @@ globs:
   - "**/*.md"
   - "**/.*/**/*.md"
 
+ignores:
+  - ".claude-notes/**"
+  - "ai/.claude/CLAUDE.md"
+  - "ai/.codex/AGENTS.md"
+  - "ai/.config/opencode/AGENTS.md"
+
 config:
   MD013:
     tables: false

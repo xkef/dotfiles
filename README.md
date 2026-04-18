@@ -16,18 +16,18 @@ Then it symlinks configs via stow and sets fish as default shell.
 
 ## What's included
 
-| Tool                                                             | What it does                                  |
-| ---------------------------------------------------------------- | --------------------------------------------- |
-| [Fish](https://fishshell.com)                                    | Shell with fzf completions, sane defaults     |
-| [Starship](https://starship.rs)                                  | Minimal, cross-shell prompt                   |
-| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org) | Editor with LazyVim distro                    |
-| [tmux](https://github.com/tmux/tmux)                             | Terminal multiplexer with vim navigation      |
-| [Ghostty](https://ghostty.org)                                   | GPU-accelerated terminal                      |
-| [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder everywhere (shell, tmux, neovim) |
-| [atuin](https://atuin.sh)                                        | Searchable shell history with sync            |
-| [Claude Code](https://claude.ai/), Codex, OpenCode               | AI coding agents (`sb claude` for sandbox)    |
-| [jj (Jujutsu)](https://github.com/jj-vcs/jj)                     | Git-compatible VCS with simpler mental model  |
-| eza, bat, fd, ripgrep, zoxide                                    | Modern unix replacements                      |
+| Tool                                                             | What it does                                            |
+| ---------------------------------------------------------------- | ------------------------------------------------------- |
+| [Fish](https://fishshell.com)                                    | Shell with fzf completions, sane defaults               |
+| [Starship](https://starship.rs)                                  | Minimal, cross-shell prompt                             |
+| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org) | Editor with LazyVim distro (kickstart kept as fallback) |
+| [tmux](https://github.com/tmux/tmux)                             | Terminal multiplexer with vim navigation                |
+| [Ghostty](https://ghostty.org)                                   | GPU-accelerated terminal                                |
+| [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder everywhere (shell, tmux, neovim)           |
+| [atuin](https://atuin.sh)                                        | Searchable shell history with sync                      |
+| [Claude Code](https://claude.ai/), Codex, OpenCode               | AI coding agents (`sb claude` for sandbox)              |
+| [jj (Jujutsu)](https://github.com/jj-vcs/jj)                     | Git-compatible VCS with simpler mental model            |
+| eza, bat, fd, ripgrep, zoxide                                    | Modern unix replacements                                |
 
 ## Maintenance
 
@@ -68,6 +68,23 @@ Same physical key. Ctrl is the only difference.
 
 ---
 
+## Themes
+
+`dots theme <name>` switches Ghostty, neovim, tmux, and delta together
+in one shot. The full set of [Ghostty themes](https://ghostty.org/docs/config/reference#theme)
+is available; the `--list` view filters to those with a matching nvim
+colorscheme plugin.
+
+```sh
+dots theme --list             # available themes (current marked with *)
+dots theme "Catppuccin Mocha" # switch
+dots theme auto               # match macOS / GNOME light/dark
+```
+
+bat rides the terminal palette via `BAT_THEME=ansi`; eza inherits it
+from the default ANSI color scheme. No per-theme config needed for
+either.
+
 ## Local overrides
 
 | What   | File                                  |
@@ -83,6 +100,9 @@ Same physical key. Ctrl is the only difference.
 ---
 
 ## Credits
+
+For repo layout, the theme pipeline, and the AI-rule rendering flow,
+see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Heavily inspired by
 [wincent/wincent](https://github.com/wincent/wincent) --
