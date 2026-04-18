@@ -9,7 +9,7 @@ define stow_each
 	done
 endef
 
-.PHONY: help install update doctor test stow unstow restow fmt lint tools macos-defaults uninstall clean
+.PHONY: help install update doctor test stow unstow restow fmt lint tools macos-defaults ai-render uninstall clean
 
 help: ## Show this help
 	@grep -E '^[a-z][a-z_-]+:.*## ' $(MAKEFILE_LIST) | \
@@ -41,7 +41,7 @@ restow: ## Re-stow all packages (fixes stale symlinks)
 tools: ## Install mise tools (languages + formatters)
 	mise install
 
-fmt: ## Format all dotfiles
+fmt: ai-render ## Format all dotfiles
 	stylua nvim/.config/lazyvim/ nvim/.config/kickstart/
 	shfmt -w $(SHELL_FILES)
 	fish_indent -w $(FISH_FILES)
@@ -58,6 +58,9 @@ lint: ## Lint shell scripts, neovim config, and markdown
 
 macos-defaults: ## Apply macOS system defaults
 	./macos-defaults
+
+ai-render: ## Regenerate per-tool AGENTS files from ai-shared/
+	@DOTS_DIR=$(DOTFILES_DIR) ai/.local/bin/ai-agents-render
 
 uninstall: unstow ## Remove all symlinks from ~ (alias for unstow)
 
