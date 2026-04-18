@@ -9,9 +9,16 @@ if command -q fd
     set -gx FZF_ALT_C_COMMAND 'fd --type d --hidden --follow --exclude .git .'
 end
 
+# Default options apply to every fzf invocation. Per-mode opts below only add
+# --preview commands and headers; layout/look is centralised here so a single
+# tweak re-skins everything (and so fzf adapts to narrow tmux popups).
 set -gx FZF_DEFAULT_OPTS "\
-    --height 60% --layout=reverse --border --info=inline-right \
+    --height=60% --layout=reverse --info=inline-right \
     --tiebreak=chunk,length \
+    --border=rounded --gap=1 --scroll-off=3 \
+    --prompt='❯ ' --pointer='▎' --marker='┃' \
+    --scrollbar='│' --separator='─' --ellipsis='…' \
+    --preview-window='right,55%,border-rounded,wrap,<80(down,55%,border-top,wrap)' \
     --color=fg:-1,bg:-1,hl:6,fg+:-1,bg+:8,hl+:6:bold \
     --color=info:5,prompt:4,pointer:4,marker:2,spinner:5,header:3,border:8,gutter:-1 \
     --bind 'ctrl-/:toggle-preview' \
@@ -19,22 +26,27 @@ set -gx FZF_DEFAULT_OPTS "\
     --bind 'ctrl-d:preview-half-page-down,ctrl-u:preview-half-page-up' \
     --bind 'ctrl-f:preview-page-down,ctrl-b:preview-page-up'"
 
+# Centred popup when running inside tmux — matches lazygit/jjui/scooter popups.
+set -gx FZF_TMUX_OPTS '-p 80%,70%'
+
 set -gx FZF_CTRL_T_OPTS "\
     --scheme=path \
     --preview 'bat --color=always --style=numbers --line-range :300 {} 2>/dev/null || cat {}' \
-    --preview-window 'right:50%:border-left' \
     --header 'CTRL-/ toggle preview │ CTRL-Y copy'"
 
 set -gx FZF_ALT_C_OPTS "\
     --scheme=path \
-    --preview 'eza -T --color=always --icons --level=2 {} 2>/dev/null || ls -la {}' \
-    --preview-window 'right:50%:border-left'"
+    --preview 'eza -T --color=always --icons --level=2 {} 2>/dev/null || ls -la {}'"
 
-# Tab completion options (parsed as a string by fzf, so embedded quotes work)
+# Tab completion: hide fish's tab-separated description from the list (preview
+# still receives the full token via fzf-preview, which strips it). Restores
+# fzf's default tab=accept behaviour. Drops the global --gap and separator so
+# the completion popup stays compact — those work better in the larger CTRL-T
+# / CTRL-R finders.
 set -gx FZF_COMPLETION_OPTS "\
-    --preview 'fzf-preview {1}' \
-    --preview-window right:50%:border-left \
-    --bind 'tab:down,btab:up,enter:accept'"
+    --with-nth=1 --delimiter='\t' \
+    --gap=0 --no-separator \
+    --preview 'fzf-preview {1}'"
 
 # fzf shell integration (Ctrl-T, Ctrl-R, Alt-C)
 fzf --fish | source

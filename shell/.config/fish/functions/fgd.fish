@@ -3,7 +3,6 @@ function fgd --description 'Pick dirty files to edit (fzf + git diff)'
     set -l files (git -c color.status=always status --short |
         fzf --ansi --multi --nth=2.. --scheme=path \
             --preview 'git diff --color=always -- {2} 2>/dev/null' \
-            --preview-window 'right:60%:border-left' \
             --header 'Tab select │ Enter open │ CTRL-/ preview' |
         awk '{print $NF}')
     test -n "$files" && $EDITOR $files
