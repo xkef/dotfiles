@@ -1,10 +1,133 @@
 #!/usr/bin/env fish
-# Arch Linux ARM64 dev VM on Tart.
+# Tart-backed Linux dev VM helper.
 
-set -g VM_NAME (set -q VM_NAME; and echo $VM_NAME; or echo archlinux-tart)
-set -g BASE_NAME archlinux-base
-set -g VM_USER (set -q VM_USER; and echo $VM_USER; or echo dev)
-set -g REMOTE_IMAGE (set -q REMOTE_IMAGE; and echo $REMOTE_IMAGE; or echo ghcr.io/xkef/archlinux-tart:latest)
+argparse -s -n vm 'f/flavor=' -- $argv; or exit 1
+
+if set -q _flag_flavor
+    set -g VM_FLAVOR $_flag_flavor
+else if not set -q VM_FLAVOR
+    set -g VM_FLAVOR archlinux
+end
+
+function _default_vm_name
+    switch $VM_FLAVOR
+        case archlinux
+            echo archlinux-tart
+        case ubuntu
+            echo ubuntu-tart
+        case macos
+            echo macos-tahoe-tart
+        case '*'
+            echo "$VM_FLAVOR-tart"
+    end
+end
+
+function _default_base_name
+    switch $VM_FLAVOR
+        case archlinux
+            echo archlinux-base
+        case ubuntu
+            echo ubuntu-base
+        case macos
+            echo macos-tahoe-base
+        case '*'
+            echo "$VM_FLAVOR-base"
+    end
+end
+
+function _default_remote_image
+    switch $VM_FLAVOR
+        case archlinux
+            echo ghcr.io/xkef/archlinux-tart:latest
+        case macos
+            echo ghcr.io/cirruslabs/macos-tahoe-vanilla:latest
+    end
+end
+
+function _default_user
+    switch $VM_FLAVOR
+        case macos
+            echo admin
+        case '*'
+            echo dev
+    end
+end
+
+function _is_macos
+    test "$VM_FLAVOR" = macos
+end
+
+function _vm_exists
+    tart list --source local --quiet 2>/dev/null | rg -qx --fixed-strings -- $argv[1]
+end
+
+function _default_disk_size
+    switch $VM_FLAVOR
+        case macos
+            echo 120
+        case '*'
+            echo ''
+    end
+end
+
+function _default_work_size
+    switch $VM_FLAVOR
+        case macos
+            echo 60G
+        case '*'
+            echo ''
+    end
+end
+
+function _apply_resources
+    set -l args --cpu (set -q CPUS; and echo $CPUS; or echo 4) \
+        --memory (set -q MEMORY; and echo $MEMORY; or echo 8192) --random-mac
+    set -l disk (set -q DISK_SIZE; and echo $DISK_SIZE; or _default_disk_size)
+    test -n "$disk"; and set -a args --disk-size $disk
+    tart set $argv[1] $args
+end
+
+function _sudo_ssh
+    set -l ip $argv[1]
+    set -e argv[1]
+    set -l opts (_ssh_opts); or return 1
+    set -l pw (set -q VM_INIT_PASSWORD; and echo $VM_INIT_PASSWORD; or echo admin)
+    set -l pw_esc (string escape --style=script -- $pw)
+    ssh $opts $VM_USER@$ip \
+        "printf '%s\n' $pw_esc | sudo -S -p '' $argv"
+end
+
+function _add_work_partition
+    set -l ip $argv[1]
+    set -l size (set -q WORK_SIZE; and echo $WORK_SIZE; or _default_work_size)
+    test -z "$size"; and return 0
+    _sudo_ssh $ip "diskutil addPartition disk0s3 APFS work $size >/dev/null 2>&1"
+end
+
+function _link_work_dirs
+    set -l ip $argv[1]
+    _sudo_ssh $ip "sh -c '
+        test -d /Volumes/work || exit 0
+        chown -R $VM_USER:staff /Volumes/work
+        for target in homebrew Developer; do
+            mkdir -p /Volumes/work/\$target
+        done
+        rm -rf /opt/homebrew /Library/Developer 2>/dev/null || true
+        mkdir -p /opt /Library
+        ln -snf /Volumes/work/homebrew /opt/homebrew
+        ln -snf /Volumes/work/Developer /Library/Developer
+    '"
+end
+
+set -g VM_NAME (set -q VM_NAME; and echo $VM_NAME; or _default_vm_name)
+set -g BASE_NAME (set -q BASE_NAME; and echo $BASE_NAME; or _default_base_name)
+set -g VM_USER (set -q VM_USER; and echo $VM_USER; or _default_user)
+if set -q REMOTE_IMAGE
+    set -g REMOTE_IMAGE $REMOTE_IMAGE
+else
+    set -l remote_image (_default_remote_image)
+    test -n "$remote_image"; and set -g REMOTE_IMAGE $remote_image
+end
 set -g DOTFILES_DIR (test -f $HOME/.config/dotfiles/dir; and cat $HOME/.config/dotfiles/dir; or path resolve (status dirname)/../../..)
 set -g VM_DIR $DOTFILES_DIR/local/.local/share/vm
 set -g VM_SHARE_DIR (set -q VM_SHARE_DIR; and echo $VM_SHARE_DIR; or echo $HOME/code)
@@ -35,7 +158,11 @@ function _ssh_opts
 end
 
 function _vm_ip
-    tart ip $VM_NAME --resolver agent 2>/dev/null
+    if _is_macos
+        tart ip $VM_NAME --resolver arp 2>/dev/null
+    else
+        tart ip $VM_NAME --resolver agent 2>/dev/null
+    end
 end
 
 function _wait_ip
@@ -70,6 +197,37 @@ function _inject_ssh_key
         && chmod 600 /home/$VM_USER/.ssh/authorized_keys"
 end
 
+function _wait_ssh_port
+    set -l ip $argv[1]
+    for i in (seq 1 60)
+        nc -z -G 2 $ip 22 2>/dev/null; and return 0
+        sleep 2
+    end
+    echo "  Timeout waiting for SSH port." >&2
+    return 1
+end
+
+function _inject_ssh_key_password
+    set -l ip $argv[1]
+    set -l pub (_ssh_key_file); or return 1
+    command -q expect; or begin
+        echo "  'expect' is required to seed the SSH key on first boot." >&2
+        return 1
+    end
+    set -lx VM_PW (set -q VM_INIT_PASSWORD; and echo $VM_INIT_PASSWORD; or echo admin)
+    expect -c "
+        set timeout 60
+        log_user 0
+        spawn ssh-copy-id -f -o StrictHostKeyChecking=accept-new \
+            -o UserKnownHostsFile=$VM_DIR/known_hosts -i $pub $VM_USER@$ip
+        expect {
+            -re {[Pp]assword:} { send -- \"\$env(VM_PW)\\r\"; exp_continue }
+            timeout { exit 2 }
+            eof { }
+        }
+    "
+end
+
 function _setup_guest
     set -l ip $argv[1]
     set -l opts (_ssh_opts); or return 1
@@ -84,14 +242,21 @@ function cmd_pull
         set -l gh_user (gh api user --jq .login 2>/dev/null)
         test -n "$gh_user"; and gh auth token 2>/dev/null | tart login ghcr.io --username $gh_user --password-stdin 2>/dev/null
     end
-    tart list --source local --quiet 2>/dev/null | grep -qx $BASE_NAME; and tart delete $BASE_NAME
+
+    if not set -q REMOTE_IMAGE[1]
+        echo "  REMOTE_IMAGE is not set for '$VM_FLAVOR'." >&2
+        echo "  Use 'vm create-linux' to build a blank Linux VM, or set REMOTE_IMAGE." >&2
+        return 1
+    end
+
+    _vm_exists $BASE_NAME; and tart delete $BASE_NAME
     echo "  Pulling $REMOTE_IMAGE..."
     tart clone $REMOTE_IMAGE $BASE_NAME; or return 1
     echo "  Base image ready."
 end
 
 function cmd_create
-    if tart list --source local --quiet 2>/dev/null | grep -qx $VM_NAME
+    if _vm_exists $VM_NAME
         if contains -- --force $argv
             tart stop $VM_NAME 2>/dev/null
             tart delete $VM_NAME
@@ -106,17 +271,30 @@ function cmd_create
         echo "  Base image not found. Run: vm pull" >&2
         return 1
     end
-    tart set $VM_NAME --cpu (set -q CPUS; and echo $CPUS; or echo 4) \
-        --memory (set -q MEMORY; and echo $MEMORY; or echo 8192) --random-mac
+    _apply_resources $VM_NAME
 
     echo "  Booting for initial setup..."
-    cmd_start; or return 1
-    set -l ip (_vm_ip)
-
-    echo "  Installing SSH key..."
-    _inject_ssh_key; or begin
+    cmd_start --headless; or return 1
+    set -l ip (_wait_ip); or begin
         cmd_stop
         return 1
+    end
+
+    echo "  Installing SSH key..."
+    if _is_macos
+        _wait_ssh_port $ip; or begin
+            cmd_stop
+            return 1
+        end
+        _inject_ssh_key_password $ip; or begin
+            cmd_stop
+            return 1
+        end
+    else
+        _inject_ssh_key; or begin
+            cmd_stop
+            return 1
+        end
     end
     _wait_ssh $ip; or begin
         cmd_stop
@@ -125,6 +303,12 @@ function cmd_create
 
     echo "  Configuring guest..."
     _setup_guest $ip
+    if _is_macos
+        echo "  Creating work partition in free space..."
+        _add_work_partition $ip; or echo "  (work partition step failed; continuing)"
+        echo "  Linking /opt/homebrew + /Library/Developer to /Volumes/work..."
+        _link_work_dirs $ip; or echo "  (symlink step failed; continuing)"
+    end
 
     echo "  Syncing dotfiles..."
     cmd_sync; or begin
@@ -136,14 +320,84 @@ function cmd_create
     echo "  VM ready."
 end
 
+function cmd_create_linux
+    set -l create_args
+    set -l force 0
+
+    while test (count $argv) -gt 0
+        switch $argv[1]
+            case --force
+                set force 1
+            case '*'
+                set -a create_args $argv[1]
+        end
+        set argv $argv[2..-1]
+    end
+
+    if _vm_exists $VM_NAME
+        if test $force -eq 1
+            tart stop $VM_NAME 2>/dev/null
+            tart delete $VM_NAME
+        else
+            echo "  VM '$VM_NAME' already exists. Use --force to recreate." >&2
+            return 1
+        end
+    end
+
+    rm -f $VM_DIR/known_hosts
+    tart create $VM_NAME --linux $create_args; or return 1
+    _apply_resources $VM_NAME
+
+    echo "  Blank Linux VM ready."
+    echo "  Boot installer with: vm start --graphics --disk /path/to/ubuntu.iso:ro"
+end
+
 function cmd_start
     set -l ip (_vm_ip)
     test -n "$ip"; and echo "  Already running ($ip)."; and return 0
-    set -l args $VM_NAME --no-graphics
-    test -d $VM_SHARE_DIR; and set -a args --dir="$VM_SHARE_DIR:tag=code"
-    tart run $args &
-    set -l ip (_wait_ip); or return 1
-    echo "  Running ($ip)."
+
+    set -l run_args
+    set -l mode (_is_macos; and echo graphics; or echo headless)
+
+    while test (count $argv) -gt 0
+        switch $argv[1]
+            case --graphics
+                set mode graphics
+            case --vnc
+                set mode vnc
+            case --headless --no-graphics
+                set mode headless
+            case '*'
+                set -a run_args $argv[1]
+        end
+        set argv $argv[2..-1]
+    end
+
+    switch $mode
+        case headless
+            set -a run_args --no-graphics
+        case vnc
+            set -a run_args --vnc
+    end
+
+    test -d $VM_SHARE_DIR; and set -a run_args --dir="$VM_SHARE_DIR:tag=code"
+    set -a run_args $VM_NAME
+
+    tart run $run_args &
+
+    if test "$mode" = headless
+        set -l ip (_wait_ip); or return 1
+        echo "  Running ($ip)."
+        return 0
+    end
+
+    sleep 2
+    set -l ip (_vm_ip)
+    if test -n "$ip"
+        echo "  Running ($ip)."
+    else
+        echo "  Running (graphics mode)."
+    end
 end
 
 function cmd_stop
@@ -175,8 +429,12 @@ function cmd_sync
 end
 
 function cmd_status
-    if not tart list --source local --quiet 2>/dev/null | grep -qx $VM_NAME
-        echo "  VM does not exist. Run: vm pull && vm create"
+    if not _vm_exists $VM_NAME
+        if set -q REMOTE_IMAGE[1]
+            echo "  VM does not exist. Run: vm pull && vm create"
+        else
+            echo "  VM does not exist. Run: vm create-linux"
+        end
         return 1
     end
     set -l ip (_vm_ip)
@@ -211,12 +469,13 @@ function cmd_ip
 end
 
 function cmd_help
-    echo "Usage: vm <command>
+    echo "Usage: vm [-f|--flavor <archlinux|macos>] <command>
 
 Commands:
-  pull       Pull latest Arch base image from GHCR
-  create     Create VM from base image (--force to recreate)
-  start      Start the VM headless
+  pull         Pull latest base image from REMOTE_IMAGE
+  create       Create VM from base image (--force to recreate)
+  create-linux Create a blank Linux VM (--force to recreate)
+  start        Start the VM (--graphics, --vnc, or headless by default)
   stop       Stop the VM
   ssh        SSH in (forwards agent + API keys)
   sync       Rsync dotfiles and run ./install in guest
@@ -226,18 +485,29 @@ Commands:
   clean      Delete all local VMs
 
 Environment:
-  VM_NAME       VM name        (default: archlinux-tart)
-  VM_USER       Guest user     (default: dev)
-  REMOTE_IMAGE  OCI image      (default: ghcr.io/xkef/archlinux-tart:latest)
-  VM_SHARE_DIR  Shared dir     (default: ~/code)
-  CPUS          CPU cores      (default: 4)
-  MEMORY        Memory in MB   (default: 8192)"
+  VM_FLAVOR         Preset: archlinux | macos (default: archlinux)
+  VM_NAME           VM name          (default: <flavor>-tart)
+  BASE_NAME         Base VM name     (default: <flavor>-base)
+  VM_USER           Guest user       (default: dev; admin on macos)
+  VM_INIT_PASSWORD  First-boot pw    (default: admin, macos only)
+  REMOTE_IMAGE      OCI image        (default: per-flavor preset)
+  VM_SHARE_DIR      Shared dir       (default: ~/code)
+  CPUS              CPU cores        (default: 4)
+  MEMORY            Memory in MB     (default: 8192)
+  DISK_SIZE         Host disk GB     (default: 120 on macos)
+  WORK_SIZE         macOS work part  (default: 60G; carved from free space)
+
+Examples:
+  vm pull && vm create                # archlinux (default)
+  vm -f macos pull && vm -f macos create
+  vm -f macos start                   # graphical by default"
 end
 
 set -l cmd (test (count $argv) -gt 0; and echo $argv[1]; or echo help)
+set -l fn_cmd (string replace -a '-' '_' -- $cmd)
 switch $cmd
-    case pull create start stop ssh sync status ip destroy clean help
-        cmd_$cmd $argv[2..-1]
+    case pull create create-linux start stop ssh sync status ip destroy clean help
+        cmd_$fn_cmd $argv[2..-1]
     case '*'
         echo "Unknown: $cmd" >&2
         cmd_help
