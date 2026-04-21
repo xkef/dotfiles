@@ -1,5 +1,8 @@
 {
-  "defaultProvider": "anthropic",
-  "defaultModel": "claude-sonnet-4-5",
-  "theme": "dark"
+  "defaultProvider": "github-copilot",
+  "defaultModel": "gpt-5.4",
+  "theme": "dark",
+  "lastChangelogVersion": "0.68.0",
+  "showHardwareCursor": true,
+  "defaultThinkingLevel": "xhigh"
 }
