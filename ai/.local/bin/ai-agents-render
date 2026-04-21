@@ -36,3 +36,7 @@ render codex \
 render opencode \
   "$DOTS/ai/.config/opencode/AGENTS.md" \
   '`~/.config/opencode/` and `~/.local/share/opencode/`'
+
+render pi \
+  "$DOTS/ai/.pi/agent/AGENTS.md" \
+  '`~/.pi/agent/`'

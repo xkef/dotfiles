@@ -1,0 +1,31 @@
+{
+  "$schema": "https://nono.dev/schemas/nono-profile.schema.json",
+  "extends": "default",
+  "meta": {
+    "name": "pi",
+    "version": "1.0.0",
+    "description": "pi.dev coding agent with mise, jj, maven, npm, cargo, and keychain access"
+  },
+  "filesystem": {
+    "allow": ["$HOME/.pi", "$XDG_CONFIG_HOME/pi", "$XDG_DATA_HOME/pi", "$XDG_STATE_HOME/pi", "$XDG_CACHE_HOME/pi"],
+    "allow_file": ["$HOME/Library/Keychains/login.keychain-db"]
+  },
+  "workdir": {
+    "access": "readwrite"
+  },
+  "policy": {
+    "override_deny": ["$HOME/Library/Keychains/login.keychain-db"],
+    "add_allow_readwrite": [
+      "$HOME/.m2",
+      "$HOME/.npm",
+      "$XDG_CACHE_HOME/mise",
+      "$XDG_CONFIG_HOME/jj",
+      "$XDG_DATA_HOME/cargo"
+    ],
+    "add_allow_read": [
+      "$XDG_DATA_HOME/mise",
+      "$XDG_STATE_HOME/mise",
+      "$XDG_CONFIG_HOME/gh"
+    ]
+  }
+}
