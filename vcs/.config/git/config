@@ -4,7 +4,8 @@
 
 [user]
 	name = xkef
-	email = xkef@pm.me
+	email = git@xkef.dev
+	signingkey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFXPTYbJpNsexhTZ+x8Ci8tVkGV/d0MvWqFrlyT3yTki
 
 [init]
 	defaultBranch = main
@@ -25,6 +26,7 @@
 
 [tag]
 	sort = version:refname
+	gpgsign = true
 
 # ── Diff ──────────────────────────────────────────────
 [diff]
@@ -83,6 +85,7 @@
 [commit]
 	verbose = true
 	template = ~/.config/git/message
+	gpgsign = true
 
 # ── Help ─────────────────────────────────────────────
 [help]
@@ -134,6 +137,17 @@
 [include]
 	path = ~/.config/git/delta.gitconfig
 
+# ── Signing (SSH via 1Password agent) ────────────────
+[gpg]
+	format = ssh
+
+[gpg "ssh"]
+	allowedSignersFile = ~/.config/git/allowed_signers
+
 # ── Local overrides (identity, signing, etc.) ────────
 [include]
 	path = ~/.config/git/config.local
+
+# ── Work identity (rendered by install from 1Password) ─
+[includeIf "gitdir:~/work/"]
+	path = ~/.config/git/config.work

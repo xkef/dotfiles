@@ -57,6 +57,24 @@ if set -q HOMEBREW_PREFIX
 end
 fish_add_path -gP /usr/local/bin
 
+# ── 1Password SSH agent ──────────────────────────────
+# git signing uses `ssh-keygen -Y sign`, which reads $SSH_AUTH_SOCK
+# directly and ignores ssh_config's IdentityAgent. Point at the
+# 1Password socket so signing reaches the same key ssh does.
+# Skip when SSH'd in to preserve a forwarded agent.
+if not set -q SSH_CONNECTION
+    set -l _op_sock
+    switch (uname -s)
+        case Darwin
+            set _op_sock "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+        case Linux
+            set _op_sock "$HOME/.1password/agent.sock"
+    end
+    if test -S "$_op_sock"
+        set -gx SSH_AUTH_SOCK "$_op_sock"
+    end
+end
+
 # ── GitHub token ─────────────────────────────────────
 if test -z "$GITHUB_TOKEN"; and command -q gh
     set -gx GITHUB_TOKEN (gh auth token 2>/dev/null)

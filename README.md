@@ -14,6 +14,13 @@ The `install` script auto-detects your OS and installs packages
 using the native format (`Brewfile` on macOS, `pkgs.arch` on Arch).
 Then it symlinks configs via stow and sets fish as default shell.
 
+> **Work laptop:** sign in to the 1Password CLI (`op signin`, or enable
+> the desktop-app integration) before running `./install`. The
+> installer reads `op://Work/git/{name,email}` and renders
+> `~/.config/git/config.work` so commits inside `~/work/` use the
+> work identity automatically. On personal machines without that
+> vault item, the step is a silent no-op.
+
 ## What's included
 
 | Tool                                                             | What it does                                            |
@@ -87,15 +94,16 @@ either.
 
 ## Local overrides
 
-| What   | File                                  |
-| ------ | ------------------------------------- |
-| Fish   | `~/.config/fish/local.fish`           |
-| Git    | `~/.config/git/config.local`          |
-| jj     | `jj config set --user user.name "…"`  |
-| Neovim | `~/.config/lazyvim/lua/plugins/*.lua` |
-| tmux   | `~/.config/tmux/local.conf`           |
-| sesh   | `~/.config/sesh/local.toml`           |
-| SSH    | `~/.ssh/conf.d/*.conf`                |
+| What          | File                                  |
+| ------------- | ------------------------------------- |
+| Fish          | `~/.config/fish/local.fish`           |
+| Git           | `~/.config/git/config.local`          |
+| Git (~/work/) | `~/.config/git/config.work`           |
+| jj            | `jj config set --user user.name "…"`  |
+| Neovim        | `~/.config/lazyvim/lua/plugins/*.lua` |
+| tmux          | `~/.config/tmux/local.conf`           |
+| sesh          | `~/.config/sesh/local.toml`           |
+| SSH           | `~/.ssh/conf.d/*.conf`                |
 
 ---
 

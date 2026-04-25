@@ -15,7 +15,9 @@ Thumbs.db
 # Local overrides (not tracked)
 shell/.config/fish/local.fish
 shell/.config/fish/fish_variables
-/git/.config/git/config.local
+/vcs/.config/git/config.local
+/vcs/.config/git/config.work
+/vcs/.config/git/allowed_signers.work
 /vcs/.config/git/delta.gitconfig
 /vcs/.config/jj/repos/*
 /tools/.config/television/cable/
