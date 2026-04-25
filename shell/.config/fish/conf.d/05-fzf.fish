@@ -15,9 +15,9 @@ end
 set -gx FZF_DEFAULT_OPTS "\
     --height=60% --layout=reverse --info=inline-right \
     --tiebreak=chunk,length \
-    --border=rounded --gap=1 --scroll-off=3 \
+    --border=rounded --gap=0 --no-separator --scroll-off=3 \
     --prompt='❯ ' --pointer='▎' --marker='┃' \
-    --scrollbar='│' --separator='─' --ellipsis='…' \
+    --scrollbar='│' --ellipsis='…' \
     --preview-window='right,55%,border-rounded,wrap,<80(down,55%,border-top,wrap)' \
     --color=fg:-1,bg:-1,hl:6,fg+:-1,bg+:8,hl+:6:bold \
     --color=info:5,prompt:4,pointer:4,marker:2,spinner:5,header:3,border:8,gutter:-1 \
@@ -40,12 +40,9 @@ set -gx FZF_ALT_C_OPTS "\
 
 # Tab completion: hide fish's tab-separated description from the list (preview
 # still receives the full token via fzf-preview, which strips it). Restores
-# fzf's default tab=accept behaviour. Drops the global --gap and separator so
-# the completion popup stays compact — those work better in the larger CTRL-T
-# / CTRL-R finders.
+# fzf's default tab=accept behaviour.
 set -gx FZF_COMPLETION_OPTS "\
     --with-nth=1 --delimiter='\t' \
-    --gap=0 --no-separator \
     --preview 'fzf-preview {1}'"
 
 # fzf shell integration (Ctrl-T, Ctrl-R, Alt-C)

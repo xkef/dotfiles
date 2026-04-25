@@ -4,7 +4,6 @@
 
 session=$(sesh list --icons | fzf-tmux -p 95%,80% \
   --ansi --no-sort --reverse \
-  --gap=0 --no-separator \
   --border-label ' sesh ' --prompt '> ' \
   --header 'C-a all | C-t tmux | C-g config | C-x zoxide | C-f find | C-w kill | C-/ preview' \
   --bind 'tab:down,btab:up' \
