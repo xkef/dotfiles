@@ -104,6 +104,33 @@ function _add_work_partition
     _sudo_ssh $ip "diskutil addPartition disk0s3 APFS work $size >/dev/null 2>&1"
 end
 
+function _install_tart_guest_agent
+    set -l ip $argv[1]
+    set -l opts (_ssh_opts); or return 1
+    set -l plist '<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>Label</key><string>org.cirruslabs.tart-guest-agent</string>
+<key>ProgramArguments</key><array><string>/opt/homebrew/bin/tart-guest-agent</string><string>--run-agent</string></array>
+<key>EnvironmentVariables</key><dict><key>PATH</key><string>/bin:/usr/bin:/usr/sbin:/usr/local/bin:/opt/homebrew/bin</string></dict>
+<key>RunAtLoad</key><true/><key>KeepAlive</key><true/>
+<key>StandardOutPath</key><string>/tmp/tart-guest-agent.log</string>
+<key>StandardErrorPath</key><string>/tmp/tart-guest-agent.log</string>
+</dict></plist>'
+    set -l plist_path /Library/LaunchAgents/org.cirruslabs.tart-guest-agent.plist
+    printf '%s\n' $plist | ssh $opts $VM_USER@$ip "bash -lc 'sudo tee $plist_path >/dev/null && sudo chown root:wheel $plist_path && sudo chmod 644 $plist_path'"
+    or return 1
+    ssh $opts $VM_USER@$ip "bash -lc 'command -v tart-guest-agent >/dev/null 2>&1 || /opt/homebrew/bin/brew install cirruslabs/cli/tart-guest-agent'"
+    or return 1
+    ssh $opts $VM_USER@$ip "bash -lc 'launchctl bootstrap gui/\$(id -u) $plist_path 2>/dev/null || launchctl load $plist_path 2>/dev/null || true'"
+end
+
+function _link_shared_dir_macos
+    set -l ip $argv[1]
+    set -l opts (_ssh_opts); or return 1
+    ssh $opts $VM_USER@$ip "bash -lc 'ln -snf \"/Volumes/My Shared Files/code\" \"\$HOME/code\" 2>/dev/null || true'"
+end
+
 function _link_work_dirs
     set -l ip $argv[1]
     _sudo_ssh $ip "sh -c '
@@ -316,8 +343,37 @@ function cmd_create
         return 1
     end
 
+    if _is_macos
+        echo "  Installing tart-guest-agent (clipboard + RPC)..."
+        _install_tart_guest_agent $ip; or echo "  (guest-agent step failed; continuing)"
+        echo "  Linking shared folder to ~/code..."
+        _link_shared_dir_macos $ip; or true
+    end
+
     cmd_stop
     echo "  VM ready."
+end
+
+function cmd_bootstrap
+    if not _is_macos
+        echo "  bootstrap is only needed for macOS guests." >&2
+        return 1
+    end
+    set -l ip (_vm_ip)
+    if test -z "$ip"
+        echo "  Starting VM headlessly..."
+        cmd_start --headless; or return 1
+        set ip (_wait_ip); or return 1
+    end
+    _wait_ssh_port $ip; or return 1
+    _wait_ssh $ip; or return 1
+    echo "  Installing tart-guest-agent (clipboard + RPC)..."
+    _install_tart_guest_agent $ip; or return 1
+    echo "  Linking shared folder to ~/code..."
+    _link_shared_dir_macos $ip; or true
+    echo "  Done. Restart the VM (vm stop; vm start) to enable the updated"
+    echo "  shared-folder mount tag — folder will appear at ~/code and at"
+    echo "  /Volumes/My Shared Files/code."
 end
 
 function cmd_create_linux
@@ -380,7 +436,14 @@ function cmd_start
             set -a run_args --vnc
     end
 
-    test -d $VM_SHARE_DIR; and set -a run_args --dir="$VM_SHARE_DIR:tag=code"
+    if test -d $VM_SHARE_DIR
+        if _is_macos
+            # Default automount tag → appears at /Volumes/My Shared Files/code inside guest.
+            set -a run_args --dir="code:$VM_SHARE_DIR"
+        else
+            set -a run_args --dir="$VM_SHARE_DIR:tag=code"
+        end
+    end
     set -a run_args $VM_NAME
 
     tart run $run_args &
@@ -440,7 +503,11 @@ function cmd_status
     set -l ip (_vm_ip)
     echo "  VM:    $VM_NAME"(test -n "$ip"; and echo " (running, $ip)"; or echo " (stopped)")
     if test -d $VM_SHARE_DIR
-        echo "  Share: $VM_SHARE_DIR -> /home/$VM_USER/code"
+        if _is_macos
+            echo "  Share: $VM_SHARE_DIR -> /Volumes/My Shared Files/code (~/code symlinked)"
+        else
+            echo "  Share: $VM_SHARE_DIR -> /home/$VM_USER/code"
+        end
     end
 end
 
@@ -475,6 +542,7 @@ Commands:
   pull         Pull latest base image from REMOTE_IMAGE
   create       Create VM from base image (--force to recreate)
   create-linux Create a blank Linux VM (--force to recreate)
+  bootstrap    Install tart-guest-agent in a macOS guest (clipboard + RPC)
   start        Start the VM (--graphics, --vnc, or headless by default)
   stop       Stop the VM
   ssh        SSH in (forwards agent + API keys)
@@ -506,7 +574,7 @@ end
 set -l cmd (test (count $argv) -gt 0; and echo $argv[1]; or echo help)
 set -l fn_cmd (string replace -a '-' '_' -- $cmd)
 switch $cmd
-    case pull create create-linux start stop ssh sync status ip destroy clean help
+    case pull create create-linux bootstrap start stop ssh sync status ip destroy clean help
         cmd_$fn_cmd $argv[2..-1]
     case '*'
         echo "Unknown: $cmd" >&2
