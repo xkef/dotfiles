@@ -17,7 +17,6 @@ brew "navi"              # interactive cheatsheet browser
 brew "fzf"               # fuzzy finder
 brew "television"        # channel-oriented fuzzy finder
 brew "zoxide"            # smarter cd with frecency
-brew "carapace"          # universal shell completion spec
 
 # ── Editors & multiplexer ──────────────────────────────
 brew "helix"             # modal text editor (Rust)

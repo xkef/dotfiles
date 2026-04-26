@@ -15,7 +15,6 @@ navi              # interactive cheatsheet browser
 fzf               # fuzzy finder
 television        # channel-oriented fuzzy finder
 zoxide            # smarter cd with frecency
-carapace-bin      # universal shell completion spec
 
 # ── Editors & multiplexer ──────────────────────────────
 helix             # modal text editor (Rust)
