@@ -42,6 +42,8 @@ set -gx FZF_ALT_C_OPTS "\
 # still receives the full token via fzf-preview, which strips it). Restores
 # fzf's default tab=accept behaviour.
 set -gx FZF_COMPLETION_OPTS "\
+    --no-multi \
+    --bind 'tab:down,btab:up' \
     --with-nth=1 --delimiter='\t' \
     --preview 'fzf-preview {1}'"
 
