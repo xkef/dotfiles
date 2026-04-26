@@ -4,16 +4,16 @@ Configs for multiple AI coding agents, stowed to `$HOME`.
 
 ## Layout
 
-| Path                               | Tool            | Purpose                      |
-| ---------------------------------- | --------------- | ---------------------------- |
-| `.claude/`                         | Claude Code     | agents, skills, settings     |
-| `.codex/`                          | OpenAI Codex    | agent rules, `config.toml`   |
-| `.config/opencode/`                | OpenCode        | agent rules, `opencode.json` |
-| `.pi/agent/`                       | pi.dev          | agent rules, settings        |
-| `.config/nono/`                    | nono sandbox    | Seatbelt/Landlock profiles   |
-| `.config/ai-shared/AGENTS.base.md` | shared source   | base rules for all tools     |
-| `.config/ai-shared/overlays/*.md`  | per-tool extras | appended to the base         |
-| `.local/bin/ai-agents-render`      | generator       | renders tool AGENTS files    |
+| Path                               | Tool            | Purpose                       |
+| ---------------------------------- | --------------- | ----------------------------- |
+| `.claude/`                         | Claude Code     | agents, skills, settings      |
+| `.codex/`                          | OpenAI Codex    | agent rules, config example   |
+| `.config/opencode/`                | OpenCode        | agent rules, `opencode.json`  |
+| `.pi/agent/`                       | pi.dev          | agent rules, settings example |
+| `.config/nono/`                    | nono sandbox    | Seatbelt/Landlock profiles    |
+| `.config/ai-shared/AGENTS.base.md` | shared source   | base rules for all tools      |
+| `.config/ai-shared/overlays/*.md`  | per-tool extras | appended to the base          |
+| `.local/bin/ai-agents-render`      | generator       | renders tool AGENTS files     |
 
 ## Editing agent rules
 
@@ -33,6 +33,11 @@ make ai-render
 **Never hand-edit** `ai/.claude/CLAUDE.md`, `ai/.codex/AGENTS.md`, or
 `ai/.config/opencode/AGENTS.md` — they carry a `<!-- Generated -->` header
 and will be overwritten.
+
+Codex `config.toml` and pi `settings.json` are local runtime files. They
+record machine paths, trust decisions, changelog state, and other app-managed
+values, so they are ignored. Use the adjacent `*.example.*` files as portable
+starting points if you need to recreate a config.
 
 ## When to use which agent
 

@@ -2,7 +2,6 @@
   "defaultProvider": "github-copilot",
   "defaultModel": "gpt-5.4",
   "theme": "dark",
-  "lastChangelogVersion": "0.68.0",
   "showHardwareCursor": true,
   "defaultThinkingLevel": "xhigh"
 }

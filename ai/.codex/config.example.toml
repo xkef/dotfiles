@@ -1,4 +1,4 @@
-model = "gpt-5.4"
+model = "gpt-5.5"
 model_reasoning_effort = "xhigh"
 
 [notice.model_migrations]
@@ -17,9 +17,3 @@ status_line = [
   "context-used",
   "five-hour-limit",
 ]
-
-[projects."~/dotfiles"]
-trust_level = "trusted"
-
-[projects."~/code/seance"]
-trust_level = "trusted"
