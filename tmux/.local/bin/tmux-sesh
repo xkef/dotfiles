@@ -8,8 +8,9 @@ if ! command -v sesh >/dev/null 2>&1; then
   exit 0
 fi
 
-session=$(sesh list --icons | fzf-tmux -p 95%,80% \
+session=$(sesh list --icons | fzf-tmux -p 80%,70% \
   --ansi --no-sort --reverse \
+  --gap=0 --no-separator \
   --border-label ' sesh ' --prompt '> ' \
   --header 'C-a all | C-t tmux | C-g config | C-x zoxide | C-f find | C-w kill | C-/ preview' \
   --bind 'tab:down,btab:up' \
@@ -22,7 +23,7 @@ session=$(sesh list --icons | fzf-tmux -p 95%,80% \
   --bind 'ctrl-u:preview-half-page-up' \
   --bind 'ctrl-/:toggle-preview' \
   --bind 'ctrl-w:execute(tmux kill-session -t {2..})+change-prompt(> )+reload(sesh list --icons)' \
-  --preview-window 'right:60%:nowrap' \
+  --preview-window 'right:55%,hidden,wrap' \
   --preview 'sesh preview {}') || exit 0
 
 [[ -n "$session" ]] && sesh connect "$session"
