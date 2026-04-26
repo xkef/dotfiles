@@ -140,8 +140,8 @@ if has op && op whoami --format=json >/dev/null 2>&1; then
     mkdir -p "$HOME/.config/git"
     run_quiet "op inject config.work" \
       op inject \
-        --in-file "$DOTFILES_DIR/vcs/.config/git/config.work.tpl" \
-        --out-file "$HOME/.config/git/config.work" --force
+      --in-file "$DOTFILES_DIR/vcs/.config/git/config.work.tpl" \
+      --out-file "$HOME/.config/git/config.work" --force
   fi
 fi
 

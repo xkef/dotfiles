@@ -7,7 +7,13 @@
     "description": "pi.dev coding agent with mise, jj, maven, npm, cargo, and keychain access"
   },
   "filesystem": {
-    "allow": ["$HOME/.pi", "$XDG_CONFIG_HOME/pi", "$XDG_DATA_HOME/pi", "$XDG_STATE_HOME/pi", "$XDG_CACHE_HOME/pi"],
+    "allow": [
+      "$HOME/.pi",
+      "$XDG_CONFIG_HOME/pi",
+      "$XDG_DATA_HOME/pi",
+      "$XDG_STATE_HOME/pi",
+      "$XDG_CACHE_HOME/pi"
+    ],
     "allow_file": ["$HOME/Library/Keychains/login.keychain-db"]
   },
   "workdir": {
