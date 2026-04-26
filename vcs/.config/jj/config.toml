@@ -1,6 +1,4 @@
 # Jujutsu configuration
-# Personal overrides (identity, signing): jj config set --user
-# See: https://github.com/jj-vcs/jj/discussions/5812
 
 [ui]
 default-command = "log"
@@ -76,4 +74,13 @@ max-new-file-size = "2MiB"
 
 [user]
 name = "xkef"
-email = "xkef@pm.me"
+email = "git@xkef.dev"
+
+# ── SSH commit signing (mirrors git config) ─────────
+[signing]
+behavior = "own"
+backend = "ssh"
+key = "~/.ssh/github_xkef.pub"
+
+[signing.backends.ssh]
+allowed-signers = "~/.config/git/allowed_signers"
