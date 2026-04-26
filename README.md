@@ -77,10 +77,9 @@ Same physical key. Ctrl is the only difference.
 
 ## Themes
 
-`dots theme <name>` switches Ghostty, neovim, tmux, and delta together
-in one shot. The full set of [Ghostty themes](https://ghostty.org/docs/config/reference#theme)
-is available; the `--list` view filters to those with a matching nvim
-colorscheme plugin.
+`dots theme <name>` switches Ghostty, LazyVim, tmux, and delta together
+in one shot. `--list` shows Ghostty themes that have a matching LazyVim
+colorscheme plugin installed.
 
 ```sh
 dots theme --list             # available themes (current marked with *)
@@ -102,15 +101,11 @@ either.
 | jj            | `jj config set --user user.name "…"`  |
 | Neovim        | `~/.config/lazyvim/lua/plugins/*.lua` |
 | tmux          | `~/.config/tmux/local.conf`           |
-| sesh          | `~/.config/sesh/local.toml`           |
 | SSH           | `~/.ssh/conf.d/*.conf`                |
 
 ---
 
 ## Credits
-
-For repo layout, the theme pipeline, and the AI-rule rendering flow,
-see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Heavily inspired by
 [wincent/wincent](https://github.com/wincent/wincent) --

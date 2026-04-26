@@ -37,8 +37,8 @@ set -gx PAGER less
 set -gx LESS '-iFMRX --mouse -#.25'
 
 # ── Mise ─────────────────────────────────────────────
-# Disable Homebrew's vendor mise-activate.fish (~26ms). We add shims
-# to PATH directly in 03-tools.fish instead.
+# Disable Homebrew's vendor mise-activate.fish. 03-tools.fish runs the
+# project-aware activation explicitly so startup behavior is controlled here.
 set -gx MISE_ACTIVATE_AGGRESSIVE 0
 set -gx MISE_FISH_AUTO_ACTIVATE 0
 

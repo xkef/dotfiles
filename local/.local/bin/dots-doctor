@@ -37,7 +37,13 @@ for cmd in stow git gh fish nvim tmux starship fzf atuin zoxide navi eza bat fd 
 end
 
 _header "Optional binaries"
-for cmd in jj jjui lazygit lazydocker difft tv sesh hyperfine tokei dust duf procs xh hurl sd ouch trash age scooter nono op podman devcontainer
+set -l optional_bins jj jjui lazygit lazydocker difft tv hyperfine tokei dust duf procs xh hurl sd ouch trash age scooter nono op podman devcontainer
+if test (uname -s) = Darwin
+    set -a optional_bins sesh
+else if test (uname -m) != aarch64
+    set -a optional_bins sesh
+end
+for cmd in $optional_bins
     if command -q $cmd
         _pass $cmd
     else

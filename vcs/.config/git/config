@@ -15,7 +15,6 @@
 	pager = delta
 	autocrlf = input
 	whitespace = trailing-space,space-before-tab
-	fsmonitor = true
 	untrackedCache = true
 
 [column]
@@ -34,7 +33,6 @@
 	colorMoved = plain
 	mnemonicPrefix = true
 	renames = true
-	external = difft
 
 [diff "bin"]
 	textconv = hexdump -ve '1/1 "%.2x "'
@@ -102,6 +100,15 @@
 [url "git@bitbucket.org:"]
 	insteadOf = "bb:"
 
+# ── Credentials ──────────────────────────────────────
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential
+
 # ── Aliases ──────────────────────────────────────────
 [alias]
 	st = status -sb
@@ -117,6 +124,7 @@
 	ds = diff --shortstat
 	lg = log --oneline --graph --decorate --all -20
 	ll = log --pretty=format:'%C(yellow)%h%Creset %C(blue)%ad%Creset %C(green)%an%Creset %s%C(red)%d%Creset' --date=short
+	dft = difft
 	wip = !git add -A && git commit -m 'wip: checkpoint'
 	undo = reset --soft HEAD~1
 	amend = commit --amend --no-edit

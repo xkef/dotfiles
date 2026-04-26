@@ -31,6 +31,10 @@
     "branch": "main",
     "commit": "4516612fe98ff56ae0415a259ff6361a89419b0a"
   },
+  "everforest-nvim": {
+    "branch": "main",
+    "commit": "cf08aa67fc96946a01177ae483b7631733b4b5e6"
+  },
   "flash.nvim": {
     "branch": "main",
     "commit": "fcea7ff883235d9024dc41e638f164a450c14ca2"

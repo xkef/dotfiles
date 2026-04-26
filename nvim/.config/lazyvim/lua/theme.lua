@@ -4,21 +4,36 @@
 
 local M = {}
 
-local OVERRIDES = {
-  ["atom-one-dark"] = "onedark",
-  ["atom-one-light"] = "onelight",
-}
-
 local function ghostty_config_path()
   local xdg = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
   return xdg .. "/ghostty/config"
 end
 
+local function configure_colorscheme(ghostty_name)
+  local normalized = ghostty_name:lower():gsub("%s+", "-")
+  if normalized:find("light") or normalized:find("latte") or normalized:find("day") or normalized:find("dawn") then
+    vim.o.background = "light"
+  else
+    vim.o.background = "dark"
+  end
+
+  if normalized:find("^everforest") then
+    local ok, everforest = pcall(require, "everforest")
+    if ok then
+      everforest.setup({
+        italics = true,
+        disable_italic_comments = false,
+        background = normalized:find("hard") and "hard" or normalized:find("soft") and "soft" or "medium",
+      })
+    end
+  end
+end
+
 local function derive_colorscheme(ghostty_name)
   local normalized = ghostty_name:lower():gsub("%s+", "-")
 
-  if OVERRIDES[normalized] then
-    return OVERRIDES[normalized]
+  if normalized:find("^everforest") and pcall(vim.cmd.colorscheme, "everforest") then
+    return "everforest"
   end
 
   local stripped = normalized:gsub("%-hard$", ""):gsub("%-med$", ""):gsub("%-soft$", "")
@@ -60,6 +75,7 @@ end
 
 function M.apply()
   local cfg = M.read()
+  configure_colorscheme(cfg.name)
   derive_colorscheme(cfg.name)
   vim.g._current_theme = cfg.name
 end

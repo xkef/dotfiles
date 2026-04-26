@@ -1,12 +1,16 @@
 return {
-  -- Catppuccin colorscheme (matches the `theme` command's terminal palette).
-  -- The theme system in lua/theme.lua reads the Ghostty config and derives
-  -- the colorscheme + background, so init.lua handles the initial apply.
+  -- Keep fallback nvim fixed and minimal. The main LazyVim config handles
+  -- dynamic theme switching from Ghostty.
   {
     "catppuccin/nvim",
     name = "catppuccin",
+    lazy = false,
     priority = 1000,
     opts = { flavour = "auto" },
+    config = function(_, opts)
+      require("catppuccin").setup(opts)
+      vim.cmd.colorscheme("catppuccin")
+    end,
   },
 
   -- Smart splits: seamless C-hjkl navigation between tmux panes and nvim splits

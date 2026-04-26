@@ -115,7 +115,7 @@ fi
 
 for pkg in "$DOTFILES_DIR"/*/; do
   pkg="$(basename "$pkg")"
-  # Skip non-stow assets (kept in sync with STOW_IGNORE_RE in Makefile).
+  # Skip non-stow assets (kept in sync with STOW_IGNORE in Makefile).
   case "$pkg" in
   docs) continue ;;
   esac

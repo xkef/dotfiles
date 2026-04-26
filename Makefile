@@ -1,8 +1,8 @@
 DOTFILES_DIR := $(shell pwd)
 # Top-level dirs that are NOT stow packages (repo assets, docs, …).
 # Keep in sync with STOW_IGNORE in the install script.
-STOW_IGNORE_RE := ^(docs)$$
-STOW_PACKAGES := $(shell ls -d */ 2>/dev/null | sed 's|/||' | grep -Ev '$(STOW_IGNORE_RE)')
+STOW_IGNORE := docs
+STOW_PACKAGES := $(filter-out $(STOW_IGNORE),$(patsubst %/,%,$(wildcard */)))
 SHELL_FILES := $(shell git ls-files '*.sh' '*.bash' install macos-defaults 2>/dev/null)
 FISH_FILES := $(shell git ls-files '*.fish' 'local/.local/bin/vm' 'local/.local/bin/dots-*' 2>/dev/null)
 
@@ -15,7 +15,7 @@ endef
 .PHONY: help install update doctor test stow unstow restow fmt lint tools macos-defaults ai-render uninstall clean
 
 help: ## Show this help
-	@grep -E '^[a-z][a-z_-]+:.*## ' $(MAKEFILE_LIST) | \
+	@rg -N '^[a-z][a-z_-]+:.*## ' $(MAKEFILE_LIST) | \
 		awk -F ':.*## ' '{printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
 install: ## Full install (packages + stow + tools)
@@ -24,7 +24,7 @@ install: ## Full install (packages + stow + tools)
 install-adopt: ## Install, adopting existing files into the repo
 	./install --adopt
 
-update: ## Pull, re-stow, update plugins and tools
+update: ## Fetch/pull, re-stow, update plugins and tools
 	dots update
 
 doctor: ## Check dotfiles health (binaries, symlinks, configs)

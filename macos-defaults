@@ -118,7 +118,7 @@ else
   printf '\n  Applying macOS defaults...\n'
   log "Backup: $BACKUP_FILE"
   printf '\n'
-  osascript -e 'tell application "System Preferences" to quit' 2>/dev/null || true
+  osascript -e 'tell application id "com.apple.systempreferences" to quit' 2>/dev/null || true
   sudo -v
   while true; do
     sudo -n true

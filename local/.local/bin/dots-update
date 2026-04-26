@@ -1,6 +1,6 @@
 #!/usr/bin/env fish
 # shellcheck disable=all
-# dots update — pull latest changes, re-stow packages, update plugins and tools.
+# dots update — fetch latest changes, re-stow packages, update plugins and tools.
 
 set -g DOTS_DIR (test -f $HOME/.config/dotfiles/dir && cat $HOME/.config/dotfiles/dir || echo $HOME/dotfiles)
 
@@ -20,6 +20,17 @@ function _run_quiet
     end
 end
 
+function _stow_packages
+    for pkg in $DOTS_DIR/*/
+        set -l name (basename $pkg)
+        switch $name
+            case docs
+                continue
+        end
+        echo $name
+    end
+end
+
 # ── Update steps ──────────────────────────────────────
 
 printf '\n  Updating dotfiles...\n\n'
@@ -33,15 +44,8 @@ else if test -d $DOTS_DIR/.git
 end
 
 _log "Re-stowing packages..."
-find $DOTS_DIR -name .DS_Store -delete 2>/dev/null
-if test -n "$(jj diff -R $DOTS_DIR 2>/dev/null | string collect)"
-    _log "  ! Uncommitted changes — skipping stow"
-else
-    for pkg in $DOTS_DIR/*/
-        set -l name (basename $pkg)
-        _run_quiet "stow $name" stow --dir=$DOTS_DIR -t $HOME --adopt $name || true
-        _run_quiet "restore $name" jj restore --from @- -R $DOTS_DIR -- "$name/" || true
-    end
+for name in (_stow_packages)
+    _run_quiet "stow $name" stow --dir=$DOTS_DIR -t $HOME -R $name || true
 end
 
 if command -q mise
@@ -65,7 +69,12 @@ end
 # Re-apply current theme to regenerate derived configs (delta)
 if command -q theme
     _log "Regenerating theme..."
-    set -l name (sed -n 's/^theme = //p' $HOME/.config/ghostty/config 2>/dev/null || echo "Catppuccin Mocha")
+    set -l name
+    if test -r $HOME/.config/ghostty/config
+        set -l match (string match -r '^\s*theme\s*=\s*(.+)' <$HOME/.config/ghostty/config)
+        test (count $match) -ge 2; and set name (string trim $match[2])
+    end
+    test -n "$name"; or set name "Catppuccin Mocha"
     theme $name >/dev/null 2>&1 || true
 end
 

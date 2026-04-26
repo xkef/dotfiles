@@ -2,9 +2,9 @@
 # shellcheck disable=all
 # theme — unified theme switcher for ghostty, neovim, tmux, and shell tools.
 #
-# Accepts any Ghostty theme name. Palette colors are read from Ghostty's
-# built-in theme files. bat and delta use terminal ANSI colors; nvim derives
-# its colorscheme from the Ghostty theme name via convention.
+# Accepts Ghostty theme names that have a matching LazyVim colorscheme plugin.
+# Palette colors are read from Ghostty's built-in theme files. bat and delta use
+# terminal ANSI colors; LazyVim derives its colorscheme from the theme name.
 #
 # Usage: theme [name|--list]
 
@@ -58,17 +58,9 @@ function _is_supported -a name
             return 0
         case "Rose Pine" "Rose Pine *"
             return 0
-        case "Gruvbox Dark" "Gruvbox Dark Hard" "Gruvbox Light" "Gruvbox Light Hard"
-            return 0
-        case Nord "Nord Light"
-            return 0
-        case "Atom One Dark" "Atom One Light"
-            return 0
         case "Kanagawa Wave" "Kanagawa Lotus" "Kanagawa Dragon"
             return 0
         case "Everforest *"
-            return 0
-        case Dracula
             return 0
         case '*'
             return 1
@@ -173,7 +165,7 @@ function _reload_neovim
         for sock in $dir/nvim.*.0
             test -S $sock || continue
             nvim --server $sock --remote-send \
-                "<Cmd>lua require('theme').apply()<CR>" 2>/dev/null || true
+                "<Cmd>lua pcall(function() require('theme').apply() end)<CR>" 2>/dev/null || true
         end
     end
 end
@@ -273,7 +265,7 @@ switch "$argv[1]"
         echo "Usage: theme [name|--list|auto]"
         echo ""
         echo "  theme              Show current theme"
-        echo "  theme <name>       Switch to any Ghostty theme"
+        echo "  theme <name>       Switch to a supported Ghostty theme"
         echo "  theme auto         Match system light/dark appearance"
         echo "  theme --list       List available themes"
     case ''

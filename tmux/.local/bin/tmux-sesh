@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # Sesh session picker — uses fzf-tmux to create a native tmux popup.
 # See: https://github.com/joshmedeski/sesh
+set -euo pipefail
+
+if ! command -v sesh >/dev/null 2>&1; then
+  tmux display-message "sesh is not installed"
+  exit 0
+fi
 
 session=$(sesh list --icons | fzf-tmux -p 95%,80% \
   --ansi --no-sort --reverse \

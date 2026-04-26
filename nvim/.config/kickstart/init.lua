@@ -25,7 +25,3 @@ require("lazy").setup({
   install = { colorscheme = { "catppuccin" } },
   checker = { enabled = true, notify = false },
 })
-
--- Apply theme from Ghostty config and auto-reload on focus
-require("theme").apply()
-require("theme").setup()

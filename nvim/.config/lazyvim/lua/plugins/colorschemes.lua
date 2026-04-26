@@ -83,4 +83,15 @@ return {
       background = { dark = "wave", light = "lotus" },
     },
   },
+
+  {
+    "neanias/everforest-nvim",
+    version = false,
+    lazy = true,
+    opts = {
+      italics = true,
+      disable_italic_comments = false,
+      background = "medium",
+    },
+  },
 }

@@ -1,6 +1,6 @@
 function flog --description 'Interactive git log browser (fzf)'
-    git log --oneline --graph --color=always --decorate |
-        fzf --ansi --no-sort --reverse --height 80% \
-            --preview 'echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs git show --color=always' \
-            --bind 'enter:execute(echo {} | grep -o "[a-f0-9]\{7,\}" | head -1 | xargs git show --color=always | less -R)'
+    git log --color=always --decorate --format='%h%x09%C(auto)%d %s%Creset' |
+        fzf --ansi --no-sort --reverse --height 80% --delimiter='\t' \
+            --preview 'git show --color=always {1}' \
+            --bind 'enter:execute(git show --color=always {1} | less -R)'
 end

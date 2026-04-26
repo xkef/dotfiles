@@ -9,6 +9,7 @@ Configs for multiple AI coding agents, stowed to `$HOME`.
 | `.claude/`                         | Claude Code     | agents, skills, settings     |
 | `.codex/`                          | OpenAI Codex    | agent rules, `config.toml`   |
 | `.config/opencode/`                | OpenCode        | agent rules, `opencode.json` |
+| `.pi/agent/`                       | pi.dev          | agent rules, settings        |
 | `.config/nono/`                    | nono sandbox    | Seatbelt/Landlock profiles   |
 | `.config/ai-shared/AGENTS.base.md` | shared source   | base rules for all tools     |
 | `.config/ai-shared/overlays/*.md`  | per-tool extras | appended to the base         |
@@ -38,8 +39,9 @@ and will be overwritten.
 | Agent       | Good for                                                        |
 | ----------- | --------------------------------------------------------------- |
 | Claude Code | Long-running refactors; skills/agents ecosystem; best reasoning |
-| Codex       | GPT-4-class tasks; quick turnaround                             |
+| Codex       | OpenAI-model tasks; quick turnaround                            |
 | OpenCode    | Local-friendly; multi-model; matches terminal workflow          |
+| pi          | GitHub Copilot-backed coding agent                              |
 
-All three share the same sandbox profiles under `~/.config/nono/` —
-launch via `sb claude` / `sb codex` / `sb opencode` to enforce.
+All agents share sandbox profiles under `~/.config/nono/` — launch via
+`sb claude` / `sb codex` / `sb opencode` / `sb pi` to enforce.
