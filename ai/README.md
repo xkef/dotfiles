@@ -50,3 +50,38 @@ starting points if you need to recreate a config.
 
 All agents share sandbox profiles under `~/.config/nono/` — launch via
 `sb claude` / `sb codex` / `sb opencode` / `sb pi` to enforce.
+
+## Skills
+
+Three local skills are tracked here under `.claude/skills/`:
+
+- `commit/` — git/jj commit creation
+- `research-repo/` — `gh`-based GitHub investigation
+- `jujutsu/` — `jj` usage
+
+Everything else is pulled from upstream
+([`mattpocock/skills`](https://github.com/mattpocock/skills) plus
+`find-skills` from `vercel-labs/skills`) **on first launch** of each
+agent. The fish wrappers under
+`shell/.config/fish/functions/{claude,pi,codex,opencode}.fish` call
+the shared helper `_ai_ensure_skills <agent>`, which runs
+`npx skills@latest add ... --copy` once and writes a sentinel at
+`~/.cache/dotfiles/skills.<agent>.installed` so subsequent launches
+skip the install.
+
+Only fish-resolved invocations are wrapped — `sb claude` execs
+`nono run -- claude` and nono spawns the binary directly, bypassing
+the fish function. Run the agent once directly (`claude`, `pi`, etc.)
+to trigger the install; sandboxed launches afterwards reuse the
+result.
+
+Stow folds the per-agent skill directories back into this repo, so
+auto-installed trees physically land in `ai/.claude/skills/` and
+`ai/.pi/agent/skills/`; both are filtered out via `.gitignore` and
+never get committed.
+
+To force a refresh from upstream:
+
+```sh
+rm ~/.cache/dotfiles/skills.*.installed   # next sb launch reinstalls
+```

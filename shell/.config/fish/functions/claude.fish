@@ -4,6 +4,8 @@ function claude --wraps claude --description "claude-code: auto-install via offi
         curl -fsSL https://claude.ai/install.sh | bash -s -- latest
     end
 
+    _ai_ensure_skills claude-code
+
     if set -q TMUX
         tmux rename-window claude
         tmux set-window-option allow-rename off
