@@ -6,3 +6,6 @@
 /npm/
 /.last_session
 __store.db
+
+# Skills auto-installed on first `sb pi` (see ai/README.md).
+/skills/

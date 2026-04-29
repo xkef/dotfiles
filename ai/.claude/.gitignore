@@ -7,3 +7,12 @@
 /statsig
 /todos
 __store.db
+
+# Skills auto-installed on first `sb claude` (see ai/README.md).
+# `~/.claude/skills/` is folded by stow into this directory, so any
+# new skill written by the installer lands here. Keep the three
+# locally-authored skills tracked; ignore everything else.
+/skills/*
+!/skills/commit/
+!/skills/jujutsu/
+!/skills/research-repo/

@@ -8,6 +8,8 @@ function pi --wraps pi --description "pi.dev coding agent: auto-install via npm 
         npm install -g @mariozechner/pi-coding-agent
     end
 
+    _ai_ensure_skills pi
+
     if set -q TMUX
         tmux rename-window pi
         tmux set-window-option allow-rename off
