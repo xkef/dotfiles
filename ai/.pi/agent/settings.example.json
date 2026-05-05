@@ -3,5 +3,8 @@
   "defaultModel": "gpt-5.4",
   "theme": "dark",
   "showHardwareCursor": true,
-  "defaultThinkingLevel": "xhigh"
+  "defaultThinkingLevel": "xhigh",
+  "packages": [
+    "npm:@ifi/pi-plan"
+  ]
 }
