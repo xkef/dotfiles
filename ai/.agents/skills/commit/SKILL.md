@@ -40,7 +40,7 @@ prompt the user to indicate _which_ files' changes they
 want squashed (and invoke `jj squash <file>...`
 accordingly).
 
-For more information on Jujutsu, see the `/jujutsu` skill.
+For more information on Jujutsu, see the `jj` skill.
 
 ## Common instructions
 

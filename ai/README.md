@@ -53,35 +53,41 @@ All agents share sandbox profiles under `~/.config/nono/` — launch via
 
 ## Skills
 
-Three local skills are tracked here under `.claude/skills/`:
+Local skills are tracked once under `.agents/skills/`:
 
 - `commit/` — git/jj commit creation
+- `jj/` — Jujutsu usage
 - `research-repo/` — `gh`-based GitHub investigation
-- `jujutsu/` — `jj` usage
+- `html-summary/` — single-file HTML summaries with diagrams
 
-Everything else is pulled from upstream
-([`mattpocock/skills`](https://github.com/mattpocock/skills) plus
-`find-skills` from `vercel-labs/skills`) **on first launch** of each
-agent. The fish wrappers under
-`shell/.config/fish/functions/{claude,pi,codex,opencode}.fish` call
-the shared helper `_ai_ensure_skills <agent>`, which runs
-`npx skills@latest add ... --copy` once and writes a sentinel at
-`~/.cache/dotfiles/skills.<agent>.installed` so subsequent launches
-skip the install.
+Claude sees those skills through the `.claude/skills` symlink. Pi
+loads `~/.agents/skills` directly via the Agent Skills standard. After
+adding shared skills, run `make restow` so `~/.agents/` exists on the
+host.
 
-Only fish-resolved invocations are wrapped — `sb claude` execs
-`nono run -- claude` and nono spawns the binary directly, bypassing
-the fish function. Run the agent once directly (`claude`, `pi`, etc.)
-to trigger the install; sandboxed launches afterwards reuse the
-result.
+Everything else is pulled from upstream on first launch:
 
-Stow folds the per-agent skill directories back into this repo, so
-auto-installed trees physically land in `ai/.claude/skills/` and
-`ai/.pi/agent/skills/`; both are filtered out via `.gitignore` and
-never get committed.
+- [`mattpocock/skills`](https://github.com/mattpocock/skills)
+- `find-skills` from `vercel-labs/skills`
+- `html-visual` from `2ykwang/agent-skills` for interactive single-file
+  HTML visualizations
+- `architecture-diagram` from `Cocoon-AI/architecture-diagram-generator`
+  for standalone HTML/SVG architecture diagrams
+
+The fish wrappers under
+`shell/.config/fish/functions/{claude,pi,codex,opencode}.fish` and the
+`shell/.config/fish/functions/sb.fish` sandbox wrapper call the shared
+helper `_ai_ensure_skills <agent>`. It installs upstream skills into the
+same `~/.agents/skills` source tree once and writes a sentinel at
+`~/.cache/dotfiles/skills.shared.v4.installed` so subsequent launches
+skip the install. Agents that understand `.agents/skills` read that tree
+directly; Claude reaches the same tree through `.claude/skills`.
+
+Generated or upstream skills under `ai/.agents/skills/` are filtered out
+via `.gitignore` and never get committed.
 
 To force a refresh from upstream:
 
 ```sh
-rm ~/.cache/dotfiles/skills.*.installed   # next sb launch reinstalls
+rm ~/.cache/dotfiles/skills.shared.*.installed   # next wrapped launch reinstalls
 ```

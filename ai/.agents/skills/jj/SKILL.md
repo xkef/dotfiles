@@ -1,6 +1,6 @@
 ---
-name: jujutsu
-description: How to use `jj`, the Jujutsu version control system
+name: jj
+description: How to use `jj`, the Jujutsu version control system. Use when working in a Jujutsu repository, when a `.jj` directory is present, or when the user asks about jj/jujutsu operations.
 ---
 
 # Jujutsu (`jj`)
@@ -58,7 +58,7 @@ instructed to; use `jj split <file>...` or
 | `jj commit <file>...` | Create a commit containing specific changes                          |
 | `jj split <file>...`  | Create a commit containing specific changes (also updates bookmarks) |
 
-For commit message formatting, see the `/commit` skill.
+For commit message formatting, see the `commit` skill.
 
 ## Interacting with Git remotes
 

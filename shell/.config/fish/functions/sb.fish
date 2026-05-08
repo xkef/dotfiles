@@ -10,6 +10,13 @@ function sb -d "Run a command inside a nono sandbox"
     set -l rest $argv[2..-1]
     set -l dots (test -f $HOME/.config/dotfiles/dir; and cat $HOME/.config/dotfiles/dir; or echo $HOME/dotfiles)
 
+    switch $cmd
+        case claude
+            _ai_ensure_skills claude-code
+        case codex opencode pi
+            _ai_ensure_skills $cmd
+    end
+
     if not command -q nono
         printf '\033[33mNo sandbox available (install nono)\033[0m\n' >&2
         read -P "Continue without sandbox? [y/N] " reply
