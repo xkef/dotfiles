@@ -8,3 +8,4 @@ ghostty           # GPU-accelerated terminal
 kitty             # GPU-accelerated terminal (OpenGL)
 1password         # password manager
 1password-cli     # 1Password CLI (op)
+handy             # offline speech-to-text app

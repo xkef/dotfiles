@@ -82,7 +82,8 @@ cask "zed"               # GPU-accelerated code editor
 cask "1password"         # password manager
 cask "1password-cli"     # 1Password CLI (op)
 cask "codex"             # OpenAI Codex CLI
-cask "alt-tab"           # Windows-style alt-tab switcher
+cask "dockdoor"          # Dock previews and window switcher
+cask "handy"             # offline speech-to-text app
 cask "hiddenbar"         # hide menu bar icons
 cask "rectangle"         # window snapping via keyboard
 cask "font-jetbrains-mono-nerd-font" # patched dev font with icons
