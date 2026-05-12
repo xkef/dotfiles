@@ -5,7 +5,7 @@
   },
   "SchemaStore.nvim": {
     "branch": "main",
-    "commit": "950e45a2e49ab9355f7ed87e426ae2b9047eca53"
+    "commit": "abf1366feace18107cea680a7d26d6c69fae2086"
   },
   "async.nvim": {
     "branch": "main",
@@ -89,7 +89,7 @@
   },
   "mason-lspconfig.nvim": {
     "branch": "main",
-    "commit": "51feb0ada33d18f3c5c71ffb46005dbf8b33bef4"
+    "commit": "eaa34887d444cb002e1b165fac399ae4bbc771f7"
   },
   "mason-nvim-dap.nvim": {
     "branch": "main",
@@ -101,23 +101,23 @@
   },
   "mini.ai": {
     "branch": "main",
-    "commit": "7e10ce8468c0fce4f527ae2c0e5c484f7667f73d"
+    "commit": "a783ce6e1a5b3bc90519f20b51f4a5f6702734af"
   },
   "mini.hipatterns": {
     "branch": "main",
-    "commit": "9eff319bbe66adfaf781a0d0e174baa08ba94909"
+    "commit": "35b632f6c138d720f29de87476361af44bed2198"
   },
   "mini.icons": {
     "branch": "main",
-    "commit": "bac6317300e205335df425296570d84322730067"
+    "commit": "9c7b1b90b15bdd69c52f6e31889dbc9987c30ec4"
   },
   "mini.pairs": {
     "branch": "main",
-    "commit": "42387c7fe68fc0b6e95eaf37f1bb76e7bffaa0d9"
+    "commit": "30cf2f01c4aaa2033db67376b9924fa2442c05d6"
   },
   "mini.surround": {
     "branch": "main",
-    "commit": "2715e04bea3ec9244f15b421dc5b18c0fe326210"
+    "commit": "990ce30f724d08e79670107de6b915a3f1bb9a9b"
   },
   "neo-tree.nvim": {
     "branch": "main",
@@ -157,7 +157,7 @@
   },
   "nvim-lspconfig": {
     "branch": "master",
-    "commit": "451d4ef9abd4f0f08e379ef0d55d1c391b6125a7"
+    "commit": "75e49cfa588a89ca667d767c0afef3ceac205faa"
   },
   "nvim-nio": {
     "branch": "master",
@@ -205,7 +205,7 @@
   },
   "rustaceanvim": {
     "branch": "main",
-    "commit": "b8aa69b6c401c7b26d66637789577b6dc7600f28"
+    "commit": "783f1d9211b136c01d0caf17db9552150b0e13af"
   },
   "smart-splits.nvim": {
     "branch": "master",
@@ -221,7 +221,7 @@
   },
   "television": {
     "branch": "main",
-    "commit": "8db108d853e4d7f0d7c1a9738e2ec117c8ad6bab"
+    "commit": "fa26ed3df5b3cc4a3ac87b08f921aad02933843d"
   },
   "todo-comments.nvim": {
     "branch": "main",
