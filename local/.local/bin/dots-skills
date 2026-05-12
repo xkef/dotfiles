@@ -1,0 +1,25 @@
+#!/usr/bin/env fish
+# shellcheck disable=all
+# dots-skills — refresh shared agent skills from upstream sources.
+#
+# Removes the install sentinel and re-runs `_ai_ensure_skills`, which
+# pulls the latest versions of the upstream skill packs (mattpocock,
+# vercel-labs, 2ykwang, Cocoon-AI) into ~/.agents/skills/.
+#
+# Locally-tracked skills (symlinked from ~/dotfiles/ai/.agents/skills/)
+# are unaffected.
+
+set -l sentinel "$HOME/.cache/dotfiles/skills.shared.v4.installed"
+
+if test -f $sentinel
+    rm $sentinel
+end
+
+if not functions -q _ai_ensure_skills
+    echo "dots-skills: _ai_ensure_skills function not loaded." >&2
+    echo "Start a new fish session or run:" >&2
+    echo "    source ~/.config/fish/functions/_ai_ensure_skills.fish" >&2
+    return 1
+end
+
+_ai_ensure_skills (test -n "$argv[1]"; and echo $argv[1]; or echo refresh)

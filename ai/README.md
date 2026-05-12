@@ -89,5 +89,7 @@ via `.gitignore` and never get committed.
 To force a refresh from upstream:
 
 ```sh
+dots skills          # preferred
+# or, equivalently:
 rm ~/.cache/dotfiles/skills.shared.*.installed   # next wrapped launch reinstalls
 ```
