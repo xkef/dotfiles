@@ -2,7 +2,7 @@ local map = vim.keymap.set
 
 -- Cowboy mode: warn on 10+ repeated hjkl without count (via folke/dot).
 -- Smart jump counting: j/k >5 lines with count added to jumplist (via wincent).
-vim.g.cowboy_mode = true
+vim.g.cowboy_mode = false
 
 for _, key in ipairs({ "h", "j", "k", "l" }) do
   local count = 0
