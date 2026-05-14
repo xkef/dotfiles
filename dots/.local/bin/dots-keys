@@ -6,12 +6,18 @@
 
 set -g DOTS_DIR (test -f $HOME/.config/dotfiles/dir && cat $HOME/.config/dotfiles/dir || echo $HOME/dotfiles)
 
-set -l sources \
-    $DOTS_DIR/tmux/.config/tmux/conf.d/00-options.conf \
-    $DOTS_DIR/tmux/.config/tmux/conf.d/01-keys.conf \
-    $DOTS_DIR/tmux/.config/tmux/conf.d/02-copy-mode.conf \
-    $DOTS_DIR/tmux/.config/tmux/conf.d/04-plugins.conf \
-    $DOTS_DIR/shell/.config/fish/conf.d/04-keys.fish
+set -l sources
+for f in $DOTS_DIR/tmux/.config/tmux/conf.d/*.conf
+    test -f $f; and set -a sources $f
+end
+for f in $DOTS_DIR/*/.config/tmux/conf.d/*.conf
+    test -f $f; or continue
+    string match -q "$DOTS_DIR/tmux/*" -- $f; and continue
+    set -a sources $f
+end
+for f in $DOTS_DIR/*/.config/fish/conf.d/*.fish
+    test -f $f; and set -a sources $f
+end
 
 set -l output (awk '
 /^# @key / {
@@ -21,7 +27,7 @@ set -l output (awk '
   if (n >= 3) {
     section = parts[1]; gsub(/^[ \t]+|[ \t]+$/, "", section)
     key = parts[2]; gsub(/^[ \t]+|[ \t]+$/, "", key)
-    gsub(/\|/, "\\|", key)
+    gsub(/\|/, "\\\\|", key)
     desc = parts[3]; gsub(/^[ \t]+|[ \t]+$/, "", desc)
     sections[section] = sections[section] key "\t" desc "\n"
   }

@@ -20,11 +20,11 @@ shell/.config/fish/fish_variables
 /vcs/.config/git/allowed_signers.work
 /vcs/.config/git/delta.gitconfig
 /vcs/.config/jj/repos/*
-/tools/.config/television/cable/
+/cli/.config/television/cable/
 
 # Build artifacts
 __pycache__/
 *.tmTheme
 /nvim.log
 /.nvimlog
-/local/.local/share/vm/known_hosts
+/vm/.local/share/vm/known_hosts

@@ -156,7 +156,7 @@ else
     test -n "$remote_image"; and set -g REMOTE_IMAGE $remote_image
 end
 set -g DOTFILES_DIR (test -f $HOME/.config/dotfiles/dir; and cat $HOME/.config/dotfiles/dir; or path resolve (status dirname)/../../..)
-set -g VM_DIR $DOTFILES_DIR/local/.local/share/vm
+set -g VM_DIR $DOTFILES_DIR/vm/.local/share/vm
 set -g VM_SHARE_DIR (set -q VM_SHARE_DIR; and echo $VM_SHARE_DIR; or echo $HOME/code)
 
 # -- SSH --

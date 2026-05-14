@@ -24,8 +24,6 @@ bind \cn down-or-search
 # @key shell :: Alt-T :: Television smart picker
 # (bound in 05-fzf.fish)
 
-# @key shell :: Ctrl-S :: Yazi file manager (cd-on-quit)
-bind \cs __yazi_cd
 # @key shell :: Ctrl-X Ctrl-E :: Edit command in nvim
 bind \cx\ce edit_command_buffer
 # @key shell :: Ctrl-Z :: Toggle fg/bg (undo if no jobs)

@@ -1,7 +1,7 @@
 #!/usr/bin/env fish
 # shellcheck disable=all
 # dots — unified dotfiles management command.
-# Dispatches to dots-* subcommands in the same directory.
+# Dispatches to profile subcommands on PATH.
 #
 # Usage: dots <command> [args]
 
@@ -15,8 +15,16 @@ switch $argv[1]
     case keys
         dots-keys $argv[2..-1]
     case skills
+        if not command -q dots-skills
+            echo "dots skills: dots-skills is provided by the ai package; stow/install ai to enable skill refresh." >&2
+            return 127
+        end
         dots-skills $argv[2..-1]
     case theme
+        if not command -q theme
+            echo "dots theme: theme is provided by the theme package; stow/install theme to enable theme switching." >&2
+            return 127
+        end
         theme $argv[2..-1]
     case help -h --help ''
         echo "Usage: dots <command>"

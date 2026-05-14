@@ -21,13 +21,62 @@ function _run_quiet
 end
 
 function _stow_packages
-    for pkg in $DOTS_DIR/*/
-        set -l name (basename $pkg)
-        switch $name
-            case docs
-                continue
+    set -l manifest $DOTS_DIR/stow-packages
+    if not test -r $manifest
+        echo "dots-update: missing package manifest: $manifest" >&2
+        return 1
+    end
+    while read -l line
+        set line (string replace -r '#.*$' '' -- $line | string trim)
+        test -n "$line"; and echo $line
+    end <$manifest
+end
+
+function _link_target_abs -a link target
+    if string match -q '/*' -- $target
+        echo $target
+    else
+        path normalize (path dirname $link)/$target
+    end
+end
+
+function _remove_stale_dotfile_links
+    set -l roots \
+        $HOME/.config \
+        $HOME/.local/bin \
+        $HOME/.local/share \
+        $HOME/.ssh \
+        $HOME/.agents \
+        $HOME/.claude \
+        $HOME/.codex \
+        $HOME/.pi \
+        $HOME/.ideavimrc
+
+    for root in $roots
+        test -e $root -o -L $root; or continue
+        set -l links
+        if test -L $root
+            set links $root
+        else if test -d $root
+            set links (find $root -type l 2>/dev/null)
         end
-        echo $name
+
+        for link in $links
+            test -L $link; or continue
+            set -l target (readlink $link)
+            set -l abs (_link_target_abs $link $target)
+            if string match -q "$DOTS_DIR/*" -- $abs
+                if not test -e $abs
+                    _log "Removing stale link: $link"
+                    rm -f $link
+                end
+            else if test "$abs" = "$DOTS_DIR"
+                if not test -e $abs
+                    _log "Removing stale link: $link"
+                    rm -f $link
+                end
+            end
+        end
     end
 end
 
@@ -37,11 +86,14 @@ printf '\n  Updating dotfiles...\n\n'
 
 if test -d $DOTS_DIR/.jj
     _log "Fetching latest changes..."
-    _run_quiet "jj fetch" jj git fetch --all-remotes -R $DOTS_DIR || true
+    _run_quiet "jj fetch" jj --config signing.behavior=drop git fetch --all-remotes -R $DOTS_DIR || true
 else if test -d $DOTS_DIR/.git
     _log "Pulling latest changes..."
     _run_quiet "git pull" git -C $DOTS_DIR pull --rebase || true
 end
+
+_log "Removing stale dotfile symlinks..."
+_remove_stale_dotfile_links
 
 _log "Re-stowing packages..."
 for name in (_stow_packages)

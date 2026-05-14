@@ -112,16 +112,19 @@ end
 
 _header "Config parsing"
 if command -q fish
-    if fish -n $DOTS_DIR/shell/.config/fish/config.fish 2>/dev/null
-        _pass "fish: config.fish"
-    else
-        _fail "fish: config.fish"
+    set -l fish_files
+    for f in \
+        $DOTS_DIR/*/.config/fish/config.fish \
+        $DOTS_DIR/*/.config/fish/conf.d/*.fish \
+        $DOTS_DIR/*/.config/fish/functions/*.fish
+        test -f $f; and set -a fish_files $f
     end
-    for f in $DOTS_DIR/shell/.config/fish/conf.d/*.fish
+    for f in $fish_files
+        set -l rel (string replace "$DOTS_DIR/" "" -- $f)
         if fish -n $f 2>/dev/null
-            _pass "fish: "(basename $f)
+            _pass "fish: $rel"
         else
-            _fail "fish: "(basename $f)
+            _fail "fish: $rel"
         end
     end
 end

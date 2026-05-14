@@ -37,6 +37,29 @@ read_pkg_file() {
   sed 's/#.*//; s/[[:space:]]*$//; /^[[:space:]]*$/d' "$1"
 }
 
+stow_packages() {
+  read_pkg_file "$DOTFILES_DIR/stow-packages"
+}
+
+worktree_dirty() {
+  if [[ -d "$DOTFILES_DIR/.jj" ]] && has jj; then
+    [[ -n "$(jj --config signing.behavior=drop -R "$DOTFILES_DIR" diff --summary --no-pager 2>/dev/null)" ]]
+  elif [[ -d "$DOTFILES_DIR/.git" ]]; then
+    ! git -C "$DOTFILES_DIR" diff --quiet 2>/dev/null
+  else
+    return 1
+  fi
+}
+
+restore_package() {
+  local pkg=$1
+  if [[ -d "$DOTFILES_DIR/.jj" ]] && has jj; then
+    jj --config signing.behavior=drop -R "$DOTFILES_DIR" restore "$pkg/"
+  elif [[ -d "$DOTFILES_DIR/.git" ]]; then
+    git -C "$DOTFILES_DIR" restore "$pkg/"
+  fi
+}
+
 ensure_paru() {
   if has paru; then
     return 0
@@ -104,24 +127,24 @@ for arg in "$@"; do
   esac
 done
 
+if [[ ! -r "$DOTFILES_DIR/stow-packages" ]]; then
+  log "  ! Missing stow package manifest: $DOTFILES_DIR/stow-packages"
+  exit 1
+fi
+
 if $adopt; then
-  # --adopt + checkout overwrites uncommitted changes — abort if worktree is dirty.
-  if [[ -d "$DOTFILES_DIR/.git" ]] && ! git -C "$DOTFILES_DIR" diff --quiet 2>/dev/null; then
+  # --adopt + restore overwrites uncommitted changes — abort if worktree is dirty.
+  if worktree_dirty; then
     log "  ! Uncommitted changes detected — commit or stash before running install."
     log "    (--adopt would overwrite your in-progress work)"
     exit 1
   fi
 fi
 
-for pkg in "$DOTFILES_DIR"/*/; do
-  pkg="$(basename "$pkg")"
-  # Skip non-stow assets (kept in sync with STOW_IGNORE in Makefile).
-  case "$pkg" in
-  docs) continue ;;
-  esac
+while IFS= read -r pkg; do
   if $adopt; then
     if run_quiet "stow $pkg" stow --dir="$DOTFILES_DIR" -t "$HOME" --adopt "$pkg"; then
-      run_quiet "git restore $pkg" git -C "$DOTFILES_DIR" restore "$pkg/"
+      run_quiet "restore $pkg" restore_package "$pkg"
     else
       log "  ! stow $pkg: failed — resolve manually"
     fi
@@ -130,7 +153,7 @@ for pkg in "$DOTFILES_DIR"/*/; do
       log "  ! stow $pkg: conflict — run with --adopt to resolve"
     fi
   fi
-done
+done < <(stow_packages)
 
 # ── Work identity (op-rendered, no-op without op) ─────
 

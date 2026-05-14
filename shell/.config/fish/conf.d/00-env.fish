@@ -36,12 +36,6 @@ set -gx _ZO_EXCLUDE_DIRS "$HOME/Library/*:$HOME/.Trash/*:/tmp/*"
 set -gx PAGER less
 set -gx LESS '-iFMRX --mouse -#.25'
 
-# ── Mise ─────────────────────────────────────────────
-# Disable Homebrew's vendor mise-activate.fish. 03-tools.fish keeps mise shims
-# on PATH and defers project env loading until a command is about to run.
-set -gx MISE_ACTIVATE_AGGRESSIVE 0
-set -gx MISE_FISH_AUTO_ACTIVATE 0
-
 # ── Dotfiles directory ───────────────────────────────
 if test -z "$DOTFILES_DIR" -a -f $HOME/.config/dotfiles/dir
     set -gx DOTFILES_DIR (cat $HOME/.config/dotfiles/dir)
