@@ -12,26 +12,22 @@
       "$XDG_CONFIG_HOME/pi",
       "$XDG_DATA_HOME/pi",
       "$XDG_STATE_HOME/pi",
-      "$XDG_CACHE_HOME/pi"
-    ],
-    "allow_file": ["$HOME/Library/Keychains/login.keychain-db"]
-  },
-  "workdir": {
-    "access": "readwrite"
-  },
-  "policy": {
-    "override_deny": ["$HOME/Library/Keychains/login.keychain-db"],
-    "add_allow_readwrite": [
+      "$XDG_CACHE_HOME/pi",
       "$HOME/.m2",
       "$HOME/.npm",
       "$XDG_CACHE_HOME/mise",
       "$XDG_CONFIG_HOME/jj",
       "$XDG_DATA_HOME/cargo"
     ],
-    "add_allow_read": [
+    "allow_file": ["$HOME/Library/Keychains/login.keychain-db"],
+    "read": [
       "$XDG_DATA_HOME/mise",
       "$XDG_STATE_HOME/mise",
       "$XDG_CONFIG_HOME/gh"
-    ]
+    ],
+    "bypass_protection": ["$HOME/Library/Keychains/login.keychain-db"]
+  },
+  "workdir": {
+    "access": "readwrite"
   }
 }

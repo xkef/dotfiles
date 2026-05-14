@@ -7,21 +7,19 @@
     "description": "Claude Code with mise, jj, maven, npm, cargo, and keychain access"
   },
   "filesystem": {
-    "allow": ["$HOME/Library/Keychains"]
-  },
-  "policy": {
-    "override_deny": ["$HOME/Library/Keychains"],
-    "add_allow_readwrite": [
+    "allow": [
+      "$HOME/Library/Keychains",
       "$HOME/.m2",
       "$HOME/.npm",
       "$XDG_CACHE_HOME/mise",
       "$XDG_CONFIG_HOME/jj",
       "$XDG_DATA_HOME/cargo"
     ],
-    "add_allow_read": [
+    "read": [
       "$XDG_DATA_HOME/mise",
       "$XDG_STATE_HOME/mise",
       "$XDG_CONFIG_HOME/gh"
-    ]
+    ],
+    "bypass_protection": ["$HOME/Library/Keychains"]
   }
 }
