@@ -1,0 +1,1058 @@
+#!/usr/bin/env bash
+# Manage parallel AI coding agents with jj workspaces and tmux windows.
+set -euo pipefail
+
+DEFAULT_AGENT="claude"
+DEFAULT_FROM="trunk()"
+DEFAULT_BASE="main"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ai-agent spawn <slug> [--agent claude|codex|opencode|pi] [--brief "task"] [--from <rev>] [--sandbox]
+  ai-agent list [--format=human|ui] [--only=all|live|dirty|merged]
+  ai-agent finish <slug>
+  ai-agent cleanup [--force] [<slug>]
+  ai-agent ui [spawn]
+  ai-agent preview <slug>
+
+Private helpers:
+  ai-agent _window-id <slug>
+  ai-agent _switch-to <slug>
+EOF
+}
+
+die() {
+  printf 'ai-agent: %s\n' "$*" >&2
+  exit 1
+}
+
+warn() {
+  printf 'ai-agent: warning: %s\n' "$*" >&2
+}
+
+need() {
+  command -v "$1" >/dev/null 2>&1 || die "$1 is required"
+}
+
+script_path() {
+  local src=${BASH_SOURCE[0]} dir
+  if [[ $src == /* ]]; then
+    printf '%s\n' "$src"
+  elif [[ $src == */* ]]; then
+    dir=$(cd "$(dirname "$src")" && pwd -P)
+    printf '%s/%s\n' "$dir" "$(basename "$src")"
+  else
+    command -v "$src"
+  fi
+}
+
+shell_quote() {
+  printf '%q' "$1"
+}
+
+sanitize_field() {
+  local s=${1:-}
+  s=${s//$'\t'/ }
+  s=${s//$'\r'/ }
+  s=${s//$'\n'/ }
+  printf '%s' "$s"
+}
+
+truncate_field() {
+  local s=${1:-} max=${2:-80}
+  if ((${#s} > max)); then
+    printf '%s…' "${s:0:max-1}"
+  else
+    printf '%s' "$s"
+  fi
+}
+
+validate_slug() {
+  local slug=${1:-}
+  [[ $slug =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$ ]] ||
+    die "invalid slug '$slug' (use kebab-case: [a-z0-9][a-z0-9-]*[a-z0-9])"
+}
+
+validate_agent() {
+  case "${1:-}" in
+  claude | codex | opencode | pi) ;;
+  *) die "invalid agent '${1:-}' (expected claude, codex, opencode, or pi)" ;;
+  esac
+}
+
+agent_launch_command() {
+  case "$1" in
+  claude) printf 'claude --dangerously-skip-permissions --permission-mode bypassPermissions' ;;
+  *) printf '%s' "$1" ;;
+  esac
+}
+
+jj_plain() {
+  local repo=$1
+  shift
+  jj --no-pager --color never -R "$repo" "$@"
+}
+
+jj_color() {
+  local color=$1 repo=$2
+  shift 2
+  jj --no-pager --color "$color" -R "$repo" "$@"
+}
+
+jj_root_from_dir() {
+  local dir=$1
+  (cd "$dir" && jj workspace root) 2>/dev/null
+}
+
+current_workspace_root() {
+  local root pane_path
+
+  if root=$(jj workspace root 2>/dev/null); then
+    printf '%s\n' "$root"
+    return 0
+  fi
+
+  if [[ -n ${TMUX:-} ]]; then
+    pane_path=$(tmux display-message -p '#{pane_current_path}' 2>/dev/null || true)
+    if [[ -n $pane_path ]] && root=$(jj_root_from_dir "$pane_path"); then
+      printf '%s\n' "$root"
+      return 0
+    fi
+  fi
+
+  die "not inside a jj workspace"
+}
+
+primary_root() {
+  local root parent parent_base repo_base candidate
+  root=$(current_workspace_root)
+  parent=$(dirname "$root")
+  parent_base=$(basename "$parent")
+
+  if [[ $parent_base == *.agents ]]; then
+    repo_base=${parent_base%.agents}
+    candidate="$(dirname "$parent")/$repo_base"
+    if [[ -d $candidate/.jj ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  fi
+
+  printf '%s\n' "$root"
+}
+
+agents_root() {
+  printf '%s.agents\n' "$1"
+}
+
+workspace_for() {
+  local primary=$1 slug=$2
+  printf '%s/%s\n' "$(agents_root "$primary")" "$slug"
+}
+
+workspace_name() {
+  printf 'agent-%s\n' "$1"
+}
+
+agent_bookmark() {
+  printf 'agent/%s\n' "$1"
+}
+
+require_tmux_client() {
+  need tmux
+  [[ -n ${TMUX:-} ]] || die "must be run inside tmux"
+  tmux display-message -p '#S' >/dev/null 2>&1 || die "tmux server is unavailable"
+}
+
+window_id_for_slug() {
+  local slug=$1 fmt
+  fmt='#{window_id}'$'\t''#{@agent-slug}'
+  tmux list-windows -a -F "$fmt" 2>/dev/null | awk -F '\t' -v slug="$slug" '$2 == slug { print $1; exit }'
+}
+
+cmd__window_id() {
+  [[ $# -eq 1 ]] || die "usage: ai-agent _window-id <slug>"
+  validate_slug "$1"
+  window_id_for_slug "$1"
+}
+
+list_agent_slugs() {
+  local primary=$1 root
+  root=$(agents_root "$primary")
+  [[ -d $root ]] || return 0
+
+  find "$root" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | LC_ALL=C sort
+}
+
+bookmark_any_exists() {
+  local repo=$1 bookmark=$2 out
+  out=$(jj_plain "$repo" bookmark list --all-remotes "$bookmark" 2>/dev/null || true)
+  out=$(awk 'tolower($0) !~ /deleted/' <<<"$out")
+  [[ -n $out ]]
+}
+
+bookmark_exists() {
+  local repo=$1 bookmark=$2 out
+  out=$(jj_plain "$repo" log -r "$bookmark" --no-graph -T 'change_id.short() ++ "\n"' 2>/dev/null || true)
+  [[ -n $out ]]
+}
+
+bookmark_line() {
+  local repo=$1 bookmark=$2
+  jj_plain "$repo" bookmark list "$bookmark" 2>/dev/null | head -n 1 || true
+}
+
+bookmark_merged() {
+  local repo=$1 bookmark=$2 count
+  count=$(jj_plain "$repo" log -r "$bookmark & ::trunk()" --count 2>/dev/null || printf '0')
+  [[ ${count:-0} -gt 0 ]]
+}
+
+bookmark_remote_deleted() {
+  local repo=$1 bookmark=$2 out
+  out=$(jj_plain "$repo" bookmark list --all-remotes "$bookmark" 2>/dev/null || true)
+  awk 'BEGIN { found = 1 } tolower($0) ~ /deleted/ { found = 0 } END { exit found }' <<<"$out"
+}
+
+resolve_single_rev() {
+  local repo=$1 rev=$2 count resolved
+  count=$(jj_plain "$repo" log -r "$rev" --count 2>/dev/null) || die "revision does not resolve: $rev"
+  [[ ${count:-0} -eq 1 ]] || die "revision must resolve to exactly one commit: $rev"
+  resolved=$(jj_plain "$repo" log -r "$rev" --no-graph -T 'commit_id ++ "\n"')
+  resolved=${resolved%%$'\n'*}
+  [[ -n $resolved ]] || die "failed to resolve revision: $rev"
+  printf '%s\n' "$resolved"
+}
+
+mise_primary_trusted() {
+  local primary=$1 out
+  command -v mise >/dev/null 2>&1 || return 1
+  out=$(mise trust --show -C "$primary" 2>/dev/null || true)
+  [[ $out == *': trusted'* ]]
+}
+
+trust_mise_workspace() {
+  local primary=$1 ws=$2 rel primary_config ws_config
+  command -v mise >/dev/null 2>&1 || return 0
+  mise_primary_trusted "$primary" || return 0
+
+  for rel in mise.toml .mise.toml; do
+    primary_config="$primary/$rel"
+    ws_config="$ws/$rel"
+    [[ -f $primary_config && -f $ws_config ]] || continue
+    cmp -s "$primary_config" "$ws_config" || continue
+    if ! mise trust -q "$ws_config" >/dev/null 2>&1; then
+      warn "failed to trust $ws_config; run: mise trust '$ws_config'"
+    fi
+  done
+}
+
+trust_claude_workspace() {
+  local ws=$1
+  command -v python3 >/dev/null 2>&1 || return 0
+  CLAUDE_AGENT_WORKSPACE=$ws python3 <<'PY' || true
+import fcntl
+import json
+import os
+import pathlib
+import tempfile
+
+workspace = os.environ["CLAUDE_AGENT_WORKSPACE"]
+config = pathlib.Path.home() / ".claude.json"
+lock = pathlib.Path.home() / ".claude.json.lock"
+
+if not config.exists():
+    raise SystemExit(0)
+
+lock.parent.mkdir(parents=True, exist_ok=True)
+with lock.open("a+") as lock_file:
+    fcntl.flock(lock_file, fcntl.LOCK_EX)
+    try:
+        data = json.loads(config.read_text())
+    except json.JSONDecodeError:
+        raise SystemExit(0)
+
+    projects = data.setdefault("projects", {})
+    project = projects.setdefault(workspace, {})
+    project.setdefault("allowedTools", [])
+    project.setdefault("mcpContextUris", [])
+    project.setdefault("mcpServers", {})
+    project.setdefault("enabledMcpjsonServers", [])
+    project.setdefault("disabledMcpjsonServers", [])
+    project["hasTrustDialogAccepted"] = True
+    project.setdefault("projectOnboardingSeenCount", 0)
+    project.setdefault("hasClaudeMdExternalIncludesApproved", False)
+    project.setdefault("hasClaudeMdExternalIncludesWarningShown", False)
+
+    fd, tmp_name = tempfile.mkstemp(
+        prefix=config.name + ".",
+        suffix=".tmp",
+        dir=str(config.parent),
+        text=True,
+    )
+    with os.fdopen(fd, "w") as tmp:
+        json.dump(data, tmp, indent=2)
+        tmp.write("\n")
+    os.replace(tmp_name, config)
+PY
+}
+
+dirty_stat() {
+  local repo=$1 summary
+  summary=$(jj_plain "$repo" diff --summary 2>/dev/null || true)
+  [[ -n $summary ]] || return 0
+  jj_plain "$repo" diff --stat 2>/dev/null || true
+}
+
+has_unbookmarked_work() {
+  local repo=$1 bookmark=$2 count revset
+  if bookmark_exists "$repo" "$bookmark"; then
+    revset="($bookmark::@) ~ $bookmark ~ @"
+  else
+    revset="(::@) ~ ::trunk() ~ @"
+  fi
+  count=$(jj_plain "$repo" log -r "$revset" --count 2>/dev/null || printf '0')
+  [[ ${count:-0} -gt 0 ]]
+}
+
+print_unbookmarked_work() {
+  local repo=$1 bookmark=$2 revset
+  if bookmark_exists "$repo" "$bookmark"; then
+    revset="($bookmark::@) ~ $bookmark ~ @"
+  else
+    revset="(::@) ~ ::trunk() ~ @"
+  fi
+  jj_color always "$repo" log -r "$revset" --no-graph \
+    -T 'change_id.short() ++ " " ++ description.first_line() ++ "\n"' >&2 || true
+}
+
+current_info() {
+  local repo=$1 info change summary
+  info=$(jj_plain "$repo" log -r @ --no-graph \
+    -T 'change_id.short() ++ "\t" ++ description.first_line() ++ "\n"' 2>/dev/null || true)
+  info=${info%%$'\n'*}
+  change=${info%%$'\t'*}
+  summary=${info#*$'\t'}
+  [[ $summary == "$info" ]] && summary=""
+  printf '%s\t%s\n' "$(sanitize_field "$change")" "$(sanitize_field "$summary")"
+}
+
+revision_summary() {
+  local repo=$1 rev=$2 summary
+  summary=$(jj_plain "$repo" log -r "$rev" --no-graph -T 'description.first_line() ++ "\n"' 2>/dev/null || true)
+  summary=${summary%%$'\n'*}
+  sanitize_field "$summary"
+}
+
+workspace_registered() {
+  local primary=$1 name=$2 line
+  while IFS= read -r line; do
+    [[ $line == "$name" ]] && return 0
+  done < <(jj_plain "$primary" workspace list -T 'name ++ "\n"' 2>/dev/null || true)
+  return 1
+}
+
+assert_agent_workspace_path() {
+  local primary=$1 slug=$2 ws root
+  root=$(agents_root "$primary")
+  ws=$(workspace_for "$primary" "$slug")
+  [[ -n $slug && $ws == "$root/"* && $ws != "$root/" ]] || die "unsafe workspace path: $ws"
+}
+
+cleanup_workspace() {
+  local primary=$1 slug=$2 ws name bookmark window_id
+  validate_slug "$slug"
+  assert_agent_workspace_path "$primary" "$slug"
+
+  ws=$(workspace_for "$primary" "$slug")
+  name=$(workspace_name "$slug")
+  bookmark=$(agent_bookmark "$slug")
+
+  if workspace_registered "$primary" "$name"; then
+    jj_plain "$primary" workspace forget "$name"
+  fi
+
+  if workspace_registered "$primary" "$name"; then
+    die "workspace '$name' is still registered after jj workspace forget"
+  fi
+
+  if bookmark_exists "$primary" "$bookmark"; then
+    jj_plain "$primary" bookmark delete "$bookmark"
+  fi
+
+  rm -rf -- "$ws"
+
+  window_id=$(window_id_for_slug "$slug" || true)
+  if [[ -n $window_id ]]; then
+    tmux kill-window -t "$window_id" 2>/dev/null || true
+  fi
+
+  printf 'cleaned %s\n' "$slug"
+}
+
+confirm() {
+  local prompt=$1 reply
+  [[ -t 0 ]] || return 1
+  printf '%s [y/N] ' "$prompt" >&2
+  IFS= read -r reply || return 1
+  [[ $reply =~ ^[Yy]$ ]]
+}
+
+render_agent() {
+  local primary=$1 slug=$2 format=$3 only=$4
+  local ws bookmark window_id dirty dirty_flag merged untugged exists bookmark_label icon
+  local info change summary bsummary line state slug_view change_view summary_view display
+
+  ws=$(workspace_for "$primary" "$slug")
+  [[ -d $ws ]] || return 1
+
+  bookmark=$(agent_bookmark "$slug")
+  window_id=$(window_id_for_slug "$slug" || true)
+  dirty=$(dirty_stat "$ws")
+  [[ -n $dirty ]] && dirty_flag=1 || dirty_flag=0
+
+  exists=0
+  if bookmark_exists "$ws" "$bookmark"; then
+    exists=1
+  fi
+
+  merged=0
+  if [[ $exists -eq 1 ]] && bookmark_merged "$ws" "$bookmark"; then
+    merged=1
+  fi
+
+  untugged=0
+  if [[ $exists -eq 1 ]] && has_unbookmarked_work "$ws" "$bookmark"; then
+    untugged=1
+  fi
+
+  case "$only" in
+  all) ;;
+  live) [[ -n $window_id ]] || return 1 ;;
+  dirty) [[ $dirty_flag -eq 1 ]] || return 1 ;;
+  merged) [[ $merged -eq 1 && $dirty_flag -eq 0 && $untugged -eq 0 ]] || return 1 ;;
+  *) die "invalid --only '$only'" ;;
+  esac
+
+  info=$(current_info "$ws")
+  change=${info%%$'\t'*}
+  summary=${info#*$'\t'}
+  if [[ -z $summary && $exists -eq 1 ]]; then
+    bsummary=$(revision_summary "$ws" "$bookmark")
+    [[ -n $bsummary ]] && summary=$bsummary
+  fi
+  [[ -n $summary ]] || summary="(no description)"
+  [[ -n $change ]] || change="-"
+
+  if [[ $exists -eq 1 ]]; then
+    bookmark_label=$bookmark
+  else
+    bookmark_label="missing:$bookmark"
+  fi
+
+  if [[ $dirty_flag -eq 1 ]]; then
+    icon="✎"
+  elif [[ $untugged -eq 1 ]]; then
+    icon="↑"
+  elif [[ -n $window_id ]]; then
+    icon="●"
+  elif [[ $merged -eq 1 ]]; then
+    icon="✓"
+  else
+    icon="○"
+  fi
+
+  if [[ $format == ui ]]; then
+    case "$icon" in
+    "✎") state="dirty" ;;
+    "↑") state="untugged" ;;
+    "●") state="live" ;;
+    "✓") state="merged" ;;
+    *) state="idle" ;;
+    esac
+    slug_view=$(truncate_field "$slug" 24)
+    change_view=$(truncate_field "$change" 12)
+    summary_view=$(truncate_field "$summary" 96)
+    display=$(printf '%s  %-24s  %-8s  %-12s  %s' "$icon" "$slug_view" "$state" "$change_view" "$summary_view")
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$icon" "$slug" "$bookmark_label" "$change" "$summary" "$(sanitize_field "$display")"
+    return 0
+  fi
+
+  printf 'agent: %s\n' "$slug"
+  printf '  workspace: %s\n' "$ws"
+  printf '  bookmark: %s\n' "$bookmark_label"
+  if
+    line=$(bookmark_line "$ws" "$bookmark")
+    [[ -n $line ]]
+  then
+    printf '    %s\n' "$line"
+  fi
+  printf '  current: %s %s\n' "$change" "$summary"
+  printf '  window: %s\n' "${window_id:--}"
+  printf '  dirty: %s\n' "$([[ $dirty_flag -eq 1 ]] && printf yes || printf no)"
+  printf '  untugged-commits: %s\n' "$([[ $untugged -eq 1 ]] && printf yes || printf no)"
+  printf '  merged-to-trunk: %s\n' "$([[ $merged -eq 1 ]] && printf yes || printf no)"
+  printf '\n'
+}
+
+cmd_spawn() {
+  [[ $# -ge 1 ]] || die "usage: ai-agent spawn <slug> [--agent <agent>] [--brief <task>] [--from <rev>] [--sandbox]"
+
+  local slug=$1 agent=$DEFAULT_AGENT brief="" from=$DEFAULT_FROM sandbox=0
+  local primary root ws name bookmark window_id launch_cmd iso from_rev rollback=0
+  shift
+
+  validate_slug "$slug"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --agent)
+      [[ $# -ge 2 ]] || die "--agent requires a value"
+      agent=$2
+      shift 2
+      ;;
+    --brief)
+      [[ $# -ge 2 ]] || die "--brief requires a value"
+      brief=$2
+      shift 2
+      ;;
+    --from)
+      [[ $# -ge 2 ]] || die "--from requires a value"
+      from=$2
+      shift 2
+      ;;
+    --sandbox)
+      sandbox=1
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *) die "unknown spawn option '$1'" ;;
+    esac
+  done
+
+  validate_agent "$agent"
+  need jj
+  require_tmux_client
+
+  primary=$(primary_root)
+  root=$(agents_root "$primary")
+  ws=$(workspace_for "$primary" "$slug")
+  name=$(workspace_name "$slug")
+  bookmark=$(agent_bookmark "$slug")
+  from_rev=$(resolve_single_rev "$primary" "$from")
+
+  if bookmark_any_exists "$primary" "$bookmark"; then
+    die "bookmark already exists: $bookmark"
+  fi
+  if [[ -e $ws ]]; then
+    die "workspace directory already exists: $ws"
+  fi
+  if
+    window_id=$(window_id_for_slug "$slug")
+    [[ -n $window_id ]]
+  then
+    die "tmux window already tagged @agent-slug=$slug ($window_id)"
+  fi
+
+  rollback_spawn() {
+    local status=$?
+    if [[ ${rollback:-0} -eq 1 ]]; then
+      [[ -n ${window_id:-} ]] && tmux kill-window -t "$window_id" 2>/dev/null || true
+      jj_plain "$primary" bookmark delete "$bookmark" >/dev/null 2>&1 || true
+      jj_plain "$primary" workspace forget "$name" >/dev/null 2>&1 || true
+      rm -rf -- "$ws"
+    fi
+    trap - EXIT
+    exit "$status"
+  }
+
+  rollback=1
+  trap rollback_spawn EXIT
+
+  mkdir -p "$root"
+
+  jj_plain "$primary" workspace add "$ws" --name "$name" -r "$from_rev"
+  jj_plain "$ws" bookmark create "$bookmark" -r "$from_rev"
+  jj_plain "$ws" new "$bookmark"
+  trust_mise_workspace "$primary" "$ws"
+
+  if [[ -n $brief ]]; then
+    mkdir -p "$ws/.claude-notes"
+    iso=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+    {
+      printf '<!-- spawned: %s @ %s from %s -->\n\n' "$slug" "$iso" "$from"
+      printf '# Task\n\n'
+      printf '%s\n' "$brief"
+    } >"$ws/.claude-notes/task.md"
+  fi
+
+  if [[ $agent == claude ]]; then
+    trust_claude_workspace "$ws"
+  fi
+
+  window_id=$(tmux new-window -P -F '#{window_id}' -c "$ws")
+  tmux set-option -w -t "$window_id" @agent-slug "$slug" >/dev/null
+  tmux rename-window -t "$window_id" "a/$slug" 2>/dev/null || true
+
+  launch_cmd=$(agent_launch_command "$agent")
+  if [[ $sandbox -eq 1 ]]; then
+    launch_cmd="sb $launch_cmd"
+    warn "--sandbox uses 'sb $agent'; ensure the sb profile allows writes to $primary/.jj"
+  fi
+
+  tmux send-keys -t "$window_id" "$launch_cmd" Enter
+
+  rollback=0
+  trap - EXIT
+
+  printf 'spawned %s\n' "$slug"
+  printf '  workspace: %s\n' "$ws"
+  printf '  workspace-name: %s\n' "$name"
+  printf '  bookmark: %s\n' "$bookmark"
+  printf '  window: %s\n' "$window_id"
+}
+
+cmd_list() {
+  local format=human only=all primary slug count=0
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --format=*)
+      format=${1#--format=}
+      shift
+      ;;
+    --format)
+      [[ $# -ge 2 ]] || die "--format requires a value"
+      format=$2
+      shift 2
+      ;;
+    --only=*)
+      only=${1#--only=}
+      shift
+      ;;
+    --only)
+      [[ $# -ge 2 ]] || die "--only requires a value"
+      only=$2
+      shift 2
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    *) die "unknown list option '$1'" ;;
+    esac
+  done
+
+  case "$format" in human | ui) ;; *) die "invalid --format '$format'" ;; esac
+  case "$only" in all | live | dirty | merged) ;; *) die "invalid --only '$only'" ;; esac
+
+  need jj
+  primary=$(primary_root)
+
+  while IFS= read -r slug; do
+    [[ -n $slug ]] || continue
+    if render_agent "$primary" "$slug" "$format" "$only"; then
+      count=$((count + 1))
+    fi
+  done < <(list_agent_slugs "$primary")
+
+  if [[ $format == human && $count -eq 0 ]]; then
+    printf 'No agent workspaces under %s\n' "$(agents_root "$primary")"
+  fi
+}
+
+cmd_finish() {
+  [[ $# -eq 1 ]] || die "usage: ai-agent finish <slug>"
+
+  local slug=$1 primary ws bookmark dirty title body task_file window_id
+  validate_slug "$slug"
+  need jj
+  need gh
+
+  primary=$(primary_root)
+  ws=$(workspace_for "$primary" "$slug")
+  bookmark=$(agent_bookmark "$slug")
+  [[ -d $ws ]] || die "workspace not found: $ws"
+
+  if ! bookmark_exists "$ws" "$bookmark"; then
+    die "bookmark missing: $bookmark"
+  fi
+
+  dirty=$(dirty_stat "$ws")
+  if [[ -n $dirty ]]; then
+    printf 'Refusing to finish %s: workspace has uncommitted edits on @.\n\n' "$slug" >&2
+    printf '%s\n\n' "$dirty" >&2
+    printf 'Commit the changes in the agent workspace, run jj tug, then retry.\n' >&2
+    exit 1
+  fi
+
+  if has_unbookmarked_work "$ws" "$bookmark"; then
+    printf 'Refusing to finish %s: commits exist above %s but the bookmark has not been tugged.\n\n' "$slug" "$bookmark" >&2
+    print_unbookmarked_work "$ws" "$bookmark"
+    printf '\nRun jj tug in %s, then retry.\n' "$ws" >&2
+    exit 1
+  fi
+
+  jj_plain "$ws" git push --bookmark "$bookmark"
+
+  title=$(revision_summary "$ws" "$bookmark")
+  [[ -n $title ]] || title=$bookmark
+
+  task_file="$ws/.claude-notes/task.md"
+  if [[ -f $task_file ]]; then
+    body=$(<"$task_file")
+  else
+    body=$'Created from `'"$bookmark"$'`.'
+  fi
+  [[ -n $body ]] || body="Created from $bookmark."
+
+  (cd "$ws" && gh pr create --head "$bookmark" --base "$DEFAULT_BASE" --fill --title "$title" --body "$body")
+
+  cleanup_workspace "$primary" "$slug"
+
+  window_id=$(window_id_for_slug "$slug" || true)
+  [[ -z $window_id ]] || tmux kill-window -t "$window_id" 2>/dev/null || true
+}
+
+cleanup_candidate() {
+  local ws=$1 bookmark=$2 dirty
+  dirty=$(dirty_stat "$ws")
+  [[ -z $dirty ]] || return 1
+  ! has_unbookmarked_work "$ws" "$bookmark" || return 1
+  bookmark_merged "$ws" "$bookmark" || bookmark_remote_deleted "$ws" "$bookmark"
+}
+
+protected_reason() {
+  local ws=$1 bookmark=$2 dirty
+  dirty=$(dirty_stat "$ws")
+  if [[ -n $dirty ]]; then
+    printf 'dirty working copy'
+  elif has_unbookmarked_work "$ws" "$bookmark"; then
+    printf 'untugged commits above bookmark'
+  elif ! bookmark_exists "$ws" "$bookmark"; then
+    printf 'missing bookmark'
+  else
+    printf 'bookmark is not merged into trunk and not marked deleted on remote'
+  fi
+}
+
+cmd_cleanup() {
+  local primary slug ws bookmark reason cleaned=0 skipped=0 force=0
+  need jj
+  primary=$(primary_root)
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+    -f | --force)
+      force=1
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --*) die "unknown cleanup option '$1'" ;;
+    *) break ;;
+    esac
+  done
+
+  if [[ $# -gt 1 ]]; then
+    die "usage: ai-agent cleanup [--force] [<slug>]"
+  fi
+  if [[ $force -eq 1 && $# -eq 0 ]]; then
+    die "cleanup --force requires a slug"
+  fi
+
+  if [[ $# -eq 1 ]]; then
+    slug=$1
+    validate_slug "$slug"
+    ws=$(workspace_for "$primary" "$slug")
+    bookmark=$(agent_bookmark "$slug")
+    [[ -d $ws ]] || die "workspace not found: $ws"
+
+    if [[ $force -eq 1 ]] || cleanup_candidate "$ws" "$bookmark"; then
+      cleanup_workspace "$primary" "$slug"
+      return 0
+    fi
+
+    reason=$(protected_reason "$ws" "$bookmark")
+    printf 'refusing cleanup for %s: %s\n' "$slug" "$reason" >&2
+    if confirm "Force remove protected agent $slug?"; then
+      cleanup_workspace "$primary" "$slug"
+      return 0
+    fi
+    exit 1
+  fi
+
+  while IFS= read -r slug; do
+    [[ -n $slug ]] || continue
+    ws=$(workspace_for "$primary" "$slug")
+    bookmark=$(agent_bookmark "$slug")
+
+    if cleanup_candidate "$ws" "$bookmark"; then
+      cleanup_workspace "$primary" "$slug"
+      cleaned=$((cleaned + 1))
+      continue
+    fi
+
+    reason=$(protected_reason "$ws" "$bookmark")
+    printf 'skip %s: %s\n' "$slug" "$reason" >&2
+    if confirm "Remove protected agent $slug anyway?"; then
+      cleanup_workspace "$primary" "$slug"
+      cleaned=$((cleaned + 1))
+    else
+      skipped=$((skipped + 1))
+    fi
+  done < <(list_agent_slugs "$primary")
+
+  printf 'cleanup complete: %d cleaned, %d skipped\n' "$cleaned" "$skipped"
+}
+
+cmd_preview() {
+  [[ $# -eq 1 ]] || die "usage: ai-agent preview <slug>"
+
+  local slug=$1 primary ws bookmark revset window_id dirty
+  validate_slug "$slug"
+  need jj
+  primary=$(primary_root)
+  ws=$(workspace_for "$primary" "$slug")
+  bookmark=$(agent_bookmark "$slug")
+
+  if [[ ! -d $ws ]]; then
+    printf 'workspace not found: %s\n' "$ws"
+    return 0
+  fi
+
+  if bookmark_exists "$ws" "$bookmark"; then
+    revset="$bookmark::@"
+  else
+    revset="@"
+  fi
+
+  jj_color always "$ws" log -r "$revset" --limit 10 || true
+  printf '\n%s\n\n' '────────────────────────────────────────────────────────────'
+
+  window_id=$(window_id_for_slug "$slug" || true)
+  if [[ -n $window_id ]]; then
+    tmux capture-pane -p -e -t "$window_id" -S -40 2>/dev/null || true
+  else
+    printf '(no live tmux window)\n'
+  fi
+
+  dirty=$(dirty_stat "$ws")
+  if [[ -n $dirty ]]; then
+    printf '\n%s\n\n' '────────────────────────────────────────────────────────────'
+    jj_color always "$ws" diff --stat || true
+  fi
+}
+
+cmd__switch_to() {
+  [[ $# -eq 1 ]] || die "usage: ai-agent _switch-to <slug>"
+  local slug=$1 primary ws window_id
+  validate_slug "$slug"
+  require_tmux_client
+  window_id=$(window_id_for_slug "$slug" || true)
+  if [[ -z $window_id ]]; then
+    primary=$(primary_root)
+    ws=$(workspace_for "$primary" "$slug")
+    [[ -d $ws ]] || die "workspace not found: $ws"
+    window_id=$(tmux new-window -d -P -F '#{window_id}' -c "$ws")
+    tmux set-option -w -t "$window_id" @agent-slug "$slug" >/dev/null
+    tmux rename-window -t "$window_id" "a/$slug" 2>/dev/null || true
+  fi
+  tmux switch-client -t "$window_id"
+}
+
+cmd__kill_window() {
+  [[ $# -eq 1 ]] || die "usage: ai-agent _kill-window <slug>"
+  local slug=$1 window_id
+  validate_slug "$slug"
+  require_tmux_client
+  window_id=$(window_id_for_slug "$slug" || true)
+  if [[ -z $window_id ]]; then
+    tmux display-message "No live window for agent $slug" 2>/dev/null || true
+    return 0
+  fi
+  tmux kill-window -t "$window_id"
+}
+
+cmd__confirm_finish() {
+  [[ $# -eq 1 ]] || die "usage: ai-agent _confirm-finish <slug>"
+  validate_slug "$1"
+  confirm "Finish agent $1?" || exit 0
+  cmd_finish "$1"
+}
+
+cmd__confirm_cleanup() {
+  [[ $# -eq 1 ]] || die "usage: ai-agent _confirm-cleanup <slug>"
+  validate_slug "$1"
+  confirm "Cleanup agent $1?" || exit 0
+  cmd_cleanup "$1"
+}
+
+tmux_env_get() {
+  local name=$1 line
+  line=$(tmux show-environment -g "$name" 2>/dev/null || true)
+  if [[ $line == "$name="* ]]; then
+    printf '%s' "${line#*=}"
+  fi
+}
+
+tmux_env_unset() {
+  tmux set-environment -gu "$1" 2>/dev/null || true
+}
+
+cmd_ui_spawn() {
+  local bin_q primary
+
+  if [[ -t 0 && -t 1 ]]; then
+    cmd__ui_spawn_prompt
+    return 0
+  fi
+
+  require_tmux_client
+  primary=$(primary_root)
+  bin_q=$(shell_quote "$(script_path)")
+  tmux display-popup -E -w 70% -h 12 -d "$primary" "$bin_q _ui-spawn-prompt" || true
+}
+
+cmd__ui_spawn_prompt() {
+  local slug agent brief sandbox_reply status spawn_args
+
+  trap 'printf "\ncancelled\n"; exit 0' INT TERM HUP
+
+  printf 'Spawn agent\n\n'
+  if ! IFS= read -r -p 'slug: ' slug; then
+    printf '\ncancelled\n'
+    return 0
+  fi
+  if [[ -z $slug ]]; then
+    printf 'cancelled\n'
+    return 0
+  fi
+
+  if ! IFS= read -r -p "agent [$DEFAULT_AGENT]: " agent; then
+    printf '\ncancelled\n'
+    return 0
+  fi
+  agent=${agent:-$DEFAULT_AGENT}
+
+  if ! IFS= read -r -p 'brief (optional): ' brief; then
+    printf '\ncancelled\n'
+    return 0
+  fi
+
+  if ! IFS= read -r -p 'sandbox with sb? [y/N]: ' sandbox_reply; then
+    printf '\ncancelled\n'
+    return 0
+  fi
+  printf '\n'
+
+  spawn_args=("$slug" --agent "$agent")
+  if [[ -n $brief ]]; then
+    spawn_args+=(--brief "$brief")
+  fi
+  if [[ $sandbox_reply =~ ^[Yy]$ ]]; then
+    spawn_args+=(--sandbox)
+  fi
+
+  set +e
+  cmd_spawn "${spawn_args[@]}"
+  status=$?
+  set -e
+
+  if [[ $status -ne 0 ]]; then
+    printf '\nspawn failed with exit code %s\n' "$status"
+    IFS= read -r -p 'press Enter to close...' _ || true
+  fi
+
+  return 0
+}
+
+cmd_ui() {
+  if [[ ${1:-} == spawn ]]; then
+    shift
+    [[ $# -eq 0 ]] || die "usage: ai-agent ui spawn"
+    cmd_ui_spawn
+    return 0
+  fi
+  [[ $# -eq 0 ]] || die "usage: ai-agent ui [spawn]"
+
+  local primary selection slug bin bin_q action fzf_status
+  need fzf-tmux
+  require_tmux_client
+  primary=$(primary_root)
+  cd "$primary"
+  bin=${AI_AGENT_BIN:-$(script_path)}
+  bin_q=$(shell_quote "$bin")
+
+  tmux_env_unset AI_AGENT_UI_ACTION
+
+  set +e
+  selection=$("$bin" list --format=ui | fzf-tmux -p 80%,70% \
+    --ansi --no-sort --reverse --gap=0 --no-separator \
+    --delimiter '\t' --with-nth=6 --accept-nth=2 \
+    --padding '1,2' --pointer '▶' --marker '✓' \
+    --border-label ' agents ' --border-label-pos 2 --prompt 'agents › ' \
+    --header '↵ switch  C-n spawn  C-x finish  M-d cleanup  C-a all  C-l live  C-z dirty  M-m merged  C-/ preview' \
+    --preview-window 'right:52%,hidden,wrap,border-left' \
+    --preview "$bin_q preview {2}" \
+    --bind 'tab:down,btab:up' \
+    --bind 'ctrl-/:toggle-preview' \
+    --bind 'ctrl-d:preview-half-page-down' \
+    --bind 'ctrl-u:preview-half-page-up' \
+    --bind "ctrl-a:change-prompt(agents › )+reload($bin_q list --format=ui)" \
+    --bind "ctrl-l:change-prompt(live › )+reload($bin_q list --format=ui --only=live)" \
+    --bind "ctrl-z:change-prompt(dirty › )+reload($bin_q list --format=ui --only=dirty)" \
+    --bind "alt-m:change-prompt(merged › )+reload($bin_q list --format=ui --only=merged)" \
+    --bind 'enter:accept' \
+    --bind 'ctrl-n:execute-silent(tmux set-environment -g AI_AGENT_UI_ACTION spawn)+abort' \
+    --bind "ctrl-x:execute($bin_q _confirm-finish {2})+reload($bin_q list --format=ui)" \
+    --bind "alt-d:execute($bin_q _confirm-cleanup {2})+reload($bin_q list --format=ui)" \
+    --bind "ctrl-w:execute($bin_q _kill-window {2})+reload($bin_q list --format=ui)")
+  fzf_status=$?
+  set -e
+
+  action=$(tmux_env_get AI_AGENT_UI_ACTION)
+  tmux_env_unset AI_AGENT_UI_ACTION
+  if [[ $action == spawn ]]; then
+    cmd_ui_spawn
+    return 0
+  fi
+
+  [[ $fzf_status -eq 0 ]] || exit 0
+
+  slug=$selection
+  [[ -n $slug ]] || exit 0
+  "$bin" _switch-to "$slug"
+}
+
+main() {
+  local cmd=${1:-}
+  if [[ $# -gt 0 ]]; then
+    shift
+  fi
+
+  case "$cmd" in
+  spawn) cmd_spawn "$@" ;;
+  list) cmd_list "$@" ;;
+  finish) cmd_finish "$@" ;;
+  cleanup) cmd_cleanup "$@" ;;
+  ui) cmd_ui "$@" ;;
+  preview) cmd_preview "$@" ;;
+  _window-id) cmd__window_id "$@" ;;
+  _switch-to) cmd__switch_to "$@" ;;
+  _kill-window) cmd__kill_window "$@" ;;
+  _confirm-finish) cmd__confirm_finish "$@" ;;
+  _confirm-cleanup) cmd__confirm_cleanup "$@" ;;
+  _ui-spawn-prompt) cmd__ui_spawn_prompt "$@" ;;
+  "" | -h | --help) usage ;;
+  *) die "unknown subcommand '$cmd'" ;;
+  esac
+}
+
+main "$@"
