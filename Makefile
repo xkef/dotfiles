@@ -3,7 +3,7 @@ DOTFILES_DIR := $(shell pwd)
 # Keep in sync with STOW_IGNORE in the install script.
 STOW_IGNORE := docs
 STOW_PACKAGES := $(filter-out $(STOW_IGNORE),$(patsubst %/,%,$(wildcard */)))
-SHELL_FILES := $(shell git ls-files '*.sh' '*.bash' install macos-defaults 2>/dev/null)
+SHELL_FILES := $(shell git ls-files '*.sh' '*.bash' install macos-defaults ai/.local/bin/ai-agent 2>/dev/null)
 FISH_FILES := $(shell git ls-files '*.fish' 'local/.local/bin/vm' 'local/.local/bin/dots-*' 2>/dev/null)
 
 define stow_each
@@ -49,7 +49,8 @@ fmt: ai-render ## Format all dotfiles
 	shfmt -w $(SHELL_FILES)
 	fish_indent -w $(FISH_FILES)
 	prettier --write '**/*.{json,yaml,yml,css,html,md}' \
-		--ignore-path .gitignore 2>/dev/null || true
+		--ignore-path .gitignore \
+		--ignore-path .prettierignore 2>/dev/null || true
 	taplo fmt
 
 lint: ## Lint shell scripts, neovim config, and markdown

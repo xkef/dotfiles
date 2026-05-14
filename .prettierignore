@@ -1,0 +1,7 @@
+# Local runtime state managed by agent tools.
+ai/.pi/agent/auth.json
+ai/.pi/agent/settings.json
+ai/.pi/agent/sessions/
+ai/.pi/agent/cache/
+ai/.pi/agent/git/
+ai/.pi/agent/npm/

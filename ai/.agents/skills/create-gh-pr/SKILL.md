@@ -89,12 +89,14 @@ against the GitHub API.
 7. **Create the PR.**
    - Write the body to a tempfile to preserve
      formatting (avoid shell quoting issues):
+
      ```sh
      gh pr create \
        --base "<base>" \
        --title "<title>" \
        --body-file /tmp/pr-body.md
      ```
+
    - Add `--draft` if the user asked for a draft.
    - Add `--web` only if the user explicitly wants to
      open the browser.
