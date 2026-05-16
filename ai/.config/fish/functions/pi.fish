@@ -5,7 +5,7 @@ function pi --wraps pi --description "pi.dev coding agent: auto-install via npm 
             return 127
         end
         printf '  Installing pi...\n'
-        npm install -g @mariozechner/pi-coding-agent
+        npm install -g @earendil-works/pi-coding-agent
     end
 
     _ai_ensure_skills pi
