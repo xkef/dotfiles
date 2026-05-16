@@ -1,6 +1,7 @@
 # Jujutsu configuration
 
 [ui]
+conflict-marker-style = "git"
 default-command = "log"
 editor = "nvim"
 diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
@@ -43,6 +44,8 @@ private-commits = 'description(glob:"wip:*") | description(glob:"private:*")'
 # ── Revsets ──────────────────────────────────────────
 [revsets]
 log = 'ancestors(reachable(mine() | @, mutable()), 2) | trunk() | @'
+# Keep `jj tug` targeting the completed change under the empty working copy.
+bookmark-advance-to = '@-'
 
 [revset-aliases]
 'immutable_heads()' = 'present(trunk()) | untracked_remote_bookmarks() | tags()'
@@ -55,7 +58,7 @@ examine = ["log", "-T", "builtin_log_detailed", "-p", "-r"]
 nt = ["new", "trunk()"]
 retrunk = ["rebase", "-d", "trunk()"]
 reheat = ["rebase", "-d", "trunk()", "-s", "all:roots(trunk()..stack(@))"]
-tug = ["bookmark", "move", "--from", "heads(::@- & bookmarks())", "--to", "@-"]
+tug = ["bookmark", "advance"]
 consume = ["squash", "--into", "@", "--from"]
 eject = ["squash", "--from", "@", "--into"]
 credit = ["file", "annotate"]
