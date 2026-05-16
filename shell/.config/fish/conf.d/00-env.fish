@@ -4,6 +4,14 @@ set -gx XDG_DATA_HOME $HOME/.local/share
 set -gx XDG_STATE_HOME $HOME/.local/state
 set -gx XDG_CACHE_HOME $HOME/.cache
 
+# ── Telemetry opt-outs ───────────────────────────────
+# https://github.com/muescha/consoledonottrack.com
+set -gx DO_NOT_TRACK 1
+# https://cli.github.com/telemetry
+set -gx GH_TELEMETRY false
+# https://docs.brew.sh/Analytics
+set -gx HOMEBREW_NO_ANALYTICS 1
+
 # ── Homebrew ─────────────────────────────────────────
 if test -d /opt/homebrew
     set -gx HOMEBREW_PREFIX /opt/homebrew
