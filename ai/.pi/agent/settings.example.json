@@ -4,5 +4,5 @@
   "theme": "dark",
   "showHardwareCursor": true,
   "defaultThinkingLevel": "xhigh",
-  "packages": ["npm:@ifi/pi-plan"]
+  "packages": ["npm:@ifi/pi-plan", "npm:@tintinweb/pi-subagents"]
 }
