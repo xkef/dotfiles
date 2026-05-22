@@ -52,7 +52,7 @@ For more information on Jujutsu, see the `jj` skill.
    file: these plan files should never be included in a
    commit as they are intended to be local-only aids to
    development.
-3. Create a commit message with:
+3. Draft a commit message with:
 
 - A subject of 72 characters or less in Conventional
   Commits format (eg. "docs: add migration notes" or
@@ -61,17 +61,19 @@ For more information on Jujutsu, see the `jj` skill.
   a scope in parentheses (eg.
   "chore(frontend): update copyright year" or
   "feat(login): add support for magic links").
-- A blank line.
-- A detailed description, wrapped to 72 characters,
-  using basic Markdown syntax.
-- At the bottom, include the full text of **all** prompts
-  that were used while preparing the changes that led to
-  the commit; **never** omit any prompts.
-- If you were involved in the preparation of the changes,
-  include a commit trailer of the form: "Co-Authored-By:
-  Claude <noreply@anthropic.com>" (after "Claude", include
-  the actual model name and version if it is available to
-  you from the system prompt).
+- A body only when the change is non-obvious: a blank
+  line, then a short description wrapped to 72 characters
+  stating the motivation and anything surprising. Keep it
+  concise — many commits need no body at all. Do not pad.
+
+**Never** add a "Co-Authored-By" trailer, a "Generated
+with Claude Code" line, or any other attribution. **Never**
+include the text of prompts in the commit message.
+
+4. **Always** present the proposed commit message to the
+   user and wait for their explicit approval before
+   creating the commit. They may want to edit it first; do
+   not run the commit command until they confirm.
 
 ## Best practices
 
@@ -80,12 +82,11 @@ For more information on Jujutsu, see the `jj` skill.
   below for a full list) followed by a statement beginning
   with a verb (eg. "add", "remove", "rename" etc). The
   subject describes _what_ the commit does.
-- The body should explain the motivation for the change,
-  and why the solution was chosen.
-- Note alternatives which were considered but not
-  implemented.
-- Include references to previous commits or other
-  artifacts (documentation, PRs) that are relevant.
+- Prefer a clear subject on its own. Add a body only when
+  the change is non-obvious, and keep it brief: explain the
+  motivation, not the mechanics.
+- Reference relevant prior commits, issues, or PRs when it
+  genuinely aids understanding.
 
 ## Conventional Commits types
 
@@ -105,20 +106,8 @@ For more information on Jujutsu, see the `jj` skill.
 ```text
 refactor: remove unused `recurse` setting
 
-We were never exposing a user-accessible setting here. It is always `true`
-in practice, except in the benchmarks where we offered an override via the
-environment.
-
-If there is ever a call for this in the future, we can resurrect it, but
-for now, leaving it out presents us with an opportunity to simplify.
-It may even be a tiny bit faster (1.3% better CPU time, and 2.4%
-better wall time), with reasonable confidence, due to saving us some
-conditional checks.
-
-Agent prompts used in preparing this commit:
-
-> Search the codebase and confirm that the `recurse` setting isn't used
-> anywhere outside of the benchmarks, where it is hardcoded to `true`.
-> Once you've confirmed that, remove all traces of the setting. Run the
-> benchmarks to see they still work, and the tests to see they still pass.
+We never exposed a user-accessible setting here; it is always `true` in
+practice, except in the benchmarks where we offered an environment
+override. Leaving it out simplifies the code, and saving the conditional
+checks is marginally faster.
 ```
