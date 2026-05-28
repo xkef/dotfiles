@@ -53,6 +53,7 @@ brew "mise"              # dev tool version manager
 brew "jdtls"             # Java language server
 brew "nono"              # capability-based sandbox for AI agents
 brew "opencode"          # AI coding agent (terminal)
+brew "ccusage"           # Claude Code usage analyzer
 brew "devcontainer"      # dev container CLI
 brew "podman"            # rootless container engine
 brew "lazydocker"        # terminal UI for Docker/Podman
