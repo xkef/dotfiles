@@ -1,14 +1,14 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "respectGitignore": true,
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  },
   "cleanupPeriodDays": 99999,
   "env": {
     "INSIDE_CLAUDE_CODE": "1",
     "BASH_DEFAULT_TIMEOUT_MS": "120000"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
   },
   "permissions": {
     "allow": ["Bash", "Read", "Grep", "Glob", "Edit", "Write", "Skill(commit)"],
