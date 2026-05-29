@@ -1,10 +1,10 @@
 function _ai_ensure_skills -d "Install shared agent skills on first launch (idempotent)"
     set -l skills_agent $argv[1]
-    set -l sentinel "$HOME/.cache/dotfiles/skills.shared.v4.installed"
+    set -l sentinel "$HOME/.cache/dotfiles/skills.shared.v5.installed"
     test -f $sentinel; and return 0
     command -q npx; or return 0
 
-    set -l shared_skills_target codex
+    set -l shared_skills_target claude-code
 
     printf '\033[33m(first launch: installing shared skills for %s...)\033[0m\n' $skills_agent >&2
     npx --yes skills@latest add mattpocock/skills \

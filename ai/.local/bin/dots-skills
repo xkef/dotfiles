@@ -9,7 +9,7 @@
 # Locally-tracked skills (symlinked from ~/dotfiles/ai/.agents/skills/)
 # are unaffected.
 
-set -l sentinel "$HOME/.cache/dotfiles/skills.shared.v4.installed"
+set -l sentinel "$HOME/.cache/dotfiles/skills.shared.v5.installed"
 
 if test -f $sentinel
     rm $sentinel

@@ -52,7 +52,6 @@ brew "onefetch"          # git repo summary in terminal
 brew "mise"              # dev tool version manager
 brew "jdtls"             # Java language server
 brew "nono"              # capability-based sandbox for AI agents
-brew "opencode"          # AI coding agent (terminal)
 brew "ccusage"           # Claude Code usage analyzer
 brew "devcontainer"      # dev container CLI
 brew "podman"            # rootless container engine
@@ -76,13 +75,10 @@ brew "bandwhich"         # per-process bandwidth monitor
 brew "xdg-ninja"         # audit XDG base-dir compliance
 
 # ── GUI apps (macOS) ───────────────────────────────────
-cask "alacritty"         # GPU-accelerated terminal (OpenGL)
 cask "ghostty"           # GPU-accelerated terminal
-cask "kitty"             # GPU-accelerated terminal (OpenGL)
 cask "zed"               # GPU-accelerated code editor
 cask "1password"         # password manager
 cask "1password-cli"     # 1Password CLI (op)
-cask "codex"             # OpenAI Codex CLI
 cask "dockdoor"          # Dock previews and window switcher
 cask "handy"             # offline speech-to-text app
 cask "hiddenbar"         # hide menu bar icons

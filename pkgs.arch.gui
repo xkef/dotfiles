@@ -3,9 +3,7 @@ xclip             # X11 clipboard utility
 wl-clipboard      # Wayland clipboard utility
 
 # ── GUI apps ───────────────────────────────────────────
-alacritty         # GPU-accelerated terminal (OpenGL)
 ghostty           # GPU-accelerated terminal
-kitty             # GPU-accelerated terminal (OpenGL)
 1password         # password manager
 1password-cli     # 1Password CLI (op)
 handy             # offline speech-to-text app

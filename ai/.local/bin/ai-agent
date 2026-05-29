@@ -9,7 +9,7 @@ DEFAULT_BASE="main"
 usage() {
   cat <<'EOF'
 Usage:
-  ai-agent spawn <slug> [--agent claude|codex|opencode|pi] [--brief "task"] [--from <rev>] [--sandbox]
+  ai-agent spawn <slug> [--agent claude|pi] [--brief "task"] [--from <rev>] [--sandbox]
   ai-agent list [--format=human|ui] [--only=all|live|dirty|merged]
   ai-agent finish <slug>
   ai-agent cleanup [--force] [<slug>]
@@ -76,8 +76,8 @@ validate_slug() {
 
 validate_agent() {
   case "${1:-}" in
-  claude | codex | opencode | pi) ;;
-  *) die "invalid agent '${1:-}' (expected claude, codex, opencode, or pi)" ;;
+  claude | pi) ;;
+  *) die "invalid agent '${1:-}' (expected claude or pi)" ;;
   esac
 }
 

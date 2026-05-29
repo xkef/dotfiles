@@ -29,10 +29,10 @@ default shell.
 | [Starship](https://starship.rs)                                  | Minimal, cross-shell prompt                             |
 | [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org) | Editor with LazyVim distro (kickstart kept as fallback) |
 | [tmux](https://github.com/tmux/tmux)                             | Terminal multiplexer with vim navigation                |
-| [Ghostty](https://ghostty.org), Kitty, Alacritty                 | Terminal emulator configs                               |
+| [Ghostty](https://ghostty.org)                                   | Terminal emulator config                                |
 | [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder everywhere (shell, tmux, neovim)           |
 | [atuin](https://atuin.sh)                                        | Searchable shell history with sync                      |
-| [Claude Code](https://claude.ai/), Codex, OpenCode, pi           | AI coding agents (`sb claude` for sandbox)              |
+| [Claude Code](https://claude.ai/), pi                            | AI coding agents (`sb claude` for sandbox)              |
 | [jj (Jujutsu)](https://github.com/jj-vcs/jj)                     | Git-compatible VCS with simpler mental model            |
 | eza, bat, fd, ripgrep, zoxide, yazi, mise                        | Modern CLI defaults and workflow tools                  |
 

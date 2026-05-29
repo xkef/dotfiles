@@ -12,11 +12,11 @@ in `stow-packages` are the full-profile package set used by `./install`,
 | `shell`    | core fish profile, Starship, fzf shell UX, generic functions              |
 | `cli`      | small CLI defaults/data: atuin, bat, fd, television, Navi cheats          |
 | `theme`    | theme command plus fish and Neovim theme adapters                         |
-| `terminal` | Ghostty, Kitty, and Alacritty configs                                     |
+| `terminal` | Ghostty config                                                            |
 | `tmux`     | tmux core options, copy mode, status, session helpers                     |
 | `nvim`     | LazyVim/kickstart profiles and `knvim`                                    |
 | `vcs`      | git, jj, lazygit, VCS fish/tmux/Neovim adapters                           |
-| `ai`       | Claude/Codex/OpenCode/pi configs, skills, sandbox wrappers, agent helpers |
+| `ai`       | Claude/pi configs, skills, sandbox wrappers, agent helpers                |
 | `ssh`      | SSH config, socket/conf.d directories, signing public key                 |
 | `mise`     | mise config, fish init, and mise wrapper                                  |
 | `yazi`     | Yazi config, fish functions, and keybinding                               |
@@ -35,7 +35,7 @@ in the profile.
 
 Examples:
 
-- `ai` owns Claude/Codex/OpenCode/pi wrappers, `sb`, nono profiles, and the
+- `ai` owns Claude/pi wrappers, `sb`, nono profiles, and the
   tmux agent fragment.
 - `vcs` owns jj's fish wrapper, LazyVim's jj plugin adapter, and tmux VCS
   popup bindings.
@@ -93,7 +93,7 @@ while read -r pkg; do
   [ -n "$pkg" ] && stow --dir="$PWD" -t "$HOME" -R "$pkg"
 done < stow-packages
 find ~/.config ~/.local/bin ~/.local/share ~/.ssh \
-  ~/.agents ~/.claude ~/.codex ~/.pi \
+  ~/.agents ~/.claude ~/.pi \
   -type l ! -exec test -e {} \; -print
 ```
 

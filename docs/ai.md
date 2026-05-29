@@ -9,13 +9,11 @@ It is stowed to `$HOME` with the rest of the full profile by `./install`,
 | Path                                 | Tool            | Purpose                         |
 | ------------------------------------ | --------------- | ------------------------------- |
 | `.claude/`                           | Claude Code     | agents, skills, settings        |
-| `.codex/`                            | OpenAI Codex    | agent rules, config example     |
-| `.config/opencode/`                  | OpenCode        | agent rules, `opencode.json`    |
 | `.pi/agent/`                         | pi              | agent rules, settings example   |
 | `.config/nono/`                      | nono sandbox    | Seatbelt/Landlock profiles      |
 | `.config/ai-shared/AGENTS.base.md`   | shared source   | base rules for all tools        |
 | `.config/ai-shared/overlays/*.md`    | per-tool extras | appended to the base            |
-| `.config/fish/functions/*.fish`      | fish adapters   | wrappers for Claude/Codex/etc.  |
+| `.config/fish/functions/*.fish`      | fish adapters   | wrappers for Claude/pi/etc.     |
 | `.config/tmux/conf.d/40-agents.conf` | tmux adapter    | agent popup/session bindings    |
 | `.local/bin/ai-agent`                | workspace tool  | parallel agent workspace helper |
 | `.local/bin/ai-agents-render`        | generator       | renders tool AGENTS files       |
@@ -36,14 +34,13 @@ make ai-render
 
 `make fmt` invokes it automatically, so drift gets caught.
 
-**Never hand-edit** `ai/.claude/CLAUDE.md`, `ai/.codex/AGENTS.md`, or
-`ai/.config/opencode/AGENTS.md` — they carry a `<!-- Generated -->`
-header and will be overwritten.
+**Never hand-edit** `ai/.claude/CLAUDE.md` or `ai/.pi/agent/AGENTS.md` —
+they carry a `<!-- Generated -->` header and will be overwritten.
 
-Codex `config.toml` and pi `settings.json` are local runtime files. They
-record machine paths, trust decisions, changelog state, and other
-app-managed values, so they are ignored. Use the adjacent `*.example.*`
-files as portable starting points if you need to recreate a config.
+pi `settings.json` is a local runtime file. It records machine paths,
+trust decisions, changelog state, and other app-managed values, so it is
+ignored. Use the adjacent `*.example.*` files as portable starting points
+if you need to recreate a config.
 
 ## Fish and tmux adapters
 
@@ -51,8 +48,6 @@ The AI-owned fish wrappers live in `ai/.config/fish/functions/`:
 
 - `_ai_ensure_skills.fish`
 - `claude.fish`
-- `codex.fish`
-- `opencode.fish`
 - `pi.fish`
 - `sb.fish`
 - `agent-*.fish`
@@ -61,8 +56,6 @@ The `sb` wrapper launches supported agents through nono sandbox profiles:
 
 ```sh
 sb claude
-sb codex
-sb opencode
 sb pi
 ```
 
@@ -75,8 +68,6 @@ agent workspace UI. This file is sourced through the shared tmux
 | Agent       | Good for                                                        |
 | ----------- | --------------------------------------------------------------- |
 | Claude Code | Long-running refactors; skills/agents ecosystem; best reasoning |
-| Codex       | OpenAI-model tasks; quick turnaround                            |
-| OpenCode    | Local-friendly; multi-model; matches terminal workflow          |
 | pi          | GitHub Copilot-backed coding agent                              |
 
 All agents share sandbox profiles under `~/.config/nono/`.
@@ -105,7 +96,7 @@ Everything else is pulled from upstream on first launch:
 
 The fish wrappers call `_ai_ensure_skills <agent>`. It installs upstream
 skills into `~/.agents/skills` once and writes a sentinel at
-`~/.cache/dotfiles/skills.shared.v4.installed` so subsequent launches
+`~/.cache/dotfiles/skills.shared.v5.installed` so subsequent launches
 skip the install. Agents that understand `.agents/skills` read that tree
 directly; Claude reaches the same tree through `.claude/skills`.
 

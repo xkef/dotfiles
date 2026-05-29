@@ -2,7 +2,7 @@ function sb -d "Run a command inside a nono sandbox"
     if test (count $argv) -eq 0
         echo "Usage: sb <command> [args...]" >&2
         echo "Runs <command> in a nono sandbox using a matching profile." >&2
-        echo "Known profiles: claude, codex, opencode, pi" >&2
+        echo "Known profiles: claude, pi" >&2
         return 1
     end
 
@@ -13,7 +13,7 @@ function sb -d "Run a command inside a nono sandbox"
     switch $cmd
         case claude
             _ai_ensure_skills claude-code
-        case codex opencode pi
+        case pi
             _ai_ensure_skills $cmd
     end
 
@@ -31,13 +31,6 @@ function sb -d "Run a command inside a nono sandbox"
             touch $HOME/.claude.json.lock
             set -a nono_args --profile claude
             test "$CLAUDE_ALLOW_LAUNCH_SERVICES" = 1; and set -a nono_args --allow-launch-services
-        case codex
-            set -a nono_args --profile codex
-            test "$CODEX_ALLOW_LAUNCH_SERVICES" = 1; and set -a nono_args --allow-launch-services
-            set -a rest --sandbox danger-full-access --ask-for-approval on-request
-        case opencode
-            set -a nono_args --profile opencode
-            test "$OPENCODE_ALLOW_LAUNCH_SERVICES" = 1; and set -a nono_args --allow-launch-services
         case '*'
             set -a nono_args --profile $cmd
     end

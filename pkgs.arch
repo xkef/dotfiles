@@ -52,8 +52,6 @@ lazydocker        # terminal UI for Docker/Podman
 fx                # terminal JSON viewer
 bubblewrap        # unprivileged sandboxing
 nono              # capability-based sandbox
-openai-codex-bin  # AI coding agent (OpenAI)
-opencode          # AI coding agent (terminal)
 ccusage-bin       # Claude Code usage analyzer (AUR)
 
 # ── File management & info ─────────────────────────────

@@ -1,8 +1,0 @@
-/auth.json
-/config.toml
-/history.jsonl
-/log
-/sessions
-/.last_session
-/version.json
-__store.db
