@@ -52,7 +52,7 @@ lazydocker        # terminal UI for Docker/Podman
 fx                # terminal JSON viewer
 bubblewrap        # unprivileged sandboxing
 nono              # capability-based sandbox
-ccusage-bin       # Claude Code usage analyzer (AUR)
+ccusage           # Claude Code usage analyzer (AUR)
 
 # ── File management & info ─────────────────────────────
 yazi              # terminal file manager
