@@ -158,6 +158,7 @@ end
 set -g DOTFILES_DIR (test -f $HOME/.config/dotfiles/dir; and cat $HOME/.config/dotfiles/dir; or path resolve (status dirname)/../../..)
 set -g VM_DIR $DOTFILES_DIR/vm/.local/share/vm
 set -g VM_SHARE_DIR (set -q VM_SHARE_DIR; and echo $VM_SHARE_DIR; or echo $HOME/code)
+set -g VM_WORK_DIR (set -q VM_WORK_DIR; and echo $VM_WORK_DIR; or echo $HOME/work)
 
 # -- SSH --
 
@@ -188,7 +189,12 @@ function _vm_ip
     if _is_macos
         tart ip $VM_NAME --resolver arp 2>/dev/null
     else
-        tart ip $VM_NAME --resolver agent 2>/dev/null
+        # The guest agent is preferred but can be slow or die mid-run; fall back
+        # to ARP (reliable once the VM holds a DHCP lease) so ssh/start/status
+        # don't report a running VM as down.
+        set -l ip (tart ip $VM_NAME --resolver agent 2>/dev/null)
+        test -n "$ip"; or set ip (tart ip $VM_NAME --resolver arp 2>/dev/null)
+        echo $ip
     end
 end
 
@@ -260,6 +266,33 @@ function _setup_guest
     set -l opts (_ssh_opts); or return 1
     set -l term (set -q TERM; and echo $TERM; or echo xterm-256color)
     infocmp -x $term 2>/dev/null | ssh $opts $VM_USER@$ip 'tic -x - 2>/dev/null'; or true
+end
+
+function _ensure_guest_dns
+    # Corporate full-tunnel VPNs often block outbound DNS (:53) to public
+    # resolvers; fall back to DNS-over-TLS (:853), which they leave open.
+    tart exec $VM_NAME getent hosts github.com >/dev/null 2>&1; and return 0
+    echo "  DNS over :53 is blocked — enabling DNS-over-TLS in guest..."
+    tart exec $VM_NAME bash -c '
+        mkdir -p /etc/systemd/resolved.conf.d
+        printf "[Resolve]\nDNS=1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com\nFallbackDNS=9.9.9.9#dns.quad9.net\nDNSOverTLS=yes\n" \
+            > /etc/systemd/resolved.conf.d/dot.conf
+        systemctl enable --now systemd-resolved >/dev/null 2>&1
+        ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf'
+end
+
+function _ensure_guest_work_mount
+    # The base image only mounts the 'code' virtiofs share; set up the second
+    # share (~/work -> /home/<user>/work, tag=work) ourselves via fstab so it
+    # auto-mounts on every boot.
+    test -d $VM_WORK_DIR; or return 0
+    set -l wm /home/$VM_USER/work
+    echo "  Mounting ~/work → $wm in guest..."
+    tart exec $VM_NAME sh -c "
+        install -d -o $VM_USER -g $VM_USER $wm
+        grep -q '^work $wm virtiofs' /etc/fstab 2>/dev/null || echo 'work $wm virtiofs rw,nofail 0 0' >> /etc/fstab
+        systemctl daemon-reload
+        mountpoint -q $wm || mount $wm"
 end
 
 # -- Commands --
@@ -335,6 +368,9 @@ function cmd_create
         _add_work_partition $ip; or echo "  (work partition step failed; continuing)"
         echo "  Linking /opt/homebrew + /Library/Developer to /Volumes/work..."
         _link_work_dirs $ip; or echo "  (symlink step failed; continuing)"
+    else
+        _ensure_guest_dns; or echo "  (DNS check failed; continuing)"
+        _ensure_guest_work_mount; or echo "  (work mount step failed; continuing)"
     end
 
     echo "  Syncing dotfiles..."
@@ -444,6 +480,10 @@ function cmd_start
             set -a run_args --dir="$VM_SHARE_DIR:tag=code"
         end
     end
+    # Second share (Linux guests only): ~/work → /home/<user>/work, tag=work.
+    if not _is_macos; and test -d $VM_WORK_DIR
+        set -a run_args --dir="$VM_WORK_DIR:tag=work"
+    end
     set -a run_args $VM_NAME
 
     tart run $run_args &
@@ -509,6 +549,9 @@ function cmd_status
             echo "  Share: $VM_SHARE_DIR -> /home/$VM_USER/code"
         end
     end
+    if not _is_macos; and test -d $VM_WORK_DIR
+        echo "  Share: $VM_WORK_DIR -> /home/$VM_USER/work"
+    end
 end
 
 function cmd_destroy
@@ -560,6 +603,7 @@ Environment:
   VM_INIT_PASSWORD  First-boot pw    (default: admin, macos only)
   REMOTE_IMAGE      OCI image        (default: per-flavor preset)
   VM_SHARE_DIR      Shared dir       (default: ~/code)
+  VM_WORK_DIR       Work share       (default: ~/work, Linux only)
   CPUS              CPU cores        (default: 4)
   MEMORY            Memory in MB     (default: 8192)
   DISK_SIZE         Host disk GB     (default: 120 on macos)
