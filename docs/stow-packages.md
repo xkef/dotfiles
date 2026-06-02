@@ -6,23 +6,23 @@ in `stow-packages` are the full-profile package set used by `./install`,
 
 ## Manifest
 
-| Package    | Owns                                                                      |
-| ---------- | ------------------------------------------------------------------------- |
-| `dots`     | dotfiles control plane: `dots`, doctor, update, keys, versions            |
-| `shell`    | core fish profile, Starship, fzf shell UX, generic functions              |
-| `cli`      | small CLI defaults/data: atuin, bat, fd, television, Navi cheats          |
-| `theme`    | theme command plus fish and Neovim theme adapters                         |
-| `terminal` | Ghostty config                                                            |
-| `tmux`     | tmux core options, copy mode, status, session helpers                     |
-| `nvim`     | LazyVim/kickstart profiles and `knvim`                                    |
-| `vcs`      | git, jj, lazygit, VCS fish/tmux/Neovim adapters                           |
-| `ai`       | Claude/pi configs, skills, sandbox wrappers, agent helpers                |
-| `ssh`      | SSH config, socket/conf.d directories, signing public key                 |
-| `mise`     | mise config, fish init, and mise wrapper                                  |
-| `yazi`     | Yazi config, fish functions, and keybinding                               |
-| `helix`    | Helix editor config                                                       |
-| `vm`       | Tart VM helper and its local known-hosts state path                       |
-| `zed`      | Zed editor config                                                         |
+| Package    | Owns                                                             |
+| ---------- | ---------------------------------------------------------------- |
+| `dots`     | dotfiles control plane: `dots`, doctor, update, keys, versions   |
+| `shell`    | core fish profile, Starship, fzf shell UX, generic functions     |
+| `cli`      | small CLI defaults/data: atuin, bat, fd, television, Navi cheats |
+| `theme`    | theme command plus fish and Neovim theme adapters                |
+| `terminal` | Ghostty config                                                   |
+| `tmux`     | tmux core options, copy mode, status, session helpers            |
+| `nvim`     | LazyVim/kickstart profiles and `knvim`                           |
+| `vcs`      | git, jj, lazygit, VCS fish/tmux/Neovim adapters                  |
+| `ai`       | Claude/pi configs, skills, sandbox wrappers, agent helpers       |
+| `ssh`      | SSH config, socket/conf.d directories, signing public key        |
+| `mise`     | mise config, fish init, and mise wrapper                         |
+| `yazi`     | Yazi config, fish functions, and keybinding                      |
+| `helix`    | Helix editor config                                              |
+| `vm`       | Tart VM helper and its local known-hosts state path              |
+| `zed`      | Zed editor config                                                |
 
 `stow-packages` is deliberately explicit so repo assets such as `README.md`,
 `docs/`, `Brewfile`, `pkgs.arch`, and `mise.toml` cannot be stowed by
