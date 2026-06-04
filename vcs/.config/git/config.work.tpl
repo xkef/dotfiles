@@ -1,4 +1,4 @@
-# Rendered by ./install via `op inject` from op://Work/git/.
+# Rendered by ./install via `op inject` from the Work/git 1Password item.
 # Active only inside ~/work/ (see [includeIf] in ../config).
 # DO NOT COMMIT the rendered output (~/.config/git/config.work).
 
