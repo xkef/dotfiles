@@ -1,4 +1,4 @@
-command_timeout = 5000
+command_timeout = 1000
 
 format = """
 ${custom.cwd}\
@@ -11,7 +11,7 @@ $git_status\
 $git_metrics\
 ${custom.jj_change}\
 ${custom.jj_status}\
-$java\
+${custom.java}\
 $python\
 $nodejs\
 $docker_context"""
@@ -49,9 +49,12 @@ added_style = 'green'
 deleted_style = 'red'
 format = '([+$added]($added_style) )([-$deleted]($deleted_style) )'
 
-[java]
-format = '[$symbol($version)]($style) '
-symbol = ' '
+[custom.java]
+command = 'mise current java 2>/dev/null'
+detect_extensions = ['java', 'class', 'gradle', 'jar', 'cljs', 'cljc']
+detect_files = ['pom.xml', 'build.gradle.kts', 'build.sbt', '.java-version', 'deps.edn', 'project.clj', 'build.boot', '.sdkmanrc']
+format = '[ $output]($style) '
+style = 'red'
 
 [python]
 format = '[$symbol($version)($virtualenv)]($style) '
@@ -65,30 +68,19 @@ symbol = ' '
 format = '[$symbol$context]($style) '
 symbol = ' '
 
+# --ignore-working-copy skips the working-copy snapshot (the cost that scales
+# with repo size); the prompt reflects the last snapshot, refreshed on any real
+# jj command.
 [custom.jj_change]
-command = '''jj log --no-graph -r @ -T 'separate(" ", change_id.shortest(8), bookmarks.join(", "))' 2>/dev/null'''
-when = 'jj root 2>/dev/null'
+command = '''jj --ignore-working-copy log --no-graph -r @ -T 'separate(" ", change_id.shortest(8), bookmarks.join(", "))' 2>/dev/null'''
+when = 'jj --ignore-working-copy root 2>/dev/null'
 format = '[ $output]($style) '
 style = 'purple'
 
+# Flags + A/M/D file counts from a single template call (no jj diff subprocess).
 [custom.jj_status]
-command = '''
-o=""
-flags=$(jj log --no-graph -r @ -T 'separate(",", if(conflict, "c"), if(empty, "e"))' 2>/dev/null)
-case "$flags" in *c*) o="${o}⚠ ";; esac
-case "$flags" in *e*) o="${o}∅ ";; esac
-s=$(jj diff --summary 2>/dev/null)
-if [ -n "$s" ]; then
-  a=$(printf '%s\n' "$s" | grep -c '^A')
-  m=$(printf '%s\n' "$s" | grep -c '^M')
-  d=$(printf '%s\n' "$s" | grep -c '^D')
-  [ "$a" -gt 0 ] && o="${o}+${a} "
-  [ "$m" -gt 0 ] && o="${o}!${m} "
-  [ "$d" -gt 0 ] && o="${o}-${d} "
-fi
-printf '%s' "$o"
-'''
-when = 'jj root 2>/dev/null'
+command = '''jj --ignore-working-copy log --no-graph -r @ -T 'separate("", if(conflict, "⚠ "), if(empty, "∅ "), if(diff.files().filter(|f| f.status()=="added").len() > 0, "+" ++ diff.files().filter(|f| f.status()=="added").len() ++ " "), if(diff.files().filter(|f| f.status()=="modified").len() > 0, "!" ++ diff.files().filter(|f| f.status()=="modified").len() ++ " "), if(diff.files().filter(|f| f.status()=="deleted").len() > 0, "-" ++ diff.files().filter(|f| f.status()=="deleted").len() ++ " "))' 2>/dev/null'''
+when = 'jj --ignore-working-copy root 2>/dev/null'
 format = '($output)'
 style = 'yellow'
 

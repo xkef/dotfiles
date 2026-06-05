@@ -15,6 +15,22 @@ if command -q mise
         set -g __mise_env_dirty 1
     end
 
+    # Warm mise's caches off the critical path so the in-process apply on the
+    # next command is fast. Single-flight (skip if a prewarm is still running)
+    # and edge-triggered on PWD only — never on the prompt — so it cannot loop.
+    function __mise_prewarm --on-variable PWD
+        if set -q __mise_prewarm_pid; and command kill -0 $__mise_prewarm_pid 2>/dev/null
+            return
+        end
+        if command -q timeout
+            command timeout 2 mise hook-env -s fish >/dev/null 2>&1 &
+        else
+            command mise hook-env -s fish >/dev/null 2>&1 &
+        end
+        set -g __mise_prewarm_pid $last_pid
+        disown $last_pid 2>/dev/null
+    end
+
     function __mise_apply_env --on-event fish_preexec
         set -q __mise_env_dirty; or return
         command mise hook-env -s fish | source
