@@ -74,16 +74,17 @@ fmt: ai-render ## Format all dotfiles
 	stylua nvim/.config/lazyvim/ nvim/.config/kickstart/ theme/.config/lazyvim/ vcs/.config/lazyvim/
 	shfmt -w $(SHELL_FILES)
 	fish_indent -w $(FISH_FILES)
-	prettier --write '**/*.{json,yaml,yml,css,html,md}' \
+	prettier --write '**/*.{json,yaml,yml,css,html}' \
 		--ignore-path .gitignore \
 		--ignore-path .prettierignore 2>/dev/null || true
+	dprint fmt
 	taplo fmt
 
 lint: ## Lint shell scripts, neovim config, and markdown
 	@printf '\n  Linting...\n\n'
 	@shellcheck -S warning $(SHELL_FILES)
 	@NVIM_APPNAME=lazyvim nvim --headless +"lua require('lazy')" +qa
-	@markdownlint-cli2
+	@rumdl check
 	@printf '\n  All clean\n\n'
 
 macos-defaults: ## Apply macOS system defaults
