@@ -1,7 +1,7 @@
 # Yazi theme — uses terminal palette so it follows the active theme
 # (Nord, Catppuccin, etc.) without hardcoded hex values.
 
-[manager]
+[mgr]
 cwd = { fg = "cyan", bold = true }
 
 hovered = { reversed = true }
@@ -96,23 +96,23 @@ rules = [
   { mime = "application/x-zstd", fg = "red" },
   { mime = "application/x-7z-compressed", fg = "red" },
   { mime = "application/x-rar", fg = "red" },
-  { name = "*.md", fg = "cyan" },
-  { name = "*.rs", fg = "red" },
-  { name = "*.go", fg = "cyan" },
-  { name = "*.ts", fg = "blue" },
-  { name = "*.tsx", fg = "blue" },
-  { name = "*.js", fg = "yellow" },
-  { name = "*.jsx", fg = "yellow" },
-  { name = "*.py", fg = "green" },
-  { name = "*.lua", fg = "blue" },
-  { name = "*.sh", fg = "green" },
-  { name = "*.zsh", fg = "green" },
-  { name = "*.toml", fg = "red" },
-  { name = "*.yaml", fg = "red" },
-  { name = "*.yml", fg = "red" },
-  { name = "*.json", fg = "yellow" },
-  { name = "*.lock", fg = "darkgray" },
-  { name = "*.log", fg = "darkgray" },
-  { name = "*", fg = "white" },
-  { name = "*/", fg = "cyan" },
+  { url = "*.md", fg = "cyan" },
+  { url = "*.rs", fg = "red" },
+  { url = "*.go", fg = "cyan" },
+  { url = "*.ts", fg = "blue" },
+  { url = "*.tsx", fg = "blue" },
+  { url = "*.js", fg = "yellow" },
+  { url = "*.jsx", fg = "yellow" },
+  { url = "*.py", fg = "green" },
+  { url = "*.lua", fg = "blue" },
+  { url = "*.sh", fg = "green" },
+  { url = "*.zsh", fg = "green" },
+  { url = "*.toml", fg = "red" },
+  { url = "*.yaml", fg = "red" },
+  { url = "*.yml", fg = "red" },
+  { url = "*.json", fg = "yellow" },
+  { url = "*.lock", fg = "darkgray" },
+  { url = "*.log", fg = "darkgray" },
+  { url = "*", fg = "white" },
+  { url = "*/", fg = "cyan" },
 ]
