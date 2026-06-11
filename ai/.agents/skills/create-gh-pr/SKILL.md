@@ -126,7 +126,7 @@ the issue. Otherwise use `Ref`.
 - Title starts with a Conventional Commits type
   (`feat`, `fix`, `chore`, `refactor`, `docs`, `test`,
   `perf`, `style`) followed by an imperative verb.
-- Body explains _why_, not just _what_ — the diff
+- Body explains *why*, not just *what* — the diff
   already shows what.
 - Note alternatives considered.
 - Link to relevant prior commits, PRs, or docs.

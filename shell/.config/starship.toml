@@ -52,7 +52,16 @@ format = '([+$added]($added_style) )([-$deleted]($deleted_style) )'
 [custom.java]
 command = 'mise current java 2>/dev/null'
 detect_extensions = ['java', 'class', 'gradle', 'jar', 'cljs', 'cljc']
-detect_files = ['pom.xml', 'build.gradle.kts', 'build.sbt', '.java-version', 'deps.edn', 'project.clj', 'build.boot', '.sdkmanrc']
+detect_files = [
+  'pom.xml',
+  'build.gradle.kts',
+  'build.sbt',
+  '.java-version',
+  'deps.edn',
+  'project.clj',
+  'build.boot',
+  '.sdkmanrc',
+]
 format = '[ $output]($style) '
 style = 'red'
 

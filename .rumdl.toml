@@ -6,10 +6,10 @@
 [global]
 disable = ["MD025", "MD036", "MD041"]
 exclude = [
-    "ai/.claude/CLAUDE.md",
-    "ai/.codex/AGENTS.md",
-    "ai/.config/opencode/AGENTS.md",
-    "ai/.pi/agent/AGENTS.md",
+  "ai/.claude/CLAUDE.md",
+  "ai/.codex/AGENTS.md",
+  "ai/.config/opencode/AGENTS.md",
+  "ai/.pi/agent/AGENTS.md",
 ]
 
 [MD013]
