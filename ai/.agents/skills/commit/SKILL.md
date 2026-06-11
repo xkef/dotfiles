@@ -33,10 +33,10 @@ included in the commit (passing your commit message using
 the `-m` option.
 
 In general, because of the lack of staging area, you should
-be careful with _any_ `jj` command that creates or modifies
+be careful with *any* `jj` command that creates or modifies
 a change. For example, if you user asks you to squash some
 changes into the last commit using `jj squash`, you should
-prompt the user to indicate _which_ files' changes they
+prompt the user to indicate *which* files' changes they
 want squashed (and invoke `jj squash <file>...`
 accordingly).
 
@@ -81,7 +81,7 @@ include the text of prompts in the commit message.
   (eg. "docs", "fix", "feat", "chore" etc; see the table
   below for a full list) followed by a statement beginning
   with a verb (eg. "add", "remove", "rename" etc). The
-  subject describes _what_ the commit does.
+  subject describes *what* the commit does.
 - Prefer a clear subject on its own. Add a body only when
   the change is non-obvious, and keep it brief: explain the
   motivation, not the mechanics.

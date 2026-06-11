@@ -15,7 +15,5 @@
     "ai/.codex/AGENTS.md",
     "ai/.config/opencode/AGENTS.md"
   ],
-  "plugins": [
-    "https://plugins.dprint.dev/markdown-0.22.1.wasm"
-  ]
+  "plugins": ["https://plugins.dprint.dev/markdown-0.22.1.wasm"]
 }
