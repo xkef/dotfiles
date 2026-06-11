@@ -26,7 +26,7 @@ function _parse_ghostty_theme -a name
     end
     test -n "$theme_file" || return 1
 
-    set -g t_palette (seq 16 | while read; echo 000000; end)
+    set -g t_palette (seq 16 | string replace -r '.+' 000000)
     while read -l line
         set -l m (string match -r '(\d+)=#([0-9a-fA-F]{6})' -- $line)
         if test (count $m) -ge 3; and string match -q 'palette*' -- $line
@@ -44,6 +44,10 @@ function _parse_ghostty_theme -a name
             end
         end
     end <$theme_file
+    # The while loop's status leaks failed substitutions from the last
+    # parsed line (fish 4.7); a non-matching trailing line must not make
+    # the parse look like a missing theme.
+    return 0
 end
 
 # ── Supported themes ──────────────────────────────────
