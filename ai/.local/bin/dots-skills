@@ -1,25 +1,55 @@
 #!/usr/bin/env fish
 # shellcheck disable=all
-# dots-skills — refresh shared agent skills from upstream sources.
+# dots-skills — manage shared agent skills pulled from upstream packs.
 #
-# Removes the install sentinel and re-runs `_ai_ensure_skills`, which
-# pulls the latest versions of the upstream skill packs (mattpocock,
-# vercel-labs, 2ykwang, Cocoon-AI) into ~/.agents/skills/.
-#
+# Single owner of the install sentinel and the upstream source list.
 # Locally-tracked skills (symlinked from ~/dotfiles/ai/.agents/skills/)
 # are unaffected.
+#
+# Usage:
+#   dots-skills ensure [agent]    install once; no-op while the sentinel exists
+#   dots-skills refresh [agent]   drop the sentinel and reinstall from upstream
+#   dots-skills                   same as refresh
 
 set -l sentinel "$HOME/.cache/dotfiles/skills.shared.v5.installed"
 
-if test -f $sentinel
-    rm $sentinel
+# Upstream skill packs: '<repo> <skill>' ('*' installs every skill).
+set -l upstreams \
+    'mattpocock/skills *' \
+    'vercel-labs/skills find-skills' \
+    '2ykwang/agent-skills html-visual' \
+    'Cocoon-AI/architecture-diagram-generator architecture-diagram'
+
+# The skills CLI installs into ~/.agents/skills via its claude-code target;
+# pi reads the same tree directly.
+set -l install_target claude-code
+
+set -l verb $argv[1]
+set -l agent (test -n "$argv[2]"; and echo $argv[2]; or echo agents)
+
+switch "$verb"
+    case ensure refresh
+    case ''
+        set verb refresh
+    case '*'
+        echo "usage: dots-skills [ensure|refresh] [agent]" >&2
+        exit 2
 end
 
-if not functions -q _ai_ensure_skills
-    echo "dots-skills: _ai_ensure_skills function not loaded." >&2
-    echo "Start a new fish session or run:" >&2
-    echo "    source ~/.config/fish/functions/_ai_ensure_skills.fish" >&2
-    return 1
+if test "$verb" = refresh
+    rm -f $sentinel
 end
 
-_ai_ensure_skills (test -n "$argv[1]"; and echo $argv[1]; or echo refresh)
+test -f $sentinel; and exit 0
+command -q npx; or exit 0
+
+printf '\033[33m(installing shared skills for %s...)\033[0m\n' $agent >&2
+for entry in $upstreams
+    set -l parts (string split ' ' -- $entry)
+    npx --yes skills@latest add $parts[1] \
+        --global --agent $install_target --skill $parts[2] -y
+    or exit $status
+end
+
+mkdir -p (dirname $sentinel)
+touch $sentinel

@@ -6,18 +6,18 @@ It is stowed to `$HOME` with the rest of the full profile by `./install`,
 
 ## Layout
 
-| Path                                 | Tool            | Purpose                         |
-| ------------------------------------ | --------------- | ------------------------------- |
-| `.claude/`                           | Claude Code     | agents, skills, settings        |
-| `.pi/agent/`                         | pi              | agent rules, settings example   |
-| `.config/nono/`                      | nono sandbox    | Seatbelt/Landlock profiles      |
-| `.config/ai-shared/AGENTS.base.md`   | shared source   | base rules for all tools        |
-| `.config/ai-shared/overlays/*.md`    | per-tool extras | appended to the base            |
-| `.config/fish/functions/*.fish`      | fish adapters   | wrappers for Claude/pi/etc.     |
-| `.config/tmux/conf.d/40-agents.conf` | tmux adapter    | agent popup/session bindings    |
-| `.local/bin/ai-agent`                | workspace tool  | parallel agent workspace helper |
-| `.local/bin/ai-agents-render`        | generator       | renders tool AGENTS files       |
-| `.local/bin/dots-skills`             | maintenance     | refreshes shared skills         |
+| Path                                 | Tool            | Purpose                          |
+| ------------------------------------ | --------------- | -------------------------------- |
+| `.claude/`                           | Claude Code     | agents, skills, settings         |
+| `.pi/agent/`                         | pi              | agent rules, settings example    |
+| `.config/nono/`                      | nono sandbox    | Seatbelt/Landlock profiles       |
+| `.config/ai-shared/AGENTS.base.md`   | shared source   | base rules for all tools         |
+| `.config/ai-shared/overlays/*.md`    | per-tool extras | appended to the base             |
+| `.config/fish/functions/*.fish`      | fish adapters   | wrappers for Claude/pi/etc.      |
+| `.config/tmux/conf.d/40-agents.conf` | tmux adapter    | agent popup/session bindings     |
+| `.local/bin/ai-agent`                | workspace tool  | parallel agent workspace helper  |
+| `.local/bin/ai-agents-render`        | generator       | renders tool AGENTS files        |
+| `.local/bin/dots-skills`             | skills pipeline | installs/refreshes shared skills |
 
 ## Editing agent rules
 
@@ -46,7 +46,6 @@ if you need to recreate a config.
 
 The AI-owned fish wrappers live in `ai/.config/fish/functions/`:
 
-- `_ai_ensure_skills.fish`
 - `claude.fish`
 - `pi.fish`
 - `sb.fish`
@@ -94,11 +93,11 @@ Everything else is pulled from upstream on first launch:
 - `architecture-diagram` from `Cocoon-AI/architecture-diagram-generator`
   for standalone HTML/SVG architecture diagrams
 
-The fish wrappers call `_ai_ensure_skills <agent>`. It installs upstream
-skills into `~/.agents/skills` once and writes a sentinel at
-`~/.cache/dotfiles/skills.shared.v5.installed` so subsequent launches
-skip the install. Agents that understand `.agents/skills` read that tree
-directly; Claude reaches the same tree through `.claude/skills`.
+The fish wrappers call `dots-skills ensure <agent>`. dots-skills owns the
+upstream source list and the install sentinel: it installs upstream skills
+into `~/.agents/skills` once, then writes the sentinel so subsequent
+launches skip the install. Agents that understand `.agents/skills` read
+that tree directly; Claude reaches the same tree through `.claude/skills`.
 
 Generated or upstream skills under `ai/.agents/skills/` are filtered out
 via `.gitignore` and never get committed.

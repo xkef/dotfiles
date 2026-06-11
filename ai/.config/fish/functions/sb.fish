@@ -12,9 +12,9 @@ function sb -d "Run a command inside a nono sandbox"
 
     switch $cmd
         case claude
-            _ai_ensure_skills claude-code
+            command -q dots-skills; and dots-skills ensure claude-code
         case pi
-            _ai_ensure_skills $cmd
+            command -q dots-skills; and dots-skills ensure pi
     end
 
     if not command -q nono
