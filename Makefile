@@ -77,6 +77,7 @@ fmt: ai-render ## Format all dotfiles
 lint: ## Lint shell scripts, neovim config, and markdown
 	@printf '\n  Linting...\n\n'
 	@shellcheck -S warning $(SHELL_FILES)
+	@for f in $(FISH_FILES); do fish --no-execute $$f || exit 1; done
 	@NVIM_APPNAME=lazyvim nvim --headless +"lua require('lazy')" +qa
 	@rumdl check
 	@printf '\n  All clean\n\n'
