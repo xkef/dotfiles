@@ -69,17 +69,18 @@ end
 
 # ── Helpers ───────────────────────────────────────────
 
+# Current theme lives in the untracked Ghostty include fragment written by
+# _update_ghostty; the tracked config only carries the default.
 function _current_theme
-    if not test -f $GHOSTTY_CONFIG
-        echo "Catppuccin Mocha"
-        return
+    for source in (path dirname $GHOSTTY_CONFIG)/theme $GHOSTTY_CONFIG
+        test -f $source; or continue
+        set -l m (string match -r '^\s*theme\s*=\s*(.+)' <$source)
+        if test (count $m) -ge 2
+            string trim $m[2]
+            return
+        end
     end
-    set -l m (string match -r '^\s*theme\s*=\s*(.+)' <$GHOSTTY_CONFIG)
-    if test (count $m) -ge 2
-        string trim $m[2]
-    else
-        echo "Catppuccin Mocha"
-    end
+    echo "Catppuccin Mocha"
 end
 
 # Blend two hex colors: _blend_hex bg fg weight(0-100).
@@ -154,9 +155,9 @@ end
 
 function _update_ghostty
     test -f $GHOSTTY_CONFIG || return 0
-    set -l tmp (mktemp)
-    sed "s/^theme = .*/theme = $argv[1]/" $GHOSTTY_CONFIG >$tmp
-    mv $tmp $GHOSTTY_CONFIG
+    set -l fragment (path dirname $GHOSTTY_CONFIG)/theme
+    printf '# Written by `theme` — machine-local current theme.\ntheme = %s\n' \
+        $argv[1] >$fragment
 end
 
 function _reload_neovim
@@ -250,6 +251,8 @@ end
 switch "$argv[1]"
     case --list -l
         _list_themes
+    case --current
+        _current_theme
     case auto
         _auto_theme
     case --completions
@@ -268,6 +271,7 @@ switch "$argv[1]"
         echo "  theme <name>       Switch to a supported Ghostty theme"
         echo "  theme auto         Match system light/dark appearance"
         echo "  theme --list       List available themes"
+        echo "  theme --current    Print current theme name"
     case ''
         echo "Current: "(_current_theme)
     case '*'

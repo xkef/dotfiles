@@ -113,13 +113,7 @@ end
 # Re-apply current theme to regenerate derived configs (delta)
 if command -q theme
     _log "Regenerating theme..."
-    set -l name
-    if test -r $HOME/.config/ghostty/config
-        set -l match (string match -r '^\s*theme\s*=\s*(.+)' <$HOME/.config/ghostty/config)
-        test (count $match) -ge 2; and set name (string trim $match[2])
-    end
-    test -n "$name"; or set name "Catppuccin Mocha"
-    theme $name >/dev/null 2>&1 || true
+    theme (theme --current) >/dev/null 2>&1 || true
 end
 
 printf '\n  Done!\n\n'

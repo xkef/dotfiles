@@ -16,9 +16,11 @@ minimum-contrast = 1.1
 macos-option-as-alt = left
 
 # ── Theme ─────────────────────────────────────────────
-# Managed by `theme` command — switches ghostty, neovim, tmux, and shell
-# coherently. Run `ghostty +list-themes` to see available theme names.
-theme = Catppuccin Frappe
+# Tracked default only. The `theme` command writes the machine-local
+# current theme to ./theme (untracked); the optional include below loads
+# after this file, so it wins. `ghostty +list-themes` lists theme names.
+theme = Catppuccin Mocha
+config-file = ?theme
 
 # ── Window ────────────────────────────────────────────
 window-padding-x = 12

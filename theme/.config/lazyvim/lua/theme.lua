@@ -4,9 +4,9 @@
 
 local M = {}
 
-local function ghostty_config_path()
+local function ghostty_dir()
   local xdg = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
-  return xdg .. "/ghostty/config"
+  return xdg .. "/ghostty"
 end
 
 local function configure_colorscheme(ghostty_name)
@@ -57,20 +57,26 @@ local function derive_colorscheme(ghostty_name)
   return "default"
 end
 
+-- The current theme lives in the untracked include fragment written by the
+-- `theme` command; the tracked Ghostty config only carries the default.
 function M.read()
-  local f = io.open(ghostty_config_path(), "r")
-  if not f then
-    return { name = "Catppuccin Mocha" }
-  end
-  local name
-  for line in f:lines() do
-    local val = line:match("^%s*theme%s*=%s*(.+)$")
-    if val then
-      name = val:match("^(.-)%s*$")
+  for _, path in ipairs({ ghostty_dir() .. "/theme", ghostty_dir() .. "/config" }) do
+    local f = io.open(path, "r")
+    if f then
+      local name
+      for line in f:lines() do
+        local val = line:match("^%s*theme%s*=%s*(.+)$")
+        if val then
+          name = val:match("^(.-)%s*$")
+        end
+      end
+      f:close()
+      if name then
+        return { name = name }
+      end
     end
   end
-  f:close()
-  return { name = name or "Catppuccin Mocha" }
+  return { name = "Catppuccin Mocha" }
 end
 
 function M.apply()
