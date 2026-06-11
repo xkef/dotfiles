@@ -15,6 +15,7 @@ Thumbs.db
 # Local overrides (not tracked)
 shell/.config/fish/local.fish
 shell/.config/fish/fish_variables
+/terminal/.config/ghostty/theme
 /vcs/.config/git/config.local
 /vcs/.config/git/config.work
 /vcs/.config/git/allowed_signers.work
