@@ -8,7 +8,7 @@ function pi --wraps pi --description "pi.dev coding agent: auto-install via npm 
         npm install -g @earendil-works/pi-coding-agent
     end
 
-    _ai_ensure_skills pi
+    command -q dots-skills; and dots-skills ensure pi
 
     set -l pinned 0
     if set -q TMUX
