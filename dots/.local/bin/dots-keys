@@ -4,7 +4,8 @@
 # Collects @key annotations from tmux and fish config files and renders
 # them as a markdown table, piped through glow for terminal display.
 
-set -g DOTS_DIR (test -f $HOME/.config/dotfiles/dir && cat $HOME/.config/dotfiles/dir || echo $HOME/dotfiles)
+set -g DOTS_PROFILE (path resolve (status filename) | path dirname)/dots-profile
+set -g DOTS_DIR ($DOTS_PROFILE root); or exit 1
 
 set -l sources
 for f in $DOTS_DIR/tmux/.config/tmux/conf.d/*.conf
