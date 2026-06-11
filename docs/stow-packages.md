@@ -21,7 +21,7 @@ in `stow-packages` are the full-profile package set used by `./install`,
 | `mise`     | mise config, fish init, and mise wrapper                         |
 | `yazi`     | Yazi config, fish functions, and keybinding                      |
 | `helix`    | Helix editor config                                              |
-| `vm`       | Tart VM helper and its local known-hosts state path              |
+| `vm`       | Tart VM helper and its local state path (known hosts, run logs)  |
 | `zed`      | Zed editor config                                                |
 
 `stow-packages` is deliberately explicit so repo assets such as `README.md`,

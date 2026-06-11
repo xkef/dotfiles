@@ -1,107 +1,264 @@
 #!/usr/bin/env fish
-# Tart-backed Linux dev VM helper.
+# vm — disposable dev VMs on Apple Silicon; a thin wrapper around tart
+# (https://tart.run). Tart does the heavy lifting (Virtualization.framework
+# VMs, distributed as OCI images); this script adds flavor presets, SSH key
+# seeding, virtiofs shares, and dotfiles sync.
+#
+# Requirements: macOS on Apple Silicon, `brew install cirruslabs/cli/tart`.
+# Optional: `gh` (authenticated ghcr.io pulls), `expect` (macOS-guest first
+# boot only). `vm doctor` checks all of this.
+#
+# Quickstart:
+#   vm pull && vm create   # fetch the base image, provision a VM from it
+#   vm ssh                 # key-based SSH with agent forwarding
+#   vm destroy             # throw the VM away (the base image stays)
+#
+# Flavors (-f/--flavor or VM_FLAVOR):
+#   archlinux  Default. ghcr.io/xkef/archlinux-tart — a public image built
+#              with Packer from https://github.com/xkef/archlinux-tart.
+#              Fork that repo or set REMOTE_IMAGE to use your own.
+#   macos      ghcr.io/cirruslabs/macos-tahoe-vanilla (~50 GB first pull).
+#              First boot authenticates with VM_INIT_PASSWORD (default:
+#              admin) to seed the SSH key.
+#   <other>    Any name works: set REMOTE_IMAGE for `vm pull`, or install
+#              from an ISO with `vm create-linux`.
+#
+# Configuration precedence: -f flag > environment variable > flavor default.
+# The variable reference lives in `vm help`.
+#
+# Shares (virtiofs): ~/code is shared into every guest (tag `code`). Linux
+# guests also mount ~/work (tag `work`, added to fstab by `vm create`).
+# macOS guests see shares under "/Volumes/My Shared Files" with ~/code
+# symlinked by `vm create`/`vm bootstrap`.
+#
+# State ($VM_DIR, stowed to ~/.local/share/vm):
+#   known_hosts  VM host-key trust. Safe to delete; re-learned on connect.
+#   <vm>.log     Output of the last headless `tart run`; check it when a
+#                start times out.
+#
+# macOS guests: `vm bootstrap` installs tart-guest-agent (clipboard + IP via
+# the agent resolver). `vm create` carves a `work` APFS partition out of
+# free disk space (WORK_SIZE) and relocates /opt/homebrew onto it.
+#
+# Forking: the only personal piece is `vm sync`, which rsyncs this dotfiles
+# repo into the guest and runs ./install. Replace its body with your own
+# provisioning (or delete it); everything else is generic.
+
+# ── Flavor & configuration ────────────────────────────
 
 argparse -s -n vm 'f/flavor=' -- $argv; or exit 1
 
-if set -q _flag_flavor
-    set -g VM_FLAVOR $_flag_flavor
-else if not set -q VM_FLAVOR
-    set -g VM_FLAVOR archlinux
+set -q _flag_flavor; and set -g VM_FLAVOR $_flag_flavor
+set -q VM_FLAVOR; or set -g VM_FLAVOR archlinux
+
+function _default -a var value
+    set -q $var; or set -g $var $value
 end
 
-function _default_vm_name
-    switch $VM_FLAVOR
-        case archlinux
-            echo archlinux-tart
-        case ubuntu
-            echo ubuntu-tart
-        case macos
-            echo macos-tahoe-tart
-        case '*'
-            echo "$VM_FLAVOR-tart"
-    end
+# Flavor presets; unknown flavors fall through to the generic defaults below
+# and need REMOTE_IMAGE (or `vm create-linux`) to become useful.
+switch $VM_FLAVOR
+    case archlinux
+        _default REMOTE_IMAGE ghcr.io/xkef/archlinux-tart:latest
+    case macos
+        _default VM_NAME macos-tahoe-tart
+        _default BASE_NAME macos-tahoe-base
+        _default REMOTE_IMAGE ghcr.io/cirruslabs/macos-tahoe-vanilla:latest
+        _default VM_USER admin
+        _default DISK_SIZE 120
+        _default WORK_SIZE 60G
 end
+_default VM_NAME $VM_FLAVOR-tart
+_default BASE_NAME $VM_FLAVOR-base
+_default VM_USER dev
+_default VM_INIT_PASSWORD admin
+_default VM_SHARE_DIR $HOME/code
+_default VM_WORK_DIR $HOME/work
+_default CPUS 4
+_default MEMORY 8192
 
-function _default_base_name
-    switch $VM_FLAVOR
-        case archlinux
-            echo archlinux-base
-        case ubuntu
-            echo ubuntu-base
-        case macos
-            echo macos-tahoe-base
-        case '*'
-            echo "$VM_FLAVOR-base"
-    end
-end
+set -g DOTFILES_DIR (test -f $HOME/.config/dotfiles/dir; and cat $HOME/.config/dotfiles/dir; or path resolve (status dirname)/../../..)
+set -g VM_DIR $DOTFILES_DIR/vm/.local/share/vm
+mkdir -p $VM_DIR
 
-function _default_remote_image
-    switch $VM_FLAVOR
-        case archlinux
-            echo ghcr.io/xkef/archlinux-tart:latest
-        case macos
-            echo ghcr.io/cirruslabs/macos-tahoe-vanilla:latest
-    end
-end
-
-function _default_user
-    switch $VM_FLAVOR
-        case macos
-            echo admin
-        case '*'
-            echo dev
-    end
-end
+# ── Helpers ───────────────────────────────────────────
 
 function _is_macos
     test "$VM_FLAVOR" = macos
 end
 
 function _vm_exists
-    tart list --source local --quiet 2>/dev/null | rg -qx --fixed-strings -- $argv[1]
-end
-
-function _default_disk_size
-    switch $VM_FLAVOR
-        case macos
-            echo 120
-        case '*'
-            echo ''
-    end
-end
-
-function _default_work_size
-    switch $VM_FLAVOR
-        case macos
-            echo 60G
-        case '*'
-            echo ''
-    end
+    contains -- $argv[1] (tart list --source local --quiet 2>/dev/null)
 end
 
 function _apply_resources
-    set -l args --cpu (set -q CPUS; and echo $CPUS; or echo 4) \
-        --memory (set -q MEMORY; and echo $MEMORY; or echo 8192) --random-mac
-    set -l disk (set -q DISK_SIZE; and echo $DISK_SIZE; or _default_disk_size)
-    test -n "$disk"; and set -a args --disk-size $disk
+    set -l args --cpu $CPUS --memory $MEMORY --random-mac
+    test -n "$DISK_SIZE"; and set -a args --disk-size $DISK_SIZE
     tart set $argv[1] $args
 end
+
+# Poll a probe every 2s until it succeeds or the iteration budget runs out.
+# The probe's stdout passes through; its stderr is silenced.
+function _wait_for -a label iterations
+    set -l probe $argv[3..-1]
+    for i in (seq 1 $iterations)
+        $probe 2>/dev/null; and return 0
+        sleep 2
+    end
+    echo "  Timeout waiting for $label." >&2
+    return 1
+end
+
+# ── SSH ───────────────────────────────────────────────
+
+# Resolve the public key used to seed and authenticate guest SSH: an explicit
+# VM_SSH_PUBKEY_FILE wins, then conventional key names, then anything in
+# ~/.ssh. The private half may exist only inside an SSH agent (1Password,
+# ssh-agent); _ssh_opts handles that.
+function _ssh_key_file
+    if set -q VM_SSH_PUBKEY_FILE
+        test -f $VM_SSH_PUBKEY_FILE; and echo $VM_SSH_PUBKEY_FILE; and return
+        echo "  VM_SSH_PUBKEY_FILE points to a missing file: $VM_SSH_PUBKEY_FILE" >&2
+        return 1
+    end
+    for p in $HOME/.ssh/id_{ed25519,ecdsa,rsa}.pub $HOME/.ssh/*.pub
+        test -f $p; and echo $p; and return
+    end
+    echo "  No SSH public key in ~/.ssh; set VM_SSH_PUBKEY_FILE." >&2
+    return 1
+end
+
+function _ssh_opts
+    set -l pub (_ssh_key_file); or return 1
+    set -l key (string replace -r '\.pub$' '' -- $pub)
+    # Without a private key file next to the .pub, hand ssh the .pub itself
+    # and let the agent supply the private half.
+    test -f $key; or set key $pub
+    printf '%s\n' -i $key -o IdentitiesOnly=yes -o BatchMode=yes \
+        -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$VM_DIR/known_hosts \
+        -o ServerAliveInterval=10 -o ServerAliveCountMax=6
+end
+
+function _vm_ip
+    if _is_macos
+        tart ip $VM_NAME --resolver arp 2>/dev/null
+    else
+        # The guest agent is preferred but can be slow or die mid-run; fall back
+        # to ARP (reliable once the VM holds a DHCP lease) so ssh/start/status
+        # don't report a running VM as down.
+        set -l ip (tart ip $VM_NAME --resolver agent 2>/dev/null)
+        test -n "$ip"; or set ip (tart ip $VM_NAME --resolver arp 2>/dev/null)
+        echo $ip
+    end
+end
+
+function _have_ip
+    set -l ip (_vm_ip)
+    test -n "$ip"; and echo $ip
+end
+
+function _wait_ip
+    _wait_for IP 30 _have_ip
+end
+
+function _wait_ssh
+    set -l opts (_ssh_opts); or return 1
+    _wait_for SSH 30 ssh $opts $VM_USER@$argv[1] true
+end
+
+function _wait_ssh_port
+    _wait_for 'SSH port' 60 nc -z -G 2 $argv[1] 22
+end
+
+# Linux guests: append the key via `tart exec`, no password needed.
+function _inject_ssh_key
+    set -l pub (_ssh_key_file); or return 1
+    set -l key (string trim (cat $pub))
+    set -l esc (string escape --style=script -- $key)
+    tart exec $VM_NAME sh -lc "\
+        install -d -m 700 -o $VM_USER -g $VM_USER /home/$VM_USER/.ssh \
+        && printf '%s\n' $esc >> /home/$VM_USER/.ssh/authorized_keys \
+        && sort -u -o /home/$VM_USER/.ssh/authorized_keys /home/$VM_USER/.ssh/authorized_keys \
+        && chown $VM_USER:$VM_USER /home/$VM_USER/.ssh/authorized_keys \
+        && chmod 600 /home/$VM_USER/.ssh/authorized_keys"
+end
+
+# macOS guests have no `tart exec`; seed the key over password SSH instead.
+function _inject_ssh_key_password
+    set -l ip $argv[1]
+    set -l pub (_ssh_key_file); or return 1
+    command -q expect; or begin
+        echo "  'expect' is required to seed the SSH key on first boot." >&2
+        return 1
+    end
+    set -lx VM_PW $VM_INIT_PASSWORD
+    expect -c "
+        set timeout 60
+        log_user 0
+        spawn ssh-copy-id -f -o StrictHostKeyChecking=accept-new \
+            -o UserKnownHostsFile=$VM_DIR/known_hosts -i $pub $VM_USER@$ip
+        expect {
+            -re {[Pp]assword:} { send -- \"\$env(VM_PW)\\r\"; exp_continue }
+            timeout { exit 2 }
+            eof { }
+        }
+    "
+end
+
+# ── Guest provisioning ────────────────────────────────
+
+# Push the host's terminfo entry so $TERM works inside the guest.
+function _push_terminfo
+    set -l ip $argv[1]
+    set -l opts (_ssh_opts); or return 1
+    set -l term (set -q TERM; and echo $TERM; or echo xterm-256color)
+    infocmp -x $term 2>/dev/null | ssh $opts $VM_USER@$ip 'tic -x - 2>/dev/null'; or true
+end
+
+# Linux guests --------------------------------------------------------------
+
+function _ensure_guest_dns
+    # Corporate full-tunnel VPNs often block outbound DNS (:53) to public
+    # resolvers; fall back to DNS-over-TLS (:853), which they leave open.
+    tart exec $VM_NAME getent hosts github.com >/dev/null 2>&1; and return 0
+    echo "  DNS over :53 is blocked — enabling DNS-over-TLS in guest..."
+    tart exec $VM_NAME bash -c '
+        mkdir -p /etc/systemd/resolved.conf.d
+        printf "[Resolve]\nDNS=1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com\nFallbackDNS=9.9.9.9#dns.quad9.net\nDNSOverTLS=yes\n" \
+            > /etc/systemd/resolved.conf.d/dot.conf
+        systemctl enable --now systemd-resolved >/dev/null 2>&1
+        ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf'
+end
+
+function _ensure_guest_work_mount
+    # The base image only mounts the 'code' virtiofs share; set up the second
+    # share (~/work -> /home/<user>/work, tag=work) ourselves via fstab so it
+    # auto-mounts on every boot.
+    test -d $VM_WORK_DIR; or return 0
+    set -l wm /home/$VM_USER/work
+    echo "  Mounting ~/work → $wm in guest..."
+    tart exec $VM_NAME sh -c "
+        install -d -o $VM_USER -g $VM_USER $wm
+        grep -q '^work $wm virtiofs' /etc/fstab 2>/dev/null || echo 'work $wm virtiofs rw,nofail 0 0' >> /etc/fstab
+        systemctl daemon-reload
+        mountpoint -q $wm || mount $wm"
+end
+
+# macOS guests --------------------------------------------------------------
 
 function _sudo_ssh
     set -l ip $argv[1]
     set -e argv[1]
     set -l opts (_ssh_opts); or return 1
-    set -l pw (set -q VM_INIT_PASSWORD; and echo $VM_INIT_PASSWORD; or echo admin)
-    set -l pw_esc (string escape --style=script -- $pw)
+    set -l pw_esc (string escape --style=script -- $VM_INIT_PASSWORD)
     ssh $opts $VM_USER@$ip \
         "printf '%s\n' $pw_esc | sudo -S -p '' $argv"
 end
 
 function _add_work_partition
     set -l ip $argv[1]
-    set -l size (set -q WORK_SIZE; and echo $WORK_SIZE; or _default_work_size)
-    test -z "$size"; and return 0
-    _sudo_ssh $ip "diskutil addPartition disk0s3 APFS work $size >/dev/null 2>&1"
+    test -z "$WORK_SIZE"; and return 0
+    _sudo_ssh $ip "diskutil addPartition disk0s3 APFS work $WORK_SIZE >/dev/null 2>&1"
 end
 
 function _install_tart_guest_agent
@@ -146,156 +303,42 @@ function _link_work_dirs
     '"
 end
 
-set -g VM_NAME (set -q VM_NAME; and echo $VM_NAME; or _default_vm_name)
-set -g BASE_NAME (set -q BASE_NAME; and echo $BASE_NAME; or _default_base_name)
-set -g VM_USER (set -q VM_USER; and echo $VM_USER; or _default_user)
-if set -q REMOTE_IMAGE
-    set -g REMOTE_IMAGE $REMOTE_IMAGE
-else
-    set -l remote_image (_default_remote_image)
-    test -n "$remote_image"; and set -g REMOTE_IMAGE $remote_image
-end
-set -g DOTFILES_DIR (test -f $HOME/.config/dotfiles/dir; and cat $HOME/.config/dotfiles/dir; or path resolve (status dirname)/../../..)
-set -g VM_DIR $DOTFILES_DIR/vm/.local/share/vm
-set -g VM_SHARE_DIR (set -q VM_SHARE_DIR; and echo $VM_SHARE_DIR; or echo $HOME/code)
-set -g VM_WORK_DIR (set -q VM_WORK_DIR; and echo $VM_WORK_DIR; or echo $HOME/work)
-
-# -- SSH --
-
-function _ssh_key_file
-    if set -q VM_SSH_PUBKEY_FILE
-        test -f $VM_SSH_PUBKEY_FILE; and echo $VM_SSH_PUBKEY_FILE; and return
-    end
-    for p in $HOME/.ssh/id_ed25519.pub $HOME/.ssh/id_ecdsa.pub $HOME/.ssh/id_rsa.pub
-        test -f $p; and echo $p; and return
-    end
-    echo "  No SSH public key found." >&2
-    return 1
-end
-
-function _ssh_opts
-    set -l pub (_ssh_key_file); or return 1
-    set -l key (string replace -r '\.pub$' '' -- $pub)
-    test -f $key; or begin
-        echo "  Private key not found for $pub" >&2
-        return 1
-    end
-    printf '%s\n' -i $key -o IdentitiesOnly=yes -o BatchMode=yes \
-        -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=$VM_DIR/known_hosts \
-        -o ServerAliveInterval=10 -o ServerAliveCountMax=6
-end
-
-function _vm_ip
+# Everything between first boot and first `vm ssh`: seed the SSH key, wait
+# for sshd, then configure the guest per flavor.
+function _provision -a ip
+    echo "  Installing SSH key..."
     if _is_macos
-        tart ip $VM_NAME --resolver arp 2>/dev/null
+        _wait_ssh_port $ip; or return 1
+        _inject_ssh_key_password $ip; or return 1
     else
-        # The guest agent is preferred but can be slow or die mid-run; fall back
-        # to ARP (reliable once the VM holds a DHCP lease) so ssh/start/status
-        # don't report a running VM as down.
-        set -l ip (tart ip $VM_NAME --resolver agent 2>/dev/null)
-        test -n "$ip"; or set ip (tart ip $VM_NAME --resolver arp 2>/dev/null)
-        echo $ip
+        _inject_ssh_key; or return 1
+    end
+    _wait_ssh $ip; or return 1
+
+    echo "  Configuring guest..."
+    _push_terminfo $ip
+    if _is_macos
+        echo "  Creating work partition in free space..."
+        _add_work_partition $ip; or echo "  (work partition step failed; continuing)"
+        echo "  Linking /opt/homebrew + /Library/Developer to /Volumes/work..."
+        _link_work_dirs $ip; or echo "  (symlink step failed; continuing)"
+    else
+        _ensure_guest_dns; or echo "  (DNS check failed; continuing)"
+        _ensure_guest_work_mount; or echo "  (work mount step failed; continuing)"
+    end
+
+    echo "  Syncing dotfiles..."
+    cmd_sync; or return 1
+
+    if _is_macos
+        echo "  Installing tart-guest-agent (clipboard + RPC)..."
+        _install_tart_guest_agent $ip; or echo "  (guest-agent step failed; continuing)"
+        echo "  Linking shared folder to ~/code..."
+        _link_shared_dir_macos $ip; or true
     end
 end
 
-# Poll a probe every 2s until it succeeds or the iteration budget runs out.
-# The probe's stdout passes through; its stderr is silenced.
-function _wait_for -a label iterations
-    set -l probe $argv[3..-1]
-    for i in (seq 1 $iterations)
-        $probe 2>/dev/null; and return 0
-        sleep 2
-    end
-    echo "  Timeout waiting for $label." >&2
-    return 1
-end
-
-function _have_ip
-    set -l ip (_vm_ip)
-    test -n "$ip"; and echo $ip
-end
-
-function _wait_ip
-    _wait_for IP 30 _have_ip
-end
-
-function _wait_ssh
-    set -l opts (_ssh_opts); or return 1
-    _wait_for SSH 30 ssh $opts $VM_USER@$argv[1] true
-end
-
-function _inject_ssh_key
-    set -l pub (_ssh_key_file); or return 1
-    set -l key (string trim (cat $pub))
-    set -l esc (string escape --style=script -- $key)
-    tart exec $VM_NAME sh -lc "\
-        install -d -m 700 -o $VM_USER -g $VM_USER /home/$VM_USER/.ssh \
-        && printf '%s\n' $esc >> /home/$VM_USER/.ssh/authorized_keys \
-        && sort -u -o /home/$VM_USER/.ssh/authorized_keys /home/$VM_USER/.ssh/authorized_keys \
-        && chown $VM_USER:$VM_USER /home/$VM_USER/.ssh/authorized_keys \
-        && chmod 600 /home/$VM_USER/.ssh/authorized_keys"
-end
-
-function _wait_ssh_port
-    _wait_for 'SSH port' 60 nc -z -G 2 $argv[1] 22
-end
-
-function _inject_ssh_key_password
-    set -l ip $argv[1]
-    set -l pub (_ssh_key_file); or return 1
-    command -q expect; or begin
-        echo "  'expect' is required to seed the SSH key on first boot." >&2
-        return 1
-    end
-    set -lx VM_PW (set -q VM_INIT_PASSWORD; and echo $VM_INIT_PASSWORD; or echo admin)
-    expect -c "
-        set timeout 60
-        log_user 0
-        spawn ssh-copy-id -f -o StrictHostKeyChecking=accept-new \
-            -o UserKnownHostsFile=$VM_DIR/known_hosts -i $pub $VM_USER@$ip
-        expect {
-            -re {[Pp]assword:} { send -- \"\$env(VM_PW)\\r\"; exp_continue }
-            timeout { exit 2 }
-            eof { }
-        }
-    "
-end
-
-function _setup_guest
-    set -l ip $argv[1]
-    set -l opts (_ssh_opts); or return 1
-    set -l term (set -q TERM; and echo $TERM; or echo xterm-256color)
-    infocmp -x $term 2>/dev/null | ssh $opts $VM_USER@$ip 'tic -x - 2>/dev/null'; or true
-end
-
-function _ensure_guest_dns
-    # Corporate full-tunnel VPNs often block outbound DNS (:53) to public
-    # resolvers; fall back to DNS-over-TLS (:853), which they leave open.
-    tart exec $VM_NAME getent hosts github.com >/dev/null 2>&1; and return 0
-    echo "  DNS over :53 is blocked — enabling DNS-over-TLS in guest..."
-    tart exec $VM_NAME bash -c '
-        mkdir -p /etc/systemd/resolved.conf.d
-        printf "[Resolve]\nDNS=1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com\nFallbackDNS=9.9.9.9#dns.quad9.net\nDNSOverTLS=yes\n" \
-            > /etc/systemd/resolved.conf.d/dot.conf
-        systemctl enable --now systemd-resolved >/dev/null 2>&1
-        ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf'
-end
-
-function _ensure_guest_work_mount
-    # The base image only mounts the 'code' virtiofs share; set up the second
-    # share (~/work -> /home/<user>/work, tag=work) ourselves via fstab so it
-    # auto-mounts on every boot.
-    test -d $VM_WORK_DIR; or return 0
-    set -l wm /home/$VM_USER/work
-    echo "  Mounting ~/work → $wm in guest..."
-    tart exec $VM_NAME sh -c "
-        install -d -o $VM_USER -g $VM_USER $wm
-        grep -q '^work $wm virtiofs' /etc/fstab 2>/dev/null || echo 'work $wm virtiofs rw,nofail 0 0' >> /etc/fstab
-        systemctl daemon-reload
-        mountpoint -q $wm || mount $wm"
-end
-
-# -- Commands --
+# ── Commands ──────────────────────────────────────────
 
 function cmd_pull
     if command -q gh
@@ -339,51 +382,9 @@ function cmd_create
         cmd_stop
         return 1
     end
-
-    echo "  Installing SSH key..."
-    if _is_macos
-        _wait_ssh_port $ip; or begin
-            cmd_stop
-            return 1
-        end
-        _inject_ssh_key_password $ip; or begin
-            cmd_stop
-            return 1
-        end
-    else
-        _inject_ssh_key; or begin
-            cmd_stop
-            return 1
-        end
-    end
-    _wait_ssh $ip; or begin
+    _provision $ip; or begin
         cmd_stop
         return 1
-    end
-
-    echo "  Configuring guest..."
-    _setup_guest $ip
-    if _is_macos
-        echo "  Creating work partition in free space..."
-        _add_work_partition $ip; or echo "  (work partition step failed; continuing)"
-        echo "  Linking /opt/homebrew + /Library/Developer to /Volumes/work..."
-        _link_work_dirs $ip; or echo "  (symlink step failed; continuing)"
-    else
-        _ensure_guest_dns; or echo "  (DNS check failed; continuing)"
-        _ensure_guest_work_mount; or echo "  (work mount step failed; continuing)"
-    end
-
-    echo "  Syncing dotfiles..."
-    cmd_sync; or begin
-        cmd_stop
-        return 1
-    end
-
-    if _is_macos
-        echo "  Installing tart-guest-agent (clipboard + RPC)..."
-        _install_tart_guest_agent $ip; or echo "  (guest-agent step failed; continuing)"
-        echo "  Linking shared folder to ~/code..."
-        _link_shared_dir_macos $ip; or true
     end
 
     cmd_stop
@@ -486,20 +487,27 @@ function cmd_start
     end
     set -a run_args $VM_NAME
 
-    tart run $run_args &
-
     if test "$mode" = headless
-        set -l ip (_wait_ip); or return 1
+        # Log instead of spraying tart output across the prompt; graphics
+        # and vnc runs keep the terminal (vnc prints its connection URL).
+        set -l log $VM_DIR/$VM_NAME.log
+        tart run $run_args >$log 2>&1 &
+        set -l ip (_wait_ip); or begin
+            echo "  See $log:" >&2
+            tail -n 5 $log >&2
+            return 1
+        end
         echo "  Running ($ip)."
         return 0
     end
 
+    tart run $run_args &
     sleep 2
     set -l ip (_vm_ip)
     if test -n "$ip"
         echo "  Running ($ip)."
     else
-        echo "  Running (graphics mode)."
+        echo "  Running ($mode mode)."
     end
 end
 
@@ -514,7 +522,7 @@ function cmd_ssh
         return 1
     end
     set -l opts (_ssh_opts); or return 1
-    _setup_guest $ip
+    _push_terminfo $ip
     ssh -At $opts -o SendEnv="ANTHROPIC_API_KEY CLAUDE_CODE_OAUTH_TOKEN" $VM_USER@$ip $argv
 end
 
@@ -554,10 +562,57 @@ function cmd_status
     end
 end
 
+function cmd_doctor
+    set -l fail 0
+
+    if command -q tart
+        echo "  ok  tart "(tart --version)
+    else
+        echo "  !!  tart missing — brew install cirruslabs/cli/tart"
+        set fail 1
+    end
+    command -q gh
+    and echo "  ok  gh (authenticated ghcr.io pulls)"
+    or echo "  --  gh not found; vm pull uses anonymous ghcr.io access"
+    command -q expect
+    and echo "  ok  expect (macOS first-boot key seeding)"
+    or echo "  --  expect not found; needed for 'vm -f macos create'"
+
+    if set -l pub (_ssh_key_file 2>/dev/null)
+        echo "  ok  ssh key: $pub"
+    else
+        echo "  !!  no ssh public key — generate one or set VM_SSH_PUBKEY_FILE"
+        set fail 1
+    end
+
+    echo "  --  flavor $VM_FLAVOR: vm $VM_NAME, base $BASE_NAME, user $VM_USER"
+    set -q REMOTE_IMAGE[1]
+    and echo "  --  image: $REMOTE_IMAGE"
+    or echo "  --  no REMOTE_IMAGE for '$VM_FLAVOR'; set it or use vm create-linux"
+
+    if command -q tart
+        _vm_exists $BASE_NAME
+        and echo "  ok  base image present"
+        or echo "  --  base image absent — run: vm pull"
+        if _vm_exists $VM_NAME
+            set -l ip (_vm_ip)
+            echo "  ok  vm present"(test -n "$ip"; and echo " (running, $ip)"; or echo " (stopped)")
+        else
+            echo "  --  vm absent — run: vm create"
+        end
+    end
+
+    test -d $VM_SHARE_DIR
+    and echo "  ok  share: $VM_SHARE_DIR (tag code)"
+    or echo "  --  share dir $VM_SHARE_DIR missing; no code share will be mounted"
+
+    return $fail
+end
+
 function cmd_destroy
     tart stop $VM_NAME 2>/dev/null
     tart delete $VM_NAME 2>/dev/null; or true
-    rm -f $VM_DIR/known_hosts
+    rm -f $VM_DIR/known_hosts $VM_DIR/$VM_NAME.log
 end
 
 function cmd_clean
@@ -571,7 +626,7 @@ function cmd_clean
         echo "  Deleting cached OCI: $name"
         tart delete $name
     end
-    rm -f $VM_DIR/known_hosts
+    rm -f $VM_DIR/known_hosts $VM_DIR/*.log
 end
 
 function cmd_ip
@@ -579,35 +634,38 @@ function cmd_ip
 end
 
 function cmd_help
-    echo "Usage: vm [-f|--flavor <archlinux|macos>] <command>
+    echo "Usage: vm [-f|--flavor <flavor>] <command>
 
 Commands:
-  pull         Pull latest base image from REMOTE_IMAGE
-  create       Create VM from base image (--force to recreate)
-  create-linux Create a blank Linux VM (--force to recreate)
-  bootstrap    Install tart-guest-agent in a macOS guest (clipboard + RPC)
-  start        Start the VM (--graphics, --vnc, or headless by default)
-  stop       Stop the VM
-  ssh        SSH in (forwards agent + API keys)
-  sync       Rsync dotfiles and run ./install in guest
-  status     Show VM state
-  ip         Show VM IP address
-  destroy    Delete the VM (keeps base image)
-  clean      Delete all local VMs
+  pull          Pull the base image from REMOTE_IMAGE
+  create        Create the VM from the base image (--force to recreate)
+  create-linux  Create a blank Linux VM for ISO install (--force to recreate)
+  bootstrap     Install tart-guest-agent in a macOS guest (clipboard + RPC)
+  start         Start the VM (--graphics, --vnc, --headless)
+  stop          Stop the VM
+  ssh           SSH in (forwards agent + API keys)
+  sync          Rsync dotfiles and run ./install in guest
+  status        Show VM state
+  ip            Show VM IP address
+  doctor        Check host dependencies and VM state
+  destroy       Delete the VM (keeps base image)
+  clean         Delete all local VMs and cached OCI images
+  help          Show this help
 
 Environment:
-  VM_FLAVOR         Preset: archlinux | macos (default: archlinux)
-  VM_NAME           VM name          (default: <flavor>-tart)
-  BASE_NAME         Base VM name     (default: <flavor>-base)
-  VM_USER           Guest user       (default: dev; admin on macos)
-  VM_INIT_PASSWORD  First-boot pw    (default: admin, macos only)
-  REMOTE_IMAGE      OCI image        (default: per-flavor preset)
-  VM_SHARE_DIR      Shared dir       (default: ~/code)
-  VM_WORK_DIR       Work share       (default: ~/work, Linux only)
-  CPUS              CPU cores        (default: 4)
-  MEMORY            Memory in MB     (default: 8192)
-  DISK_SIZE         Host disk GB     (default: 120 on macos)
-  WORK_SIZE         macOS work part  (default: 60G; carved from free space)
+  VM_FLAVOR           Preset: archlinux | macos | any (default: archlinux)
+  VM_NAME             VM name         (default: <flavor>-tart)
+  BASE_NAME           Base VM name    (default: <flavor>-base)
+  VM_USER             Guest user      (default: dev; admin on macos)
+  VM_INIT_PASSWORD    First-boot pw   (default: admin, macos only)
+  VM_SSH_PUBKEY_FILE  SSH public key  (default: first key in ~/.ssh)
+  REMOTE_IMAGE        OCI image       (default: per-flavor preset)
+  VM_SHARE_DIR        Shared dir      (default: ~/code)
+  VM_WORK_DIR         Work share      (default: ~/work, Linux only)
+  CPUS                CPU cores       (default: 4)
+  MEMORY              Memory in MB    (default: 8192)
+  DISK_SIZE           Host disk GB    (default: 120 on macos)
+  WORK_SIZE           macOS work part (default: 60G; carved from free space)
 
 Examples:
   vm pull && vm create                # archlinux (default)
@@ -615,10 +673,16 @@ Examples:
   vm -f macos start                   # graphical by default"
 end
 
+# ── Dispatch ──────────────────────────────────────────
+
 set -l cmd (test (count $argv) -gt 0; and echo $argv[1]; or echo help)
+if not contains -- $cmd help doctor; and not command -q tart
+    echo "  tart is required: brew install cirruslabs/cli/tart" >&2
+    exit 1
+end
 set -l fn_cmd (string replace -a '-' '_' -- $cmd)
 switch $cmd
-    case pull create create-linux bootstrap start stop ssh sync status ip destroy clean help
+    case pull create create-linux bootstrap start stop ssh sync status ip doctor destroy clean help
         cmd_$fn_cmd $argv[2..-1]
     case '*'
         echo "Unknown: $cmd" >&2
