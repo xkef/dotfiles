@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Preview for fzf completions: directories, files, executables.
+# Preview for fzf: directories, files, file:line jump targets, executables.
 # Called by fzf via --preview. Uses full paths for tools since fzf
 # may run this via sh which lacks Homebrew PATH.
 export PATH="/opt/homebrew/bin:$HOME/.local/bin:$PATH"
@@ -10,7 +10,12 @@ p="${1%%	*}"
 if [ -d "$p" ]; then
   eza -1a --color=always --icons --group-directories-first "$p" 2>/dev/null || ls -la "$p"
 elif [ -f "$p" ]; then
-  bat --color=always --style=numbers --line-range :100 "$p" 2>/dev/null || cat "$p"
+  bat --color=always --style=numbers --line-range :300 "$p" 2>/dev/null || cat "$p"
+elif [[ "$p" =~ ^(.+):([0-9]+)$ ]] && [ -f "${BASH_REMATCH[1]}" ]; then
+  file="${BASH_REMATCH[1]}"
+  line="${BASH_REMATCH[2]}"
+  bat --color=always --highlight-line "$line" --line-range "$line:+100" "$file" 2>/dev/null ||
+    cat "$file"
 elif command -v "$p" >/dev/null 2>&1; then
   whatis "$p" 2>/dev/null
   echo ""

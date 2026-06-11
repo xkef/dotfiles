@@ -31,7 +31,7 @@ set -gx FZF_TMUX_OPTS '-p 80%,70%'
 
 set -gx FZF_CTRL_T_OPTS "\
     --scheme=path \
-    --preview 'bat --color=always --style=numbers --line-range :300 {} 2>/dev/null || cat {}' \
+    --preview 'fzf-preview {}' \
     --header 'CTRL-/ toggle preview │ CTRL-Y copy'"
 
 set -gx FZF_ALT_C_OPTS "\
