@@ -3,7 +3,7 @@ function __fzf_grep --description 'Live grep file contents (rg + fzf)'
     set -l selected (: | fzf --ansi --disabled \
         --bind "change:reload:$RG_PREFIX {q} || true" \
         --delimiter ':' \
-        --preview 'bat --color=always --highlight-line {2} --line-range {2}:+100 {1} 2>/dev/null' \
+        --preview 'fzf-preview {1}:{2}' \
         --preview-window 'right,55%,border-rounded,wrap,+{2}-5,<80(down,55%,border-top,wrap,+{2}-5)' \
         --header 'Live grep │ CTRL-/ toggle preview │ CTRL-Y copy')
     if test -n "$selected"
