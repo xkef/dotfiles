@@ -6,22 +6,5 @@ function claude --wraps claude --description "claude-code: auto-install via offi
 
     command -q dots-skills; and dots-skills ensure claude-code
 
-    set -l pinned 0
-    if set -q TMUX
-        set -l agent_slug (tmux display-message -p '#{@agent-slug}' 2>/dev/null)
-        if test -z "$agent_slug"
-            tmux rename-window claude
-            tmux set-window-option allow-rename off
-            set pinned 1
-        end
-    end
-
-    command claude $argv
-    set -l rc $status
-
-    if test $pinned -eq 1
-        tmux set-window-option automatic-rename on
-        tmux set-window-option -u allow-rename
-    end
-    return $rc
+    _ai_run_pinned claude claude $argv
 end

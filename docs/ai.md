@@ -50,6 +50,7 @@ The AI-owned fish wrappers live in `ai/.config/fish/functions/`:
 - `pi.fish`
 - `sb.fish`
 - `agent-*.fish`
+- `_ai_run_pinned.fish` (shared tmux window pinning)
 
 The `sb` wrapper launches supported agents through nono sandbox profiles:
 

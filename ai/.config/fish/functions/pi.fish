@@ -10,22 +10,5 @@ function pi --wraps pi --description "pi.dev coding agent: auto-install via npm 
 
     command -q dots-skills; and dots-skills ensure pi
 
-    set -l pinned 0
-    if set -q TMUX
-        set -l agent_slug (tmux display-message -p '#{@agent-slug}' 2>/dev/null)
-        if test -z "$agent_slug"
-            tmux rename-window pi
-            tmux set-window-option allow-rename off
-            set pinned 1
-        end
-    end
-
-    command pi $argv
-    set -l rc $status
-
-    if test $pinned -eq 1
-        tmux set-window-option automatic-rename on
-        tmux set-window-option -u allow-rename
-    end
-    return $rc
+    _ai_run_pinned pi pi $argv
 end
