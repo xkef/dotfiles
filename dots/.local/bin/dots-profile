@@ -1,0 +1,78 @@
+#!/usr/bin/env fish
+# shellcheck disable=all
+# dots-profile — single home for the profile facts every orchestration
+# script needs: repo root, package manifest, VCS, and stow invocation.
+#
+# Callers that already know the repo root (Makefile, install) pass --root;
+# stowed callers (dots-update, dots-doctor, dots-keys) let it resolve from
+# the state file written by install.
+#
+# Usage:
+#   dots-profile [--root DIR] root
+#   dots-profile [--root DIR] packages
+#   dots-profile [--root DIR] vcs
+#   dots-profile [--root DIR] stow [--restow|--delete|--adopt] [--target DIR] [pkg...]
+
+argparse -s 'root=' -- $argv
+or exit 2
+
+function _packages -a root
+    while read -l line
+        set line (string replace -r '#.*$' '' -- $line | string trim)
+        test -n "$line"; and echo $line
+    end <$root/stow-packages
+    # The loop's status would leak a failed test when the manifest ends in
+    # a comment or blank line (fish 4.7).
+    return 0
+end
+
+set -l root
+if set -q _flag_root
+    set root (path resolve $_flag_root)
+else if test -f $HOME/.config/dotfiles/dir
+    set root (cat $HOME/.config/dotfiles/dir)
+else
+    set root $HOME/dotfiles
+end
+if not test -r "$root/stow-packages"
+    echo "dots-profile: not a dotfiles root (missing stow-packages): $root" >&2
+    exit 1
+end
+
+switch "$argv[1]"
+    case root
+        echo $root
+    case packages
+        _packages $root
+    case vcs
+        if test -d $root/.jj; and command -q jj
+            echo jj
+        else if test -d $root/.git
+            echo git
+        else
+            echo none
+        end
+    case stow
+        argparse R/restow D/delete adopt 'target=' -- $argv[2..-1]
+        or exit 2
+        set -l flags
+        set -q _flag_restow; and set -a flags -R
+        set -q _flag_delete; and set -a flags -D
+        set -q _flag_adopt; and set -a flags --adopt
+        set -l target $HOME
+        set -q _flag_target; and set target $_flag_target
+        set -l pkgs $argv
+        test (count $pkgs) -gt 0; or set pkgs (_packages $root)
+        set -l failed
+        for pkg in $pkgs
+            command stow --dir=$root -t $target $flags $pkg
+            or set -a failed $pkg
+        end
+        if test (count $failed) -gt 0
+            echo "dots-profile: stow failed for: $failed" >&2
+            exit 1
+        end
+    case '*'
+        echo "usage: dots-profile [--root DIR] root | packages | vcs | stow [--restow|--delete|--adopt] [--target DIR] [pkg...]" >&2
+        exit 2
+end

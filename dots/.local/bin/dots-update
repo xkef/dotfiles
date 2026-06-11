@@ -2,7 +2,10 @@
 # shellcheck disable=all
 # dots update — fetch latest changes, re-stow packages, update plugins and tools.
 
-set -g DOTS_DIR (test -f $HOME/.config/dotfiles/dir && cat $HOME/.config/dotfiles/dir || echo $HOME/dotfiles)
+# Resolve dots-profile next to this script (through the stow symlink) so a
+# fresh pull works before the dots-profile link itself has been stowed.
+set -g DOTS_PROFILE (path resolve (status filename) | path dirname)/dots-profile
+set -g DOTS_DIR ($DOTS_PROFILE root); or exit 1
 
 function _log
     printf '  %s\n' $argv
@@ -18,18 +21,6 @@ function _run_quiet
         end
         return 1
     end
-end
-
-function _stow_packages
-    set -l manifest $DOTS_DIR/stow-packages
-    if not test -r $manifest
-        echo "dots-update: missing package manifest: $manifest" >&2
-        return 1
-    end
-    while read -l line
-        set line (string replace -r '#.*$' '' -- $line | string trim)
-        test -n "$line"; and echo $line
-    end <$manifest
 end
 
 function _link_target_abs -a link target
@@ -84,20 +75,21 @@ end
 
 printf '\n  Updating dotfiles...\n\n'
 
-if test -d $DOTS_DIR/.jj
-    _log "Fetching latest changes..."
-    _run_quiet "jj fetch" jj --config signing.behavior=drop git fetch --all-remotes -R $DOTS_DIR || true
-else if test -d $DOTS_DIR/.git
-    _log "Pulling latest changes..."
-    _run_quiet "git pull" git -C $DOTS_DIR pull --rebase || true
+switch ($DOTS_PROFILE vcs)
+    case jj
+        _log "Fetching latest changes..."
+        _run_quiet "jj fetch" jj --config signing.behavior=drop git fetch --all-remotes -R $DOTS_DIR || true
+    case git
+        _log "Pulling latest changes..."
+        _run_quiet "git pull" git -C $DOTS_DIR pull --rebase || true
 end
 
 _log "Removing stale dotfile symlinks..."
 _remove_stale_dotfile_links
 
 _log "Re-stowing packages..."
-for name in (_stow_packages)
-    _run_quiet "stow $name" stow --dir=$DOTS_DIR -t $HOME -R $name || true
+for name in ($DOTS_PROFILE packages)
+    _run_quiet "stow $name" $DOTS_PROFILE stow --restow $name || true
 end
 
 if command -q mise

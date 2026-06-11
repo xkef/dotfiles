@@ -4,7 +4,8 @@
 # Checks required/optional binaries, symlinks, XDG dirs, SSH setup,
 # config file parsing, and environment variables.
 
-set -g DOTS_DIR (test -f $HOME/.config/dotfiles/dir && cat $HOME/.config/dotfiles/dir || echo $HOME/dotfiles)
+set -g DOTS_PROFILE (path resolve (status filename) | path dirname)/dots-profile
+set -g DOTS_DIR ($DOTS_PROFILE root); or exit 1
 set -g _warnings 0
 set -g _errors 0
 

@@ -33,31 +33,40 @@ run_quiet() {
   return $rc
 }
 
+# Bash-native manifest parser for pkgs.arch[.gui]: runs during package
+# install, before fish (and thus dots-profile) is guaranteed to exist.
 read_pkg_file() {
   sed 's/#.*//; s/[[:space:]]*$//; /^[[:space:]]*$/d' "$1"
 }
 
-stow_packages() {
-  read_pkg_file "$DOTFILES_DIR/stow-packages"
+dots_profile() {
+  "$DOTFILES_DIR/dots/.local/bin/dots-profile" --root "$DOTFILES_DIR" "$@"
 }
 
 worktree_dirty() {
-  if [[ -d "$DOTFILES_DIR/.jj" ]] && has jj; then
+  case "$(dots_profile vcs)" in
+  jj)
     [[ -n "$(jj --config signing.behavior=drop -R "$DOTFILES_DIR" diff --summary --no-pager 2>/dev/null)" ]]
-  elif [[ -d "$DOTFILES_DIR/.git" ]]; then
+    ;;
+  git)
     ! git -C "$DOTFILES_DIR" diff --quiet 2>/dev/null
-  else
+    ;;
+  *)
     return 1
-  fi
+    ;;
+  esac
 }
 
 restore_package() {
   local pkg=$1
-  if [[ -d "$DOTFILES_DIR/.jj" ]] && has jj; then
+  case "$(dots_profile vcs)" in
+  jj)
     jj --config signing.behavior=drop -R "$DOTFILES_DIR" restore "$pkg/"
-  elif [[ -d "$DOTFILES_DIR/.git" ]]; then
+    ;;
+  git)
     git -C "$DOTFILES_DIR" restore "$pkg/"
-  fi
+    ;;
+  esac
 }
 
 ensure_paru() {
@@ -143,17 +152,17 @@ fi
 
 while IFS= read -r pkg; do
   if $adopt; then
-    if run_quiet "stow $pkg" stow --dir="$DOTFILES_DIR" -t "$HOME" --adopt "$pkg"; then
+    if run_quiet "stow $pkg" dots_profile stow --adopt "$pkg"; then
       run_quiet "restore $pkg" restore_package "$pkg"
     else
       log "  ! stow $pkg: failed — resolve manually"
     fi
   else
-    if ! run_quiet "stow $pkg" stow --dir="$DOTFILES_DIR" -t "$HOME" "$pkg"; then
+    if ! run_quiet "stow $pkg" dots_profile stow "$pkg"; then
       log "  ! stow $pkg: conflict — run with --adopt to resolve"
     fi
   fi
-done < <(stow_packages)
+done < <(dots_profile packages)
 
 # ── Work identity (op-rendered, no-op without op) ─────
 

@@ -8,7 +8,7 @@ in `stow-packages` are the full-profile package set used by `./install`,
 
 | Package    | Owns                                                             |
 | ---------- | ---------------------------------------------------------------- |
-| `dots`     | dotfiles control plane: `dots`, doctor, update, keys, versions   |
+| `dots`     | dotfiles control plane: `dots`, profile, doctor, update, keys    |
 | `shell`    | core fish profile, Starship, fzf shell UX, generic functions     |
 | `cli`      | small CLI defaults/data: atuin, bat, fd, television, Navi cheats |
 | `theme`    | theme command plus fish and Neovim theme adapters                |
@@ -65,6 +65,10 @@ The `dots` package intentionally owns commands that coordinate the whole
 profile: `dots update`, `dots doctor`, `dots keys`, and related helpers. Those
 commands know about the manifest and inspect all packages, but they do not own
 individual app integrations.
+
+Profile facts — repo root, package manifest, VCS, and stow invocation — are
+answered by `dots-profile`. The `Makefile`, `install`, and the `dots-*`
+commands consume its interface instead of re-deriving those facts.
 
 `dots skills` dispatches to `dots-skills`, which is owned by `ai`. If only the
 `dots` package is installed, the command reports that the `ai` package is
