@@ -3,10 +3,18 @@
 # theme — unified theme switcher for ghostty, neovim, tmux, and shell tools.
 #
 # Accepts Ghostty theme names that have a matching LazyVim colorscheme plugin.
-# Palette colors are read from Ghostty's built-in theme files. bat and delta use
-# terminal ANSI colors; LazyVim derives its colorscheme from the theme name.
+# Palette colors are read from Ghostty's built-in theme files. The core parses
+# the palette and pushes OSC colors to running terminals; per-app application
+# lives in ~/.config/theme.d/*.fish adapter fragments, sourced in glob order.
 #
-# Usage: theme [name|--list]
+# Adapter contract: fragments run with $THEME_NAME, $t_palette (16 colors),
+# $t_bg, $t_fg, and $t_cursor set, and may call _blend_hex / _hex_rgb. Each
+# stow package owns the fragment for its app (terminal: ghostty state file,
+# vcs: delta include, theme: nvim reload, tmux: status refresh). Numeric
+# prefixes order them: the ghostty fragment writes the current-theme state
+# before the nvim fragment reloads readers of it.
+#
+# Usage: theme [name|auto|--list|--current]
 
 set -g GHOSTTY_CONFIG (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/ghostty/config
 
@@ -74,7 +82,7 @@ end
 # ── Helpers ───────────────────────────────────────────
 
 # Current theme lives in the untracked Ghostty include fragment written by
-# _update_ghostty; the tracked config only carries the default.
+# the theme.d ghostty adapter; the tracked config only carries the default.
 function _current_theme
     for source in (path dirname $GHOSTTY_CONFIG)/theme $GHOSTTY_CONFIG
         test -f $source; or continue
@@ -100,32 +108,6 @@ function _blend_hex -a bg_hex fg_hex weight
         (math "round(($r1 * (100 - $w) + $r2 * $w) / 100)") \
         (math "round(($g1 * (100 - $w) + $g2 * $w) / 100)") \
         (math "round(($b1 * (100 - $w) + $b2 * $w) / 100)")
-end
-
-# ── Delta config ──────────────────────────────────────
-
-function _write_delta_config
-    set -l red $t_palette[2]
-    set -l green $t_palette[3]
-    set -l dim $t_palette[9]
-    set -l minus_bg (_blend_hex $t_bg $red 15)
-    set -l minus_emph (_blend_hex $t_bg $red 30)
-    set -l plus_bg (_blend_hex $t_bg $green 15)
-    set -l plus_emph (_blend_hex $t_bg $green 30)
-
-    set -l delta_conf (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/git/delta.gitconfig
-    printf '[delta]
-\tsyntax-theme = ansi
-\tminus-style = syntax "#%s"
-\tminus-emph-style = syntax "#%s"
-\tminus-empty-line-marker-style = syntax "#%s"
-\tplus-style = syntax "#%s"
-\tplus-emph-style = syntax "#%s"
-\tplus-empty-line-marker-style = syntax "#%s"
-\tline-numbers-minus-style = "#%s"
-\tline-numbers-plus-style = "#%s"
-\tline-numbers-zero-style = "#%s"
-' $minus_bg $minus_emph $minus_bg $plus_bg $plus_emph $plus_bg $red $green $dim >$delta_conf
 end
 
 # ── Terminal colors ───────────────────────────────────
@@ -155,32 +137,14 @@ function _apply_terminal_colors
     end
 end
 
-# ── Reloaders ─────────────────────────────────────────
+# ── Apply ─────────────────────────────────────────────
 
-function _update_ghostty
-    test -f $GHOSTTY_CONFIG || return 0
-    set -l fragment (path dirname $GHOSTTY_CONFIG)/theme
-    printf '# Written by `theme` — machine-local current theme.\ntheme = %s\n' \
-        $argv[1] >$fragment
-end
-
-function _reload_neovim
-    for dir in $XDG_RUNTIME_DIR $TMPDIR /tmp
-        test -n "$dir" -a -d "$dir" || continue
-        for sock in $dir/nvim.*.0
-            test -S $sock || continue
-            nvim --server $sock --remote-send \
-                "<Cmd>lua pcall(function() require('theme').apply() end)<CR>" 2>/dev/null || true
-        end
+function _source_theme_fragments
+    set -l dir (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/theme.d
+    for fragment in $dir/*.fish
+        source $fragment
     end
 end
-
-function _reload_tmux
-    command -q tmux && tmux list-sessions &>/dev/null || return 0
-    tmux refresh-client -S 2>/dev/null || true
-end
-
-# ── Apply ─────────────────────────────────────────────
 
 function _apply_theme -a name
     if not _is_supported $name
@@ -193,11 +157,9 @@ function _apply_theme -a name
         return 1
     end
 
-    _update_ghostty $name
+    set -g THEME_NAME $name
     _apply_terminal_colors
-    _write_delta_config
-    _reload_neovim
-    _reload_tmux
+    _source_theme_fragments
 
     echo "Switched to: $name"
 end

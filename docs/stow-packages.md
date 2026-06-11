@@ -53,6 +53,7 @@ Several packages intentionally write into the same target directories:
 - Fish: `~/.config/fish/conf.d`, `functions`, `completions`
 - tmux: `~/.config/tmux/conf.d`
 - LazyVim: `~/.config/lazyvim/lua/plugins` and selected `lua/` modules
+- Theme: `~/.config/theme.d` (per-app adapters sourced by `theme`)
 - User commands: `~/.local/bin`
 
 These directories are stable extension seams. Stow merges their contents so
