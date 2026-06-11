@@ -44,6 +44,7 @@ stow-smoke: ## Stow all packages into a temporary HOME
 		.local/bin/dots \
 		.local/bin/dots-profile \
 		.local/bin/theme \
+		.config/theme.d/10-ghostty.fish \
 		.config/fish/config.fish \
 		.config/tmux/tmux.conf \
 		.config/git/config \
