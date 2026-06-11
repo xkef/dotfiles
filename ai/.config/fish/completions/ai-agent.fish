@@ -7,7 +7,7 @@ complete -c ai-agent -n __fish_ai_agent_needs_command -a cleanup -d 'Remove merg
 complete -c ai-agent -n __fish_ai_agent_needs_command -a ui -d 'Open the tmux agent UI'
 complete -c ai-agent -n __fish_ai_agent_needs_command -a preview -d 'Preview an agent workspace'
 
-complete -c ai-agent -n '__fish_ai_agent_seen_command spawn' -l agent -xa 'claude codex opencode pi' -d 'Agent command to launch'
+complete -c ai-agent -n '__fish_ai_agent_seen_command spawn' -l agent -xa 'claude pi' -d 'Agent command to launch'
 complete -c ai-agent -n '__fish_ai_agent_seen_command spawn' -l brief -d 'Seed .claude-notes/task.md'
 complete -c ai-agent -n '__fish_ai_agent_seen_command spawn' -l from -d 'Base jj revision'
 complete -c ai-agent -n '__fish_ai_agent_seen_command spawn' -l sandbox -d 'Launch through sb'
