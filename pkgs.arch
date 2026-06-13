@@ -20,7 +20,7 @@ zoxide            # smarter cd with frecency
 helix             # modal text editor (Rust)
 neovim            # text editor
 tree-sitter-cli   # parser generator CLI (nvim-treesitter build)
-tmux              # terminal multiplexer
+tmux-git          # terminal multiplexer (3.7 dev / git HEAD, AUR)
 # sesh is intentionally omitted: no Arch ARM package is available.
 presenterm        # markdown-driven terminal slides
 
