@@ -11,7 +11,15 @@
     "pr": ""
   },
   "permissions": {
-    "allow": ["Bash", "Read", "Grep", "Glob", "Edit", "Write", "Skill(commit)"],
+    "allow": [
+      "Bash",
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Write",
+      "Skill(commit)"
+    ],
     "deny": [
       "Bash(*rm -rf*)",
       "Bash(*git push --force*)",
@@ -25,6 +33,7 @@
       "Bash(*> .env.*)"
     ]
   },
+  "model": "opus",
   "hooks": {
     "Notification": [
       {
@@ -108,7 +117,9 @@
   "spinnerTipsEnabled": false,
   "spinnerVerbs": {
     "mode": "replace",
-    "verbs": ["Processing"]
+    "verbs": [
+      "Processing"
+    ]
   },
   "alwaysThinkingEnabled": true,
   "autoUpdatesChannel": "latest",
