@@ -11,7 +11,6 @@ age               # simple file encryption
 fish              # shell
 starship          # cross-shell prompt
 atuin             # shell history search/sync
-navi              # interactive cheatsheet browser
 fzf               # fuzzy finder
 television        # channel-oriented fuzzy finder
 zoxide            # smarter cd with frecency
