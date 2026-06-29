@@ -23,6 +23,7 @@ brew "neovim"            # text editor
 brew "tree-sitter-cli"   # parser generator CLI (nvim-treesitter build)
 brew "tmux", args: ["HEAD"] # terminal multiplexer (3.7 dev / git HEAD)
 brew "sesh"              # smart tmux session manager
+brew "herdr"             # agent-aware terminal multiplexer (ai-agent UI)
 brew "presenterm"        # markdown-driven terminal slides
 
 # ── Modern unix replacements ───────────────────────────

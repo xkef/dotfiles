@@ -2,21 +2,26 @@
 
 `ai-agent` runs parallel AI coding agents against one repository without
 sharing a working copy. Each agent gets a sibling `jj workspace` and its own
-tmux window. Agents do not coordinate live; they converge through commits,
-pushed bookmarks, and PRs.
+[herdr](https://herdr.dev) workspace. Agents do not coordinate live; they
+converge through commits, pushed bookmarks, and PRs.
+
+herdr is the UI: its sidebar rolls each agent up to a working / blocked / idle
+state, so you can see which agent needs you without cycling through windows.
+`ai-agent` drives herdr over its socket API, so a herdr server must be running
+to spawn (start one with `herdr`).
 
 ## Naming scheme
 
-| Thing              | Pattern                | Example                      |
-| ------------------ | ---------------------- | ---------------------------- |
-| Task slug          | kebab-case             | `lint-fix`                   |
-| Workspace dir      | `<repo>.agents/<slug>` | `~/dotfiles.agents/lint-fix` |
-| jj workspace ID    | `agent-<slug>`         | `agent-lint-fix`             |
-| jj bookmark        | `agent/<slug>`         | `agent/lint-fix`             |
-| tmux window option | `@agent-slug=<slug>`   | `@agent-slug=lint-fix`       |
+| Thing           | Pattern                | Example                      |
+| --------------- | ---------------------- | ---------------------------- |
+| Task slug       | kebab-case             | `lint-fix`                   |
+| Workspace dir   | `<repo>.agents/<slug>` | `~/dotfiles.agents/lint-fix` |
+| jj workspace ID | `agent-<slug>`         | `agent-lint-fix`             |
+| jj bookmark     | `agent/<slug>`         | `agent/lint-fix`             |
+| herdr workspace | label `<slug>`         | `lint-fix`                   |
 
-The tmux window option is the source of truth. Agent wrappers may rename the
-window; `ai-agent` still finds it through `@agent-slug`.
+The herdr workspace label is the source of truth for liveness; `ai-agent`
+finds an agent's workspace by looking the slug up in `herdr workspace list`.
 
 ## Bookmark invariant
 
@@ -41,37 +46,32 @@ This prevents pushing an empty or stale bookmark.
 ## CLI
 
 ```sh
-ai-agent spawn <slug> \
-  [--agent claude|codex|opencode|pi] \
-  [--brief "task"] \
-  [--from <rev>] \
-  [--sandbox]
-ai-agent list [--format=human|ui] [--only=all|live|dirty|merged]
+ai-agent spawn [<slug>] [--agent claude|pi] [--brief "task"] [--from <rev>] [--sandbox]
+ai-agent list [--only=all|live|dirty|merged]
 ai-agent finish <slug>
 ai-agent cleanup [--force] [<slug>]
-ai-agent ui [spawn]
+ai-agent focus <slug>
 ai-agent preview <slug>
 ```
 
+Run `ai-agent spawn` with no slug in a terminal to be prompted for slug, agent,
+and brief.
+
 ### `spawn`
 
-Creates the sibling workspace, bookmark, and tmux window:
+Creates the sibling workspace, bookmark, and herdr workspace, then launches the
+agent in the herdr workspace's pane:
 
 ```sh
 ai-agent spawn lint-fix --brief "tighten fish_indent on shell/"
-ai-agent spawn readme-tweak \
-  --agent codex \
-  --brief "rewrite README intro"
-ai-agent spawn old-base \
-  --from 'main@origin' \
-  --brief "test from a fixed base"
+ai-agent spawn old-base --from 'main@origin' --brief "test from a fixed base"
 ```
 
 Collision checks happen before side effects:
 
 - `agent/<slug>` must not already exist locally or remotely.
 - `<repo>.agents/<slug>` must not already exist.
-- no tmux window may already have `@agent-slug=<slug>`.
+- no herdr workspace may already be labelled `<slug>`.
 
 If `--brief` is present, the task is written to `.claude-notes/task.md` inside
 the agent workspace.
@@ -79,7 +79,8 @@ the agent workspace.
 Claude agents are pre-trusted in Claude Code's project state and launch with
 `--dangerously-skip-permissions --permission-mode bypassPermissions` so they do
 not stop for trust or per-tool permission prompts inside their isolated
-workspace.
+workspace. herdr's `claude`/`pi` integration detects the running agent and
+reports its state to the sidebar.
 
 If the primary checkout has a trusted root `mise.toml` or `.mise.toml`, `spawn`
 trusts the identical copy in the new workspace. That prevents mise from
@@ -87,29 +88,14 @@ rejecting `~/dotfiles.agents/<slug>/mise.toml` as an untrusted config.
 
 ### `list`
 
-Human output is the default:
-
 ```sh
 ai-agent list
-agent-list --only=dirty
+ai-agent list --only=dirty
 ```
 
-The UI consumes tab-delimited output:
-
-```sh
-ai-agent list --format=ui
-ai-agent list --format=ui --only=live
-```
-
-Icons:
-
-| Icon | Meaning                                        |
-| ---- | ---------------------------------------------- |
-| `✎`  | dirty working copy                             |
-| `↑`  | commits exist above the bookmark; run `jj tug` |
-| `●`  | live tmux window                               |
-| `✓`  | merged cleanup candidate                       |
-| `○`  | idle/no live window                            |
+Each agent reports its workspace, bookmark, current change, and four flags:
+`live` (a herdr workspace exists for the slug), `dirty`, `untugged-commits`,
+and `merged-to-trunk`. Use `--only=all|live|dirty|merged` to filter.
 
 ### `finish`
 
@@ -126,7 +112,7 @@ It runs:
 3. `gh pr create --head agent/<slug> --base main ...`,
 4. `jj workspace forget agent-<slug>`,
 5. `rm -rf <repo>.agents/<slug>`,
-6. tmux window cleanup.
+6. `herdr workspace close` for the slug.
 
 The PR body comes from `.claude-notes/task.md` when present.
 
@@ -151,41 +137,34 @@ Without a slug, `ai-agent cleanup` scans every agent workspace. It
 automatically removes safe candidates and prompts before removing protected
 workspaces. It never silently removes unmerged or unpushed work.
 
-### `preview`
+### `focus`
 
-`preview` is mainly for fzf:
+```sh
+ai-agent focus lint-fix
+```
+
+Focuses the agent's herdr workspace (the equivalent of clicking it in the
+sidebar).
+
+### `preview`
 
 ```sh
 ai-agent preview lint-fix
 ```
 
-It shows recent `jj log` output for `agent/<slug>::@`, the last 40 lines of
-the live tmux pane when present, and a diff stat when dirty.
+Shows recent `jj log` output for `agent/<slug>::@`, the last 40 lines of the
+agent's herdr pane when live, and a diff stat when dirty.
 
-## Tmux UI
+## herdr UI
 
-After stowing `ai/` and reloading tmux, the snippet at
-`~/.config/tmux/conf.d/40-agents.conf` adds:
+herdr's sidebar is the always-on agent UI — there is no separate modal. It
+shows every workspace and its agent state (working / blocked / idle), and
+`ai-agent focus <slug>` jumps to one. herdr uses the same `Ctrl-b` prefix as
+tmux.
 
-- `Prefix + a`: open the agent modal.
-- `Prefix + A`: start the spawn flow directly.
-
-Inside the modal:
-
-- `Enter`: switch to the selected agent window, or reopen a shell there.
-- `Ctrl-a`: show all agents.
-- `Ctrl-l`: show agents with live tmux windows.
-- `Ctrl-z`: show dirty workspaces.
-- `Alt-m`: show merged cleanup candidates.
-- `Ctrl-n`: close the modal and open the spawn prompt popup.
-- `Ctrl-x`: finish the selected agent after confirmation.
-- `Alt-d`: cleanup the selected agent after confirmation.
-- `Ctrl-w`: kill only the tmux window.
-- `Ctrl-/`: toggle preview.
-- `Ctrl-d` / `Ctrl-u`: scroll preview.
-
-The spawn flow asks for slug, agent, optional brief, and whether to launch via
-`sb` in a small tmux popup.
+For quick spawning from inside tmux, the snippet at
+`~/.config/tmux/conf.d/<agents>.conf` binds `Prefix + A` to a popup running
+`ai-agent spawn`.
 
 ## Fish shims
 
@@ -199,7 +178,7 @@ agent-cleanup [--force] [<slug>]
 ```
 
 Fish completions are installed for `ai-agent` and the four shims. Slug
-completion is backed by `ai-agent list --format=ui`.
+completion is backed by the agent workspace directories.
 
 Each shim execs the matching `ai-agent` subcommand.
 
@@ -216,18 +195,21 @@ means adding an allow-write entry equivalent to:
 ```
 
 Do this in the relevant `sb` profile before relying on sandboxed agents. The
-default no-sandbox path is self-contained inside the `ai/` stow and does not
-edit `sb.fish` or other stows.
+default no-sandbox path is self-contained inside the `ai-spawn` stow and does
+not edit `sb.fish` or other stows.
 
 ## Installed files
 
-All files live under `ai/`:
+All files live under `ai-spawn/`:
 
 - `.local/bin/ai-agent`
-- `.config/tmux/conf.d/40-agents.conf`
+- `.config/tmux/conf.d/<agents>.conf`
 - `.config/fish/functions/agent-{spawn,list,finish,cleanup}.fish`
 - `.config/fish/functions/__fish_ai_agent_*.fish`
 - `.config/fish/completions/ai-agent.fish`
 - `.config/fish/completions/agent-{spawn,list,finish,cleanup}.fish`
 - `.claude/commands/spawn-agent.md`
 - `.local/share/ai-agent/docs/multi-agent.md`
+
+herdr itself is in `Brewfile` (`brew "herdr"`); on Arch install it via the
+herdr install script (see `pkgs.arch`).
