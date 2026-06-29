@@ -1,13 +1,12 @@
 # AI tooling
 
-The AI agent suite is split into three stow packages so each concern can be
+The AI agent suite is split into two stow packages so each concern can be
 adopted on its own:
 
-| Package      | Owns                                                         | Depends on              |
-| ------------ | ------------------------------------------------------------ | ----------------------- |
-| `ai-base`    | agent rules, local skills, the `claude`/`pi` launchers       | —                       |
-| `ai-sandbox` | nono Seatbelt/Landlock profiles and the `sb` wrapper         | `ai-base`, `nono`       |
-| `ai-spawn`   | the `ai-agent` parallel jj-workspace orchestrator + adapters | `ai-base`, jj, tmux, gh |
+| Package      | Owns                                                   | Depends on        |
+| ------------ | ------------------------------------------------------ | ----------------- |
+| `ai-base`    | agent rules, local skills, the `claude`/`pi` launchers | —                 |
+| `ai-sandbox` | nono Seatbelt/Landlock profiles and the `sb` wrapper   | `ai-base`, `nono` |
 
 All three stow to `$HOME` with the rest of the full profile via `./install`,
 `make stow`, and `dots update`. Stow just one to take that concern alone
@@ -64,17 +63,6 @@ built-in bash sandbox (`--settings '{"sandbox":{"enabled":false}}'`) because
 macOS cannot nest Seatbelt — without this, every Bash command inside `sb
 claude` would fail with `sandbox_apply: Operation not permitted`. Plain
 `claude` (no `sb`) keeps the built-in sandbox.
-
-## ai-spawn — parallel agent workspaces
-
-`ai-agent` spawns parallel coding agents, each in its own jj workspace,
-bookmark (`agent/<slug>`), sibling directory (`<repo>.agents/<slug>`), and
-herdr workspace (its working/blocked/idle state shows in the herdr sidebar).
-It requires a running herdr server. See
-`ai-spawn/.local/share/ai-agent/docs/multi-agent.md` for the full workflow.
-The tmux fragment `.config/tmux/conf.d/agents.conf` binds `Prefix + A` to a
-herdr spawn popup, sourced through the shared tmux `conf.d` seam when
-`ai-spawn` is stowed.
 
 ## When to use which agent
 

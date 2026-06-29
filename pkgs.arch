@@ -21,7 +21,6 @@ neovim            # text editor
 tree-sitter-cli   # parser generator CLI (nvim-treesitter build)
 tmux-git          # terminal multiplexer (3.7 dev / git HEAD, AUR)
 # sesh is intentionally omitted: no Arch ARM package is available.
-# herdr (ai-agent UI) is not in pacman; install via: curl -fsSL https://herdr.dev/install.sh | sh
 presenterm        # markdown-driven terminal slides
 
 # ── Modern unix replacements ───────────────────────────
