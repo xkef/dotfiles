@@ -25,15 +25,21 @@ function sb -d "Run a command inside a nono sandbox"
     end
 
     set -l nono_args --silent --log-file /dev/null --allow-cwd --read $dots
+    set -l cmd_args
 
     switch $cmd
         case claude
             touch $HOME/.claude.json.lock
             set -a nono_args --profile claude
             test "$CLAUDE_ALLOW_LAUNCH_SERVICES" = 1; and set -a nono_args --allow-launch-services
+            # nono already provides the OS-level sandbox. Disable Claude Code's
+            # built-in bash sandbox so it does not try to nest sandbox-exec
+            # inside nono — macOS cannot nest Seatbelt, so every Bash command
+            # would otherwise fail with "sandbox_apply: Operation not permitted".
+            set -a cmd_args --settings '{"sandbox":{"enabled":false}}'
         case '*'
             set -a nono_args --profile $cmd
     end
 
-    exec nono run $nono_args -- $cmd $rest
+    exec nono run $nono_args -- $cmd $cmd_args $rest
 end

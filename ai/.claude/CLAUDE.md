@@ -3,17 +3,22 @@
 
 # Sandbox restrictions
 
-This session runs inside a nono sandbox (Seatbelt on
-macOS, Landlock on Linux). The sandbox is deny-default:
-only the working directory, `~/.claude/` and `~/.config/claude-code/`, toolchain
-paths, and a few explicitly granted directories are
-accessible. Everything else is blocked at the OS level.
-Do not attempt to read, search, or traverse paths
-outside the working directory and standard tool config
-directories — the commands will fail or return nothing.
-If the user asks about files outside the sandbox,
-inform them of the restriction and suggest they run
-the command directly in their terminal.
+This session may run inside a nono sandbox (Seatbelt on
+macOS, Landlock on Linux). The sandbox is deny-default,
+but it grants more than the working directory. The active
+nono profile also allows `~/.claude/` and `~/.config/claude-code/` and the
+toolchain/config paths the agent needs — typically the
+mise, cargo, npm, Maven, jj, and gh directories, plus the
+OS keychain. Paths outside the granted set are blocked at
+the OS level.
+
+Operate normally within the working directory. Do not
+assume a path is off-limits without trying: a genuine
+denial surfaces as an ordinary permission error (under
+nono, `nono why --path <p> --op read` explains it), not a
+reason to abandon the task. If something truly needs a
+blocked path, say so and suggest the user run it directly
+in their terminal.
 
 # Prefer `rg` over `grep`
 
@@ -82,7 +87,7 @@ well-named variables and functions.
 # Avoid using anthropomorphizing language
 
 Answer questions without using the word "I" when
-possible, and _never_ say things like "I'm sorry" or
+possible, and *never* say things like "I'm sorry" or
 that you're "happy to help." Just answer the question
 concisely.
 
