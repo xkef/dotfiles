@@ -67,13 +67,14 @@ claude` would fail with `sandbox_apply: Operation not permitted`. Plain
 
 ## ai-spawn — parallel agent workspaces
 
-`ai-agent` spawns parallel coding agents, each in its own jj workspace and
+`ai-agent` spawns parallel coding agents, each in its own jj workspace,
 bookmark (`agent/<slug>`), sibling directory (`<repo>.agents/<slug>`), and
-tmux window (tagged with the `@agent-slug` option). See
+herdr workspace (its working/blocked/idle state shows in the herdr sidebar).
+It requires a running herdr server. See
 `ai-spawn/.local/share/ai-agent/docs/multi-agent.md` for the full workflow.
-The tmux fragment `.config/tmux/conf.d/40-agents.conf` carries the agent UI
-bindings, sourced through the shared tmux `conf.d` seam when `ai-spawn` is
-stowed.
+The tmux fragment `.config/tmux/conf.d/agents.conf` binds `Prefix + A` to a
+herdr spawn popup, sourced through the shared tmux `conf.d` seam when
+`ai-spawn` is stowed.
 
 ## When to use which agent
 

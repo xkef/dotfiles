@@ -65,6 +65,15 @@ These directories are stable extension seams. Stow merges their contents so
 packages can add integrations without central switchboards in `shell`, `tmux`,
 or `nvim`.
 
+Fish and tmux `conf.d` fragments are written to be **order-independent** —
+each file defines whatever it needs rather than relying on a sibling having
+loaded first — so they use descriptive names (e.g. `env.fish`, `copy-mode.conf`)
+with no numeric prefixes. A package can drop a fragment in without choosing a
+load position. (Shell wrappers that must check a tool at call time, like the
+`eza`/`bat` aliases, live in `functions/` and probe with `command -q` when
+invoked, so PATH order never matters. The `theme.d` adapters are the one
+exception: `nvim` must follow `ghostty`, which name order already guarantees.)
+
 ## Why `dots` is an orchestrator
 
 The `dots` package intentionally owns commands that coordinate the whole

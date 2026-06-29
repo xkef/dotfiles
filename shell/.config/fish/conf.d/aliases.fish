@@ -29,38 +29,7 @@ abbr -a help man
 abbr -a extract 'ouch decompress'
 abbr -a compress 'ouch compress'
 
-# ── Modern replacements (transparent — alias, not abbr) ──
-if command -q eza
-    alias eza 'eza --group-directories-first'
-    alias ls eza
-    alias ll 'eza -la --git'
-    alias lt 'eza -T --level=2'
-    alias la 'eza -a'
-else if test (uname) = Darwin
-    alias ls 'ls -G'
-    alias ll 'ls -Gla'
-    alias la 'ls -Ga'
-else
-    alias ls 'ls --color=auto'
-    alias ll 'ls -la'
-    alias la 'ls -a'
-end
-
-if command -q bat
-    alias cat 'bat -pp'
-    alias catn bat
-end
-
-if command -q dust
-    alias du dust
-else
-    alias du 'du -h'
-end
-if command -q duf
-    alias df duf
-else
-    alias df 'df -h'
-end
-if command -q procs
-    alias ps procs
-end
+# ── Modern replacements ──────────────────────────────
+# eza/bat/dust/duf/procs wrappers live in functions/ (ls, ll, lt, la, eza, cat,
+# catn, du, df, ps). They check `command -q` at call time, so they degrade
+# gracefully and don't depend on PATH being set by another conf.d file first.
