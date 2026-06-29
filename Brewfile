@@ -13,7 +13,6 @@ brew "xz"                # xz compression for VM image archives
 brew "fish"              # shell
 brew "starship"          # cross-shell prompt
 brew "atuin"             # shell history search/sync
-brew "navi"              # interactive cheatsheet browser
 brew "fzf"               # fuzzy finder
 brew "television"        # channel-oriented fuzzy finder
 brew "zoxide"            # smarter cd with frecency

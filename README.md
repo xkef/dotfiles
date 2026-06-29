@@ -92,7 +92,6 @@ Same physical key. Ctrl is the only difference.
 | ---------- | ------------ | ------------------------------------- |
 | **tmux**   | `prefix + ?` | Keybinding reference (floating popup) |
 | **Neovim** | `leader + ?` | which-key discovery popup             |
-| **Shell**  | `Ctrl-G`     | navi interactive cheatsheets          |
 
 ---
 
