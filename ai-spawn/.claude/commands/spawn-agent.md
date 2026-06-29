@@ -21,11 +21,11 @@ Rules:
 
 - The slug becomes the jj workspace `agent-<slug>` and bookmark
   `agent/<slug>`.
-- Do not reuse a slug unless its old workspace, bookmark, and window have been
-  cleaned up.
+- Do not reuse a slug unless its old workspace, bookmark, and herdr workspace
+  have been cleaned up.
 - The spawned agent starts on an empty descendant of `agent/<slug>`.
 - The spawned agent should commit its work and run `jj tug` before
   `ai-agent finish <slug>`.
-- Add `--agent codex`, `--agent opencode`, or `--agent pi` only when requested.
+- Add `--agent pi` only when requested.
 - Add `--sandbox` only when the user confirms their `sb` profile allows writes
   to the primary repo's `.jj/` directory.

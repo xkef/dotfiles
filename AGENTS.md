@@ -23,14 +23,15 @@ agents need to work on this checkout concurrently.
 
 - Spawn with `ai-agent spawn <slug> --brief "<task>"`; slugs are kebab-case.
 - Each spawned agent uses sibling workspace `<repo>.agents/<slug>`, jj workspace
-  `agent-<slug>`, and bookmark `agent/<slug>`.
-- The tmux window is identified by the `@agent-slug` window option, not by its
-  name; wrappers may rename windows without breaking lookup.
+  `agent-<slug>`, bookmark `agent/<slug>`, and a herdr workspace labelled
+  `<slug>` (its working/blocked/idle state shows in the herdr sidebar).
+- `ai-agent` requires a running herdr server to spawn; `ai-agent focus <slug>`
+  jumps to that agent's herdr workspace.
 - Inside an agent workspace, commit selected files with jj and run `jj tug` so
   `agent/<slug>` points at the completed work before `ai-agent finish <slug>`.
 - `ai-agent finish <slug>` refuses dirty or untugged work, then pushes the
   bookmark, creates a PR, forgets the workspace, removes the directory, and
-  closes the tmux window.
+  closes the herdr workspace.
 - `ai-agent cleanup <slug>` only removes safe merged/deleted workspaces;
   `ai-agent cleanup --force <slug>` intentionally discards that agent workspace.
 - User docs live at `ai-spawn/.local/share/ai-agent/docs/multi-agent.md`.
