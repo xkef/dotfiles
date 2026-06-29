@@ -18,7 +18,6 @@ in `stow-packages` are the full-profile package set used by `./install`,
 | `vcs`        | git, jj, lazygit, VCS fish/tmux/Neovim adapters                 |
 | `ai-base`    | agent rules, local skills, and the claude/pi launchers          |
 | `ai-sandbox` | nono Seatbelt/Landlock profiles and the `sb` wrapper            |
-| `ai-spawn`   | the `ai-agent` parallel jj-workspace orchestrator + adapters    |
 | `ssh`        | SSH config, socket/conf.d directories, signing public key       |
 | `mise`       | mise config, fish init, and mise wrapper                        |
 | `yazi`       | Yazi config, fish functions, and keybinding                     |
@@ -40,8 +39,6 @@ Examples:
 - `ai-base` owns the shared agent rules, the local skills tree, and the
   `claude`/`pi` launchers.
 - `ai-sandbox` owns the nono profiles and the `sb` wrapper.
-- `ai-spawn` owns `ai-agent`, its fish/completion adapters, the tmux agent
-  fragment, and the `spawn-agent` command.
 - `vcs` owns jj's fish wrapper, LazyVim's jj plugin adapter, and tmux VCS
   popup bindings.
 - `theme` owns the `theme` command, fish theme environment/completions, and
