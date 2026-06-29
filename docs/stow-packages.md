@@ -6,23 +6,25 @@ in `stow-packages` are the full-profile package set used by `./install`,
 
 ## Manifest
 
-| Package    | Owns                                                            |
-| ---------- | --------------------------------------------------------------- |
-| `dots`     | dotfiles control plane: `dots`, profile, doctor, update, keys   |
-| `shell`    | core fish profile, Starship, fzf shell UX, generic functions    |
-| `cli`      | small CLI defaults/data: atuin, bat, fd, television             |
-| `theme`    | theme command plus fish and Neovim theme adapters               |
-| `terminal` | Ghostty config                                                  |
-| `tmux`     | tmux core options, copy mode, status, session helpers           |
-| `nvim`     | LazyVim/kickstart profiles and `knvim`                          |
-| `vcs`      | git, jj, lazygit, VCS fish/tmux/Neovim adapters                 |
-| `ai`       | Claude/pi configs, skills, sandbox wrappers, agent helpers      |
-| `ssh`      | SSH config, socket/conf.d directories, signing public key       |
-| `mise`     | mise config, fish init, and mise wrapper                        |
-| `yazi`     | Yazi config, fish functions, and keybinding                     |
-| `helix`    | Helix editor config                                             |
-| `vm`       | Tart VM helper and its local state path (known hosts, run logs) |
-| `zed`      | Zed editor config                                               |
+| Package      | Owns                                                            |
+| ------------ | --------------------------------------------------------------- |
+| `dots`       | dotfiles control plane: `dots`, profile, doctor, update, keys   |
+| `shell`      | core fish profile, Starship, fzf shell UX, generic functions    |
+| `cli`        | small CLI defaults/data: atuin, bat, fd, television             |
+| `theme`      | theme command plus fish and Neovim theme adapters               |
+| `terminal`   | Ghostty config                                                  |
+| `tmux`       | tmux core options, copy mode, status, session helpers           |
+| `nvim`       | LazyVim/kickstart profiles and `knvim`                          |
+| `vcs`        | git, jj, lazygit, VCS fish/tmux/Neovim adapters                 |
+| `ai-base`    | agent rules, local skills, and the claude/pi launchers          |
+| `ai-sandbox` | nono Seatbelt/Landlock profiles and the `sb` wrapper            |
+| `ai-spawn`   | the `ai-agent` parallel jj-workspace orchestrator + adapters    |
+| `ssh`        | SSH config, socket/conf.d directories, signing public key       |
+| `mise`       | mise config, fish init, and mise wrapper                        |
+| `yazi`       | Yazi config, fish functions, and keybinding                     |
+| `helix`      | Helix editor config                                             |
+| `vm`         | Tart VM helper and its local state path (known hosts, run logs) |
+| `zed`        | Zed editor config                                               |
 
 `stow-packages` is deliberately explicit so repo assets such as `README.md`,
 `docs/`, `Brewfile`, `pkgs.arch`, and `mise.toml` cannot be stowed by
@@ -35,8 +37,11 @@ in the profile.
 
 Examples:
 
-- `ai` owns Claude/pi wrappers, `sb`, nono profiles, and the
-  tmux agent fragment.
+- `ai-base` owns the shared agent rules, the local skills tree, and the
+  `claude`/`pi` launchers.
+- `ai-sandbox` owns the nono profiles and the `sb` wrapper.
+- `ai-spawn` owns `ai-agent`, its fish/completion adapters, the tmux agent
+  fragment, and the `spawn-agent` command.
 - `vcs` owns jj's fish wrapper, LazyVim's jj plugin adapter, and tmux VCS
   popup bindings.
 - `theme` owns the `theme` command, fish theme environment/completions, and
@@ -71,9 +76,9 @@ Profile facts — repo root, package manifest, VCS, and stow invocation — are
 answered by `dots-profile`. The `Makefile`, `install`, and the `dots-*`
 commands consume its interface instead of re-deriving those facts.
 
-`dots skills` dispatches to `dots-skills`, which is owned by `ai`. If only the
-`dots` package is installed, the command reports that the `ai` package is
-required.
+`dots skills` dispatches to `dots-skills`, which is owned by `ai-base`. If only
+the `dots` package is installed, the command reports that the `ai-base` package
+is required.
 
 ## Package managers stay global for now
 

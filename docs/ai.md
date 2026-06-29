@@ -1,30 +1,36 @@
 # AI tooling
 
-The `ai` stow package owns the AI agent suite and its shell/tmux adapters.
-It is stowed to `$HOME` with the rest of the full profile by `./install`,
-`make stow`, and `dots update`.
+The AI agent suite is split into three stow packages so each concern can be
+adopted on its own:
 
-## Layout
+| Package      | Owns                                                         | Depends on              |
+| ------------ | ------------------------------------------------------------ | ----------------------- |
+| `ai-base`    | agent rules, local skills, the `claude`/`pi` launchers       | —                       |
+| `ai-sandbox` | nono Seatbelt/Landlock profiles and the `sb` wrapper         | `ai-base`, `nono`       |
+| `ai-spawn`   | the `ai-agent` parallel jj-workspace orchestrator + adapters | `ai-base`, jj, tmux, gh |
 
-| Path                                 | Tool            | Purpose                          |
-| ------------------------------------ | --------------- | -------------------------------- |
-| `.claude/`                           | Claude Code     | agents, skills, settings         |
-| `.pi/agent/`                         | pi              | agent rules, settings example    |
-| `.config/nono/`                      | nono sandbox    | Seatbelt/Landlock profiles       |
-| `.config/ai-shared/AGENTS.base.md`   | shared source   | base rules for all tools         |
-| `.config/ai-shared/overlays/*.md`    | per-tool extras | appended to the base             |
-| `.config/fish/functions/*.fish`      | fish adapters   | wrappers for Claude/pi/etc.      |
-| `.config/tmux/conf.d/40-agents.conf` | tmux adapter    | agent popup/session bindings     |
-| `.local/bin/ai-agent`                | workspace tool  | parallel agent workspace helper  |
-| `.local/bin/ai-agents-render`        | generator       | renders tool AGENTS files        |
-| `.local/bin/dots-skills`             | skills pipeline | installs/refreshes shared skills |
+All three stow to `$HOME` with the rest of the full profile via `./install`,
+`make stow`, and `dots update`. Stow just one to take that concern alone
+(e.g. `stow ai-sandbox` for only the nono profiles + `sb`).
 
-## Editing agent rules
+## ai-base — rules, skills, launchers
+
+| Path                                          | Purpose                                      |
+| --------------------------------------------- | -------------------------------------------- |
+| `.claude/`                                    | Claude Code agents, settings, skills symlink |
+| `.pi/agent/`                                  | pi agent rules + settings example            |
+| `.config/ai-shared/AGENTS.base.md`            | base rules shared by every agent             |
+| `.config/ai-shared/overlays/<tool>.append.md` | per-tool additions appended to the base      |
+| `.config/fish/functions/{claude,pi}.fish`     | agent launchers                              |
+| `.config/fish/functions/_ai_run_pinned.fish`  | shared tmux window pinning for launchers     |
+| `.local/bin/ai-agents-render`                 | renders the per-tool rule files              |
+| `.local/bin/dots-skills`                      | skills pipeline (install/refresh)            |
+
+### Editing agent rules
 
 Rules common to every agent (sandbox, `rg` > `grep`, `gh` > `curl`, be
-concise) live in `ai/.config/ai-shared/AGENTS.base.md`. Tool-specific
-guidance (Claude skills, trailing whitespace rules, etc.) lives in
-`ai/.config/ai-shared/overlays/<tool>.append.md`.
+concise) live in `ai-base/.config/ai-shared/AGENTS.base.md`. Tool-specific
+guidance lives in `ai-base/.config/ai-shared/overlays/<tool>.append.md`.
 
 Regenerate the per-tool files:
 
@@ -34,79 +40,82 @@ make ai-render
 
 `make fmt` invokes it automatically, so drift gets caught.
 
-**Never hand-edit** `ai/.claude/CLAUDE.md` or `ai/.pi/agent/AGENTS.md` —
-they carry a `<!-- Generated -->` header and will be overwritten.
+**Never hand-edit** `ai-base/.claude/CLAUDE.md` or
+`ai-base/.pi/agent/AGENTS.md` — they carry a `<!-- Generated -->` header and
+are overwritten on the next render.
 
-pi `settings.json` is a local runtime file. It records machine paths,
-trust decisions, changelog state, and other app-managed values, so it is
-ignored. Use the adjacent `*.example.*` files as portable starting points
-if you need to recreate a config.
+pi `settings.json` is a local runtime file (machine paths, trust decisions,
+changelog state), so it is ignored. Use the adjacent `*.example.*` files as
+portable starting points.
 
-## Fish and tmux adapters
+## ai-sandbox — nono profiles + `sb`
 
-The AI-owned fish wrappers live in `ai/.config/fish/functions/`:
-
-- `claude.fish`
-- `pi.fish`
-- `sb.fish`
-- `agent-*.fish`
-- `_ai_run_pinned.fish` (shared tmux window pinning)
-
-The `sb` wrapper launches supported agents through nono sandbox profiles:
+`sb` launches a supported agent inside a [nono](https://nono.sh) sandbox
+(Seatbelt on macOS, Landlock on Linux) using a matching profile under
+`.config/nono/profiles/`:
 
 ```sh
 sb claude
 sb pi
 ```
 
-`ai/.config/tmux/conf.d/40-agents.conf` owns the tmux bindings for the
-agent workspace UI. This file is sourced through the shared tmux
-`conf.d` seam when the `ai` package is stowed.
+nono is the OS-level boundary. For Claude, `sb` also disables Claude Code's
+built-in bash sandbox (`--settings '{"sandbox":{"enabled":false}}'`) because
+macOS cannot nest Seatbelt — without this, every Bash command inside `sb
+claude` would fail with `sandbox_apply: Operation not permitted`. Plain
+`claude` (no `sb`) keeps the built-in sandbox.
+
+## ai-spawn — parallel agent workspaces
+
+`ai-agent` spawns parallel coding agents, each in its own jj workspace and
+bookmark (`agent/<slug>`), sibling directory (`<repo>.agents/<slug>`), and
+tmux window (tagged with the `@agent-slug` option). See
+`ai-spawn/.local/share/ai-agent/docs/multi-agent.md` for the full workflow.
+The tmux fragment `.config/tmux/conf.d/40-agents.conf` carries the agent UI
+bindings, sourced through the shared tmux `conf.d` seam when `ai-spawn` is
+stowed.
 
 ## When to use which agent
 
 | Agent       | Good for                                                        |
 | ----------- | --------------------------------------------------------------- |
 | Claude Code | Long-running refactors; skills/agents ecosystem; best reasoning |
-| pi          | GitHub Copilot-backed coding agent                              |
+| pi          | lightweight coding agent                                        |
 
-All agents share sandbox profiles under `~/.config/nono/`.
+Both share the nono profiles under `~/.config/nono/` when `ai-sandbox` is
+stowed.
 
 ## Skills
 
-Local skills are tracked once under `.agents/skills/`:
+Local skills are tracked once under `ai-base/.agents/skills/`:
 
 - `commit/` — git/jj commit creation
+- `create-gh-pr/` — opening pull requests
 - `jj/` — Jujutsu usage
 - `research-repo/` — `gh`-based GitHub investigation
 - `html-summary/` — single-file HTML summaries with diagrams
 
-Claude sees those skills through the `.claude/skills` symlink. Pi loads
-`~/.agents/skills` directly via the Agent Skills standard. After adding
-shared skills, run `make restow` so `~/.agents/` exists on the host.
+Claude sees them through the `ai-base/.claude/skills` symlink; pi loads
+`~/.agents/skills` directly via the Agent Skills standard. After adding a
+shared skill, run `make restow` so `~/.agents/` exists on the host.
 
 Everything else is pulled from upstream on first launch:
 
 - [`mattpocock/skills`](https://github.com/mattpocock/skills)
 - `find-skills` from `vercel-labs/skills`
-- `html-visual` from `2ykwang/agent-skills` for interactive single-file
-  HTML visualizations
+- `html-visual` from `2ykwang/agent-skills`
 - `architecture-diagram` from `Cocoon-AI/architecture-diagram-generator`
-  for standalone HTML/SVG architecture diagrams
 
-The fish wrappers call `dots-skills ensure <agent>`. dots-skills owns the
+The launchers call `dots-skills ensure <agent>`. `dots-skills` owns the
 upstream source list and the install sentinel: it installs upstream skills
-into `~/.agents/skills` once, then writes the sentinel so subsequent
-launches skip the install. Agents that understand `.agents/skills` read
-that tree directly; Claude reaches the same tree through `.claude/skills`.
-
-Generated or upstream skills under `ai/.agents/skills/` are filtered out
-via `.gitignore` and never get committed.
+into `~/.agents/skills` once, then writes the sentinel so later launches skip
+it. Generated/upstream skills under `~/.agents/skills/` are git-ignored and
+never committed.
 
 To force a refresh from upstream:
 
 ```sh
-dots skills          # requires the ai package
+dots skills          # requires the ai-base package
 # or, equivalently:
-rm ~/.cache/dotfiles/skills.shared.*.installed   # next wrapped launch reinstalls
+rm ~/.cache/dotfiles/skills.shared.*.installed   # next launch reinstalls
 ```

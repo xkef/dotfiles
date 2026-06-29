@@ -3,7 +3,7 @@
 # dots-skills — manage shared agent skills pulled from upstream packs.
 #
 # Single owner of the install sentinel and the upstream source list.
-# Locally-tracked skills (symlinked from ~/dotfiles/ai/.agents/skills/)
+# Locally-tracked skills (symlinked from ~/dotfiles/ai-base/.agents/skills/)
 # are unaffected.
 #
 # Usage:

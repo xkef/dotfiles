@@ -6,7 +6,9 @@ terminal
 tmux
 nvim
 vcs
-ai
+ai-base
+ai-sandbox
+ai-spawn
 ssh
 mise
 yazi
