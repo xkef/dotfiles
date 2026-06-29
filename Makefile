@@ -86,7 +86,7 @@ macos-defaults: ## Apply macOS system defaults
 	./macos-defaults
 
 ai-render: ## Regenerate per-tool AGENTS files from ai-shared/
-	@DOTS_DIR=$(DOTFILES_DIR) ai/.local/bin/ai-agents-render
+	@DOTS_DIR=$(DOTFILES_DIR) ai-base/.local/bin/ai-agents-render
 
 uninstall: unstow ## Remove all symlinks from ~ (alias for unstow)
 

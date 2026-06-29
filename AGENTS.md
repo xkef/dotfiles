@@ -33,4 +33,4 @@ agents need to work on this checkout concurrently.
   closes the tmux window.
 - `ai-agent cleanup <slug>` only removes safe merged/deleted workspaces;
   `ai-agent cleanup --force <slug>` intentionally discards that agent workspace.
-- User docs live at `ai/.local/share/ai-agent/docs/multi-agent.md`.
+- User docs live at `ai-spawn/.local/share/ai-agent/docs/multi-agent.md`.
