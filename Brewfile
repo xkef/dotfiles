@@ -21,7 +21,7 @@ brew "zoxide"            # smarter cd with frecency
 brew "helix"             # modal text editor (Rust)
 brew "neovim"            # text editor
 brew "tree-sitter-cli"   # parser generator CLI (nvim-treesitter build)
-brew "tmux", args: ["HEAD"] # terminal multiplexer (3.7 dev / git HEAD)
+brew "tmux"              # terminal multiplexer
 brew "sesh"              # smart tmux session manager
 brew "presenterm"        # markdown-driven terminal slides
 
