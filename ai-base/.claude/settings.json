@@ -78,17 +78,6 @@
           }
         ]
       }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "Read|Write|Edit|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/nono-hook.sh"
-          }
-        ]
-      }
     ]
   },
   "statusLine": {
@@ -122,6 +111,8 @@
     ]
   },
   "alwaysThinkingEnabled": true,
+  "effortLevel": "high",
+  "outputStyle": "concise",
   "autoUpdatesChannel": "latest",
   "plansDirectory": ".claude-notes",
   "skipDangerousModePermissionPrompt": true,
