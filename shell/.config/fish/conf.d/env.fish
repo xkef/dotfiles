@@ -5,8 +5,8 @@ set -gx XDG_STATE_HOME $HOME/.local/state
 set -gx XDG_CACHE_HOME $HOME/.cache
 
 # ── Telemetry opt-outs ───────────────────────────────
-# https://github.com/muescha/consoledonottrack.com
-set -gx DO_NOT_TRACK 1
+# DO_NOT_TRACK is intentionally not set: Claude Code disables
+# Remote Control (feature-flag evaluation) when it is present.
 # https://cli.github.com/telemetry
 set -gx GH_TELEMETRY false
 # https://docs.brew.sh/Analytics
