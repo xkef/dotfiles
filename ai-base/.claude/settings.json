@@ -31,7 +31,8 @@
       "Bash(*git stash drop*)",
       "Bash(*> .env*)",
       "Bash(*> .env.*)"
-    ]
+    ],
+    "defaultMode": "dontAsk"
   },
   "model": "opus",
   "hooks": {
@@ -103,6 +104,7 @@
     "skill-creator@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true
   },
+  "outputStyle": "concise",
   "spinnerTipsEnabled": false,
   "spinnerVerbs": {
     "mode": "replace",
@@ -111,11 +113,12 @@
     ]
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
-  "outputStyle": "concise",
   "autoUpdatesChannel": "latest",
   "plansDirectory": ".claude-notes",
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
+  "verbose": false,
   "preferredNotifChannel": "ghostty",
+  "autoCompactEnabled": false,
   "agentPushNotifEnabled": true
 }
