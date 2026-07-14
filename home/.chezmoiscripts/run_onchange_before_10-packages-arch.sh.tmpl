@@ -1,0 +1,36 @@
+{{ if eq .chezmoi.os "linux" -}}
+{{ if eq .chezmoi.osRelease.id "arch" -}}
+#!/bin/bash
+set -euo pipefail
+# pkgs.arch hash: {{ include (joinPath .chezmoi.workingTree "pkgs.arch") | sha256sum }}
+# pkgs.arch.gui hash: {{ include (joinPath .chezmoi.workingTree "pkgs.arch.gui") | sha256sum }}
+
+read_pkg_file() {
+  sed 's/#.*//; s/[[:space:]]*$//; /^[[:space:]]*$/d' "$1"
+}
+
+ensure_paru() {
+  command -v paru >/dev/null && return 0
+  local tmpdir
+  tmpdir="$(mktemp -d)"
+  sudo pacman -S --needed --noconfirm base-devel
+  git clone https://aur.archlinux.org/paru-bin.git "$tmpdir/paru-bin"
+  (cd "$tmpdir/paru-bin" && makepkg -si --noconfirm)
+  local rc=$?
+  rm -rf "$tmpdir"
+  return $rc
+}
+
+sudo -v
+sudo pacman -Sy --noconfirm
+mapfile -t packages < <(read_pkg_file {{ joinPath .chezmoi.workingTree "pkgs.arch" | quote }})
+if ! systemd-detect-virt -q 2>/dev/null; then
+  mapfile -t gui_packages < <(read_pkg_file {{ joinPath .chezmoi.workingTree "pkgs.arch.gui" | quote }})
+  packages+=("${gui_packages[@]}")
+fi
+ensure_paru
+paru_flags=(--needed --noconfirm)
+systemd-detect-virt -q 2>/dev/null && paru_flags+=(--mflags="-A")
+paru -S "${paru_flags[@]}" "${packages[@]}"
+{{ end -}}
+{{ end -}}

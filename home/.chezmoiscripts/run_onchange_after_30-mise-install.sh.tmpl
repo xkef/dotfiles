@@ -1,0 +1,7 @@
+{{ if lookPath "mise" -}}
+#!/bin/bash
+set -euo pipefail
+# mise config hash: {{ include "dot_config/mise/config.toml" | sha256sum }}
+mise trust 2>/dev/null || true
+mise install
+{{ end -}}
