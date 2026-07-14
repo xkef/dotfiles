@@ -14,10 +14,15 @@ tap "{{ . }}"
 {{ range .packages.darwin.brews -}}
 brew "{{ . }}"
 {{ end -}}
+BREWFILE
 {{ if not (env "CI") -}}
+# Casks fail soft: self-updating GUI apps (zed, 1password) hit stale-receipt
+# and quarantine issues that must not block config apply.
+brew bundle --file=- <<'CASKFILE' ||
 {{ range .packages.darwin.casks -}}
 cask "{{ . }}"
 {{ end -}}
+CASKFILE
+  echo "warning: some casks failed; fix and re-run: brew bundle (see above)" >&2
 {{ end -}}
-BREWFILE
 {{ end -}}
