@@ -1,0 +1,5 @@
+{{- $work := promptBoolOnce . "work" "Work machine (render 1Password git identity)" false -}}
+sourceDir = {{ .chezmoi.workingTree | quote }}
+
+[data]
+    work = {{ $work }}
