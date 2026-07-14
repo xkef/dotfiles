@@ -88,8 +88,9 @@ function _current_theme
         test -f $source; or continue
         set -l m (string match -r '^\s*theme\s*=\s*(.+)' <$source)
         if test (count $m) -ge 2
+            # string trim exits 1 when nothing was trimmed; don't leak that.
             string trim $m[2]
-            return
+            return 0
         end
     end
     echo "Catppuccin Mocha"
