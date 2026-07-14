@@ -1,92 +1,69 @@
-DOTFILES_DIR := $(shell pwd)
-DOTS_PROFILE := ./dots/.local/bin/dots-profile --root .
-VCS := $(shell $(DOTS_PROFILE) vcs)
-TRACKED_FILES := $(shell if [ "$(VCS)" = jj ]; then jj --config signing.behavior=drop file list --no-pager 2>/dev/null || git ls-files 2>/dev/null; else git ls-files 2>/dev/null; fi)
+TRACKED_FILES := $(shell git ls-files)
 TRACKED_TEXT_FILES := $(filter-out %.png %.jpg %.jpeg %.gif %.webp,$(TRACKED_FILES))
 SHELL_FILES := $(shell awk 'FNR == 1 && /^\#!.*(env[[:space:]]+bash|\/bash|\/sh)([[:space:]]|$$)/ { print FILENAME }' $(TRACKED_TEXT_FILES) 2>/dev/null)
-FISH_FILES := $(filter %.fish,$(TRACKED_FILES)) $(shell awk 'FNR == 1 && /^\#!.*(env[[:space:]]+fish|\/fish)([[:space:]]|$$)/ { print FILENAME }' $(TRACKED_TEXT_FILES) 2>/dev/null)
+FISH_FILES := $(filter %.fish,$(TRACKED_FILES))
 
-.PHONY: help install update doctor test stow unstow restow stow-smoke fmt lint tools macos-defaults uninstall clean
+.PHONY: help fmt lint lint-sh lint-fish lint-md lint-nvim check clean
 
 help: ## Show this help
 	@rg -N '^[a-z][a-z_-]+:.*## ' $(MAKEFILE_LIST) | \
 		awk -F ':.*## ' '{printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-install: ## Full install (packages + stow + tools)
-	./install
+fmt: ## Format all dotfiles
+	stylua home/dot_config/lazyvim/ home/dot_config/kickstart/
+	shfmt -w $(SHELL_FILES)
+	fish_indent -w $(FISH_FILES)
+	prettier --write '**/*.{json,yaml,yml,css,html}' \
+		--ignore-path .gitignore 2>/dev/null || true
+	dprint fmt
+	taplo fmt
 
-install-adopt: ## Install, adopting existing files into the repo
-	./install --adopt
+lint: lint-sh lint-fish lint-md lint-nvim ## Lint everything
 
-update: ## Fetch/pull, re-stow, update plugins and tools
-	dots update
+lint-sh: ## Shellcheck bash scripts
+	shellcheck -S warning $(SHELL_FILES)
 
-doctor: ## Check dotfiles health (binaries, symlinks, configs)
-	dots doctor
+lint-fish: ## Syntax-check fish files
+	@for f in $(FISH_FILES); do fish --no-execute $$f || exit 1; done
 
-test: stow-smoke doctor ## Run smoke tests and doctor
+lint-md: ## Lint markdown
+	rumdl check
 
-stow: ## Stow all packages into ~
-	@$(DOTS_PROFILE) stow
+lint-nvim: ## Load LazyVim headless (local only; needs plugins)
+	NVIM_APPNAME=lazyvim nvim --headless +"lua require('lazy')" +qa
 
-unstow: ## Remove all symlinks from ~
-	@$(DOTS_PROFILE) stow --delete
-
-restow: ## Re-stow all packages (fixes stale symlinks)
-	@$(DOTS_PROFILE) stow --restow
-
-stow-smoke: ## Stow all packages into a temporary HOME
+check: ## Apply the source tree into a throwaway HOME and assert results
 	@tmp=$$(mktemp -d); \
 	cleanup() { rm -rf "$$tmp"; }; \
 	trap cleanup EXIT; \
-	$(DOTS_PROFILE) stow --target "$$tmp" || exit 1; \
+	mkdir -p "$$tmp/home"; \
+	chezmoi init --source . --destination "$$tmp/home" \
+		--config "$$tmp/chezmoi.toml" --persistent-state "$$tmp/state.db" \
+		--promptBool "work machine (render 1Password git identity)=false" \
+		--exclude scripts --apply || exit 1; \
 	for path in \
-		.local/bin/dots \
-		.local/bin/dots-profile \
 		.local/bin/theme \
+		.local/bin/dots-keys \
+		.local/bin/macos-defaults \
 		.config/theme.d/ghostty.fish \
 		.config/fish/config.fish \
 		.config/tmux/tmux.conf \
 		.config/git/config \
 		.config/lazyvim/init.lua \
-		.config/ghostty/config; do \
-		if [ ! -e "$$tmp/$$path" ]; then \
+		.config/ghostty/config \
+		.claude/CLAUDE.md; do \
+		if [ ! -e "$$tmp/home/$$path" ]; then \
 			echo "missing $$path"; \
 			exit 1; \
 		fi; \
 	done; \
-	if [ -e "$$tmp/.ideavimrc" ]; then \
-		echo "unexpected .ideavimrc"; \
-		exit 1; \
-	fi; \
-	echo "stow smoke ok"
-
-tools: ## Install mise tools (languages + formatters)
-	mise install
-
-fmt: ## Format all dotfiles
-	stylua nvim/.config/lazyvim/ nvim/.config/kickstart/ theme/.config/lazyvim/ vcs/.config/lazyvim/
-	shfmt -w $(SHELL_FILES)
-	fish_indent -w $(FISH_FILES)
-	prettier --write '**/*.{json,yaml,yml,css,html}' \
-		--ignore-path .gitignore \
-		--ignore-path .prettierignore 2>/dev/null || true
-	dprint fmt
-	taplo fmt
-
-lint: ## Lint shell scripts, neovim config, and markdown
-	@printf '\n  Linting...\n\n'
-	@shellcheck -S warning $(SHELL_FILES)
-	@for f in $(FISH_FILES); do fish --no-execute $$f || exit 1; done
-	@NVIM_APPNAME=lazyvim nvim --headless +"lua require('lazy')" +qa
-	@rumdl check
-	@printf '\n  All clean\n\n'
-
-macos-defaults: ## Apply macOS system defaults
-	./macos-defaults
-
-uninstall: unstow ## Remove all symlinks from ~ (alias for unstow)
+	test -x "$$tmp/home/.local/bin/theme" || { echo "theme not executable"; exit 1; }; \
+	test ! -e "$$tmp/home/.config/git/config.work" || { echo "unexpected config.work"; exit 1; }; \
+	chezmoi verify --source . --destination "$$tmp/home" \
+		--config "$$tmp/chezmoi.toml" --persistent-state "$$tmp/state.db" \
+		--exclude scripts || exit 1; \
+	echo "chezmoi smoke ok"
 
 clean: ## Remove caches and generated files
 	find . -name .DS_Store -delete 2>/dev/null || true
-	rm -rf nvim/.config/lazyvim/.luarc.json
+	rm -rf home/dot_config/lazyvim/.luarc.json
