@@ -1,11 +1,24 @@
 # dotfiles
 
 [![CI](https://github.com/xkef/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/xkef/dotfiles/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/xkef/dotfiles/badge)](https://scorecard.dev/viewer/?uri=github.com/xkef/dotfiles)
+
+Every push runs the full setup end-to-end on macOS and Arch: packages
+install, configs apply, and CI verifies that fish boots, tmux starts, and
+the helper scripts run.
 
 ![screenshot](docs/scrot.png)
 
 Managed with [chezmoi](https://www.chezmoi.io).
 Supports macOS and Arch Linux (btw).
+
+One command on a fresh machine:
+
+```bash
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply xkef/dotfiles
+```
+
+Or clone first to hack on it:
 
 ```bash
 git clone https://github.com/xkef/dotfiles.git ~/dotfiles
@@ -23,6 +36,20 @@ default shell.
 > chezmoi renders `~/.config/git/config.work` from `op://Work/git/*` so
 > commits inside `~/work/` use the work identity. Personal machines answer
 > no once and the file is never created.
+
+## Try it in a container
+
+The full setup in a disposable Arch container — the same path CI exercises
+on every push, and nothing touches your machine. AUR builds take a few
+minutes; GUI packages are skipped automatically inside containers.
+
+```bash
+docker run -it --rm archlinux:latest bash -c '
+  pacman -Syu --noconfirm sudo git base-devel chezmoi &&
+  useradd -m try && echo "try ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/try &&
+  sudo -u try env HOME=/home/try chezmoi init --apply xkef/dotfiles &&
+  sudo -u try env HOME=/home/try fish'
+```
 
 ## What's included
 
@@ -156,6 +183,20 @@ default ANSI color scheme. No per-theme config needed for either.
 | SSH           | `~/.ssh/conf.d/*.conf`                |
 
 AI tooling details live in [docs/ai.md](docs/ai.md).
+
+## Make it yours
+
+Forking? The personal identity lives in four places:
+
+- `home/dot_config/git/config.tmpl` — name/email render from
+  `op://Personal/git/*` when the 1Password CLI is present; edit the
+  fallback values (or your own `op` item) to replace them.
+- `home/dot_config/git/config.tmpl` `[user] signingkey` and
+  `home/dot_config/git/allowed_signers` — the commit-signing SSH key.
+- `home/private_dot_ssh/github_xkef.pub` — the GitHub SSH public key.
+- `README.md` — the install one-liners reference `xkef/dotfiles`.
+
+Everything else is identity-free.
 
 ---
 
