@@ -170,7 +170,9 @@ else
 </dict>
 </plist>
 PLIST
-  hidutil property --set '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x700000029}]}' >/dev/null
+  # hidutil needs real HID access; tolerate failure on headless CI runners.
+  hidutil property --set '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x700000029}]}' >/dev/null ||
+    [[ "${CI:-}" == true ]]
 fi
 
 # ── Finder ────────────────────────────────────────────
