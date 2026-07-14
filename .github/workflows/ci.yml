@@ -116,8 +116,13 @@ jobs:
             --promptBool "work machine (render 1Password git identity)=false" \
             --apply
       - name: Verify the machine actually works
+        # TMPDIR must share a mount with the checkout: doctor's hardlink
+        # check links from the source dir into TMPDIR, and /tmp is on the
+        # container fs while the workspace is a Docker volume.
         run: |
-          sudo -u builder env HOME=/home/builder sh -c '
+          tmp="$(dirname "$PWD")/tmp"
+          mkdir -p "$tmp" && chown builder: "$tmp"
+          sudo -u builder env HOME=/home/builder TMPDIR="$tmp" sh -c '
             set -e
             chezmoi doctor
             chezmoi verify --exclude scripts
