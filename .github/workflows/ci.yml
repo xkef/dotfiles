@@ -84,6 +84,7 @@ jobs:
             --apply
       - name: Verify the machine actually works
         run: |
+          chezmoi doctor
           chezmoi verify --exclude scripts
           fish -c 'echo fish boots'
           fish -n ~/.config/fish/config.fish
@@ -118,6 +119,7 @@ jobs:
         run: |
           sudo -u builder env HOME=/home/builder sh -c '
             set -e
+            chezmoi doctor
             chezmoi verify --exclude scripts
             fish -c "echo fish boots"
             fish -n ~/.config/fish/config.fish
