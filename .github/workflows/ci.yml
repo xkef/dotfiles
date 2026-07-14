@@ -2,8 +2,11 @@ name: CI
 
 # lint: the portable subset of `make lint` (the Neovim check needs installed
 # plugins and stays local-only). check: `make check` applies the whole
-# chezmoi source tree into a throwaway HOME on Linux and macOS and asserts
-# the result.
+# chezmoi source tree into a throwaway HOME and asserts the result — fast
+# signal on every push. e2e-macos / e2e-arch: the real thing — chezmoi init
+# --apply WITH run scripts, so packages install, macos-defaults applies, and
+# the resulting shell actually starts. Casks and Arch GUI packages are
+# skipped under CI (see the package script templates).
 on:
   pull_request:
   push:
@@ -62,3 +65,59 @@ jobs:
           cache: true
       - name: Apply into throwaway HOME
         run: make check
+
+  e2e-macos:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Install chezmoi
+        run: brew install chezmoi
+      - name: Full setup (files + run scripts)
+        run: |
+          chezmoi init --source "$PWD" \
+            --promptBool "work machine (render 1Password git identity)=false" \
+            --apply
+      - name: Verify the machine actually works
+        run: |
+          chezmoi verify --exclude scripts
+          fish -c 'echo fish boots'
+          fish -n ~/.config/fish/config.fish
+          tmux -L ci -f ~/.config/tmux/tmux.conf start-server \; kill-server
+          ~/.local/bin/theme --current
+          ~/.local/bin/dots-keys --raw | head -3
+          mise ls
+
+  e2e-arch:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    timeout-minutes: 60
+    steps:
+      - name: Bootstrap container (sudo + builder user)
+        run: |
+          pacman -Syu --noconfirm sudo git base-devel chezmoi
+          useradd -m builder
+          echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Full setup as builder (real pacman + paru/AUR)
+        run: |
+          chown -R builder: "$PWD"
+          sudo -u builder env HOME=/home/builder CI=true chezmoi init \
+            --source "$PWD" \
+            --promptBool "work machine (render 1Password git identity)=false" \
+            --apply
+      - name: Verify the machine actually works
+        run: |
+          sudo -u builder env HOME=/home/builder sh -c '
+            set -e
+            chezmoi verify --exclude scripts
+            fish -c "echo fish boots"
+            fish -n ~/.config/fish/config.fish
+            tmux -L ci -f ~/.config/tmux/tmux.conf start-server \; kill-server
+            ~/.local/bin/theme --current
+            ~/.local/bin/dots-keys --raw | head -3
+          '
