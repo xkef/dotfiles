@@ -24,6 +24,7 @@ shell/.config/fish/fish_variables
 /cli/.config/television/cable/
 
 # Build artifacts
+/.rumdl_cache/
 __pycache__/
 *.tmTheme
 /nvim.log
