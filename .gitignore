@@ -12,22 +12,7 @@ Thumbs.db
 /.claude/
 /.claude-notes/
 
-# Local overrides (not tracked)
-shell/.config/fish/local.fish
-shell/.config/fish/fish_variables
-/terminal/.config/ghostty/theme
-/vcs/.config/git/config.local
-/vcs/.config/git/config.work
-/vcs/.config/git/allowed_signers.work
-/vcs/.config/git/delta.gitconfig
-/vcs/.config/jj/repos/*
-/cli/.config/television/cable/
-
 # Build artifacts
 /.rumdl_cache/
-__pycache__/
-*.tmTheme
 /nvim.log
 /.nvimlog
-/vm/.local/share/vm/known_hosts
-/vm/.local/share/vm/*.log
