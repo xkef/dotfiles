@@ -1,4 +1,4 @@
-TRACKED_FILES := $(shell git ls-files)
+TRACKED_FILES := $(wildcard $(shell git ls-files))
 TRACKED_TEXT_FILES := $(filter-out %.png %.jpg %.jpeg %.gif %.webp,$(TRACKED_FILES))
 SHELL_FILES := $(shell awk 'FNR == 1 && /^\#!.*(env[[:space:]]+bash|\/bash|\/sh)([[:space:]]|$$)/ { print FILENAME }' $(TRACKED_TEXT_FILES) 2>/dev/null)
 FISH_FILES := $(filter %.fish,$(TRACKED_FILES))

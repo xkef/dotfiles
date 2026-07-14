@@ -14,9 +14,9 @@ chezmoi init --source ~/dotfiles --apply
 ```
 
 `chezmoi init` asks one question (work machine or not), installs packages
-using the native format (`Brewfile` on macOS, `pkgs.arch` on Arch), writes
-every config into `$HOME`, installs mise tools, and sets fish as the default
-shell.
+with the native package manager (Homebrew on macOS, pacman/paru on Arch),
+writes every config into `$HOME`, installs mise tools, and sets fish as the
+default shell.
 
 > **Work laptop:** answer yes to the work prompt and sign in to the
 > 1Password CLI (`op signin`, or enable the desktop-app integration).
@@ -43,8 +43,10 @@ shell.
 
 - Source state lives under [`home/`](home) (`.chezmoiroot`); the repo root
   holds only metadata (package manifests, Makefile, docs, CI).
-- Package install is a `run_onchange` hook: `brew bundle` / `paru` re-run
-  exactly when `Brewfile` / `pkgs.arch` change, keyed by content hash.
+- Every package on both OSes is declared once in
+  [`home/.chezmoidata/packages.toml`](home/.chezmoidata/packages.toml);
+  `run_onchange` hooks template over it and re-run `brew bundle` / `paru`
+  exactly when the declaration changes.
 - [`macos-defaults`](home/dot_local/bin/executable_macos-defaults) applies
   curated macOS settings with `--dry-run` and timestamped TSV backups for
   `--restore`; a hook runs it when its content changes.

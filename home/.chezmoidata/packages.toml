@@ -1,0 +1,139 @@
+# Single source of truth for packages on both OSes.
+# Consumed by home/.chezmoiscripts/run_onchange_before_10-packages-*.sh.tmpl:
+# editing this file changes the rendered script, which re-runs on next apply.
+
+[packages.darwin]
+taps = []
+brews = [
+  "git",                 # version control
+  "curl",                # URL data transfer
+  "less",                # pager (used as $PAGER)
+  "gh",                  # GitHub from the command line
+  "jq",                  # JSON processor
+  "age",                 # simple file encryption
+  "terminal-notifier",   # macOS notifications from scripts
+  "xz",                  # xz compression for VM image archives
+  "fish",                # shell
+  "starship",            # cross-shell prompt
+  "atuin",               # shell history search/sync
+  "fzf",                 # fuzzy finder
+  "television",          # channel-oriented fuzzy finder
+  "zoxide",              # smarter cd with frecency
+  "helix",               # modal text editor (Rust)
+  "neovim",              # text editor
+  "tree-sitter-cli",     # parser generator CLI (nvim-treesitter build)
+  "tmux",                # terminal multiplexer
+  "sesh",                # smart tmux session manager
+  "presenterm",          # markdown-driven terminal slides
+  "eza",                 # modern ls replacement
+  "bat",                 # cat with syntax highlighting
+  "fd",                  # modern find replacement
+  "ripgrep",             # fast recursive grep
+  "xh",                  # fast HTTP client (HTTPie-compatible)
+  "hurl",                # HTTP request testing with plain text files
+  "sd",                  # intuitive find-and-replace (sed alt)
+  "dust",                # disk usage viewer (du alt)
+  "duf",                 # disk free viewer (df alt)
+  "procs",               # modern ps replacement
+  "trash",               # move files to trash instead of rm
+  "ouch",                # compress/decompress archives
+  "delta",               # syntax-highlighting diff pager
+  "difftastic",          # structural diff tool
+  "lazygit",             # terminal UI for git
+  "jj",                  # Jujutsu version control
+  "jjui",                # terminal UI for jj
+  "onefetch",            # git repo summary in terminal
+  "mise",                # dev tool version manager
+  "jdtls",               # Java language server
+  "nono",                # capability-based sandbox for AI agents
+  "ccusage",             # Claude Code usage analyzer
+  "devcontainer",        # dev container CLI
+  "podman",              # rootless container engine
+  "lazydocker",          # terminal UI for Docker/Podman
+  "fx",                  # terminal JSON viewer
+  "scooter",             # interactive find-and-replace TUI
+  "qemu",                # qemu-img for Tart disk conversion/resizing
+  "cdrtools",            # mkisofs for cloud-init cidata images
+  "cirruslabs/cli/tart", # Tart VM manager
+  "yazi",                # terminal file manager
+  "glow",                # terminal markdown renderer
+  "tokei",               # code statistics by language
+  "tealdeer",            # fast tldr client
+  "htop",                # interactive process viewer
+  "hyperfine",           # command-line benchmarking
+  "bandwhich",           # per-process bandwidth monitor
+  "xdg-ninja",           # audit XDG base-dir compliance
+]
+casks = [
+  "ghostty",                       # GPU-accelerated terminal
+  "zed",                           # GPU-accelerated code editor
+  "1password",                     # password manager
+  "1password-cli",                 # 1Password CLI (op)
+  "dockdoor",                      # Dock previews and window switcher
+  "handy",                         # offline speech-to-text app
+  "hiddenbar",                     # hide menu bar icons
+  "rectangle",                     # window snapping via keyboard
+  "font-jetbrains-mono-nerd-font", # patched dev font with icons
+]
+
+[packages.arch]
+main = [
+  "git",             # version control
+  "curl",            # URL data transfer
+  "less",            # pager (used as $PAGER)
+  "github-cli",      # GitHub from the command line
+  "jq",              # JSON processor
+  "age",             # simple file encryption
+  "fish",            # shell
+  "starship",        # cross-shell prompt
+  "atuin",           # shell history search/sync
+  "fzf",             # fuzzy finder
+  "television",      # channel-oriented fuzzy finder
+  "zoxide",          # smarter cd with frecency
+  "helix",           # modal text editor (Rust)
+  "neovim",          # text editor
+  "tree-sitter-cli", # parser generator CLI (nvim-treesitter build)
+  "tmux",            # terminal multiplexer
+  # sesh is intentionally omitted: no Arch ARM package is available.
+  "presenterm", # markdown-driven terminal slides
+  "eza",        # modern ls replacement
+  "bat",        # cat with syntax highlighting
+  "fd",         # modern find replacement
+  "ripgrep",    # fast recursive grep
+  "xh",         # fast HTTP client (HTTPie-compatible)
+  "hurl",       # HTTP request testing with plain text files
+  "sd",         # intuitive find-and-replace (sed alt)
+  "dust",       # disk usage viewer (du alt)
+  "duf",        # disk free viewer (df alt)
+  "procs",      # modern ps replacement
+  "trash-cli",  # move files to trash instead of rm
+  "ouch",       # compress/decompress archives
+  "git-delta",  # syntax-highlighting diff pager
+  "difftastic", # structural diff tool
+  "lazygit",    # terminal UI for git
+  "jujutsu",    # Jujutsu version control
+  "jjui",       # terminal UI for jj
+  "mise",       # dev tool version manager
+  "podman",     # rootless container engine
+  "lazydocker", # terminal UI for Docker/Podman
+  "fx",         # terminal JSON viewer
+  "bubblewrap", # unprivileged sandboxing
+  "nono",       # capability-based sandbox
+  "ccusage",    # Claude Code usage analyzer (AUR)
+  "yazi",       # terminal file manager
+  "glow",       # terminal markdown renderer
+  "tokei",      # code statistics by language
+  "tealdeer",   # fast tldr client
+  "htop",       # interactive process viewer
+  "hyperfine",  # command-line benchmarking
+  "bandwhich",  # per-process bandwidth monitor
+  "xdg-ninja",  # audit XDG base-dir compliance
+]
+gui = [
+  "xclip",         # X11 clipboard utility
+  "wl-clipboard",  # Wayland clipboard utility
+  "ghostty",       # GPU-accelerated terminal
+  "1password",     # password manager
+  "1password-cli", # 1Password CLI (op)
+  "handy",         # offline speech-to-text app
+]
