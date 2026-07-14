@@ -1,57 +1,47 @@
 # AI tooling
 
-The AI agent suite is split into two stow packages so each concern can be
-adopted on its own:
+The AI agent suite has two concerns, both managed by chezmoi from
+`home/`:
 
-| Package      | Owns                                                   | Depends on        |
-| ------------ | ------------------------------------------------------ | ----------------- |
-| `ai-base`    | agent rules, local skills, the `claude`/`pi` launchers | —                 |
-| `ai-sandbox` | nono Seatbelt/Landlock profiles and the `sb` wrapper   | `ai-base`, `nono` |
+| Concern    | Owns                                                   | Depends on |
+| ---------- | ------------------------------------------------------ | ---------- |
+| agent base | agent rules, local skills, the `claude`/`pi` launchers | —          |
+| sandbox    | nono Seatbelt/Landlock profiles and the `sb` wrapper   | `nono`     |
 
-All three stow to `$HOME` with the rest of the full profile via `./install`,
-`make stow`, and `dots update`. Stow just one to take that concern alone
-(e.g. `stow ai-sandbox` for only the nono profiles + `sb`).
+Everything lands in `$HOME` via `chezmoi apply`.
 
-## ai-base — rules, skills, launchers
+## Agent base — rules, skills, launchers
 
-| Path                                          | Purpose                                      |
-| --------------------------------------------- | -------------------------------------------- |
-| `.claude/`                                    | Claude Code agents, settings, skills symlink |
-| `.pi/agent/`                                  | pi agent rules + settings example            |
-| `.config/ai-shared/AGENTS.base.md`            | base rules shared by every agent             |
-| `.config/ai-shared/overlays/<tool>.append.md` | per-tool additions appended to the base      |
-| `.config/fish/functions/{claude,pi}.fish`     | agent launchers                              |
-| `.config/fish/functions/_ai_run_pinned.fish`  | shared tmux window pinning for launchers     |
-| `.local/bin/ai-agents-render`                 | renders the per-tool rule files              |
-| `.local/bin/dots-skills`                      | skills pipeline (install/refresh)            |
+| Path (target)                                  | Purpose                                      |
+| ---------------------------------------------- | -------------------------------------------- |
+| `~/.claude/`                                   | Claude Code agents, settings, skills symlink |
+| `~/.pi/agent/`                                 | pi agent rules + settings example            |
+| `~/.config/fish/functions/{claude,pi}.fish`    | agent launchers                              |
+| `~/.config/fish/functions/_ai_run_pinned.fish` | shared tmux window pinning for launchers     |
+| `~/.local/bin/dots-skills`                     | skills pipeline (install/refresh)            |
 
 ### Editing agent rules
 
 Rules common to every agent (sandbox, `rg` > `grep`, `gh` > `curl`, be
-concise) live in `ai-base/.config/ai-shared/AGENTS.base.md`. Tool-specific
-guidance lives in `ai-base/.config/ai-shared/overlays/<tool>.append.md`.
+concise) live in `home/.chezmoitemplates/agents-base.md`. Tool-specific
+additions live inline in the per-tool templates:
 
-Regenerate the per-tool files:
+- `home/dot_claude/CLAUDE.md.tmpl` → `~/.claude/CLAUDE.md`
+- `home/dot_pi/agent/AGENTS.md.tmpl` → `~/.pi/agent/AGENTS.md`
 
-```sh
-make ai-render
-```
-
-`make fmt` invokes it automatically, so drift gets caught.
-
-**Never hand-edit** `ai-base/.claude/CLAUDE.md` or
-`ai-base/.pi/agent/AGENTS.md` — they carry a `<!-- Generated -->` header and
-are overwritten on the next render.
+Edit the template, then `chezmoi apply`. **Never hand-edit** the rendered
+files in `$HOME` — they carry a `<!-- Generated -->` header and are
+overwritten on the next apply.
 
 pi `settings.json` is a local runtime file (machine paths, trust decisions,
-changelog state), so it is ignored. Use the adjacent `*.example.*` files as
-portable starting points.
+changelog state), so it is not managed. Use the adjacent `*.example.*` files
+as portable starting points.
 
-## ai-sandbox — nono profiles + `sb`
+## Sandbox — nono profiles + `sb`
 
 `sb` launches a supported agent inside a [nono](https://nono.sh) sandbox
 (Seatbelt on macOS, Landlock on Linux) using a matching profile under
-`.config/nono/profiles/`:
+`~/.config/nono/profiles/`:
 
 ```sh
 sb claude
@@ -71,22 +61,23 @@ claude` would fail with `sandbox_apply: Operation not permitted`. Plain
 | Claude Code | Long-running refactors; skills/agents ecosystem; best reasoning |
 | pi          | lightweight coding agent                                        |
 
-Both share the nono profiles under `~/.config/nono/` when `ai-sandbox` is
-stowed.
+Both share the nono profiles under `~/.config/nono/`.
 
 ## Skills
 
-Local skills are tracked once under `ai-base/.agents/skills/`:
+Local skills are tracked once under `home/dot_agents/skills/` and applied to
+`~/.agents/skills/`:
 
 - `commit/` — git/jj commit creation
 - `create-gh-pr/` — opening pull requests
 - `jj/` — Jujutsu usage
 - `research-repo/` — `gh`-based GitHub investigation
 - `html-summary/` — single-file HTML summaries with diagrams
+- `explain-diff/`, `quiz-diff/`, `microworld/` — diff comprehension tools
 
-Claude sees them through the `ai-base/.claude/skills` symlink; pi loads
-`~/.agents/skills` directly via the Agent Skills standard. After adding a
-shared skill, run `make restow` so `~/.agents/` exists on the host.
+Claude sees them through the `~/.claude/skills` symlink (managed by
+chezmoi); pi loads `~/.agents/skills` directly via the Agent Skills
+standard.
 
 Everything else is pulled from upstream on first launch:
 
@@ -98,13 +89,13 @@ Everything else is pulled from upstream on first launch:
 The launchers call `dots-skills ensure <agent>`. `dots-skills` owns the
 upstream source list and the install sentinel: it installs upstream skills
 into `~/.agents/skills` once, then writes the sentinel so later launches skip
-it. Generated/upstream skills under `~/.agents/skills/` are git-ignored and
-never committed.
+it. Upstream skills never touch the repo — chezmoi only manages the tracked
+ones.
 
 To force a refresh from upstream:
 
 ```sh
-dots skills          # requires the ai-base package
+dots-skills refresh
 # or, equivalently:
 rm ~/.cache/dotfiles/skills.shared.*.installed   # next launch reinstalls
 ```
