@@ -1,14 +1,9 @@
 # Markdown linter config (migrated from .markdownlint-cli2.yaml).
-# rumdl respects .gitignore, so node_modules and untracked generated files are
-# skipped automatically. The excludes below cover tracked-but-generated files
-# rendered by `make ai-render`.
+# rumdl respects .gitignore, so untracked generated files are skipped
+# automatically.
 
 [global]
 disable = ["MD025", "MD036", "MD041"]
-exclude = [
-  "ai-base/.claude/CLAUDE.md",
-  "ai-base/.pi/agent/AGENTS.md",
-]
 
 [MD013]
 tables = false

@@ -6,7 +6,7 @@ TRACKED_TEXT_FILES := $(filter-out %.png %.jpg %.jpeg %.gif %.webp,$(TRACKED_FIL
 SHELL_FILES := $(shell awk 'FNR == 1 && /^\#!.*(env[[:space:]]+bash|\/bash|\/sh)([[:space:]]|$$)/ { print FILENAME }' $(TRACKED_TEXT_FILES) 2>/dev/null)
 FISH_FILES := $(filter %.fish,$(TRACKED_FILES)) $(shell awk 'FNR == 1 && /^\#!.*(env[[:space:]]+fish|\/fish)([[:space:]]|$$)/ { print FILENAME }' $(TRACKED_TEXT_FILES) 2>/dev/null)
 
-.PHONY: help install update doctor test stow unstow restow stow-smoke fmt lint tools macos-defaults ai-render uninstall clean
+.PHONY: help install update doctor test stow unstow restow stow-smoke fmt lint tools macos-defaults uninstall clean
 
 help: ## Show this help
 	@rg -N '^[a-z][a-z_-]+:.*## ' $(MAKEFILE_LIST) | \
@@ -64,7 +64,7 @@ stow-smoke: ## Stow all packages into a temporary HOME
 tools: ## Install mise tools (languages + formatters)
 	mise install
 
-fmt: ai-render ## Format all dotfiles
+fmt: ## Format all dotfiles
 	stylua nvim/.config/lazyvim/ nvim/.config/kickstart/ theme/.config/lazyvim/ vcs/.config/lazyvim/
 	shfmt -w $(SHELL_FILES)
 	fish_indent -w $(FISH_FILES)
@@ -84,9 +84,6 @@ lint: ## Lint shell scripts, neovim config, and markdown
 
 macos-defaults: ## Apply macOS system defaults
 	./macos-defaults
-
-ai-render: ## Regenerate per-tool AGENTS files from ai-shared/
-	@DOTS_DIR=$(DOTFILES_DIR) ai-base/.local/bin/ai-agents-render
 
 uninstall: unstow ## Remove all symlinks from ~ (alias for unstow)
 
