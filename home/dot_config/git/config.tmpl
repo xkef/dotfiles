@@ -3,8 +3,13 @@
 # Personal overrides: ~/.config/git/config.local
 
 [user]
+{{- if lookPath "op" }}
+	name = {{ onepasswordRead "op://Personal/git/name" }}
+	email = {{ onepasswordRead "op://Personal/git/email" }}
+{{- else }}
 	name = xkef
 	email = git@xkef.dev
+{{- end }}
 	signingkey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFXPTYbJpNsexhTZ+x8Ci8tVkGV/d0MvWqFrlyT3yTki
 
 [init]
