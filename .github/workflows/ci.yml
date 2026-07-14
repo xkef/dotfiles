@@ -87,7 +87,7 @@ jobs:
           fish -n ~/.config/fish/config.fish
           tmux -L ci -f ~/.config/tmux/tmux.conf start-server \; kill-server
           ~/.local/bin/theme --current
-          ~/.local/bin/dots-keys --raw | head -3
+          ~/.local/bin/dots-keys --raw | tail -3
           mise ls
 
   e2e-arch:
@@ -119,5 +119,5 @@ jobs:
             fish -n ~/.config/fish/config.fish
             tmux -L ci -f ~/.config/tmux/tmux.conf start-server \; kill-server
             ~/.local/bin/theme --current
-            ~/.local/bin/dots-keys --raw | head -3
+            ~/.local/bin/dots-keys --raw | tail -3
           '
