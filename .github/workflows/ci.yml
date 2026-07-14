@@ -76,6 +76,8 @@ jobs:
       - name: Install chezmoi
         run: brew install chezmoi
       - name: Full setup (files + run scripts)
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # mise version lookups rate-limit without it
         run: |
           chezmoi init --source "$PWD" \
             --promptBool "work machine (render 1Password git identity)=false" \
@@ -104,9 +106,11 @@ jobs:
         with:
           persist-credentials: false
       - name: Full setup as builder (real pacman + paru/AUR)
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # mise version lookups rate-limit without it
         run: |
           chown -R builder: "$PWD"
-          sudo -u builder env HOME=/home/builder CI=true chezmoi init \
+          sudo -u builder env HOME=/home/builder CI=true GITHUB_TOKEN="$GITHUB_TOKEN" chezmoi init \
             --source "$PWD" \
             --promptBool "work machine (render 1Password git identity)=false" \
             --apply
