@@ -34,7 +34,7 @@
     ],
     "defaultMode": "dontAsk"
   },
-  "model": "opus",
+  "model": "fable",
   "hooks": {
     "Notification": [
       {
@@ -113,10 +113,12 @@
     ]
   },
   "alwaysThinkingEnabled": true,
+  "effortLevel": "high",
   "autoUpdatesChannel": "latest",
   "plansDirectory": ".claude-notes",
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
   "verbose": false,
   "preferredNotifChannel": "ghostty",
   "autoCompactEnabled": false,
