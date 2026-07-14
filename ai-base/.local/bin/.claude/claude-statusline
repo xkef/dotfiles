@@ -23,7 +23,7 @@ eval "$(echo "$input" | jq -r '
   @sh "RL7_RESET=\(.rate_limits.seven_day.resets_at // 0 | floor)"
 ')"
 
-CYAN='\033[36m'; YELLOW='\033[33m'; RED='\033[31m'; GREEN='\033[32m'; DIM='\033[2m'; RESET='\033[0m'
+YELLOW='\033[33m'; RED='\033[31m'; GREEN='\033[32m'; DIM='\033[2m'; RESET='\033[0m'
 NOW=$(date +%s)
 
 pct_color() {  # low=green, high=red — high quota use and high ctx both read as "hot"
