@@ -17,23 +17,35 @@ if [[ "${CI:-}" != true ]] && ! systemd-detect-virt -q 2>/dev/null; then
   )
 fi
 
+# Returns 0 only if paru exists AND runs (paru-bin can break against a
+# newer libalpm than the prebuilt release was linked with).
+paru_works() {
+  command -v paru >/dev/null && paru --version >/dev/null 2>&1
+}
+
 ensure_paru() {
-  command -v paru >/dev/null && return 0
+  paru_works && return 0
   local tmpdir
   tmpdir="$(mktemp -d)"
   sudo pacman -S --needed --noconfirm base-devel
   git clone https://aur.archlinux.org/paru-bin.git "$tmpdir/paru-bin"
   (cd "$tmpdir/paru-bin" && makepkg -si --noconfirm)
-  local rc=$?
   rm -rf "$tmpdir"
-  return $rc
+  paru_works
 }
 
 sudo -v
-sudo pacman -Sy --noconfirm
-ensure_paru
-paru_flags=(--needed --noconfirm)
-systemd-detect-virt -q 2>/dev/null && paru_flags+=(--mflags="-A")
-paru -S "${paru_flags[@]}" "${packages[@]}"
+sudo pacman -Syu --noconfirm
+if ensure_paru; then
+  paru_flags=(--needed --noconfirm)
+  systemd-detect-virt -q 2>/dev/null && paru_flags+=(--mflags="-A")
+  paru -S "${paru_flags[@]}" "${packages[@]}"
+else
+  echo "warning: paru unusable; installing repo packages via pacman, AUR skipped" >&2
+  for pkg in "${packages[@]}"; do
+    sudo pacman -S --needed --noconfirm "$pkg" ||
+      echo "warning: $pkg not in official repos (AUR?) — skipped" >&2
+  done
+fi
 {{ end -}}
 {{ end -}}

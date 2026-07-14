@@ -3,7 +3,9 @@
 # editing this file changes the rendered script, which re-runs on next apply.
 
 [packages.darwin]
-taps = []
+taps = [
+  "cirruslabs/cli", # tart
+]
 brews = [
   "git",                 # version control
   "curl",                # URL data transfer
