@@ -39,6 +39,29 @@ default shell.
 | [jj (Jujutsu)](https://github.com/jj-vcs/jj)                     | Git-compatible VCS with simpler mental model            |
 | eza, bat, fd, ripgrep, zoxide, yazi, mise                        | Modern CLI defaults and workflow tools                  |
 
+## Repo layout
+
+```text
+.
+├── home/                          # chezmoi source state — mirrors $HOME
+│   ├── .chezmoidata/
+│   │   └── packages.toml          #   every package on both OSes, one file
+│   ├── .chezmoiscripts/           #   hooks: packages, defaults, mise, shell
+│   ├── .chezmoitemplates/         #   shared agent-rules template
+│   ├── dot_config/                #   ~/.config — one dir per tool:
+│   │                              #     fish/ tmux/ lazyvim/ ghostty/ git/ …
+│   ├── dot_local/bin/             #   theme, dots-keys, macos-defaults, vm
+│   ├── dot_claude/ + dot_pi/      #   AI agent rules from one template
+│   └── private_dot_ssh/           #   ~/.ssh, 0700/0600 enforced by chezmoi
+├── docs/                          # screenshot + AI tooling docs
+├── Makefile                       # fmt / lint / check
+└── .github/workflows/ci.yml      # lint + apply check + e2e (macOS & Arch)
+```
+
+chezmoi encodes target metadata in source file names: `dot_` becomes a
+leading dot, `executable_` sets +x, `private_` sets 0600, `exact_` removes
+unmanaged files, and `.tmpl` files render as templates at apply time.
+
 ## How it works
 
 - Source state lives under [`home/`](home) (`.chezmoiroot`); the repo root
