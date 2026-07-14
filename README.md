@@ -1,25 +1,28 @@
 # dotfiles
 
+[![CI](https://github.com/xkef/dotfiles/actions/workflows/ci.yml/badge.svg)](https://github.com/xkef/dotfiles/actions/workflows/ci.yml)
+
 ![screenshot](docs/scrot.png)
 
-Managed with [GNU Stow](https://www.gnu.org/software/stow/).
+Managed with [chezmoi](https://www.chezmoi.io).
 Supports macOS and Arch Linux (btw).
 
 ```bash
 git clone https://github.com/xkef/dotfiles.git ~/dotfiles
-cd ~/dotfiles && ./install
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin   # or: brew install chezmoi
+chezmoi init --source ~/dotfiles --apply
 ```
 
-The `install` script auto-detects your OS and installs packages using the
-native format (`Brewfile` on macOS, `pkgs.arch` on Arch). Then it symlinks the
-explicit package manifest in `stow-packages` via Stow and sets fish as the
-default shell.
+`chezmoi init` asks one question (work machine or not), installs packages
+using the native format (`Brewfile` on macOS, `pkgs.arch` on Arch), writes
+every config into `$HOME`, installs mise tools, and sets fish as the default
+shell.
 
-> **Work laptop:** sign in to the 1Password CLI (`op signin`, or enable the
-> desktop-app integration) before running `./install`. The installer reads
-> `op://Work/git/{name,email}` and renders `~/.config/git/config.work` so
-> commits inside `~/work/` use the work identity automatically. On personal
-> machines without that vault item, the step is a silent no-op.
+> **Work laptop:** answer yes to the work prompt and sign in to the
+> 1Password CLI (`op signin`, or enable the desktop-app integration).
+> chezmoi renders `~/.config/git/config.work` from `op://Work/git/*` so
+> commits inside `~/work/` use the work identity. Personal machines answer
+> no once and the file is never created.
 
 ## What's included
 
@@ -36,44 +39,49 @@ default shell.
 | [jj (Jujutsu)](https://github.com/jj-vcs/jj)                     | Git-compatible VCS with simpler mental model            |
 | eza, bat, fd, ripgrep, zoxide, yazi, mise                        | Modern CLI defaults and workflow tools                  |
 
-## Stow packages
+## How it works
 
-The default profile is the ordered manifest in `stow-packages`:
+- Source state lives under [`home/`](home) (`.chezmoiroot`); the repo root
+  holds only metadata (package manifests, Makefile, docs, CI).
+- Package install is a `run_onchange` hook: `brew bundle` / `paru` re-run
+  exactly when `Brewfile` / `pkgs.arch` change, keyed by content hash.
+- [`macos-defaults`](home/dot_local/bin/executable_macos-defaults) applies
+  curated macOS settings with `--dry-run` and timestamped TSV backups for
+  `--restore`; a hook runs it when its content changes.
+- The work git identity is a template gated on the one-time `work` prompt
+  and `op` being installed — `onepasswordRead` fills it at apply time; no
+  secrets in the repo.
+- Agent rule files (`~/.claude/CLAUDE.md`, `~/.pi/agent/AGENTS.md`) render
+  from one shared template plus per-tool additions
+  ([details](docs/ai.md)).
+- `exact_` directories (fish `conf.d`, tmux `conf.d`, `theme.d`) remove
+  files the repo no longer manages, so stale fragments cannot survive.
+- CI applies the whole tree into a throwaway `$HOME` on Linux and macOS
+  (`make check`) and lints shell, fish, and markdown.
 
-```text
-dots shell cli theme terminal tmux nvim vcs ai ssh mise yazi helix vm zed
-```
-
-Top-level repo assets (`README.md`, `docs/`, `Brewfile`, `pkgs.arch`,
-`mise.toml`, etc.) are not stowed by construction. Package-local adapters live
-with their owner and extend shared target seams such as fish `conf.d`, tmux
-`conf.d`, LazyVim `lua/plugins`, and `~/.local/bin`.
-
-See [docs/stow-packages.md](docs/stow-packages.md) for the ownership rules,
-shared seams, and migration notes.
-
-## Maintenance
-
-```sh
-make install        # Full install (packages + stow + tools)
-make update         # Pull, re-stow, update plugins and tools
-make doctor         # Check dotfiles health (binaries, symlinks, configs)
-make restow         # Re-stow (fixes stale symlinks)
-make stow-smoke     # Stow all packages into a temporary HOME
-```
-
-Or use the `dots` command directly:
+## Daily workflow
 
 ```sh
-dots doctor         # Check health
-dots update         # Update everything
-dots versions       # Show tool versions
-dots keys           # Keybinding reference
-dots theme --list   # Available themes
-dots skills         # Refresh shared AI skills (requires ai package)
+chezmoi diff          # what would change
+chezmoi apply         # write configs to $HOME
+chezmoi update        # pull + apply
+chezmoi edit --apply ~/.config/fish/config.fish   # edit via source
 ```
 
-AI tooling details live in [docs/ai.md](docs/ai.md).
+Or edit files under `home/` in the repo and `chezmoi apply`. After Neovim
+plugin updates, harvest the lockfiles back into the repo:
+
+```sh
+chezmoi re-add ~/.config/lazyvim/lazy-lock.json ~/.config/kickstart/lazy-lock.json
+```
+
+Repo maintenance:
+
+```sh
+make fmt         # format everything (stylua, shfmt, fish_indent, dprint, taplo)
+make lint        # shellcheck, fish syntax, markdown, headless LazyVim
+make check       # apply the tree into a throwaway HOME and assert results
+```
 
 ---
 
@@ -97,14 +105,14 @@ Same physical key. Ctrl is the only difference.
 
 ## Themes
 
-`dots theme <name>` switches Ghostty, LazyVim, tmux, and delta together in one
+`theme <name>` switches Ghostty, LazyVim, tmux, and delta together in one
 shot. `--list` shows Ghostty themes that have a matching LazyVim colorscheme
 plugin installed.
 
 ```sh
-dots theme --list             # available themes (current marked with *)
-dots theme "Catppuccin Mocha" # switch
-dots theme auto               # match macOS / GNOME light/dark
+theme --list             # available themes (current marked with *)
+theme "Catppuccin Mocha" # switch
+theme auto               # match macOS / GNOME light/dark
 ```
 
 bat rides the terminal palette via `BAT_THEME=ansi`; eza inherits it from the
@@ -121,6 +129,8 @@ default ANSI color scheme. No per-theme config needed for either.
 | Neovim        | `~/.config/lazyvim/lua/plugins/*.lua` |
 | tmux          | `~/.config/tmux/local.conf`           |
 | SSH           | `~/.ssh/conf.d/*.conf`                |
+
+AI tooling details live in [docs/ai.md](docs/ai.md).
 
 ---
 
