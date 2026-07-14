@@ -1,0 +1,6 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+set -euo pipefail
+# macos-defaults hash: {{ include "dot_local/bin/executable_macos-defaults" | sha256sum }}
+"$HOME/.local/bin/macos-defaults"
+{{ end -}}
