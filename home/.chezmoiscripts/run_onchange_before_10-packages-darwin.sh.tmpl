@@ -1,12 +1,23 @@
 {{ if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
 set -euo pipefail
-# Brewfile hash: {{ include (joinPath .chezmoi.workingTree "Brewfile") | sha256sum }}
 if ! command -v brew >/dev/null; then
   NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew; do
     [[ -x "$brew_bin" ]] && eval "$("$brew_bin" shellenv)" && break
   done
 fi
-brew bundle --file={{ joinPath .chezmoi.workingTree "Brewfile" | quote }}
+brew bundle --file=- <<'BREWFILE'
+{{ range .packages.darwin.taps -}}
+tap "{{ . }}"
+{{ end -}}
+{{ range .packages.darwin.brews -}}
+brew "{{ . }}"
+{{ end -}}
+{{ if not (env "CI") -}}
+{{ range .packages.darwin.casks -}}
+cask "{{ . }}"
+{{ end -}}
+{{ end -}}
+BREWFILE
 {{ end -}}

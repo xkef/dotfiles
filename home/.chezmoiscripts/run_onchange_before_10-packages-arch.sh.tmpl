@@ -2,12 +2,20 @@
 {{ if eq .chezmoi.osRelease.id "arch" -}}
 #!/bin/bash
 set -euo pipefail
-# pkgs.arch hash: {{ include (joinPath .chezmoi.workingTree "pkgs.arch") | sha256sum }}
-# pkgs.arch.gui hash: {{ include (joinPath .chezmoi.workingTree "pkgs.arch.gui") | sha256sum }}
 
-read_pkg_file() {
-  sed 's/#.*//; s/[[:space:]]*$//; /^[[:space:]]*$/d' "$1"
-}
+packages=(
+{{ range .packages.arch.main -}}
+  {{ . | quote }}
+{{ end -}}
+)
+# GUI packages only on bare metal: never in CI, VMs, or containers.
+if [[ "${CI:-}" != true ]] && ! systemd-detect-virt -q 2>/dev/null; then
+  packages+=(
+{{ range .packages.arch.gui -}}
+    {{ . | quote }}
+{{ end -}}
+  )
+fi
 
 ensure_paru() {
   command -v paru >/dev/null && return 0
@@ -23,11 +31,6 @@ ensure_paru() {
 
 sudo -v
 sudo pacman -Sy --noconfirm
-mapfile -t packages < <(read_pkg_file {{ joinPath .chezmoi.workingTree "pkgs.arch" | quote }})
-if ! systemd-detect-virt -q 2>/dev/null; then
-  mapfile -t gui_packages < <(read_pkg_file {{ joinPath .chezmoi.workingTree "pkgs.arch.gui" | quote }})
-  packages+=("${gui_packages[@]}")
-fi
 ensure_paru
 paru_flags=(--needed --noconfirm)
 systemd-detect-virt -q 2>/dev/null && paru_flags+=(--mflags="-A")
