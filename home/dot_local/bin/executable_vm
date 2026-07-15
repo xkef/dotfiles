@@ -4,7 +4,7 @@
 # VMs, distributed as OCI images); this script adds flavor presets, SSH key
 # seeding, virtiofs shares, and dotfiles sync.
 #
-# Requirements: macOS on Apple Silicon, `brew install cirruslabs/cli/tart`.
+# Requirements: macOS on Apple Silicon, `brew install openai/tools/tart`.
 # Optional: `gh` (authenticated ghcr.io pulls), `expect` (macOS-guest first
 # boot only). `vm doctor` checks all of this.
 #
@@ -277,7 +277,7 @@ function _install_tart_guest_agent
     set -l plist_path /Library/LaunchAgents/org.cirruslabs.tart-guest-agent.plist
     printf '%s\n' $plist | ssh $opts $VM_USER@$ip "bash -lc 'sudo tee $plist_path >/dev/null && sudo chown root:wheel $plist_path && sudo chmod 644 $plist_path'"
     or return 1
-    ssh $opts $VM_USER@$ip "bash -lc 'command -v tart-guest-agent >/dev/null 2>&1 || /opt/homebrew/bin/brew install cirruslabs/cli/tart-guest-agent'"
+    ssh $opts $VM_USER@$ip "bash -lc 'command -v tart-guest-agent >/dev/null 2>&1 || /opt/homebrew/bin/brew install openai/tools/tart-guest-agent'"
     or return 1
     ssh $opts $VM_USER@$ip "bash -lc 'launchctl bootstrap gui/\$(id -u) $plist_path 2>/dev/null || launchctl load $plist_path 2>/dev/null || true'"
 end
@@ -568,7 +568,7 @@ function cmd_doctor
     if command -q tart
         echo "  ok  tart "(tart --version)
     else
-        echo "  !!  tart missing — brew install cirruslabs/cli/tart"
+        echo "  !!  tart missing — brew install openai/tools/tart"
         set fail 1
     end
     command -q gh
@@ -677,7 +677,7 @@ end
 
 set -l cmd (test (count $argv) -gt 0; and echo $argv[1]; or echo help)
 if not contains -- $cmd help doctor; and not command -q tart
-    echo "  tart is required: brew install cirruslabs/cli/tart" >&2
+    echo "  tart is required: brew install openai/tools/tart" >&2
     exit 1
 end
 set -l fn_cmd (string replace -a '-' '_' -- $cmd)
