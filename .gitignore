@@ -2,17 +2,9 @@
 .DS_Store
 Thumbs.db
 
-# Editor / IDE
-.idea/
-*.swp
-*.swo
-*~
-
 # AI tooling
 /.claude/
 /.claude-notes/
 
 # Build artifacts
 /.rumdl_cache/
-/nvim.log
-/.nvimlog
