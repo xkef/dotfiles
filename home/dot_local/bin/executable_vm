@@ -31,7 +31,7 @@
 # macOS guests see shares under "/Volumes/My Shared Files" with ~/code
 # symlinked by `vm create`/`vm bootstrap`.
 #
-# State ($VM_DIR, stowed to ~/.local/share/vm):
+# State ($VM_DIR, ~/.local/share/vm):
 #   known_hosts  VM host-key trust. Safe to delete; re-learned on connect.
 #   <vm>.log     Output of the last headless `tart run`; check it when a
 #                start times out.
@@ -41,8 +41,8 @@
 # free disk space (WORK_SIZE) and relocates /opt/homebrew onto it.
 #
 # Forking: the only personal piece is `vm sync`, which rsyncs this dotfiles
-# repo into the guest and runs ./install. Replace its body with your own
-# provisioning (or delete it); everything else is generic.
+# repo into the guest and applies it with chezmoi. Replace its body with your
+# own provisioning (or delete it); everything else is generic.
 
 # ── Flavor & configuration ────────────────────────────
 
@@ -77,8 +77,11 @@ _default VM_WORK_DIR $HOME/work
 _default CPUS 4
 _default MEMORY 8192
 
-set -g DOTFILES_DIR (test -f $HOME/.config/dotfiles/dir; and cat $HOME/.config/dotfiles/dir; or path resolve (status dirname)/../../..)
-set -g VM_DIR $DOTFILES_DIR/vm/.local/share/vm
+if not set -q DOTFILES_DIR
+    set -l src (chezmoi source-path 2>/dev/null)
+    set -g DOTFILES_DIR (test -n "$src"; and path resolve $src/..; or echo $HOME/dotfiles)
+end
+set -g VM_DIR $HOME/.local/share/vm
 mkdir -p $VM_DIR
 
 # ── Helpers ───────────────────────────────────────────
@@ -536,7 +539,9 @@ function cmd_sync
     ssh $opts $VM_USER@$ip 'mkdir -p ~/dotfiles'
     rsync -az --delete \
         $DOTFILES_DIR/ $VM_USER@$ip:~/dotfiles/
-    ssh -tt $opts $VM_USER@$ip 'cd ~/dotfiles && ./install'
+    ssh -tt $opts $VM_USER@$ip "sh -lc '
+        command -v chezmoi >/dev/null 2>&1 || sh -c \"\$(curl -fsLS get.chezmoi.io)\" -- -b ~/.local/bin
+        PATH=\"\$HOME/.local/bin:\$PATH\" chezmoi init --source ~/dotfiles --apply'"
 end
 
 function cmd_status
@@ -644,7 +649,7 @@ Commands:
   start         Start the VM (--graphics, --vnc, --headless)
   stop          Stop the VM
   ssh           SSH in (forwards agent + API keys)
-  sync          Rsync dotfiles and run ./install in guest
+  sync          Rsync dotfiles and chezmoi-apply in guest
   status        Show VM state
   ip            Show VM IP address
   doctor        Check host dependencies and VM state
