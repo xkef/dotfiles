@@ -72,6 +72,7 @@ casks = [
   "1password",                     # password manager
   "1password-cli",                 # 1Password CLI (op)
   "dockdoor",                      # Dock previews and window switcher
+  "firefox@developer-edition",     # Firefox Developer Edition browser
   "handy",                         # offline speech-to-text app
   "hiddenbar",                     # hide menu bar icons
   "rectangle",                     # window snapping via keyboard
@@ -96,7 +97,7 @@ main = [
   "neovim",          # text editor
   "tree-sitter-cli", # parser generator CLI (nvim-treesitter build)
   "tmux",            # terminal multiplexer
-  # sesh is intentionally omitted: no Arch ARM package is available.
+  "sesh-bin", # smart tmux session manager (AUR; ships an aarch64 binary)
   "presenterm", # markdown-driven terminal slides
   "eza",        # modern ls replacement
   "bat",        # cat with syntax highlighting
