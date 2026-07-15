@@ -43,6 +43,7 @@ check: ## Apply the source tree into a throwaway HOME and assert results
 		--exclude scripts --apply || exit 1; \
 	for path in \
 		.local/bin/theme \
+		.local/bin/dots \
 		.local/bin/dots-keys \
 		.local/bin/macos-defaults \
 		.config/theme.d/ghostty.fish \
