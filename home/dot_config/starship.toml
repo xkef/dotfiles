@@ -6,9 +6,7 @@ $character"""
 
 right_format = """
 $directory\
-$git_branch\
-$git_status\
-$git_metrics\
+${custom.git}\
 ${custom.jj_change}\
 ${custom.jj_status}\
 ${custom.java}\
@@ -26,6 +24,15 @@ truncate_to_repo = false
 fish_style_pwd_dir_length = 1
 truncation_symbol = '…/'
 style = 'dimmed cyan'
+
+# In colocated jj repos the jj modules own the prompt; git info (a detached
+# " HEAD", duplicate status counts) is noise. Built-in modules can't be
+# gated on external state, so this wrapper shells back into `starship module`
+# (reusing the [git_*] sections below) and only renders outside jj repos.
+[custom.git]
+command = 'starship module git_branch; starship module git_status; starship module git_metrics'
+when = '! jj --ignore-working-copy root >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1'
+format = '$output'
 
 [git_branch]
 format = '[$symbol$branch]($style) '
