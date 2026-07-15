@@ -164,3 +164,14 @@
 # ── Work identity (rendered by install from 1Password) ─
 [includeIf "gitdir:~/work/"]
 	path = ~/.config/git/config.work
+
+{{- if lookPath "op" }}
+{{- $ghLogin := onepasswordRead "op://Work/git/github_login" }}
+
+# ── Secondary GitHub identity (matched by remote, both URL forms) ─
+[includeIf "hasconfig:remote.*.url:https://github.com/{{ $ghLogin }}/**"]
+	path = ~/.config/git/config.secondary
+
+[includeIf "hasconfig:remote.*.url:git@github.com:{{ $ghLogin }}/**"]
+	path = ~/.config/git/config.secondary
+{{- end }}

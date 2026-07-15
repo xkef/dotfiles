@@ -1,0 +1,7 @@
+# 1Password SSH agent: which vaults' keys are served.
+# Once this file exists, only the listed entries are offered.
+[[ssh-keys]]
+vault = "Personal"
+
+[[ssh-keys]]
+vault = "Work"
