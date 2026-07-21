@@ -1,5 +1,5 @@
 {{ if eq .chezmoi.os "linux" -}}
-{{ if eq .chezmoi.osRelease.id "arch" -}}
+{{ if or (eq .chezmoi.osRelease.id "arch") (eq .chezmoi.osRelease.id "archarm") -}}
 #!/bin/bash
 set -euo pipefail
 
@@ -39,7 +39,15 @@ sudo pacman -Syu --noconfirm
 if ensure_paru; then
   paru_flags=(--needed --noconfirm)
   systemd-detect-virt -q 2>/dev/null && paru_flags+=(--mflags="-A")
-  paru -S "${paru_flags[@]}" "${packages[@]}"
+  # One broken AUR package must not abort the whole apply: retry one by one
+  # and skip the failures with a warning.
+  if ! paru -S "${paru_flags[@]}" "${packages[@]}"; then
+    echo "warning: batch install failed; retrying packages individually" >&2
+    for pkg in "${packages[@]}"; do
+      paru -S "${paru_flags[@]}" "$pkg" ||
+        echo "warning: $pkg failed to install — skipped" >&2
+    done
+  fi
 else
   echo "warning: paru unusable; installing repo packages via pacman, AUR skipped" >&2
   for pkg in "${packages[@]}"; do
