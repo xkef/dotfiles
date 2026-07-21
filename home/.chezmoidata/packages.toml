@@ -121,7 +121,7 @@ main = [
   "lazydocker", # terminal UI for Docker/Podman
   "fx",         # terminal JSON viewer
   "bubblewrap", # unprivileged sandboxing
-  "nono",       # capability-based sandbox
+  "nono-ai",    # capability-based sandbox (AUR; plain "nono" is a puzzle game)
   "ccusage",    # Claude Code usage analyzer (AUR)
   "yazi",       # terminal file manager
   "glow",       # terminal markdown renderer
