@@ -1,4 +1,4 @@
-set -l commands pull create create-linux bootstrap start stop ssh sync status ip doctor destroy clean help
+set -l commands pull create create-linux bootstrap start stop ssh sync status ip doctor images rm destroy clean help
 
 complete -c vm -f
 complete -c vm -s f -l flavor -x -a 'archlinux macos' -d 'VM flavor'
@@ -13,10 +13,13 @@ complete -c vm -n "not __fish_seen_subcommand_from $commands" -a sync -d 'Rsync 
 complete -c vm -n "not __fish_seen_subcommand_from $commands" -a status -d 'Show VM state'
 complete -c vm -n "not __fish_seen_subcommand_from $commands" -a ip -d 'Show VM IP address'
 complete -c vm -n "not __fish_seen_subcommand_from $commands" -a doctor -d 'Check host dependencies and VM state'
+complete -c vm -n "not __fish_seen_subcommand_from $commands" -a images -d 'List local VMs and cached OCI images'
+complete -c vm -n "not __fish_seen_subcommand_from $commands" -a rm -d 'Delete a VM or cached image by name'
 complete -c vm -n "not __fish_seen_subcommand_from $commands" -a destroy -d 'Delete the VM'
 complete -c vm -n "not __fish_seen_subcommand_from $commands" -a clean -d 'Delete all local VMs'
 complete -c vm -n "not __fish_seen_subcommand_from $commands" -a help -d 'Show help'
 complete -c vm -n '__fish_seen_subcommand_from create create-linux' -l force -d 'Destroy existing VM first'
+complete -c vm -n '__fish_seen_subcommand_from rm' -a '(tart list --quiet 2>/dev/null)'
 complete -c vm -n '__fish_seen_subcommand_from start' -l graphics -d 'Boot with graphical display'
 complete -c vm -n '__fish_seen_subcommand_from start' -l vnc -d 'Boot with VNC server'
 complete -c vm -n '__fish_seen_subcommand_from start' -l headless -d 'Boot headless (no display)'
