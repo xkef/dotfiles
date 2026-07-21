@@ -77,7 +77,11 @@ if not set -q SSH_CONNECTION
     end
 end
 
-# ── GitHub token ─────────────────────────────────────
-if test -z "$GITHUB_TOKEN"; and command -q gh
-    set -gx GITHUB_TOKEN (gh auth token 2>/dev/null)
+# ── GitHub token (mise rate limits) ──────────────────
+# Deliberately NOT exported as GITHUB_TOKEN: that would pin gh (and its
+# git credential helper) to one account for the shell's lifetime, breaking
+# `gh auth switch` and per-repo credential.username routing. gh reads the
+# keyring; mise gets its own variable.
+if test -z "$MISE_GITHUB_TOKEN"; and command -q gh
+    set -gx MISE_GITHUB_TOKEN (gh auth token 2>/dev/null)
 end
