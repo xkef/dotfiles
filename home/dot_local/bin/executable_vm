@@ -373,10 +373,10 @@ function cmd_create
     end
 
     rm -f $VM_DIR/known_hosts
-    tart clone $BASE_NAME $VM_NAME; or begin
-        echo "  Base image not found. Run: vm pull" >&2
-        return 1
+    if not _vm_exists $BASE_NAME
+        cmd_pull; or return 1
     end
+    tart clone $BASE_NAME $VM_NAME; or return 1
     _apply_resources $VM_NAME
 
     echo "  Booting for initial setup..."
@@ -539,9 +539,13 @@ function cmd_sync
     ssh $opts $VM_USER@$ip 'mkdir -p ~/dotfiles'
     rsync -az --delete \
         $DOTFILES_DIR/ $VM_USER@$ip:~/dotfiles/
+    # A broken install can leave a zero-byte chezmoi that execs as an empty
+    # script (exit 0, no output), so probe the version output, not the PATH.
     ssh -tt $opts $VM_USER@$ip "sh -lc '
-        command -v chezmoi >/dev/null 2>&1 || sh -c \"\$(curl -fsLS get.chezmoi.io)\" -- -b ~/.local/bin
-        PATH=\"\$HOME/.local/bin:\$PATH\" chezmoi init --source ~/dotfiles --apply'"
+        PATH=\"\$HOME/.local/bin:\$PATH\"
+        chezmoi --version 2>/dev/null | grep -q chezmoi \
+            || sh -c \"\$(curl -fsLS get.chezmoi.io)\" -- -b ~/.local/bin
+        chezmoi init --source ~/dotfiles --apply'"
 end
 
 function cmd_status
@@ -620,6 +624,21 @@ function cmd_destroy
     rm -f $VM_DIR/known_hosts $VM_DIR/$VM_NAME.log
 end
 
+function cmd_images
+    tart list
+end
+
+function cmd_rm
+    if test (count $argv) -eq 0
+        echo "Usage: vm rm <name>..." >&2
+        return 1
+    end
+    for name in $argv
+        tart stop $name 2>/dev/null
+        tart delete $name; or return 1
+    end
+end
+
 function cmd_clean
     tart list --source local --quiet 2>/dev/null | while read -l name
         echo "  Stopping: $name"
@@ -643,7 +662,7 @@ function cmd_help
 
 Commands:
   pull          Pull the base image from REMOTE_IMAGE
-  create        Create the VM from the base image (--force to recreate)
+  create        Create the VM, pulling the base image if absent (--force to recreate)
   create-linux  Create a blank Linux VM for ISO install (--force to recreate)
   bootstrap     Install tart-guest-agent in a macOS guest (clipboard + RPC)
   start         Start the VM (--graphics, --vnc, --headless)
@@ -653,6 +672,8 @@ Commands:
   status        Show VM state
   ip            Show VM IP address
   doctor        Check host dependencies and VM state
+  images        List local VMs and cached OCI images
+  rm            Delete a local VM or cached OCI image by name
   destroy       Delete the VM (keeps base image)
   clean         Delete all local VMs and cached OCI images
   help          Show this help
@@ -687,7 +708,7 @@ if not contains -- $cmd help doctor; and not command -q tart
 end
 set -l fn_cmd (string replace -a '-' '_' -- $cmd)
 switch $cmd
-    case pull create create-linux bootstrap start stop ssh sync status ip doctor destroy clean help
+    case pull create create-linux bootstrap start stop ssh sync status ip doctor images rm destroy clean help
         cmd_$fn_cmd $argv[2..-1]
     case '*'
         echo "Unknown: $cmd" >&2
