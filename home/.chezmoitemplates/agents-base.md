@@ -31,6 +31,18 @@ Always use `gh api`, `gh pr`, `gh issue`, etc. instead.
 The `gh` CLI handles authentication automatically and
 avoids unauthenticated rate limits (60 req/hr vs 5,000).
 
+# Don't hard-wrap GitHub-rendered Markdown
+
+Never hard-wrap the bodies of GitHub issues, PRs, or
+comments. GitHub renders a single newline in those
+fields as a literal line break, so manually wrapped
+prose comes out ragged and breaks list items, links,
+and blockquotes. Write each paragraph as one line and
+let the renderer handle line length. See
+[Writing on GitHub](https://docs.github.com/en/get-started/writing-on-github)
+for the rendering rules. (Commit message bodies are
+different: wrap those at 72.)
+
 # Do not remove untracked files in Git
 
 When preparing commits, use `git add` to prepare the
