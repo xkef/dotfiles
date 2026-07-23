@@ -52,6 +52,7 @@ check: ## Apply the source tree into a throwaway HOME and assert results
 		.config/git/config \
 		.config/lazyvim/init.lua \
 		.config/ghostty/config \
+		.config/mise/mise.lock \
 		.claude/CLAUDE.md; do \
 		if [ ! -e "$$tmp/home/$$path" ]; then \
 			echo "missing $$path"; \

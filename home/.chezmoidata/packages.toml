@@ -79,6 +79,11 @@ casks = [
   "font-jetbrains-mono-nerd-font", # patched dev font with icons
 ]
 
+# No version pinning on Arch by design: partial upgrades are unsupported, so
+# holding packages back (IgnorePkg, pkg=version) causes soname breakage;
+# `pacman -Syu` keeps the whole system coherent. Point-in-time rollback would
+# be an Arch Linux Archive date mirror — a whole-system decision outside this
+# repo.
 [packages.arch]
 main = [
   "git",             # version control
