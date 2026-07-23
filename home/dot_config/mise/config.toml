@@ -1,5 +1,6 @@
 [settings]
 fetch_remote_versions_cache = "7d"
+lockfile = true
 
 [tools]
 node = "24.15.0"
