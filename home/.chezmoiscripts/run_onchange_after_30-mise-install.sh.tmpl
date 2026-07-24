@@ -2,11 +2,6 @@
 #!/bin/bash
 set -euo pipefail
 # mise config hash: {{ include "dot_config/mise/config.toml" | sha256sum }}
-# mise lock hash: {{ include "dot_config/mise/private_mise.lock" | sha256sum }}
-# mise may write back to ~/.config/mise/mise.lock (e.g. checksums for a
-# platform not pre-captured by `mise lock -p`); if `chezmoi status` shows it
-# modified, `chezmoi re-add ~/.config/mise/mise.lock` and commit. Deliberate
-# upgrades: `mise lock --bump`, re-add, commit.
 mise trust 2>/dev/null || true
 {{ if and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arm64") -}}
 # aqua ships no maven-mvnd build for linux/arm64
