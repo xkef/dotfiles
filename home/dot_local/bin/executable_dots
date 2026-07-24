@@ -7,7 +7,13 @@
 
 switch $argv[1]
     case update up
-        chezmoi update $argv[2..-1]
+        # The repo is jj-colocated, so git HEAD is always detached and
+        # `chezmoi update` (git pull --rebase) cannot work. Fetch and
+        # rebase with jj instead, then apply.
+        set -l repo (chezmoi execute-template '{{ .chezmoi.workingTree }}')
+        jj -R $repo git fetch
+        and jj -R $repo rebase -d 'trunk()'
+        and chezmoi apply $argv[2..-1]
     case doctor check
         chezmoi doctor $argv[2..-1]
     case diff
