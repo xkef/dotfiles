@@ -4,7 +4,7 @@
 
 [packages.darwin]
 taps = [
-  "cirruslabs/cli", # tart
+  "openai/tools", # tart
 ]
 brews = [
   "git",                 # version control
@@ -56,7 +56,7 @@ brews = [
   "scooter",             # interactive find-and-replace TUI
   "qemu",                # qemu-img for Tart disk conversion/resizing
   "cdrtools",            # mkisofs for cloud-init cidata images
-  "cirruslabs/cli/tart", # Tart VM manager
+  "openai/tools/tart",   # Tart VM manager
   "yazi",                # terminal file manager
   "glow",                # terminal markdown renderer
   "tokei",               # code statistics by language
