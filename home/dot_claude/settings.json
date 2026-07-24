@@ -18,7 +18,12 @@
       "Glob",
       "Edit",
       "Write",
-      "Skill(commit)"
+      "Skill",
+      "WebSearch",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:code.claude.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": [
       "Bash(*rm -rf*)",
@@ -33,6 +38,9 @@
       "Bash(*> .env.*)"
     ],
     "defaultMode": "dontAsk"
+  },
+  "sandbox": {
+    "enabled": true
   },
   "model": "fable",
   "hooks": {
@@ -102,7 +110,8 @@
     "ralph-loop@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
+    "typescript-lsp@claude-plugins-official": true,
+    "nono@always-further": true
   },
   "outputStyle": "concise",
   "spinnerTipsEnabled": false,
