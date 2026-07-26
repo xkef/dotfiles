@@ -1,16 +1,102 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "respectGitignore": true,
-  "cleanupPeriodDays": 99999,
-  "env": {
-    "INSIDE_CLAUDE_CODE": "1",
-    "BASH_DEFAULT_TIMEOUT_MS": "120000",
-    "GITHUB_TOKEN": ""
-  },
+  "agentPushNotifEnabled": true,
+  "alwaysThinkingEnabled": true,
   "attribution": {
     "commit": "",
     "pr": ""
   },
+  "autoCompactEnabled": false,
+  "autoMode": {
+    "classifyAllShell": true
+  },
+  "autoUpdatesChannel": "latest",
+  "cleanupPeriodDays": 99999,
+  "effortLevel": "high",
+  "enabledPlugins": {
+    "claude-code-setup@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "hookify@claude-plugins-official": true,
+    "jdtls-lsp@claude-plugins-official": true,
+    "lua-lsp@claude-plugins-official": true,
+    "nono@always-further": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
+  "env": {
+    "BASH_DEFAULT_TIMEOUT_MS": "120000",
+    "GITHUB_TOKEN": "",
+    "INSIDE_CLAUDE_CODE": "1"
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "command": "~/.local/bin/.claude/claude-notify-hook",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "~/.local/bin/.claude/claude-post-tool-use-hook",
+            "type": "command"
+          }
+        ],
+        "matcher": "Edit|MultiEdit|Write"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "~/.local/bin/.claude/claude-pre-tool-use-hook",
+            "type": "command"
+          }
+        ],
+        "matcher": "Edit|MultiEdit|Write"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash '/Users/kk/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "~/.local/bin/.claude/claude-stop-hook",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ]
+  },
+  "model": "opus",
+  "outputStyle": "concise",
   "permissions": {
     "allow": [
       "Bash",
@@ -26,99 +112,52 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)"
     ],
+    "defaultMode": "auto",
     "deny": [
       "Bash(*rm -rf*)",
+      "Bash(*rm -fr*)",
+      "Bash(*rm -r -f*)",
+      "Bash(*rm -f -r*)",
       "Bash(*git push --force*)",
-      "Bash(*git merge*)",
+      "Bash(*git push -f*)",
+      "Bash(*git merge *)",
       "Bash(*git rebase*)",
       "Bash(*git reset --hard*)",
       "Bash(*git checkout -- *)",
       "Bash(*git clean*)",
       "Bash(*git stash drop*)",
+      "Bash(*jj abandon*)",
+      "Bash(*jj restore*)",
       "Bash(*> .env*)",
       "Bash(*> .env.*)"
-    ],
-    "defaultMode": "dontAsk"
+    ]
   },
+  "plansDirectory": ".claude-notes",
+  "preferredNotifChannel": "ghostty",
+  "respectGitignore": true,
   "sandbox": {
+    "credentials": {
+      "files": [
+        {
+          "mode": "deny",
+          "path": "~/.config/gh/hosts.yml"
+        }
+      ]
+    },
     "enabled": true,
     "excludedCommands": [
       "gh *",
       "jj *"
-    ]
-  },
-  "model": "fable",
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.local/bin/.claude/claude-notify-hook"
-          }
-        ]
-      }
     ],
-    "PreToolUse": [
-      {
-        "matcher": "Edit|MultiEdit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.local/bin/.claude/claude-pre-tool-use-hook"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|MultiEdit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.local/bin/.claude/claude-post-tool-use-hook"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.local/bin/.claude/claude-stop-hook"
-          }
-        ]
-      }
-    ]
+    "filesystem": {
+      "allowWrite": [
+        "~/.cache/mise",
+        "~/.config/chezmoi"
+      ]
+    }
   },
-  "statusLine": {
-    "type": "command",
-    "command": "~/.local/bin/.claude/claude-statusline",
-    "padding": 0
-  },
-  "enabledPlugins": {
-    "claude-code-setup@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
-    "code-review@claude-plugins-official": true,
-    "code-simplifier@claude-plugins-official": true,
-    "commit-commands@claude-plugins-official": true,
-    "context7@claude-plugins-official": true,
-    "feature-dev@claude-plugins-official": true,
-    "hookify@claude-plugins-official": true,
-    "jdtls-lsp@claude-plugins-official": true,
-    "lua-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "pr-review-toolkit@claude-plugins-official": true,
-    "ralph-loop@claude-plugins-official": true,
-    "security-guidance@claude-plugins-official": true,
-    "skill-creator@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "nono@always-further": true
-  },
-  "outputStyle": "concise",
+  "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
   "spinnerTipsEnabled": false,
   "spinnerVerbs": {
     "mode": "replace",
@@ -126,15 +165,11 @@
       "Processing"
     ]
   },
-  "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
-  "autoUpdatesChannel": "latest",
-  "plansDirectory": ".claude-notes",
+  "statusLine": {
+    "command": "~/.local/bin/.claude/claude-statusline",
+    "padding": 0,
+    "type": "command"
+  },
   "tui": "fullscreen",
-  "skipDangerousModePermissionPrompt": true,
-  "skipWorkflowUsageWarning": true,
-  "verbose": false,
-  "preferredNotifChannel": "ghostty",
-  "autoCompactEnabled": false,
-  "agentPushNotifEnabled": true
+  "verbose": false
 }
