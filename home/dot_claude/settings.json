@@ -4,7 +4,8 @@
   "cleanupPeriodDays": 99999,
   "env": {
     "INSIDE_CLAUDE_CODE": "1",
-    "BASH_DEFAULT_TIMEOUT_MS": "120000"
+    "BASH_DEFAULT_TIMEOUT_MS": "120000",
+    "GITHUB_TOKEN": ""
   },
   "attribution": {
     "commit": "",
@@ -40,7 +41,10 @@
     "defaultMode": "dontAsk"
   },
   "sandbox": {
-    "enabled": true
+    "enabled": true,
+    "excludedCommands": [
+      "gh *"
+    ]
   },
   "model": "fable",
   "hooks": {
