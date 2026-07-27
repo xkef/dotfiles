@@ -6,10 +6,15 @@
     "strongKind": "asterisks",
     "textWrap": "maintain"
   },
-  "includes": ["**/*.md"],
+  "includes": ["**/*.md", "**/*.json", "**/*.{yml,yaml}"],
   "excludes": [
     "**/node_modules/**",
-    ".claude-notes/**"
+    ".claude-notes/**",
+    "**/lazy-lock.json"
   ],
-  "plugins": ["https://plugins.dprint.dev/markdown-0.22.1.wasm"]
+  "plugins": [
+    "https://plugins.dprint.dev/markdown-0.22.1.wasm",
+    "https://plugins.dprint.dev/json-0.23.0.wasm",
+    "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.6.0.wasm"
+  ]
 }

@@ -53,4 +53,4 @@ formatter = { command = "taplo", args = ["fmt", "-"] }
 [[language]]
 name = "markdown"
 auto-format = true
-formatter = { command = "prettier", args = ["--parser", "markdown"] }
+formatter = { command = "dprint", args = ["fmt", "--stdin", "md"] }

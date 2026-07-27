@@ -13,8 +13,6 @@ fmt: ## Format all dotfiles
 	stylua home/dot_config/lazyvim/ home/dot_config/kickstart/
 	shfmt -w $(SHELL_FILES)
 	fish_indent -w $(FISH_FILES)
-	prettier --write '**/*.{json,yaml,yml,css,html}' \
-		--ignore-path .gitignore 2>/dev/null || true
 	dprint fmt
 	taplo fmt
 
