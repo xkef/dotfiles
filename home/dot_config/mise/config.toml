@@ -10,3 +10,10 @@ wrangler = "4"
 java = "25"
 maven = "3"
 mvnd = "1"
+
+# LazyVim lints markdown with rumdl and formats it with dprint in every
+# buffer, not just inside this repo. Without a global version the mise shim
+# exits with "No version is set for shim", and nvim-lint feeds that plain-text
+# error to its JSON parser.
+rumdl = "0"
+dprint = "0"
