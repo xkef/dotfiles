@@ -15,7 +15,7 @@ Everything lands in `$HOME` via `chezmoi apply`.
 | Path (target)                                  | Purpose                                      |
 | ---------------------------------------------- | -------------------------------------------- |
 | `~/.claude/`                                   | Claude Code agents, settings, skills symlink |
-| `~/.pi/agent/`                                 | pi agent rules + settings example            |
+| `~/.pi/agent/`                                 | pi agent rules + settings                    |
 | `~/.config/fish/functions/{claude,pi}.fish`    | agent launchers                              |
 | `~/.config/fish/functions/_ai_run_pinned.fish` | shared tmux window pinning for launchers     |
 | `~/.local/bin/dots-skills`                     | skills pipeline (install/refresh)            |
@@ -33,9 +33,19 @@ Edit the template, then `chezmoi apply`. **Never hand-edit** the rendered
 files in `$HOME` — they carry a `<!-- Generated -->` header and are
 overwritten on the next apply.
 
-pi `settings.json` is a local runtime file (machine paths, trust decisions,
-changelog state), so it is not managed. Use the adjacent `*.example.*` files
-as portable starting points.
+### pi settings
+
+pi owns `~/.pi/agent/settings.json` at runtime — it writes changelog state,
+trust decisions, and any model or theme picked from the TUI back into the
+same file. Managing it outright would fight those writes, so
+`home/dot_pi/agent/modify_settings.json` is a chezmoi `modify_` script that
+merges the committed keys (provider, model, thinking level, theme,
+`packages`) over whatever is already there. Committed keys win on every
+`chezmoi apply`; runtime keys survive untouched.
+
+Add a setting by editing the `managed` JSON in that script, then
+`chezmoi apply`. After changing `packages`, run `pi update --extensions` to
+install them into `~/.pi/agent/npm`.
 
 ## Sandbox — nono profiles + `sb`
 
@@ -53,6 +63,18 @@ built-in bash sandbox (`--settings '{"sandbox":{"enabled":false}}'`) because
 macOS cannot nest Seatbelt — without this, every Bash command inside `sb
 claude` would fail with `sandbox_apply: Operation not permitted`. Plain
 `claude` (no `sb`) keeps the built-in sandbox.
+
+The two profiles grant the same toolchain surface. `claude.json` inherits
+most of it from the registry-managed `claude-code` profile; `pi.json`
+extends `default`, so it names the equivalent policy groups explicitly
+(`git_config`, `mise_manager`, `node_runtime`, `user_caches_macos`,
+`unlink_protection`). Both allow `~/Library/Keychains` for the `gh`
+credential helper and read `~/.config/{gh,jj}` plus the mise data and state
+directories. `pi.json` additionally allows `~/.agents`, without which pi
+starts with no skills, and `~/.pi` covers pi's own npm package tree.
+
+After editing a profile, check it with `nono profile validate pi` and
+`nono profile show pi`.
 
 ## When to use which agent
 

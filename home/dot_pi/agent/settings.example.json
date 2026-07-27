@@ -1,8 +1,0 @@
-{
-  "defaultProvider": "github-copilot",
-  "defaultModel": "gpt-5.4",
-  "theme": "dark",
-  "showHardwareCursor": true,
-  "defaultThinkingLevel": "xhigh",
-  "packages": ["npm:@ifi/pi-plan", "npm:@tintinweb/pi-subagents"]
-}
