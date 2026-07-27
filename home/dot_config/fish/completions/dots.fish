@@ -1,5 +1,6 @@
 complete -c dots -f
 complete -c dots -n __fish_use_subcommand -xa update -d 'Pull the repo and apply changes'
+complete -c dots -n __fish_use_subcommand -xa lock -d 'Record the live LazyVim plugin lockfile in the repo'
 complete -c dots -n __fish_use_subcommand -xa doctor -d 'Check dotfiles health'
 complete -c dots -n __fish_use_subcommand -xa diff -d 'Show pending changes'
 complete -c dots -n __fish_use_subcommand -xa apply -d 'Apply the source state'

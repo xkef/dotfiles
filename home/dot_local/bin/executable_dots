@@ -10,10 +10,24 @@ switch $argv[1]
         # The repo is jj-colocated, so git HEAD is always detached and
         # `chezmoi update` (git pull --rebase) cannot work. Fetch and
         # rebase with jj instead, then apply.
+        #
+        # Capture the lockfile first: `chezmoi apply` writes the source copy
+        # over the live one, so an uncaptured `:Lazy sync` would be rolled
+        # back. Doing it before the rebase turns it into a working-copy change
+        # jj can carry across an incoming lockfile update.
         set -l repo (chezmoi execute-template '{{ .chezmoi.workingTree }}')
-        jj -R $repo git fetch
+        dots lock
+        and jj -R $repo git fetch
         and jj -R $repo rebase -d 'trunk()'
         and chezmoi apply $argv[2..-1]
+    case lock
+        # Verbatim copy: lazy.nvim owns this file's format, and dprint.json
+        # excludes it so `make fmt` does not reflow it.
+        set -l repo (chezmoi execute-template '{{ .chezmoi.workingTree }}')
+        set -l live ~/.config/lazyvim/lazy-lock.json
+        if test -f $live
+            cp $live $repo/home/dot_config/lazyvim/lazy-lock.json
+        end
     case doctor check
         chezmoi doctor $argv[2..-1]
     case diff
@@ -31,6 +45,7 @@ switch $argv[1]
         echo ""
         echo "Commands:"
         echo "  update    Pull the repo and apply changes (chezmoi update)"
+        echo "  lock      Record the live LazyVim plugin lockfile in the repo"
         echo "  doctor    Check dotfiles health (chezmoi doctor)"
         echo "  diff      Show pending changes (chezmoi diff)"
         echo "  apply     Apply the source state (chezmoi apply)"
