@@ -71,18 +71,6 @@
         "matcher": "Edit|MultiEdit|Write"
       }
     ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "command": "bash '/Users/kk/.claude/hooks/herdr-agent-state.sh' session",
-            "timeout": 10,
-            "type": "command"
-          }
-        ],
-        "matcher": "*"
-      }
-    ],
     "Stop": [
       {
         "hooks": [
@@ -144,6 +132,8 @@
         }
       ]
     },
+    "allowUnsandboxedCommands": true,
+    "autoAllowBashIfSandboxed": true,
     "enabled": true,
     "excludedCommands": ["gh *", "jj *"],
     "filesystem": {
