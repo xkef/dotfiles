@@ -3,12 +3,13 @@
   "extends": "claude-code",
   "meta": {
     "name": "claude",
-    "version": "1.1.1",
-    "description": "Claude Code with mise, jj, maven, npm, cargo, and keychain access"
+    "version": "1.2.0",
+    "description": "Claude Code with mise, jj, maven, npm, cargo, shared skills, and keychain access"
   },
   "filesystem": {
     "allow": [
       "$HOME/Library/Keychains",
+      "$HOME/.agents",
       "$HOME/.m2",
       "$HOME/.npm",
       "$XDG_CACHE_HOME/mise",

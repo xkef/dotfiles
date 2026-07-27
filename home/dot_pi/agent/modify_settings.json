@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Merge the tracked pi config over whatever pi has written locally.
+#
+# pi owns settings.json at runtime (changelog state, trust decisions, model
+# swaps made from the TUI), so the file cannot be managed outright. This
+# re-asserts the committed keys on every `chezmoi apply` and leaves the rest
+# of the file alone.
+set -euo pipefail
+
+managed='{
+  "defaultProvider": "github-copilot",
+  "defaultModel": "gpt-5.6-sol",
+  "defaultThinkingLevel": "xhigh",
+  "theme": "dark",
+  "showHardwareCursor": true,
+  "packages": ["npm:@ifi/pi-plan", "npm:@tintinweb/pi-subagents"]
+}'
+
+local_settings=$(cat)
+[ -n "$local_settings" ] || local_settings='{}'
+
+printf '%s' "$local_settings" | jq --argjson managed "$managed" '. * $managed'
