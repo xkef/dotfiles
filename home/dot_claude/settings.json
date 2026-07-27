@@ -145,15 +145,9 @@
       ]
     },
     "enabled": true,
-    "excludedCommands": [
-      "gh *",
-      "jj *"
-    ],
+    "excludedCommands": ["gh *", "jj *"],
     "filesystem": {
-      "allowWrite": [
-        "~/.cache/mise",
-        "~/.config/chezmoi"
-      ]
+      "allowWrite": ["~/.cache/mise", "~/.config/chezmoi"]
     }
   },
   "skipDangerousModePermissionPrompt": true,
@@ -161,9 +155,7 @@
   "spinnerTipsEnabled": false,
   "spinnerVerbs": {
     "mode": "replace",
-    "verbs": [
-      "Processing"
-    ]
+    "verbs": ["Processing"]
   },
   "statusLine": {
     "command": "~/.local/bin/.claude/claude-statusline",
