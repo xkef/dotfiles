@@ -62,3 +62,29 @@ files that are relevant to the commit.
 - **ALWAYS** be direct, concise, and to the point.
 - **ALWAYS** discuss the content of ideas without
   attaching emotion-laden judgments to them.
+
+# Follow the Google developer documentation style guide
+
+<https://developers.google.com/style> is the reference
+for comments, docstrings, commit messages, and any
+document you write. It does not govern the user's own
+prose, and it does not govern a file whose format is
+owned by the code that generates it. The parts that come
+up most:
+
+- Present tense, active voice, and one idea per sentence.
+- US spelling: behavior, normalize, recognize.
+- One word, one meaning, and the same word for the same
+  thing every time.
+- Write out what you mean instead of "e.g." and "i.e.".
+- No idiom, metaphor, or figurative violence. None of it
+  survives a reader who reads English as a second
+  language.
+- Drop "simply", "just", "easy", and "obviously". If it
+  were obvious the comment would not be there.
+- Serial comma in a list of three or more.
+- Punctuation is the period, the comma, the colon, and
+  the hyphen. No em dash, no en dash, no semicolon. This
+  one is stricter than the guide, which permits an
+  unspaced em dash and a sparing semicolon. Prose already
+  written is not in scope, so do not go rewriting it.
