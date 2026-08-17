@@ -11,7 +11,7 @@ managed='{
   "defaultProvider": "github-copilot",
   "defaultModel": "gpt-5.6-sol",
   "defaultThinkingLevel": "xhigh",
-  "theme": "dark",
+  "theme": "dots",
   "showHardwareCursor": true,
   "packages": ["npm:@ifi/pi-plan", "npm:@tintinweb/pi-subagents"]
 }'

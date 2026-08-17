@@ -59,6 +59,30 @@ inline. Edit whichever one applies, then run `chezmoi apply`. After changing
 pi's `packages`, run `pi update --extensions` to install them into
 `~/.pi/agent/npm`.
 
+### Theming
+
+Ghostty, tmux, delta, and Neovim all follow `theme <name>` because they read
+the terminal palette or an adapter fragment. pi does neither: it picks a theme
+by name from its own JSON files. So `home/dot_config/exact_theme.d/pi.fish`
+renders one.
+
+The fragment runs with the parsed palette in scope (`$t_palette`, `$t_bg`,
+`$t_fg`) and writes all 55 color tokens to `~/.pi/agent/themes/dots.json`,
+which the tracked `"theme": "dots"` setting selects. Palette colors map to the
+roles that carry meaning (red for errors and removed lines, green for success
+and added lines, cyan for the accent). Grays are blends toward the foreground
+rather than the ANSI bright-black slot, so the ramp inverts by itself under a
+light theme.
+
+pi watches the active custom theme file, so rewriting it recolors running pi
+sessions rather than waiting for the next launch.
+
+The file is generated and machine-local, so it stays untracked, the same way
+the delta adapter's `delta.gitconfig` does. That leaves a gap on a machine
+that has not switched themes since install: no theme file exists yet and pi
+falls back to its built-in dark without reporting it. The `pi` launcher closes
+the gap by re-applying the current theme once when the file is missing.
+
 ## Sandbox — nono profiles + `sb`
 
 `sb` launches a supported agent inside a [nono](https://nono.sh) sandbox
