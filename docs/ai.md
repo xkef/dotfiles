@@ -33,19 +33,31 @@ Edit the template, then `chezmoi apply`. **Never hand-edit** the rendered
 files in `$HOME` — they carry a `<!-- Generated -->` header and are
 overwritten on the next apply.
 
-### pi settings
+### Agent settings
 
-pi owns `~/.pi/agent/settings.json` at runtime — it writes changelog state,
-trust decisions, and any model or theme picked from the TUI back into the
-same file. Managing it outright would fight those writes, so
-`home/dot_pi/agent/modify_settings.json` is a chezmoi `modify_` script that
-merges the committed keys (provider, model, thinking level, theme,
-`packages`) over whatever is already there. Committed keys win on every
-`chezmoi apply`; runtime keys survive untouched.
+Both agents own their `settings.json` at runtime, so neither file can be
+managed outright. An ordinary `chezmoi apply` wipes state the agent needs.
+Each one is a chezmoi `modify_` script instead: it reads whatever is on
+disk, merges the committed keys over it with `jq`, and writes the result
+back. Committed keys win on every apply, and runtime keys survive untouched.
 
-Add a setting by editing the `managed` JSON in that script, then
-`chezmoi apply`. After changing `packages`, run `pi update --extensions` to
-install them into `~/.pi/agent/npm`.
+| Target                      | Script                                      | Committed keys live in                        |
+| --------------------------- | ------------------------------------------- | --------------------------------------------- |
+| `~/.claude/settings.json`   | `home/dot_claude/modify_settings.json.tmpl` | `home/.chezmoitemplates/claude-settings.json` |
+| `~/.pi/agent/settings.json` | `home/dot_pi/agent/modify_settings.json`    | the `managed` heredoc in the script           |
+
+Claude Code writes a generated `autoMode.environment` profile into its
+settings when auto mode is configured, and rewrites `enabledPlugins` as
+plugins come and go. pi writes changelog state, trust decisions, and any
+model or theme picked from the TUI. All of that is runtime state and stays
+local.
+
+Claude's committed set is a plain JSON file under `.chezmoitemplates/`, so it
+stays diffable and lints as JSON. The script pulls it in with
+`{{ template "claude-settings.json" }}`. pi's set is short enough to live
+inline. Edit whichever one applies, then run `chezmoi apply`. After changing
+pi's `packages`, run `pi update --extensions` to install them into
+`~/.pi/agent/npm`.
 
 ## Sandbox — nono profiles + `sb`
 

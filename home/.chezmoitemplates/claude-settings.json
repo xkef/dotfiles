@@ -87,7 +87,6 @@
   "outputStyle": "concise",
   "permissions": {
     "allow": [
-      "Bash",
       "Read",
       "Grep",
       "Glob",

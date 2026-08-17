@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Merge the tracked Claude Code config over whatever Claude has written locally.
+#
+# Claude Code owns settings.json at runtime — auto mode writes a generated
+# `autoMode.environment` profile into it, and the plugin list moves as
+# plugins are installed. Managing the file outright would wipe that on every
+# apply and leave auto mode half-configured, so this re-asserts the committed
+# keys and leaves everything else alone.
+#
+# Edit home/.chezmoitemplates/claude-settings.json to change the committed set.
+set -euo pipefail
+
+managed=$(
+  cat <<'MANAGED_JSON'
+{{ template "claude-settings.json" }}
+MANAGED_JSON
+)
+
+local_settings=$(cat)
+[ -n "$local_settings" ] || local_settings='{}'
+
+printf '%s' "$local_settings" | jq --argjson managed "$managed" '. * $managed'
