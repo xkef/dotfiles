@@ -10,7 +10,8 @@
   "excludes": [
     "**/node_modules/**",
     ".claude-notes/**",
-    "**/lazy-lock.json"
+    "**/lazy-lock.json",
+    "**/modify_*"
   ],
   "plugins": [
     "https://plugins.dprint.dev/markdown-0.22.1.wasm",
