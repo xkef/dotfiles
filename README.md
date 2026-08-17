@@ -157,7 +157,7 @@ Same physical key. Ctrl is the only difference.
 
 ## Themes
 
-`theme <name>` switches Ghostty, LazyVim, tmux, and delta together in one
+`theme <name>` switches Ghostty, LazyVim, tmux, delta, and pi together in one
 shot. `--list` shows Ghostty themes that have a matching LazyVim colorscheme
 plugin installed.
 
@@ -169,6 +169,9 @@ theme auto               # match macOS / GNOME light/dark
 
 bat rides the terminal palette via `BAT_THEME=ansi`; eza inherits it from the
 default ANSI color scheme. No per-theme config needed for either.
+
+pi cannot read the terminal palette, so the `theme.d` adapter renders it a
+theme file instead. See [AI tooling](docs/ai.md#theming).
 
 ## Local overrides
 
