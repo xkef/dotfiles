@@ -77,13 +77,14 @@ claude` would fail with `sandbox_apply: Operation not permitted`. Plain
 `claude` (no `sb`) keeps the built-in sandbox.
 
 The two profiles grant the same toolchain surface. `claude.json` inherits
-most of it from the registry-managed `claude-code` profile; `pi.json`
-extends `default`, so it names the equivalent policy groups explicitly
-(`git_config`, `mise_manager`, `node_runtime`, `user_caches_macos`,
-`unlink_protection`). Both allow `~/Library/Keychains` for the `gh`
-credential helper and read `~/.config/{gh,jj}` plus the mise data and state
-directories. `pi.json` additionally allows `~/.agents`, without which pi
-starts with no skills, and `~/.pi` covers pi's own npm package tree.
+most of it from the registry-managed `claude-code` profile. `pi.json`
+extends `default`, so it names the equivalent policy groups explicitly:
+`git_config`, `mise_manager`, `node_runtime`, `user_caches_macos`, and
+`unlink_protection`. Both allow `~/Library/Keychains` for the `gh`
+credential helper, and both read `~/.config/gh`, `~/.config/jj`, and the
+mise data and state directories. `pi.json` also allows `~/.agents`, without
+which pi starts with no skills, and `~/.pi` covers pi's own npm package
+tree.
 
 After editing a profile, check it with `nono profile validate pi` and
 `nono profile show pi`.
