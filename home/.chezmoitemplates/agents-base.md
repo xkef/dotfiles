@@ -62,6 +62,11 @@ files that are relevant to the commit.
 - **ALWAYS** be direct, concise, and to the point.
 - **ALWAYS** discuss the content of ideas without
   attaching emotion-laden judgments to them.
+- **ALWAYS** use as few words as possible in anything a
+  human reads: a comment, a commit message, or a reply.
+  Choose every word. Less is more.
+- **ALWAYS** give the unwelcome answer when it is the
+  true one.
 
 # Follow the Google developer documentation style guide
 
@@ -88,3 +93,122 @@ up most:
   one is stricter than the guide, which permits an
   unspaced em dash and a sparing semicolon. Prose already
   written is not in scope, so do not go rewriting it.
+
+# Comments
+
+Comment the block, not the line. Keep the comment short
+and say what the block does and why it does it. Add an
+example when one makes the rule concrete. Propose an
+ASCII drawing when a whole system needs explaining.
+
+**NEVER** write a comment that restates what a
+well-named variable or function already says.
+
+Comment only the code you write or change.
+
+# Surgical changes
+
+Touch only what you must. Clean up only your own mess.
+Keep the number of changed lines to a minimum.
+
+When editing existing code:
+
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't add a comment to a block you did not write or
+  change.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it. Don't
+  delete it.
+
+When your changes create orphans:
+
+- Remove imports, variables, or functions that YOUR
+  changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+Every changed line should trace directly to the user's
+request.
+
+# Name constants instead of repeating literals
+
+Extract a recurring or meaningful number or string into
+a descriptive constant or an enum. Keep a
+self-explanatory, one-off value inline so the code stays
+uncluttered. A value that comes from a specification,
+such as the HTTP status code 200, always gets a
+constant.
+
+# Keep code flat
+
+Avoid the arrow anti-pattern. Return early and continue
+early so the main path stays at the outermost level of
+indentation.
+
+# Use an enum instead of a boolean parameter
+
+A boolean parameter tells the reader nothing at the call
+site. An enum names the choice.
+
+# Keep function names short
+
+Stay under 30 characters.
+
+# Let the reader breathe
+
+Separate logical blocks of code with a blank line.
+
+# Always use braces
+
+An `if` statement takes braces even when its body fits on
+one line.
+
+# Keep members private
+
+A change to member visibility is a breaking design shift.
+Keep every field and function private unless the design
+strictly requires external access. Ask the user for
+explicit approval before you widen an access modifier
+from private to internal or public.
+
+# Program to levels of abstraction
+
+Encapsulate low-level mechanics, such as raw hardware
+I/O, sector parsing, and direct socket streams, in a
+dedicated driver or abstraction layer. Expose a
+high-level API so the rest of the application works with
+domain concepts instead of implementation details.
+
+Each layer talks only to the layer immediately below it.
+**NEVER** punch a hole through a layer: a controller or a
+UI component calls the service layer, never a database
+query, a hardware driver, or a low-level network client.
+
+# Write commit messages in seven parts
+
+The `commit` skill owns the workflow. These rules govern
+the text:
+
+1. Separate the subject from the body with one blank
+   line.
+2. Aim for a subject of 50 characters. 72 is the hard
+   limit.
+3. Follow the capitalization the repository already uses.
+   Under Conventional Commits the type and the
+   description stay lowercase, as in "fix: avoid double
+   render".
+4. Do not end the subject with a period.
+5. Use the imperative mood in the subject. It must
+   complete the sentence "If applied, this commit will
+   ...".
+6. Wrap the body at 72 characters.
+7. Use the body for what changed and why. The code shows
+   how, so the message carries the context and the
+   reasoning.
+
+# Fix bugs test-first
+
+When the prompt reports a bug, do not write the fix
+first. Write the test that reproduces the bug, run it,
+and watch it fail. Then write the fix and watch the test
+pass.
