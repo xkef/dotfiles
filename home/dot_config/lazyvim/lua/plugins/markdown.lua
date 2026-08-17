@@ -1,14 +1,15 @@
 -- Replace the LazyVim markdown extra's markdownlint-cli2 tooling with rumdl
--- (linter) and dprint (formatter). Both binaries resolve from PATH via the
--- mise shims, pinned per-project by mise.toml.
+-- (linter) and dprint (formatter), and add vale for prose. rumdl and dprint
+-- resolve from PATH via the mise shims, pinned per-project by mise.toml.
+-- vale comes from Homebrew and reads ~/.config/vale/.vale.ini.
 return {
   {
     "mfussenegger/nvim-lint",
     optional = true,
     opts = function(_, opts)
       opts.linters_by_ft = opts.linters_by_ft or {}
-      opts.linters_by_ft.markdown = { "rumdl" }
-      opts.linters_by_ft["markdown.mdx"] = { "rumdl" }
+      opts.linters_by_ft.markdown = { "rumdl", "vale" }
+      opts.linters_by_ft["markdown.mdx"] = { "rumdl", "vale" }
     end,
   },
   {

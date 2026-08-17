@@ -64,6 +64,7 @@ docker run -it --rm archlinux:latest bash -c '
 | [atuin](https://atuin.sh)                                        | Searchable shell history with sync                      |
 | [Claude Code](https://claude.ai/), pi                            | AI coding agents (`sb claude` for sandbox)              |
 | [jj (Jujutsu)](https://github.com/jj-vcs/jj)                     | Git-compatible VCS with simpler mental model            |
+| [Vale](https://vale.sh)                                          | Prose linter for markdown (Google style, AI-tell rules) |
 | eza, bat, fd, ripgrep, zoxide, yazi, mise                        | Modern CLI defaults and workflow tools                  |
 
 ## Repo layout
