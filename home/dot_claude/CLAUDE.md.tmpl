@@ -25,12 +25,6 @@ prompted.
 
 This includes lines with nothing but whitespace.
 
-# Comments
-
-**NEVER** make descriptive comments that redundantly
-encode what can trivially be understood by reading
-well-named variables and functions.
-
 # Avoid using anthropomorphizing language
 
 Answer questions without using the word "I" when
@@ -78,27 +72,6 @@ speculative.
 
 The test: would a senior engineer say this is
 overcomplicated? If yes, simplify.
-
-# Surgical changes
-
-Touch only what you must. Clean up only your own mess.
-
-When editing existing code:
-
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it — don't
-  delete it.
-
-When your changes create orphans:
-
-- Remove imports, variables, or functions that YOUR
-  changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-Every changed line should trace directly to the user's
-request.
 
 # Goal-driven execution
 
