@@ -59,6 +59,7 @@ brews = [
   "openai/tools/tart",   # Tart VM manager
   "yazi",                # terminal file manager
   "glow",                # terminal markdown renderer
+  "vale",                # prose linter for markdown
   "tokei",               # code statistics by language
   "tealdeer",            # fast tldr client
   "htop",                # interactive process viewer
@@ -126,6 +127,7 @@ main = [
   "ccusage",    # Claude Code usage analyzer (AUR)
   "yazi",       # terminal file manager
   "glow",       # terminal markdown renderer
+  "vale",       # prose linter for markdown
   "tokei",      # code statistics by language
   "tealdeer",   # fast tldr client
   "htop",       # interactive process viewer

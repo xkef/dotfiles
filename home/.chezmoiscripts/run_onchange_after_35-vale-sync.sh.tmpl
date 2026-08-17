@@ -1,0 +1,8 @@
+{{ if lookPath "vale" -}}
+#!/bin/bash
+set -euo pipefail
+# vale config hash: {{ include "dot_config/vale/dot_vale.ini" | sha256sum }}
+# Downloads the style packages named in ~/.config/vale/.vale.ini into
+# ~/.config/vale/styles.
+vale sync
+{{ end -}}
