@@ -11,14 +11,15 @@
 #   dots-skills refresh [agent]   drop the sentinel and reinstall from upstream
 #   dots-skills                   same as refresh
 
-set -l sentinel "$HOME/.cache/dotfiles/skills.shared.v5.installed"
+set -l sentinel "$HOME/.cache/dotfiles/skills.shared.v6.installed"
 
 # Upstream skill packs: '<repo> <skill>' ('*' installs every skill).
 set -l upstreams \
     'mattpocock/skills *' \
     'vercel-labs/skills find-skills' \
     '2ykwang/agent-skills html-visual' \
-    'Cocoon-AI/architecture-diagram-generator architecture-diagram'
+    'Cocoon-AI/architecture-diagram-generator architecture-diagram' \
+    'blader/humanizer humanizer'
 
 # The skills CLI installs into ~/.agents/skills via its claude-code target;
 # pi reads the same tree directly.

@@ -144,6 +144,7 @@ Everything else is pulled from upstream on first launch:
 - `find-skills` from `vercel-labs/skills`
 - `html-visual` from `2ykwang/agent-skills`
 - `architecture-diagram` from `Cocoon-AI/architecture-diagram-generator`
+- `humanizer` from `blader/humanizer`
 
 The launchers call `dots-skills ensure <agent>`. `dots-skills` owns the
 upstream source list and the install sentinel: it installs upstream skills
