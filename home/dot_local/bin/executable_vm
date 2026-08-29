@@ -77,10 +77,6 @@ _default VM_WORK_DIR $HOME/work
 _default CPUS 4
 _default MEMORY 8192
 
-if not set -q DOTFILES_DIR
-    set -l src (chezmoi source-path 2>/dev/null)
-    set -g DOTFILES_DIR (test -n "$src"; and path resolve $src/..; or echo $HOME/dotfiles)
-end
 set -g VM_DIR $HOME/.local/share/vm
 mkdir -p $VM_DIR
 
