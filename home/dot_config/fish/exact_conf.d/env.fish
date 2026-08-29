@@ -44,11 +44,6 @@ set -gx _ZO_EXCLUDE_DIRS "$HOME/Library/*:$HOME/.Trash/*:/tmp/*"
 set -gx PAGER less
 set -gx LESS '-iFMRX --mouse -#.25'
 
-# ── Dotfiles directory ───────────────────────────────
-if test -z "$DOTFILES_DIR" -a -f $HOME/.config/dotfiles/dir
-    set -gx DOTFILES_DIR (cat $HOME/.config/dotfiles/dir)
-end
-
 # ── PATH ─────────────────────────────────────────────
 fish_add_path -gP $HOME/.local/bin
 fish_add_path -gP $CARGO_HOME/bin

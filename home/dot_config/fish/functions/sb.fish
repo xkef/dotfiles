@@ -8,7 +8,6 @@ function sb -d "Run a command inside a nono sandbox"
 
     set -l cmd $argv[1]
     set -l rest $argv[2..-1]
-    set -l dots (test -f $HOME/.config/dotfiles/dir; and cat $HOME/.config/dotfiles/dir; or echo $HOME/dotfiles)
 
     switch $cmd
         case claude
@@ -24,7 +23,7 @@ function sb -d "Run a command inside a nono sandbox"
         exec $cmd $rest
     end
 
-    set -l nono_args --silent --log-file /dev/null --allow-cwd --read $dots
+    set -l nono_args --silent --log-file /dev/null --allow-cwd --read $DOTFILES_DIR
     set -l cmd_args
 
     switch $cmd
