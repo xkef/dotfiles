@@ -87,25 +87,49 @@ fi
 # ── Picker mode ──────────────────────────────────────
 # Each fzf line is "pane<TAB>target<TAB>display"; --with-nth=3 shows only the
 # rendered column, so a path with spaces cannot break the field split.
+#
+# Columns are measured first and sized to their widest value, and a column that
+# is empty for every agent is dropped. Fixed widths padded a single agent out to
+# a line of mostly blanks.
 render() {
-  local _rank pane target state agent tool age dir icon color
+  local _rank pane target state agent tool age dir icon color display row
   local -r RED='\033[31m' YELLOW='\033[33m' DIM='\033[2m' RESET='\033[0m'
+  local -a rows=()
+  # Rows are packed with a unit separator rather than a tab: read treats a tab
+  # as whitespace and folds a run of them into one, which would shift every
+  # column of an agent that has no tool.
+  local -r SEP=$'\x1f'
+  local w_state=0 w_agent=0 w_target=0 w_dir=0 w_tool=0
 
   while IFS=$'\t' read -r _rank pane target state agent tool age dir; do
+    [[ "$tool" == - ]] && tool=""
+    rows+=("$pane$SEP$target$SEP$state$SEP$agent$SEP$tool$SEP$age$SEP$dir")
+    ((${#state} > w_state)) && w_state=${#state}
+    ((${#agent} > w_agent)) && w_agent=${#agent}
+    ((${#target} > w_target)) && w_target=${#target}
+    ((${#dir} > w_dir)) && w_dir=${#dir}
+    ((${#tool} > w_tool)) && w_tool=${#tool}
+  done
+
+  for row in "${rows[@]}"; do
+    IFS=$SEP read -r pane target state agent tool age dir <<<"$row"
     case "$state" in
     waiting) icon=$ICON_WAITING color=$RED ;;
     busy) icon=$ICON_BUSY color=$YELLOW ;;
     *) icon=$ICON_IDLE color=$DIM ;;
     esac
-    [[ "$tool" == - ]] && tool=""
 
     # The state word is padded before it is colored, because printf counts the
     # escape bytes and would otherwise pad the column short.
-    printf '%s\t%s\t%b%s %s%b  %-6s  %-14s  %-24s  %-10s %b%s%b\n' \
-      "$pane" "$target" \
-      "$color" "$icon" "$(printf '%-7s' "$state")" "$RESET" \
-      "$agent" "$target" "$dir" "$tool" \
-      "$DIM" "$age" "$RESET"
+    printf -v display '%b%s %-*s%b  %-*s  %-*s  %-*s' \
+      "$color" "$icon" "$w_state" "$state" "$RESET" \
+      "$w_agent" "$agent" "$w_target" "$target" "$w_dir" "$dir"
+    if ((w_tool > 0)); then
+      printf -v display '%s  %-*s' "$display" "$w_tool" "$tool"
+    fi
+    printf -v display '%s  %b%s%b' "$display" "$DIM" "$age" "$RESET"
+
+    printf '%s\t%s\t%s\n' "$pane" "$target" "$display"
   done
 }
 
@@ -115,7 +139,10 @@ if [ -z "$rows" ]; then
   exit 0
 fi
 
+# --height overrides the 60% in FZF_DEFAULT_OPTS: the picker owns the whole
+# popup, so anything less leaves the bottom of it blank.
 selection=$(printf '%s\n' "$rows" | fzf \
+  --height=100% \
   --ansi --no-sort --reverse \
   --gap=0 --no-separator \
   --delimiter='\t' --with-nth=3 \
@@ -125,7 +152,7 @@ selection=$(printf '%s\n' "$rows" | fzf \
   --bind 'ctrl-d:preview-half-page-down' \
   --bind 'ctrl-u:preview-half-page-up' \
   --bind 'ctrl-/:toggle-preview' \
-  --preview-window 'right:55%,wrap' \
+  --preview-window 'down:75%,wrap,follow' \
   --preview 'tmux capture-pane -p -e -t {1}') || exit 0
 
 IFS=$'\t' read -r pane target _ <<<"$selection"
