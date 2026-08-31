@@ -42,11 +42,11 @@
       {
         "hooks": [
           {
-            "command": "~/.local/bin/.claude/claude-notify-hook",
+            "command": "~/.claude/hooks/claude-notify-hook",
             "type": "command"
           },
           {
-            "command": "~/.local/bin/.claude/claude-agent-status",
+            "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
         ],
@@ -57,7 +57,7 @@
       {
         "hooks": [
           {
-            "command": "~/.local/bin/.claude/claude-post-tool-use-hook",
+            "command": "~/.claude/hooks/claude-post-tool-use-hook",
             "type": "command"
           }
         ],
@@ -68,7 +68,7 @@
       {
         "hooks": [
           {
-            "command": "~/.local/bin/.claude/claude-pre-tool-use-hook",
+            "command": "~/.claude/hooks/claude-pre-tool-use-hook",
             "type": "command"
           }
         ],
@@ -77,7 +77,7 @@
       {
         "hooks": [
           {
-            "command": "~/.local/bin/.claude/claude-no-trailer",
+            "command": "~/.claude/hooks/claude-no-trailer",
             "type": "command"
           }
         ],
@@ -86,7 +86,7 @@
       {
         "hooks": [
           {
-            "command": "~/.local/bin/.claude/claude-agent-status",
+            "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
         ],
@@ -97,7 +97,7 @@
       {
         "hooks": [
           {
-            "command": "~/.local/bin/.claude/claude-agent-status",
+            "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
         ],
@@ -108,7 +108,7 @@
       {
         "hooks": [
           {
-            "command": "~/.local/bin/.claude/claude-agent-status",
+            "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
         ],
@@ -119,11 +119,11 @@
       {
         "hooks": [
           {
-            "command": "~/.local/bin/.claude/claude-stop-hook",
+            "command": "~/.claude/hooks/claude-stop-hook",
             "type": "command"
           },
           {
-            "command": "~/.local/bin/.claude/claude-agent-status",
+            "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
         ],
@@ -134,7 +134,7 @@
       {
         "hooks": [
           {
-            "command": "~/.local/bin/.claude/claude-agent-status",
+            "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
         ],
@@ -206,7 +206,7 @@
     "verbs": ["Processing"]
   },
   "statusLine": {
-    "command": "~/.local/bin/.claude/claude-statusline",
+    "command": "~/.claude/hooks/claude-statusline",
     "padding": 0,
     "type": "command"
   },
