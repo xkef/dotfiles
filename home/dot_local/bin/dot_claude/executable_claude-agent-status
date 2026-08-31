@@ -1,0 +1,50 @@
+#!/bin/bash
+# Records this agent's state for the `tmux-agents` picker.
+#
+# Claude Code runs hooks as child processes, so they inherit TMUX_PANE from the
+# pane the agent was started in. Keying the state file by that pane id gives the
+# picker a join back to tmux that stays valid across sessions, and lets a dead
+# pane's entry drop out of the view without a cleanup step.
+#
+# File format is one tab-separated line: agent, state, tool, epoch, cwd. The cwd
+# goes last so a path never shifts another field. The pi extension at
+# ~/.pi/agent/extensions/agent-status.ts writes the same format, which is why
+# the directory is shared rather than living under ~/.claude.
+
+[ -n "$TMUX_PANE" ] || exit 0
+
+AGENT=claude
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
+STATE_FILE="$STATE_DIR/$TMUX_PANE"
+
+INPUT=$(cat)
+IFS=$'\t' read -r EVENT TOOL CWD < <(
+  echo "$INPUT" | jq -r '[.hook_event_name, (.tool_name // "-"), (.cwd // "-")] | @tsv'
+)
+
+if [ "$EVENT" = SessionEnd ]; then
+  rm -f "$STATE_FILE"
+  exit 0
+fi
+
+# Only PreToolUse names a tool. Every other event describes the agent as a
+# whole, so it clears the column rather than leaving a stale tool name behind.
+[ "$EVENT" = PreToolUse ] || TOOL=-
+
+# Notification fires both for a permission prompt and for an idle nudge. Either
+# way the agent is parked until you look at it, so both read as "waiting".
+case "$EVENT" in
+SessionStart | Stop) STATE=idle ;;
+UserPromptSubmit | PreToolUse) STATE=busy ;;
+Notification) STATE=waiting ;;
+*) exit 0 ;;
+esac
+
+mkdir -p "$STATE_DIR"
+
+# Write through a temp file so the picker never reads a half-written line.
+TMP="$STATE_FILE.$$"
+printf '%s\t%s\t%s\t%s\t%s\n' "$AGENT" "$STATE" "$TOOL" "$(date +%s)" "$CWD" >"$TMP"
+mv -f "$TMP" "$STATE_FILE"
+
+exit 0

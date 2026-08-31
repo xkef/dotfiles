@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+# Cross-session agent picker.
+#
+# Joins the state files written by each agent (keyed by tmux pane id) against
+# the live pane list. An agent whose pane is gone has no row to join to, so a
+# crashed session drops out of the view on its own. Claude Code writes those
+# files from a hook, pi from an extension; both produce the same format.
+#
+#   tmux-agents          fzf picker; Enter switches to the agent's pane
+#   tmux-agents --count  status bar segment ("2◐ 1●"), empty when nothing runs
+set -euo pipefail
+
+readonly STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
+
+# Weight carries the meaning, so the status bar needs no color: a filled dot
+# wants you, a ring is working, a small dot is parked.
+readonly ICON_WAITING='•'
+readonly ICON_BUSY='◦'
+readonly ICON_IDLE='·'
+
+# Sort ranks: what needs you first, what is working next, what is parked last.
+readonly RANK_WAITING=0
+readonly RANK_BUSY=1
+readonly RANK_IDLE=2
+
+# Emits "rank<TAB>pane<TAB>target<TAB>state<TAB>agent<TAB>tool<TAB>age<TAB>dir".
+collect() {
+  [ -d "$STATE_DIR" ] || return 0
+  local now pane target agent state tool epoch cwd rank
+  now=$(date +%s)
+
+  while IFS=$'\t' read -r pane target; do
+    [ -f "$STATE_DIR/$pane" ] || continue
+    IFS=$'\t' read -r agent state tool epoch cwd <"$STATE_DIR/$pane" || continue
+
+    case "$state" in
+    waiting) rank=$RANK_WAITING ;;
+    busy) rank=$RANK_BUSY ;;
+    *) rank=$RANK_IDLE ;;
+    esac
+
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+      "$rank" "$pane" "$target" "$state" "$agent" "$tool" \
+      "$(human_age $((now - epoch)))" "${cwd/#$HOME/~}"
+  done < <(tmux list-panes -a -F '#{pane_id}	#{session_name}:#{window_index}') |
+    sort -n
+}
+
+human_age() { # seconds -> "12s" / "6m" / "2h"
+  local s=$1
+  ((s < 60)) && {
+    printf '%ds' "$s"
+    return
+  }
+  ((s < 3600)) && {
+    printf '%dm' $((s / 60))
+    return
+  }
+  printf '%dh' $((s / 3600))
+}
+
+# ── Count mode ───────────────────────────────────────
+# Every agent is counted, in the same order the picker sorts them, so a count
+# keeps its position in the bar as the states around it change. A state with no
+# agents is left out. With none running at all the segment is empty, which keeps
+# the bar as it was before any agent existed.
+if [[ "${1:-}" == --count ]]; then
+  waiting=0 busy=0 idle=0
+  while IFS=$'\t' read -r _ _ _ state _; do
+    case "$state" in
+    waiting) ((++waiting)) ;;
+    busy) ((++busy)) ;;
+    *) ((++idle)) ;;
+    esac
+  done < <(collect)
+
+  segment=""
+  append() { segment="$segment${segment:+ }$1$2"; }
+  ((waiting > 0)) && append "$waiting" "$ICON_WAITING"
+  ((busy > 0)) && append "$busy" "$ICON_BUSY"
+  ((idle > 0)) && append "$idle" "$ICON_IDLE"
+
+  [ -n "$segment" ] && printf '%s  ' "$segment"
+  exit 0
+fi
+
+# ── Picker mode ──────────────────────────────────────
+# Each fzf line is "pane<TAB>target<TAB>display"; --with-nth=3 shows only the
+# rendered column, so a path with spaces cannot break the field split.
+render() {
+  local _rank pane target state agent tool age dir icon color
+  local -r RED='\033[31m' YELLOW='\033[33m' DIM='\033[2m' RESET='\033[0m'
+
+  while IFS=$'\t' read -r _rank pane target state agent tool age dir; do
+    case "$state" in
+    waiting) icon=$ICON_WAITING color=$RED ;;
+    busy) icon=$ICON_BUSY color=$YELLOW ;;
+    *) icon=$ICON_IDLE color=$DIM ;;
+    esac
+    [[ "$tool" == - ]] && tool=""
+
+    # The state word is padded before it is colored, because printf counts the
+    # escape bytes and would otherwise pad the column short.
+    printf '%s\t%s\t%b%s %s%b  %-6s  %-14s  %-24s  %-10s %b%s%b\n' \
+      "$pane" "$target" \
+      "$color" "$icon" "$(printf '%-7s' "$state")" "$RESET" \
+      "$agent" "$target" "$dir" "$tool" \
+      "$DIM" "$age" "$RESET"
+  done
+}
+
+rows=$(collect | render)
+if [ -z "$rows" ]; then
+  tmux display-message "No agents running"
+  exit 0
+fi
+
+selection=$(printf '%s\n' "$rows" | fzf \
+  --ansi --no-sort --reverse \
+  --gap=0 --no-separator \
+  --delimiter='\t' --with-nth=3 \
+  --border-label ' agents ' --prompt '> ' \
+  --header 'enter jump | ctrl-/ preview' \
+  --bind 'tab:down,btab:up' \
+  --bind 'ctrl-d:preview-half-page-down' \
+  --bind 'ctrl-u:preview-half-page-up' \
+  --bind 'ctrl-/:toggle-preview' \
+  --preview-window 'right:55%,wrap' \
+  --preview 'tmux capture-pane -p -e -t {1}') || exit 0
+
+IFS=$'\t' read -r pane target _ <<<"$selection"
+tmux switch-client -t "$target"
+tmux select-pane -t "$pane"

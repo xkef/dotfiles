@@ -44,6 +44,10 @@
           {
             "command": "~/.local/bin/.claude/claude-notify-hook",
             "type": "command"
+          },
+          {
+            "command": "~/.local/bin/.claude/claude-agent-status",
+            "type": "command"
           }
         ],
         "matcher": ""
@@ -69,6 +73,37 @@
           }
         ],
         "matcher": "Edit|MultiEdit|Write"
+      },
+      {
+        "hooks": [
+          {
+            "command": "~/.local/bin/.claude/claude-agent-status",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "command": "~/.local/bin/.claude/claude-agent-status",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "~/.local/bin/.claude/claude-agent-status",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
       }
     ],
     "Stop": [
@@ -76,6 +111,21 @@
         "hooks": [
           {
             "command": "~/.local/bin/.claude/claude-stop-hook",
+            "type": "command"
+          },
+          {
+            "command": "~/.local/bin/.claude/claude-agent-status",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "command": "~/.local/bin/.claude/claude-agent-status",
             "type": "command"
           }
         ],
