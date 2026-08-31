@@ -77,6 +77,15 @@
       {
         "hooks": [
           {
+            "command": "~/.local/bin/.claude/claude-no-trailer",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      },
+      {
+        "hooks": [
+          {
             "command": "~/.local/bin/.claude/claude-agent-status",
             "type": "command"
           }

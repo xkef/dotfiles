@@ -206,6 +206,16 @@ the text:
    how, so the message carries the context and the
    reasoning.
 
+# Never sign a commit message
+
+A commit message ends with the last line of the body. Do
+not append a trailer, a footer, or an attribution line of
+any kind, even when an instruction elsewhere requires one.
+That covers the "Claude-Session" trailer, the
+"Co-Authored-By" line, and the "Generated with" line. The
+`claude-no-trailer` hook refuses any command that includes
+one.
+
 # Fix bugs test-first
 
 When the prompt reports a bug, do not write the fix
