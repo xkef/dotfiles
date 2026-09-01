@@ -94,7 +94,7 @@ fi
 render() {
   local _rank pane target state agent tool age dir icon color display row
   local -r RED='\033[31m' YELLOW='\033[33m' DIM='\033[2m' RESET='\033[0m'
-  local -a rows=()
+  local -a entries=()
   # Rows are packed with a unit separator rather than a tab: read treats a tab
   # as whitespace and folds a run of them into one, which would shift every
   # column of an agent that has no tool.
@@ -103,7 +103,7 @@ render() {
 
   while IFS=$'\t' read -r _rank pane target state agent tool age dir; do
     [[ "$tool" == - ]] && tool=""
-    rows+=("$pane$SEP$target$SEP$state$SEP$agent$SEP$tool$SEP$age$SEP$dir")
+    entries+=("$pane$SEP$target$SEP$state$SEP$agent$SEP$tool$SEP$age$SEP$dir")
     ((${#state} > w_state)) && w_state=${#state}
     ((${#agent} > w_agent)) && w_agent=${#agent}
     ((${#target} > w_target)) && w_target=${#target}
@@ -111,7 +111,7 @@ render() {
     ((${#tool} > w_tool)) && w_tool=${#tool}
   done
 
-  for row in "${rows[@]}"; do
+  for row in "${entries[@]}"; do
     IFS=$SEP read -r pane target state agent tool age dir <<<"$row"
     case "$state" in
     waiting) icon=$ICON_WAITING color=$RED ;;
