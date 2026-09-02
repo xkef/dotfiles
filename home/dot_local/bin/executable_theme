@@ -9,14 +9,17 @@
 #
 # Adapter contract: fragments run with $THEME_NAME, $t_palette (16 colors),
 # $t_bg, $t_fg, and $t_cursor set, and may call _blend_hex / _hex_rgb. Each
-# stow package owns the fragment for its app (terminal: ghostty state file,
-# vcs: delta include, theme: nvim reload, tmux: status refresh). Numeric
-# prefixes order them: the ghostty fragment writes the current-theme state
-# before the nvim fragment reloads readers of it.
+# fragment owns one app (delta include, nvim reload, pi theme file, tmux
+# refresh) and must not depend on another fragment: the core has already
+# persisted the current theme and pushed the palette to the terminal before
+# any fragment runs, so readers of that state can reload in any order.
 #
 # Usage: theme [name|auto|--list|--current]
 
 set -g GHOSTTY_CONFIG (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/ghostty/config
+# Current theme lives next to the Ghostty config as an untracked include
+# fragment (`config-file = ?theme`). Neovim's theme.lua reads the same file.
+set -g THEME_STATE (path dirname $GHOSTTY_CONFIG)/theme
 
 # ── Ghostty theme parser ─────────────────────────────
 # Parses a Ghostty theme file and sets t_palette, t_bg, t_fg, t_cursor.
@@ -81,10 +84,9 @@ end
 
 # ── Helpers ───────────────────────────────────────────
 
-# Current theme lives in the untracked Ghostty include fragment written by
-# the theme.d ghostty adapter; the tracked config only carries the default.
+# The tracked Ghostty config only carries the default; the state file wins.
 function _current_theme
-    for source in (path dirname $GHOSTTY_CONFIG)/theme $GHOSTTY_CONFIG
+    for source in $THEME_STATE $GHOSTTY_CONFIG
         test -f $source; or continue
         set -l m (string match -r '^\s*theme\s*=\s*(.+)' <$source)
         if test (count $m) -ge 2
@@ -140,6 +142,12 @@ end
 
 # ── Apply ─────────────────────────────────────────────
 
+function _write_state
+    command mkdir -p (path dirname $THEME_STATE)
+    printf '# Written by `theme` — machine-local current theme.\ntheme = %s\n' \
+        $THEME_NAME >$THEME_STATE
+end
+
 function _source_theme_fragments
     set -l dir (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/theme.d
     for fragment in $dir/*.fish
@@ -159,6 +167,7 @@ function _apply_theme -a name
     end
 
     set -g THEME_NAME $name
+    _write_state
     _apply_terminal_colors
     _source_theme_fragments
 
