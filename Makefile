@@ -44,7 +44,7 @@ check: ## Apply the source tree into a throwaway HOME and assert results
 		.local/bin/dots \
 		.local/bin/dots-keys \
 		.local/bin/macos-defaults \
-		.config/theme.d/ghostty.fish \
+		.config/theme.d/nvim.fish \
 		.config/fish/config.fish \
 		.config/tmux/tmux.conf \
 		.config/git/config \

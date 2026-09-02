@@ -1,7 +1,5 @@
-# Theme adapter (theme package): tell running Neovim instances to re-derive
-# their colorscheme. Must run after the ghostty adapter, which writes the state
-# file require('theme').apply() reads — guaranteed since theme.d is sourced in
-# name order and "ghostty" sorts before "nvim".
+# Theme adapter (nvim): tell running Neovim instances to re-derive their
+# colorscheme from the state file `theme` wrote before sourcing adapters.
 # Sockets live at <base>/nvim.<user>/<random>/<appname>.<pid>.0 (the flat
 # nvim.<pid>.0 form covers older layouts).
 for nvim_sock_dir in $XDG_RUNTIME_DIR $TMPDIR /tmp
