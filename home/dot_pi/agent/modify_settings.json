@@ -13,6 +13,8 @@ managed='{
   "defaultThinkingLevel": "xhigh",
   "theme": "dots",
   "showHardwareCursor": true,
+  "editorPaddingX": 1,
+  "autocompleteMaxVisible": 8,
   "packages": ["npm:@ifi/pi-plan", "npm:@tintinweb/pi-subagents"]
 }'
 
