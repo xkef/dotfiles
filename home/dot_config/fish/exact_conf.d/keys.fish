@@ -1,3 +1,5 @@
+status is-interactive; or return
+
 # ── Line editing (built-in) ───────────────────────────
 # These are fish/readline defaults, documented here for the keys reference.
 # @key shell :: Ctrl-A / E :: Beginning / end of line

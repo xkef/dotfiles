@@ -47,6 +47,11 @@ set -gx FZF_COMPLETION_OPTS "\
     --with-nth=1 --delimiter='\t' \
     --preview 'fzf-preview {1}'"
 
+# The FZF_* variables above are exported so scripts and tmux popups inherit
+# the look. Everything below is key bindings and widgets for a human at a
+# prompt, so scripts skip it.
+status is-interactive; or return
+
 # fzf shell integration (Ctrl-T, Ctrl-R, Alt-C)
 fzf --fish | source
 

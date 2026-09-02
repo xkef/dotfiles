@@ -77,6 +77,9 @@ end
 # git credential helper) to one account for the shell's lifetime, breaking
 # `gh auth switch` and per-repo credential.username routing. gh reads the
 # keyring; mise gets its own variable.
+# The keyring lookup costs about 100ms, so only an interactive shell pays
+# for it. Scripts and `mise install` inherit the value from that shell.
+status is-interactive; or return
 if test -z "$MISE_GITHUB_TOKEN"; and command -q gh
     set -gx MISE_GITHUB_TOKEN (gh auth token 2>/dev/null)
 end
