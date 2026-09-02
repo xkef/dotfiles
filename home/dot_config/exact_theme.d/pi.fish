@@ -25,11 +25,11 @@ if test -d $pi_agent_dir
 
     # Message and tool-box backgrounds: a wash of one palette color over the
     # terminal background, matching how the delta adapter tints diff hunks.
-    set -l pi_selected_bg (_blend_hex $t_bg $pi_cyan 20)
-    set -l pi_search_bg (_blend_hex $t_bg $pi_yellow 25)
-    set -l pi_user_bg (_blend_hex $t_bg $t_fg 10)
-    set -l pi_custom_bg (_blend_hex $t_bg $pi_magenta 12)
-    set -l pi_pending_bg (_blend_hex $t_bg $t_fg 6)
+    set -l pi_selected_bg (_blend_hex $t_bg $pi_cyan 24)
+    set -l pi_search_bg (_blend_hex $t_bg $pi_yellow 28)
+    set -l pi_user_bg (_blend_hex $t_bg $pi_blue 16)
+    set -l pi_custom_bg (_blend_hex $t_bg $pi_magenta 15)
+    set -l pi_pending_bg (_blend_hex $t_bg $pi_cyan 8)
     set -l pi_success_bg (_blend_hex $t_bg $pi_green 12)
     set -l pi_error_bg (_blend_hex $t_bg $pi_red 14)
     set -l pi_info_bg (_blend_hex $t_bg $pi_yellow 18)
@@ -48,7 +48,7 @@ if test -d $pi_agent_dir
         muted:$pi_gray \
         dim:$pi_dim_gray \
         text:$t_fg \
-        thinkingText:$pi_gray \
+        thinkingText:$pi_dim_gray \
         selectedBg:$pi_selected_bg \
         scrollbarThumb:$pi_dark_gray \
         searchMatchBg:$pi_search_bg \
@@ -61,17 +61,17 @@ if test -d $pi_agent_dir
         toolPendingBg:$pi_pending_bg \
         toolSuccessBg:$pi_success_bg \
         toolErrorBg:$pi_error_bg \
-        toolTitle:$t_fg \
+        toolTitle:$pi_cyan \
         toolOutput:$pi_gray \
         mdHeading:$pi_yellow \
         mdLink:$pi_blue \
         mdLinkUrl:$pi_dim_gray \
         mdCode:$pi_cyan \
-        mdCodeBlock:$pi_green \
-        mdCodeBlockBorder:$pi_gray \
+        mdCodeBlock:$t_fg \
+        mdCodeBlockBorder:$pi_dark_gray \
         mdQuote:$pi_gray \
-        mdQuoteBorder:$pi_gray \
-        mdHr:$pi_gray \
+        mdQuoteBorder:$pi_magenta \
+        mdHr:$pi_dark_gray \
         mdListBullet:$pi_cyan \
         toolDiffAdded:$pi_green \
         toolDiffRemoved:$pi_red \
