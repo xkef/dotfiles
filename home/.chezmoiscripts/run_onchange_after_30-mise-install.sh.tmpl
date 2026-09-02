@@ -1,6 +1,6 @@
-{{ if lookPath "mise" -}}
 #!/bin/bash
 set -euo pipefail
+{{ template "path.sh" }}
 # mise config hash: {{ include "dot_config/mise/config.toml" | sha256sum }}
 mise trust 2>/dev/null || true
 {{ if and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arm64") -}}
@@ -8,4 +8,3 @@ mise trust 2>/dev/null || true
 export MISE_DISABLE_TOOLS=mvnd
 {{ end -}}
 mise install
-{{ end -}}

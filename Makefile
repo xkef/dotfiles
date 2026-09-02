@@ -1,6 +1,7 @@
 TRACKED_FILES := $(wildcard $(shell git ls-files))
 TRACKED_TEXT_FILES := $(filter-out %.png %.jpg %.jpeg %.gif %.webp,$(TRACKED_FILES))
-SHELL_FILES := $(shell awk 'FNR == 1 && /^\#!.*(env[[:space:]]+bash|\/bash|\/sh)([[:space:]]|$$)/ { print FILENAME }' $(TRACKED_TEXT_FILES) 2>/dev/null)
+# Run scripts are templates, so shellcheck sees them rendered in `check`.
+SHELL_FILES := $(filter-out home/.chezmoiscripts/%,$(shell awk 'FNR == 1 && /^\#!.*(env[[:space:]]+bash|\/bash|\/sh)([[:space:]]|$$)/ { print FILENAME }' $(TRACKED_TEXT_FILES) 2>/dev/null))
 FISH_FILES := $(filter %.fish,$(TRACKED_FILES))
 
 .PHONY: help fmt lint lint-sh lint-fish lint-md lint-nvim check clean
@@ -61,6 +62,14 @@ check: ## Apply the source tree into a throwaway HOME and assert results
 	chezmoi verify --source . --destination "$$tmp/home" \
 		--config "$$tmp/chezmoi.toml" --persistent-state "$$tmp/state.db" \
 		--exclude scripts || exit 1; \
+	mkdir -p "$$tmp/scripts"; \
+	for f in home/.chezmoiscripts/*.tmpl; do \
+		out="$$tmp/scripts/$$(basename "$$f" .tmpl)"; \
+		chezmoi execute-template --source . --destination "$$tmp/home" \
+			--config "$$tmp/chezmoi.toml" --persistent-state "$$tmp/state.db" \
+			<"$$f" >"$$out" || exit 1; \
+		if [ -s "$$out" ]; then shellcheck -S warning "$$out" || exit 1; fi; \
+	done; \
 	echo "chezmoi smoke ok"
 
 clean: ## Remove caches and generated files

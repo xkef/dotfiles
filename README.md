@@ -110,6 +110,10 @@ unmanaged files, and `.tmpl` files render as templates at apply time.
   ([details](docs/ai.md)).
 - `exact_` directories (fish `conf.d`, tmux `conf.d`, `theme.d`) remove
   files the repo no longer manages, so stale fragments can't survive.
+- Run scripts put the package prefixes on their own `PATH`
+  ([`path.sh`](home/.chezmoitemplates/path.sh)), so the one-liner works from
+  a shell that predates Homebrew. The macOS end-to-end job runs with that
+  bare `PATH` to keep it true.
 - CI applies the whole tree into a throwaway `$HOME` on Linux and macOS
   (`make check`) and lints shell, fish, and markdown.
 

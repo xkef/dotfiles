@@ -78,8 +78,11 @@ jobs:
       - name: Full setup (files + run scripts)
         env:
           GITHUB_TOKEN: ${{ github.token }} # mise version lookups rate-limit without it
+        # A fresh Mac runs the README one-liner from a shell that predates
+        # Homebrew, so PATH has no /opt/homebrew/bin. Reproduce that: the run
+        # scripts must find the tools they install on their own.
         run: |
-          chezmoi init --source "$PWD" \
+          env PATH=/usr/bin:/bin:/usr/sbin:/sbin "$(brew --prefix)/bin/chezmoi" init --source "$PWD" \
             --promptBool "work machine (render 1Password git identity)=false" \
             --apply
       - name: Verify the machine actually works
@@ -92,6 +95,7 @@ jobs:
           ~/.local/bin/theme --current
           ~/.local/bin/dots-keys --raw | tail -3
           mise ls
+          test -z "$(mise ls --missing)"
 
   e2e-arch:
     runs-on: ubuntu-latest
