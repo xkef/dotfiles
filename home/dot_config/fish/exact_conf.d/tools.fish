@@ -1,6 +1,9 @@
 # ── Shell tool initialization ────────────────────────
 # Profile startup with: fish --profile-startup /tmp/fish.prof -ic exit
 # Then: sort -rn /tmp/fish.prof | head -20
+# Prompt, cd hooks, and widgets only matter to a human at a prompt; scripts
+# (`theme`, `dots`, tmux's `fish -c`) skip the subprocess spawns entirely.
+status is-interactive; or return
 
 # starship: cross-shell prompt
 if command -q starship

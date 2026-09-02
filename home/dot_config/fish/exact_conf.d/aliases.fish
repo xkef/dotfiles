@@ -1,6 +1,8 @@
 # ── Abbreviations ────────────────────────────────────
 # Fish abbreviations expand inline (like aliases but you see the full command).
 # Use `abbr` for commands you type; `alias` for transparent replacements.
+# Interactive only: an alias like `mkdir -pv` must not leak into scripts.
+status is-interactive; or return
 
 # Quick edit
 abbr -a v nvim
