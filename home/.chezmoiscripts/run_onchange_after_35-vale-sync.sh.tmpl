@@ -1,6 +1,6 @@
-{{ if lookPath "vale" -}}
 #!/bin/bash
 set -euo pipefail
+{{ template "path.sh" }}
 # vale config hash: {{ include "dot_config/vale/dot_vale.ini" | sha256sum }}
 # Downloads the style packages named in ~/.config/vale/.vale.ini into
 # ~/.config/vale/styles.
@@ -11,4 +11,3 @@ set -euo pipefail
 # so a fresh macOS machine would otherwise report "no sources provided".
 export VALE_CONFIG_PATH="${XDG_CONFIG_HOME:-$HOME/.config}/vale/.vale.ini"
 vale sync
-{{ end -}}

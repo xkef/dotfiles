@@ -1,7 +1,14 @@
 #!/bin/bash
 set -euo pipefail
+{{ template "path.sh" }}
+# A run_once script is recorded as done on exit 0, so a missing fish must
+# fail here and retry on the next apply rather than skip for good.
 fish="$(command -v fish 2>/dev/null || true)"
-[[ -z "$fish" || "$fish" == "${SHELL:-}" ]] && exit 0
+if [[ -z "$fish" ]]; then
+  echo "fish not found: the packages script should have installed it" >&2
+  exit 1
+fi
+[[ "$fish" == "${SHELL:-}" ]] && exit 0
 if [[ -f /etc/shells ]] && ! grep -qxF "$fish" /etc/shells; then
   echo "$fish" | sudo tee -a /etc/shells >/dev/null
 fi
