@@ -279,7 +279,11 @@ else
   defaults write com.apple.Spotlight orderedItems "<array>$spotlight_xml</array>"
 
   defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 64 "$SPOTLIGHT_HOTKEY"
-  /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+
+  # The hotkey takes effect on the next login without this, and
+  # the reload needs a login session; tolerate failure on CI.
+  /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u ||
+    [[ "${CI:-}" == true ]]
 
   # Indexing needs real disk access; tolerate failure on CI runners.
   sudo mdutil -a -i on >/dev/null || [[ "${CI:-}" == true ]]
