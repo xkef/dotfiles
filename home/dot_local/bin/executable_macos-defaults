@@ -197,6 +197,94 @@ apply com.apple.finder QuitMenuItem -bool true
 apply com.apple.desktopservices DSDontWriteNetworkStores -bool true
 apply com.apple.desktopservices DSDontWriteUSBStores -bool true
 
+# ── Spotlight ─────────────────────────────────────────
+
+$DRY_RUN || log "Spotlight..."
+
+# Categories in menu order, 1 for on. Spotlight is a launcher
+# here, so only apps, settings panes, and the calculator and
+# converter answers are on. File categories stay off to keep
+# an app from losing the top hit to a document that shares its
+# name. MENU_SPOTLIGHT_SUGGESTIONS is off so queries stay on
+# the machine instead of going to Apple.
+SPOTLIGHT_ITEMS=(
+  "APPLICATIONS 1"
+  "SYSTEM_PREFS 1"
+  "MENU_CONVERSION 1"
+  "MENU_DEFINITION 1"
+  "MENU_EXPRESSION 1"
+  "BOOKMARKS 0"
+  "CONTACT 0"
+  "DIRECTORIES 0"
+  "DOCUMENTS 0"
+  "EVENT_TODO 0"
+  "FONTS 0"
+  "IMAGES 0"
+  "MESSAGES 0"
+  "MOVIES 0"
+  "MUSIC 0"
+  "MENU_OTHER 0"
+  "PDF 0"
+  "PRESENTATIONS 0"
+  "SOURCE 0"
+  "SPREADSHEETS 0"
+  "MENU_SPOTLIGHT_SUGGESTIONS 0"
+)
+
+spotlight_current=$(defaults read com.apple.Spotlight orderedItems 2>/dev/null |
+  tr -d ' \n' | tr '}' '\n' |
+  sed -n 's/.*enabled=\([01]\);name="\{0,1\}\([A-Z_]*\).*/\2 \1/p')
+spotlight_desired=$(printf '%s\n' "${SPOTLIGHT_ITEMS[@]}")
+
+# Hotkey 64 is "Show Spotlight search". Its parameters are the
+# space character, the space key code, and the Command mask,
+# which spell Cmd+Space.
+SPOTLIGHT_HOTKEY='<dict><key>enabled</key><true/><key>value</key><dict><key>parameters</key><array><integer>32</integer><integer>49</integer><integer>1048576</integer></array><key>type</key><string>standard</string></dict></dict>'
+HOTKEY_PLIST="$HOME/Library/Preferences/com.apple.symbolichotkeys.plist"
+spotlight_hotkey=$(/usr/libexec/PlistBuddy -c "Print :AppleSymbolicHotKeys:64:enabled" \
+  "$HOTKEY_PLIST" 2>/dev/null || true)
+
+# Spotlight returns files only while the index is running.
+spotlight_index=$(mdutil -s / 2>/dev/null || true)
+
+if $DRY_RUN; then
+  if [[ "$spotlight_current" == "$spotlight_desired" ]]; then
+    ((skipped++)) || true
+  else
+    printf '  \033[31m~\033[0m %s %s \033[2m(%d categories)\033[0m\n' \
+      com.apple.Spotlight orderedItems "${#SPOTLIGHT_ITEMS[@]}"
+    ((changed++)) || true
+  fi
+
+  if [[ "$spotlight_hotkey" == true ]]; then
+    ((skipped++)) || true
+  else
+    printf '  \033[31m~\033[0m %s %s \033[2m(%s -> Cmd+Space)\033[0m\n' \
+      com.apple.symbolichotkeys 64 "${spotlight_hotkey:-unset}"
+    ((changed++)) || true
+  fi
+
+  if [[ "$spotlight_index" == *"Indexing enabled"* ]]; then
+    ((skipped++)) || true
+  else
+    printf '  \033[31m~\033[0m %s \033[2m(indexing off -> on)\033[0m\n' mdutil
+    ((changed++)) || true
+  fi
+else
+  spotlight_xml=""
+  for item in "${SPOTLIGHT_ITEMS[@]}"; do
+    spotlight_xml+="<dict><key>enabled</key><integer>${item#* }</integer>"
+    spotlight_xml+="<key>name</key><string>${item% *}</string></dict>"
+  done
+  defaults write com.apple.Spotlight orderedItems "<array>$spotlight_xml</array>"
+
+  defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 64 "$SPOTLIGHT_HOTKEY"
+  /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+
+  # Indexing needs real disk access; tolerate failure on CI runners.
+  sudo mdutil -a -i on >/dev/null || [[ "${CI:-}" == true ]]
+fi
+
 # ── Dock ──────────────────────────────────────────────
 
 $DRY_RUN || log "Dock..."
@@ -280,7 +368,7 @@ if $DRY_RUN; then
     "$total" "$changed" "$missing" "$skipped"
 else
   log "Restarting affected apps..."
-  for app in "Activity Monitor" "Dock" "Finder" "SystemUIServer"; do
+  for app in "Activity Monitor" "Dock" "Finder" "Spotlight" "SystemUIServer"; do
     killall "$app" &>/dev/null || true
   done
   printf '\n  Done. Some changes require a logout/restart.\n\n'
