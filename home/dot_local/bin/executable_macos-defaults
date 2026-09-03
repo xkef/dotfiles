@@ -233,7 +233,7 @@ SPOTLIGHT_ITEMS=(
 
 spotlight_current=$(defaults read com.apple.Spotlight orderedItems 2>/dev/null |
   tr -d ' \n' | tr '}' '\n' |
-  sed -n 's/.*enabled=\([01]\);name="\{0,1\}\([A-Z_]*\).*/\2 \1/p')
+  sed -n 's/.*enabled=\([01]\);name="\{0,1\}\([A-Z_]*\).*/\2 \1/p' || true)
 spotlight_desired=$(printf '%s\n' "${SPOTLIGHT_ITEMS[@]}")
 
 # Hotkey 64 is "Show Spotlight search". Its parameters are the
