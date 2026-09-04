@@ -12,13 +12,13 @@ Everything lands in `$HOME` via `chezmoi apply`.
 
 ## Agent base — rules, skills, launchers
 
-| Path (target)                                  | Purpose                                      |
-| ---------------------------------------------- | -------------------------------------------- |
-| `~/.claude/`                                   | Claude Code agents, settings, skills symlink |
-| `~/.pi/agent/`                                 | pi rules, settings, and status extensions    |
-| `~/.config/fish/functions/{claude,pi}.fish`    | agent launchers                              |
-| `~/.config/fish/functions/_ai_run_pinned.fish` | shared tmux window pinning for launchers     |
-| `~/.local/bin/dots-skills`                     | skills pipeline (install/refresh)            |
+| Path (target)                                  | Purpose                                   |
+| ---------------------------------------------- | ----------------------------------------- |
+| `~/.claude/`                                   | Claude Code settings and skills symlink   |
+| `~/.pi/agent/`                                 | pi rules, settings, and status extensions |
+| `~/.config/fish/functions/{claude,pi}.fish`    | agent launchers                           |
+| `~/.config/fish/functions/_ai_run_pinned.fish` | shared tmux window pinning for launchers  |
+| `~/.local/bin/dots-skills`                     | skills pipeline (install/refresh)         |
 
 ### Editing agent rules
 
