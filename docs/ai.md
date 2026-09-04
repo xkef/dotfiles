@@ -59,6 +59,23 @@ inline. Edit whichever one applies, then run `chezmoi apply`. After changing
 pi's `packages`, run `pi update --extensions` to install them into
 `~/.pi/agent/npm`.
 
+### Usage status
+
+The pi footer follows the selected provider. GitHub Copilot shows used and
+allocated AI credits. OpenAI Codex shows remaining subscription allowance and
+its credit balance, using the account signed in through pi. Other providers,
+including API-key OpenAI, show no account balance.
+
+Usage refreshes at session start, on model selection, and after the agent
+settles. Offline mode skips requests. Codex uses ChatGPT's internal usage
+endpoint, so changes to that endpoint can make the status unavailable.
+
+Run the extension tests with Node 24 or newer:
+
+```sh
+node --experimental-test-module-mocks --test tests/pi-usage.test.mjs
+```
+
 ### Theming
 
 Ghostty, tmux, delta, and Neovim all follow `theme <name>` because they read
