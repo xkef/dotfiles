@@ -1,2 +1,6 @@
 .config/dotfiles
 .local/bin/.claude
+.claude/agents/code-reviewer.md
+.claude/agents/debugger.md
+.claude/agents/pr-reviewer.md
+.claude/agents/test-runner.md
