@@ -212,6 +212,15 @@ Never append generated-by attribution or agent session
 metadata. The `claude-no-trailer` hook blocks
 "Claude-Session" trailers.
 
+# Agent task summaries
+
+If you are the main agent in a tmux pane (`TMUX_PANE`
+is set), run `agent-task "short task summary"` when you
+start work.
+Describe the user objective in fewer than 60 characters.
+Update it when the objective changes. This summary appears
+in the agents pane opened with `prefix a`.
+
 # Fix bugs test-first
 
 When the prompt reports a bug, do not write the fix
