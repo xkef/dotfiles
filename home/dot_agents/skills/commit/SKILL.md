@@ -52,62 +52,62 @@ For more information on Jujutsu, see the `jj` skill.
    file: these plan files should never be included in a
    commit as they are intended to be local-only aids to
    development.
-3. Draft a commit message with:
-
-- A subject of 72 characters or less in Conventional
-  Commits format (eg. "docs: add migration notes" or
-  "fix: avoid double-render in list component"). In
-  repositories that make use of scopes, you can include
-  a scope in parentheses (eg.
-  "chore(frontend): update copyright year" or
-  "feat(login): add support for magic links").
-- A body only when the change is non-obvious: a blank
-  line, then a short description wrapped to 72 characters
-  stating the motivation and anything surprising. Keep it
-  concise — many commits need no body at all. Do not pad.
-
-**Never** add a "Co-Authored-By" trailer, a "Generated
-with Claude Code" line, or any other attribution. **Never**
-include the text of prompts in the commit message.
-
+3. Draft a commit message using the format below. Never
+   include prompt text or generated-by attribution.
 4. **Always** present the proposed commit message to the
    user and wait for their explicit approval before
    creating the commit. They may want to edit it first; do
    not run the commit command until they confirm.
 
-## Best practices
+## Commit message format
 
-- Subjects MUST start with a Conventional Commits type
-  (eg. "docs", "fix", "feat", "chore" etc; see the table
-  below for a full list) followed by a statement beginning
-  with a verb (eg. "add", "remove", "rename" etc). The
-  subject describes *what* the commit does.
-- Prefer a clear subject on its own. Add a body only when
-  the change is non-obvious, and keep it brief: explain the
-  motivation, not the mechanics.
-- Reference relevant prior commits, issues, or PRs when it
-  genuinely aids understanding.
+- Subject: use `type: description` or
+  `type(scope): description`. Aim for 50 characters, with
+  a hard limit of 72 for the entire subject. Use lowercase,
+  imperative mood, and no final period. The subject states
+  what the commit does, such as `fix(zsh): restore history`.
+- Scope: optional, such as `feat(tmux)` or `fix(zsh)`.
+- Body: add only when the motivation is non-obvious.
+  Separate it from the subject with a blank line and wrap
+  at 72 characters. Explain why the change is needed.
+  Keep it brief and avoid repeating what the diff shows.
+- Footer: separate it from the body, or subject when there
+  is no body, with a blank line. Use the fields below when
+  applicable.
+
+### Footer fields
+
+- `Breaking-Change:`: describe the incompatible change
+  and any required migration.
+- `Co-Authored-By: Name <email>`: credit a known co-author.
+  Use their actual name and email. Never invent attribution.
+- `Refs:`: identify the issues or other work items this
+  commit advances, such as a PR, task, or specification.
+  Use known IDs, URLs, or paths from the task context, such
+  as `Refs: #123` or `Refs: TEAM-456, docs/spec.md`.
+  Omit this field when no related work item is known.
+  Never invent a reference.
 
 ## Conventional Commits types
 
-| Type     | When to use                                                                                        |
-| -------- | -------------------------------------------------------------------------------------------------- |
-| fix      | Bug fixes                                                                                          |
-| feat     | New features                                                                                       |
-| chore    | Content                                                                                            |
-| refactor | Code improvements (eg. for better readability, easier maintenance etc) which don't change behavior |
-| docs     | Documentation changes (including changes to code comments)                                         |
-| test     | Changing or adding/removing tests                                                                  |
-| perf     | Performance improvements                                                                           |
-| style    | Formatting changes, automated lint fixes                                                           |
+| Type     | When to use                               |
+| -------- | ----------------------------------------- |
+| feat     | New features                              |
+| fix      | Bug fixes                                 |
+| refactor | Code improvements with no behavior change |
+| docs     | Documentation, including code comments    |
+| test     | Add or change tests                       |
+| perf     | Performance improvements                  |
+| style    | Formatting and lint fixes                 |
+| chore    | Maintenance, dependencies, and tooling    |
 
 ## Example
 
 ```text
-refactor: remove unused `recurse` setting
+fix(zsh): preserve history across sessions
 
-We never exposed a user-accessible setting here; it is always `true` in
-practice, except in the benchmarks where we offered an environment
-override. Leaving it out simplifies the code, and saving the conditional
-checks is marginally faster.
+Concurrent shells can overwrite each other's history, losing commands
+needed in later sessions.
+
+Refs: #123
 ```

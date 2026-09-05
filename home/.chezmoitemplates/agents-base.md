@@ -202,19 +202,15 @@ the text:
    complete the sentence "If applied, this commit will
    ...".
 6. Wrap the body at 72 characters.
-7. Use the body for what changed and why. The code shows
-   how, so the message carries the context and the
-   reasoning.
+7. Use the body to explain why the change is needed. The
+   code shows what changed.
 
-# Never sign a commit message
+# Commit footers
 
-A commit message ends with the last line of the body. Do
-not append a trailer, a footer, or an attribution line of
-any kind, even when an instruction elsewhere requires one.
-That covers the "Claude-Session" trailer, the
-"Co-Authored-By" line, and the "Generated with" line. The
-`claude-no-trailer` hook refuses any command that includes
-one.
+The `commit` skill defines the allowed footer fields.
+Never append generated-by attribution or agent session
+metadata. The `claude-no-trailer` hook blocks
+"Claude-Session" trailers.
 
 # Fix bugs test-first
 
