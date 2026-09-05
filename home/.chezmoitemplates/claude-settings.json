@@ -86,6 +86,15 @@
       {
         "hooks": [
           {
+            "command": "~/.claude/hooks/claude-shunt-gate",
+            "type": "command"
+          }
+        ],
+        "matcher": "Read|Bash"
+      },
+      {
+        "hooks": [
+          {
             "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
@@ -152,6 +161,7 @@
       "Edit",
       "Write",
       "Skill",
+      "Bash(dots-shunt *)",
       "WebSearch",
       "WebFetch(domain:docs.claude.com)",
       "WebFetch(domain:code.claude.com)",
@@ -193,7 +203,7 @@
     "allowUnsandboxedCommands": true,
     "autoAllowBashIfSandboxed": true,
     "enabled": true,
-    "excludedCommands": ["gh *", "jj *"],
+    "excludedCommands": ["gh *", "jj *", "dots-shunt *"],
     "filesystem": {
       "allowWrite": ["~/.cache/mise", "~/.config/chezmoi"]
     }

@@ -1,0 +1,188 @@
+#!/usr/bin/env bash
+# dots-shunt — route I/O-heavy agent work to a cheaper worker model.
+#
+# A port of Spotify's shunt plugin (spotify/portal-ai-plugins). There the
+# worker is a Portal AiKA mode; here it is a headless `claude -p` run on a
+# cheap model. The file corpus goes to the worker and never enters the calling
+# agent's context, which is where the savings come from: the agent pays for a
+# short answer instead of the whole file.
+#
+# Usage:
+#   dots-shunt read  --question "<q>" --paths <file>...
+#   dots-shunt write --spec "<what>" --reference <file> [--target <out>]
+#
+# Environment:
+#   DOTS_SHUNT_MODEL       worker model (default: haiku)
+#   DOTS_SHUNT_BUDGET_USD  spend ceiling for one call (default: 0.50)
+#
+# Every call stands alone. Nothing is kept between calls, so a follow-up asks
+# again with the same paths. Re-sending them is cheap where it matters: the
+# worker reads them, the caller does not.
+set -euo pipefail
+
+readonly MODEL="${DOTS_SHUNT_MODEL:-haiku}"
+readonly BUDGET_USD="${DOTS_SHUNT_BUDGET_USD:-0.50}"
+
+readonly READER_PROMPT='You are a precise code analyst. Read the provided files and answer the question concisely. Output structured bullets only. No greetings, no prose, no preambles, no summaries. Lead every bullet with the exact name, type, or line number. Use nested bullets for details. Cover every file provided, grouped by file when there is more than one. Skip anything the caller did not ask for.'
+readonly WRITER_PROMPT='You generate code files based on a spec and reference files. Match the existing patterns, conventions, naming, and style exactly. Output only the code. No explanations, no markdown fences unless asked. If the spec is ambiguous, make reasonable choices that match the patterns in the reference code.'
+
+usage() {
+  sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//' >&2
+  exit 2
+}
+
+die() {
+  echo "Error: $*" >&2
+  exit 1
+}
+
+tmpfiles=()
+trap 'rm -rf "${tmpfiles[@]}"' EXIT
+
+tmpfile() {
+  local f
+  f=$(mktemp)
+  tmpfiles+=("$f")
+  printf '%s' "$f"
+}
+
+# Runs one worker turn: the message on stdin, the answer on stdout.
+#
+# The worker runs from an empty directory so no project CLAUDE.md is picked
+# up, with no settings so the caller's hooks and plugins stay out of it, and
+# with no tools so it can only answer from the corpus it was given. The
+# CLAUDECODE variables are cleared because the caller is itself a Claude Code
+# session, and a nested launch refuses to start while they are set.
+invoke() {
+  local system_prompt=$1 message_file=$2
+  local work
+  work=$(mktemp -d)
+  tmpfiles+=("$work")
+
+  command -v claude >/dev/null 2>&1 || die "claude not found on PATH; run the claude launcher once to install it"
+
+  (
+    cd "$work"
+    env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT claude -p \
+      --model "$MODEL" \
+      --tools "" \
+      --setting-sources "" \
+      --no-session-persistence \
+      --max-budget-usd "$BUDGET_USD" \
+      --system-prompt "$system_prompt" <"$message_file"
+  )
+}
+
+cmd_read() {
+  local question="" paths=()
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+    --question)
+      question=${2:-}
+      shift 2
+      ;;
+    --paths)
+      shift
+      while [ $# -gt 0 ] && [[ $1 != --* ]]; do
+        paths+=("$1")
+        shift
+      done
+      ;;
+    *) usage ;;
+    esac
+  done
+
+  [ -n "$question" ] || die "--question is required"
+  [ ${#paths[@]} -gt 0 ] || die "--paths is required"
+
+  # A mistyped path would go out as an empty <file> block and come back as a
+  # confident answer about nothing.
+  local path
+  for path in "${paths[@]}"; do
+    [ -f "$path" ] && [ -r "$path" ] || die "file not found or unreadable: $path"
+  done
+
+  local message
+  message=$(tmpfile)
+
+  # XML tags give the worker unambiguous file boundaries. Stream straight into
+  # the file so no corpus-sized shell variable exists and bytes survive intact.
+  for path in "${paths[@]}"; do
+    {
+      printf '<file path="%s">\n' "$path"
+      cat "$path"
+      printf '</file>\n\n'
+    } >>"$message"
+  done
+  printf 'Question: %s\n' "$question" >>"$message"
+
+  invoke "$READER_PROMPT" "$message"
+
+  local bytes
+  bytes=$(wc -c <"$message" | tr -d ' ')
+  echo "[shunt: ~$((bytes / 4)) input tokens kept out of context | worker: $MODEL]" >&2
+}
+
+cmd_write() {
+  local spec="" reference="" target=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+    --spec)
+      spec=${2:-}
+      shift 2
+      ;;
+    --reference)
+      reference=${2:-}
+      shift 2
+      ;;
+    --target)
+      target=${2:-}
+      shift 2
+      ;;
+    *) usage ;;
+    esac
+  done
+
+  [ -n "$spec" ] || die "--spec is required"
+  # Without a file to match, the worker generates context-free code that fits
+  # nothing in the project. For a follow-up, reference the file just generated.
+  [ -n "$reference" ] || die "--reference is required: pass a file whose patterns the output should match"
+  [ -f "$reference" ] || die "reference file not found: $reference"
+
+  local message answer
+  message=$(tmpfile)
+  answer=$(tmpfile)
+
+  {
+    printf 'Spec: %s\n\nReference:\n' "$spec"
+    cat "$reference"
+  } >"$message"
+
+  invoke "$WRITER_PROMPT" "$message" >"$answer"
+
+  # The worker sometimes wraps the code in fences despite the instructions.
+  sed -i.bak '/^```/d' "$answer" && rm -f "$answer.bak"
+
+  if [ -z "$target" ]; then
+    cat "$answer"
+  else
+    cp "$answer" "$target"
+    echo "Wrote $(wc -l <"$target" | tr -d ' ') lines to $target" >&2
+  fi
+
+  echo "[shunt: generation kept out of context | worker: $MODEL]" >&2
+}
+
+case "${1:-}" in
+read)
+  shift
+  cmd_read "$@"
+  ;;
+write)
+  shift
+  cmd_write "$@"
+  ;;
+*) usage ;;
+esac

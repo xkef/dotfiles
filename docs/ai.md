@@ -171,6 +171,8 @@ Local skills are tracked once under `home/dot_agents/skills/` and applied to
 - `create-gh-pr/` — opening pull requests
 - `jj/` — Jujutsu usage
 - `research-repo/` — `gh`-based GitHub investigation
+- `bulk-reader/`, `code-writer/` — hand large reads and boilerplate to a
+  cheaper worker model ([details](#token-shunting))
 - `html-summary/` — single-file HTML summaries with diagrams
 - `explain-diff/`, `quiz-diff/`, `microworld/` — diff comprehension tools
 
@@ -198,4 +200,69 @@ To force a refresh from upstream:
 dots-skills refresh
 # or, equivalently:
 rm ~/.cache/dotfiles/skills.shared.*.installed   # next launch reinstalls
+```
+
+## Token shunting
+
+A port of Spotify's [shunt](https://github.com/spotify/portal-ai-plugins)
+plugin. The idea: a frontier model pays full price for every line it reads,
+and most of a large file read is never used. So bulk reads and boilerplate
+generation go to a cheap worker model, and only its short answer enters the
+agent's context. Spotify measured 82 to 94 percent savings on large reads.
+Their worker is a Portal AiKA mode. Here it is a headless `claude -p` run on
+Haiku, so nothing else is needed.
+
+Three layers, from hard gate to soft suggestion:
+
+| Layer  | Path (target)                                 | Role                                                   |
+| ------ | --------------------------------------------- | ------------------------------------------------------ |
+| hook   | `~/.claude/hooks/claude-shunt-gate`           | Blocks a whole-file read over 350 lines, names the fix |
+| script | `~/.local/bin/dots-shunt`                     | Wraps the files and runs the worker                    |
+| skills | `~/.agents/skills/{bulk-reader,code-writer}/` | Tell the agent when and how to call the script         |
+
+The hook runs on `Read` and `Bash`. A `Read` with an offset or a limit passes,
+because the agent then already knows what it needs. A `cat`, `bat`, `less`, or
+`more` on a large file is blocked unless the output is piped or redirected.
+`head` and `tail` pass because their output is bounded. The block message
+names the exact `dots-shunt` command to run instead, so no rule in `CLAUDE.md`
+is needed.
+
+```sh
+dots-shunt read --question "Which functions touch the database?" \
+  --paths src/a.py src/b.py
+dots-shunt write --spec "Tests for UserService" \
+  --reference tests/order_test.py --target tests/user_test.py
+```
+
+Every call stands alone. A follow-up asks again with the same paths, which is
+cheap because the files go to the worker, not the agent. `write` strips
+markdown fences and needs `--reference`: without a file to match, the worker
+writes code that fits nothing in the project.
+
+The worker runs with no tools, no settings, and from an empty directory, so
+the agent's hooks, plugins, and project `CLAUDE.md` stay out of it. The user
+level `~/.claude/CLAUDE.md` still loads, a few kilobytes on Haiku. The call
+runs outside the Claude Code sandbox (`sandbox.excludedCommands`) because the
+nested `claude` needs the network and the keychain.
+
+| Variable                | Default | Purpose                               |
+| ----------------------- | ------- | ------------------------------------- |
+| `DOTS_SHUNT_MIN_LINES`  | `350`   | Line count above which the hook fires |
+| `DOTS_SHUNT_MODEL`      | `haiku` | Worker model                          |
+| `DOTS_SHUNT_BUDGET_USD` | `0.50`  | Spend ceiling for one call            |
+
+What stays with the agent: debugging, editing, and design decisions, which
+need the exact content in context, and small files, where the delegation
+overhead exceeds the savings. Only the read path has hook enforcement.
+`code-writer` relies on the agent picking the skill from its description, the
+same limitation the upstream plugin documents.
+
+Codex and pi see the same two skills through `~/.agents/skills` and can call
+`dots-shunt` too. Neither has a hook system, so for them the skill description
+is the only trigger.
+
+Run the tests, which stub the `claude` binary and need no account:
+
+```sh
+make test
 ```

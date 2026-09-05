@@ -4,7 +4,7 @@ TRACKED_TEXT_FILES := $(filter-out %.png %.jpg %.jpeg %.gif %.webp,$(TRACKED_FIL
 SHELL_FILES := $(filter-out home/.chezmoiscripts/%,$(shell awk 'FNR == 1 && /^\#!.*(env[[:space:]]+bash|\/bash|\/sh)([[:space:]]|$$)/ { print FILENAME }' $(TRACKED_TEXT_FILES) 2>/dev/null))
 FISH_FILES := $(filter %.fish,$(TRACKED_FILES))
 
-.PHONY: help fmt lint lint-sh lint-fish lint-md lint-nvim check clean
+.PHONY: help fmt lint lint-sh lint-fish lint-md lint-nvim test check clean
 
 help: ## Show this help
 	@rg -N '^[a-z][a-z_-]+:.*## ' $(MAKEFILE_LIST) | \
@@ -31,6 +31,9 @@ lint-md: ## Lint markdown
 lint-nvim: ## Load LazyVim headless (local only; needs plugins)
 	NVIM_APPNAME=lazyvim nvim --headless +"lua require('lazy')" +qa
 
+test: ## Run the shell tests (hooks and helper scripts)
+	bash tests/dots-shunt.sh
+
 check: ## Apply the source tree into a throwaway HOME and assert results
 	@tmp=$$(mktemp -d); \
 	cleanup() { rm -rf "$$tmp"; }; \
@@ -45,6 +48,9 @@ check: ## Apply the source tree into a throwaway HOME and assert results
 		.local/bin/dots \
 		.local/bin/dots-keys \
 		.local/bin/macos-defaults \
+		.local/bin/dots-shunt \
+		.claude/hooks/claude-shunt-gate \
+		.agents/skills/bulk-reader/SKILL.md \
 		.config/theme.d/nvim.fish \
 		.config/fish/config.fish \
 		.config/tmux/tmux.conf \

@@ -1,0 +1,58 @@
+#!/bin/bash
+# Refuses to pull a large file whole into the context and points the agent at
+# the bulk-reader skill, which sends the file to a cheaper worker model instead.
+#
+# Registered for Read and Bash. The Read branch lets a targeted read (offset or
+# limit set) through, since the agent then already knows what it needs. The
+# Bash branch catches the dumps that bypass Read: cat, bat, less, and more on a
+# file over the threshold, unless the output is piped or redirected, which is
+# a search or a copy rather than a read into context. head and tail are not
+# gated because their output is bounded.
+#
+# DOTS_SHUNT_MIN_LINES sets the threshold (default 350). Below it, delegation
+# costs more than it saves.
+
+MIN_LINES="${DOTS_SHUNT_MIN_LINES:-350}"
+case "$MIN_LINES" in '' | *[!0-9]*) MIN_LINES=350 ;; esac
+
+INPUT=$(cat)
+TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty')
+
+block() {
+  local path=$1 lines=$2
+  echo "Blocked: $path is $lines lines (threshold $MIN_LINES). Use the bulk-reader skill instead: dots-shunt read --question \"<what you need to know>\" --paths $path. To edit, re-read only the range you need with offset and limit." >&2
+  exit 2
+}
+
+gate() {
+  local path=$1 lines
+  [ -f "$path" ] || return 0
+  lines=$(wc -l <"$path" | tr -d ' ')
+  [ "$lines" -gt "$MIN_LINES" ] && block "$path" "$lines"
+  return 0
+}
+
+case "$TOOL" in
+Read)
+  IFS=$'\t' read -r FILE_PATH OFFSET LIMIT < <(
+    echo "$INPUT" | jq -r '.tool_input | [(.file_path // ""), (.offset // ""), (.limit // "")] | @tsv'
+  )
+  [ -n "$OFFSET" ] || [ -n "$LIMIT" ] && exit 0
+  [ -n "$FILE_PATH" ] || exit 0
+  gate "$FILE_PATH"
+  ;;
+Bash)
+  COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+  [ -n "$COMMAND" ] || exit 0
+  [[ $COMMAND == *"|"* || $COMMAND == *">"* ]] && exit 0
+  [[ $COMMAND =~ ^(cat|bat|less|more)[[:space:]] ]] || exit 0
+
+  read -ra WORDS <<<"$COMMAND"
+  for word in "${WORDS[@]:1}"; do
+    case "$word" in -*) continue ;; esac
+    gate "${word//[\"\']/}"
+  done
+  ;;
+esac
+
+exit 0

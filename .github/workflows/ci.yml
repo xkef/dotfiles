@@ -44,6 +44,8 @@ jobs:
         run: dprint check
       - name: Markdown lint
         run: make lint-md
+      - name: Shell tests
+        run: make test
 
   check:
     strategy:

@@ -108,6 +108,9 @@ unmanaged files, and `.tmpl` files render as templates at apply time.
 - Agent rule files (`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`,
   `~/.pi/agent/AGENTS.md`) render from one shared template plus per-tool
   additions ([details](docs/ai.md)).
+- A Claude Code hook refuses to read a file over 350 lines into context and
+  points at `dots-shunt`, which hands the read to Haiku and returns only the
+  answer ([details](docs/ai.md#token-shunting)).
 - `exact_` directories (fish `conf.d`, tmux `conf.d`, `theme.d`) remove
   files the repo no longer manages, so stale fragments can't survive.
 - Run scripts put the package prefixes on their own `PATH`
