@@ -57,15 +57,14 @@ permission profile, and the memories settings picked from the TUI. pi writes
 changelog state, trust decisions, and any model or theme picked from the TUI.
 All of that is runtime state and stays local.
 
-The two JSON files merge with `jq`. Codex is TOML, which has no such tool in
-the package set, so its script re-asserts a committed block and filters the
-same keys out of the local top-level section. Every managed key is a
-top-level scalar or a short inline array, and Codex serializes top-level keys
-ahead of any table, so a same-named key inside a table is left alone.
+The two JSON files merge with `jq`. Codex's TOML script replaces managed
+keys in the top-level section and the `[tui]` table. It preserves other
+settings, including project trust and the model selected in the TUI.
 
 Codex's committed set pins `model_reasoning_effort`, `approval_policy`,
-`sandbox_mode`, and `notify`. It leaves `model` unset so the TUI picker keeps
-its choice. `notify` points at `~/.local/bin/codex-notify`, which turns the
+`sandbox_mode`, `service_tier`, `approvals_reviewer`, and `notify`. The
+`[tui]` block sets the status line items and enables their colors.
+`notify` points at `~/.local/bin/codex-notify`, which turns the
 turn-complete payload into a `terminal-notifier` or `notify-send`
 notification. Codex runs that command directly, so the script renders an
 absolute path rather than relying on `PATH`.
@@ -76,6 +75,24 @@ stays diffable and lints as JSON. The script pulls it in with
 enough to live inline. Edit whichever one applies, then run `chezmoi apply`.
 After changing pi's `packages`, run `pi update --extensions` to install them
 into `~/.pi/agent/npm`.
+
+### Agent overview
+
+`prefix a` opens the agent picker across tmux sessions. Claude and pi
+publish detailed activity states. Codex panes appear as `running`, based
+on their live process, and contribute to the status bar agent count.
+
+Each agent's row includes a short task summary. Shared agent instructions
+ask the main agent to run `agent-task "short task summary"` at task start
+and when the objective changes. New sessions load these instructions.
+You can also run the command manually in a pane. Summaries are stored
+under `/tmp/tmux-agent-tasks-<uid>`, which is writable from agent sandboxes.
+
+Run the config merge and agent picker tests with Node, chezmoi, and taplo:
+
+```sh
+node --test tests/codex.test.mjs
+```
 
 ### Usage status
 
