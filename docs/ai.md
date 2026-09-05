@@ -3,22 +3,24 @@
 The AI agent suite has two concerns, both managed by chezmoi from
 `home/`:
 
-| Concern    | Owns                                                   | Depends on |
-| ---------- | ------------------------------------------------------ | ---------- |
-| agent base | agent rules, local skills, the `claude`/`pi` launchers | —          |
-| sandbox    | nono Seatbelt/Landlock profiles and the `sb` wrapper   | `nono`     |
+| Concern    | Owns                                                           | Depends on |
+| ---------- | -------------------------------------------------------------- | ---------- |
+| agent base | agent rules, local skills, the `claude`/`codex`/`pi` launchers | —          |
+| sandbox    | nono Seatbelt/Landlock profiles and the `sb` wrapper           | `nono`     |
 
 Everything lands in `$HOME` via `chezmoi apply`.
 
 ## Agent base — rules, skills, launchers
 
-| Path (target)                                  | Purpose                                   |
-| ---------------------------------------------- | ----------------------------------------- |
-| `~/.claude/`                                   | Claude Code settings and skills symlink   |
-| `~/.pi/agent/`                                 | pi rules, settings, and status extensions |
-| `~/.config/fish/functions/{claude,pi}.fish`    | agent launchers                           |
-| `~/.config/fish/functions/_ai_run_pinned.fish` | shared tmux window pinning for launchers  |
-| `~/.local/bin/dots-skills`                     | skills pipeline (install/refresh)         |
+| Path (target)                                     | Purpose                                   |
+| ------------------------------------------------- | ----------------------------------------- |
+| `~/.claude/`                                      | Claude Code settings and skills symlink   |
+| `~/.codex/`                                       | Codex rules and config                    |
+| `~/.pi/agent/`                                    | pi rules, settings, and status extensions |
+| `~/.config/fish/functions/{claude,codex,pi}.fish` | agent launchers                           |
+| `~/.config/fish/functions/_ai_run_pinned.fish`    | shared tmux window pinning for launchers  |
+| `~/.local/bin/codex-notify`                       | Codex turn-complete desktop notification  |
+| `~/.local/bin/dots-skills`                        | skills pipeline (install/refresh)         |
 
 ### Editing agent rules
 
@@ -27,6 +29,7 @@ concise) live in `home/.chezmoitemplates/agents-base.md`. Tool-specific
 additions live inline in the per-tool templates:
 
 - `home/dot_claude/CLAUDE.md.tmpl` → `~/.claude/CLAUDE.md`
+- `home/dot_codex/AGENTS.md.tmpl` → `~/.codex/AGENTS.md`
 - `home/dot_pi/agent/AGENTS.md.tmpl` → `~/.pi/agent/AGENTS.md`
 
 Edit the template, then `chezmoi apply`. **Never hand-edit** the rendered
@@ -35,29 +38,44 @@ overwritten on the next apply.
 
 ### Agent settings
 
-Both agents own their `settings.json` at runtime, so neither file can be
+All three agents own their settings file at runtime, so none of them can be
 managed outright. An ordinary `chezmoi apply` wipes state the agent needs.
 Each one is a chezmoi `modify_` script instead: it reads whatever is on
-disk, merges the committed keys over it with `jq`, and writes the result
-back. Committed keys win on every apply, and runtime keys survive untouched.
+disk, merges the committed keys over it, and writes the result back.
+Committed keys win on every apply, and runtime keys survive untouched.
 
 | Target                      | Script                                      | Committed keys live in                        |
 | --------------------------- | ------------------------------------------- | --------------------------------------------- |
 | `~/.claude/settings.json`   | `home/dot_claude/modify_settings.json.tmpl` | `home/.chezmoitemplates/claude-settings.json` |
+| `~/.codex/config.toml`      | `home/dot_codex/modify_config.toml.tmpl`    | the `managed` heredoc in the script           |
 | `~/.pi/agent/settings.json` | `home/dot_pi/agent/modify_settings.json`    | the `managed` heredoc in the script           |
 
 Claude Code writes a generated `autoMode.environment` profile into its
 settings when auto mode is configured, and rewrites `enabledPlugins` as
-plugins come and go. pi writes changelog state, trust decisions, and any
-model or theme picked from the TUI. All of that is runtime state and stays
-local.
+plugins come and go. Codex writes back the model, the reasoning effort, the
+permission profile, and the memories settings picked from the TUI. pi writes
+changelog state, trust decisions, and any model or theme picked from the TUI.
+All of that is runtime state and stays local.
+
+The two JSON files merge with `jq`. Codex is TOML, which has no such tool in
+the package set, so its script re-asserts a committed block and filters the
+same keys out of the local top-level section. Every managed key is a
+top-level scalar or a short inline array, and Codex serializes top-level keys
+ahead of any table, so a same-named key inside a table is left alone.
+
+Codex's committed set pins `model_reasoning_effort`, `approval_policy`,
+`sandbox_mode`, and `notify`. It leaves `model` unset so the TUI picker keeps
+its choice. `notify` points at `~/.local/bin/codex-notify`, which turns the
+turn-complete payload into a `terminal-notifier` or `notify-send`
+notification. Codex runs that command directly, so the script renders an
+absolute path rather than relying on `PATH`.
 
 Claude's committed set is a plain JSON file under `.chezmoitemplates/`, so it
 stays diffable and lints as JSON. The script pulls it in with
-`{{ template "claude-settings.json" }}`. pi's set is short enough to live
-inline. Edit whichever one applies, then run `chezmoi apply`. After changing
-pi's `packages`, run `pi update --extensions` to install them into
-`~/.pi/agent/npm`.
+`{{ template "claude-settings.json" }}`. Codex's and pi's sets are short
+enough to live inline. Edit whichever one applies, then run `chezmoi apply`.
+After changing pi's `packages`, run `pi update --extensions` to install them
+into `~/.pi/agent/npm`.
 
 ### Usage status
 
@@ -108,36 +126,41 @@ the gap by re-applying the current theme once when the file is missing.
 
 ```sh
 sb claude
+sb codex
 sb pi
 ```
 
-nono is the OS-level boundary. For Claude, `sb` also disables Claude Code's
-built-in bash sandbox (`--settings '{"sandbox":{"enabled":false}}'`) because
-macOS cannot nest Seatbelt — without this, every Bash command inside `sb
-claude` would fail with `sandbox_apply: Operation not permitted`. Plain
-`claude` (no `sb`) keeps the built-in sandbox.
+nono is the OS-level boundary. Two of the agents nest their own Seatbelt
+policy inside it, which macOS refuses, so `sb` turns each one off. Claude
+Code gets `--settings '{"sandbox":{"enabled":false}}'`, without which every
+Bash command inside `sb claude` fails with `sandbox_apply: Operation not
+permitted`. Codex gets `-s danger-full-access`, which relaxes only its
+sandbox: the `on-request` approval policy still applies. Plain `claude` and
+plain `codex` (no `sb`) keep their own sandboxes.
 
-The two profiles grant the same toolchain surface. `claude.json` inherits
-most of it from the registry-managed `claude-code` profile. `pi.json`
-extends `default`, so it names the equivalent policy groups explicitly:
-`git_config`, `mise_manager`, `node_runtime`, `user_caches_macos`, and
-`unlink_protection`. Both allow `~/Library/Keychains` for the `gh`
-credential helper, and both read `~/.config/gh`, `~/.config/jj`, and the
-mise data and state directories. `pi.json` also allows `~/.agents`, without
-which pi starts with no skills, and `~/.pi` covers pi's own npm package
-tree.
+The three profiles grant the same toolchain surface. `claude.json` inherits
+most of it from the registry-managed `claude-code` profile. `codex.json` and
+`pi.json` extend `default`, so they name the equivalent policy groups
+explicitly: `git_config`, `mise_manager`, `node_runtime`,
+`user_caches_macos`, and `unlink_protection`. All three allow
+`~/Library/Keychains` for the `gh` credential helper, and all three read
+`~/.config/gh`, `~/.config/jj`, and the mise data and state directories.
+`codex.json` and `pi.json` also allow `~/.agents`, without which the agent
+starts with no skills, plus `~/.codex` and `~/.pi` for each agent's own
+state.
 
-After editing a profile, check it with `nono profile validate pi` and
-`nono profile show pi`.
+After editing a profile, check it with `nono profile validate codex` and
+`nono profile show codex`.
 
 ## When to use which agent
 
 | Agent       | Good for                                                        |
 | ----------- | --------------------------------------------------------------- |
 | Claude Code | Long-running refactors; skills/agents ecosystem; best reasoning |
+| Codex       | ChatGPT subscription work; second opinion on a Claude answer    |
 | pi          | lightweight coding agent                                        |
 
-Both share the nono profiles under `~/.config/nono/`.
+All three share the nono profiles under `~/.config/nono/`.
 
 ## Skills
 
@@ -152,7 +175,7 @@ Local skills are tracked once under `home/dot_agents/skills/` and applied to
 - `explain-diff/`, `quiz-diff/`, `microworld/` — diff comprehension tools
 
 Claude sees them through the `~/.claude/skills` symlink (managed by
-chezmoi); pi loads `~/.agents/skills` directly via the Agent Skills
+chezmoi); Codex and pi load `~/.agents/skills` directly via the Agent Skills
 standard.
 
 Everything else is pulled from upstream on first launch:

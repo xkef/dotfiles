@@ -68,6 +68,7 @@ brews = [
   "xdg-ninja",           # audit XDG base-dir compliance
 ]
 casks = [
+  "codex",                         # OpenAI Codex CLI (shipped as a cask)
   "ghostty",                       # GPU-accelerated terminal
   "zed",                           # GPU-accelerated code editor
   "neovide-app",                   # GUI client for Neovim
