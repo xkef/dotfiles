@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Merge the tracked Codex config over whatever Codex has written locally.
+#
+# Codex owns config.toml at runtime: the model picker, the reasoning-effort
+# picker, and the permission and memories screens all write back to it.
+# Managing the file outright would drop that state on every apply, so this
+# re-asserts the committed keys and leaves the rest of the file alone.
+#
+# Every managed key is a top-level scalar or a short inline array, and Codex
+# serializes top-level keys ahead of any table. Dropping the local copy is
+# therefore a line filter over the region before the first table header, which
+# leaves a same-named key inside a table untouched. The filter also drops the
+# header line this script writes, so re-running over its own output is a
+# no-op and `chezmoi verify` stays quiet.
+set -euo pipefail
+
+readonly HEADER='# Managed by chezmoi. Edit home/dot_codex/modify_config.toml.tmpl instead.'
+readonly MANAGED_KEYS='model_reasoning_effort|approval_policy|sandbox_mode|notify'
+
+managed=$(
+  printf '%s\n' "$HEADER"
+  cat <<'MANAGED_TOML'
+model_reasoning_effort = "xhigh"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+MANAGED_TOML
+  # Codex runs the notify command directly, so the path cannot rely on a shell
+  # expanding a tilde or on ~/.local/bin being on PATH.
+  printf 'notify = ["%s/.local/bin/codex-notify"]\n' '{{ .chezmoi.homeDir }}'
+)
+
+local_config=$(cat)
+
+printf '%s\n' "$managed"
+
+[ -n "$local_config" ] || exit 0
+
+printf '%s\n' "$local_config" | awk -v keys="$MANAGED_KEYS" -v header="$HEADER" '
+  /^[[:space:]]*\[/ { in_table = 1 }
+  in_table { print; next }
+  $0 == header { next }
+  $0 ~ "^[[:space:]]*(" keys ")[[:space:]]*=" { next }
+  { print }
+'

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Desktop notification for a finished Codex turn.
+#
+# Codex passes the payload as one JSON argument rather than on stdin, and
+# emits a single event type today. Wired in through the `notify` key in
+# ~/.codex/config.toml.
+set -euo pipefail
+
+readonly TURN_COMPLETE=agent-turn-complete
+
+payload=${1:-}
+[ -n "$payload" ] || exit 0
+
+[ "$(jq -r '.type // empty' <<<"$payload")" = "$TURN_COMPLETE" ] || exit 0
+
+msg=$(jq -r '."last-assistant-message" // empty' <<<"$payload")
+
+if command -v terminal-notifier &>/dev/null; then
+  terminal-notifier -title Codex -subtitle Notification \
+    -activate com.mitchellh.ghostty -message "$msg"
+elif command -v notify-send &>/dev/null; then
+  notify-send Codex "$msg"
+fi

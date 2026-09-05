@@ -62,7 +62,7 @@ docker run -it --rm archlinux:latest bash -c '
 | [Ghostty](https://ghostty.org)                                   | Terminal emulator config                                   |
 | [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder in the shell, tmux, and neovim                |
 | [atuin](https://atuin.sh)                                        | Searchable shell history with sync                         |
-| [Claude Code](https://claude.ai/), pi                            | AI coding agents, `sb claude` for the sandbox              |
+| [Claude Code](https://claude.ai/), Codex, pi                     | AI coding agents, `sb claude` for the sandbox              |
 | [Jujutsu](https://github.com/jj-vcs/jj)                          | Git-compatible version control, `jj`, with a simpler model |
 | [Vale](https://vale.sh)                                          | Prose linter for markdown, Google style plus AI-tell rules |
 | eza, bat, fd, ripgrep, zoxide, yazi, mise                        | Modern command-line defaults and workflow tools            |
@@ -79,7 +79,7 @@ docker run -it --rm archlinux:latest bash -c '
 │   ├── dot_config/                #   ~/.config — one dir per tool:
 │   │                              #     fish/ tmux/ lazyvim/ ghostty/ git/ …
 │   ├── dot_local/bin/             #   theme, dots-keys, macos-defaults, vm
-│   ├── dot_claude/ + dot_pi/      #   AI agent rules from one template
+│   ├── dot_claude/ dot_codex/ dot_pi/ # AI agent rules from one template
 │   └── private_dot_ssh/           #   ~/.ssh, 0700/0600 enforced by chezmoi
 ├── docs/                          # screenshot + AI tooling docs
 ├── Makefile                       # fmt / lint / check
@@ -105,9 +105,9 @@ unmanaged files, and `.tmpl` files render as templates at apply time.
 - A template renders the git identity for work, gated on the one-time
   `work` prompt and on `op`. `onepasswordRead` fills it at apply time, so
   the repo doesn't store secrets.
-- Agent rule files (`~/.claude/CLAUDE.md`, `~/.pi/agent/AGENTS.md`) render
-  from one shared template plus per-tool additions
-  ([details](docs/ai.md)).
+- Agent rule files (`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`,
+  `~/.pi/agent/AGENTS.md`) render from one shared template plus per-tool
+  additions ([details](docs/ai.md)).
 - `exact_` directories (fish `conf.d`, tmux `conf.d`, `theme.d`) remove
   files the repo no longer manages, so stale fragments can't survive.
 - Run scripts put the package prefixes on their own `PATH`

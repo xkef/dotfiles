@@ -1,0 +1,41 @@
+{
+  "$schema": "https://nono.dev/schemas/nono-profile.schema.json",
+  "extends": "default",
+  "meta": {
+    "name": "codex",
+    "version": "1.0.0",
+    "description": "OpenAI Codex CLI with mise, node, jj, maven, npm, cargo, shared skills, and keychain access"
+  },
+  "groups": {
+    "include": [
+      "git_config",
+      "mise_manager",
+      "node_runtime",
+      "user_caches_macos",
+      "unlink_protection"
+    ]
+  },
+  "filesystem": {
+    "allow": [
+      "$HOME/.codex",
+      "$HOME/.agents",
+      "$HOME/.m2",
+      "$HOME/.npm",
+      "$XDG_CACHE_HOME/mise",
+      "$XDG_CONFIG_HOME/jj",
+      "$XDG_DATA_HOME/cargo",
+      "$HOME/Library/Keychains"
+    ],
+    "read": [
+      "$XDG_DATA_HOME/mise",
+      "$XDG_STATE_HOME/mise",
+      "$XDG_CONFIG_HOME/gh",
+      "$XDG_CONFIG_HOME/nono/profiles",
+      "$XDG_CONFIG_HOME/nono/packages"
+    ],
+    "bypass_protection": ["$HOME/Library/Keychains"]
+  },
+  "workdir": {
+    "access": "readwrite"
+  }
+}

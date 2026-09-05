@@ -2,7 +2,7 @@ function sb -d "Run a command inside a nono sandbox"
     if test (count $argv) -eq 0
         echo "Usage: sb <command> [args...]" >&2
         echo "Runs <command> in a nono sandbox using a matching profile." >&2
-        echo "Known profiles: claude, pi" >&2
+        echo "Known profiles: claude, codex, pi" >&2
         return 1
     end
 
@@ -12,6 +12,8 @@ function sb -d "Run a command inside a nono sandbox"
     switch $cmd
         case claude
             command -q dots-skills; and dots-skills ensure claude-code
+        case codex
+            command -q dots-skills; and dots-skills ensure codex
         case pi
             command -q dots-skills; and dots-skills ensure pi
     end
@@ -36,6 +38,12 @@ function sb -d "Run a command inside a nono sandbox"
             # inside nono — macOS cannot nest Seatbelt, so every Bash command
             # would otherwise fail with "sandbox_apply: Operation not permitted".
             set -a cmd_args --settings '{"sandbox":{"enabled":false}}'
+        case codex
+            set -a nono_args --profile codex
+            # Codex nests its own Seatbelt policy for the same reason, so hand
+            # the OS-level boundary to nono. Approval prompts stay on, because
+            # this only relaxes the sandbox and not the approval policy.
+            set -a cmd_args -s danger-full-access
         case '*'
             set -a nono_args --profile $cmd
     end
