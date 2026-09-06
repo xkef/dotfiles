@@ -139,6 +139,7 @@ apply NSGlobalDomain ApplePressAndHoldEnabled -bool false
 apply NSGlobalDomain KeyRepeat -int 2
 apply NSGlobalDomain InitialKeyRepeat -int 15
 apply NSGlobalDomain AppleKeyboardUIMode -int 3
+apply NSGlobalDomain TSMLanguageIndicatorEnabled -bool false
 
 # CapsLock → Escape (hidutil persisted via LaunchAgent)
 HIDUTIL_PLIST="$HOME/Library/LaunchAgents/com.local.KeyRemapping.plist"
