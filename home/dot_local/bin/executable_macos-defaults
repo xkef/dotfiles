@@ -140,6 +140,9 @@ apply NSGlobalDomain KeyRepeat -int 2
 apply NSGlobalDomain InitialKeyRepeat -int 15
 apply NSGlobalDomain AppleKeyboardUIMode -int 3
 apply NSGlobalDomain TSMLanguageIndicatorEnabled -bool false
+apply NSGlobalDomain NSAutomaticInlinePredictionEnabled -bool false
+apply NSGlobalDomain AppleICUForce24HourTime -bool true
+apply NSGlobalDomain AppleLocale -string "en_US@rg=chzzzz"
 
 # CapsLock → Escape (hidutil persisted via LaunchAgent)
 HIDUTIL_PLIST="$HOME/Library/LaunchAgents/com.local.KeyRemapping.plist"
@@ -192,6 +195,7 @@ apply com.apple.finder NewWindowTarget -string "PfHm"
 apply com.apple.finder NewWindowTargetPath -string "file://$HOME/"
 apply com.apple.finder ShowRemovableMediaOnDesktop -bool false
 apply com.apple.finder ShowMountedServersOnDesktop -bool true
+apply com.apple.finder ShowHardDrivesOnDesktop -bool true
 apply com.apple.finder ShowRecentTags -bool false
 apply com.apple.finder DisableAllAnimations -bool true
 apply com.apple.finder QuitMenuItem -bool true
@@ -301,6 +305,8 @@ apply com.apple.dock mru-spaces -bool false
 apply com.apple.dock launchanim -bool false
 apply com.apple.dock expose-animation-duration -float 0.1
 apply com.apple.dock tilesize -int 36
+apply com.apple.dock expose-group-apps -bool true
+apply com.apple.dock minimize-to-application -bool true
 
 # ── Dialogs & Windows ────────────────────────────────
 
@@ -311,6 +317,12 @@ apply NSGlobalDomain PMPrintingExpandedStateForPrint -bool true
 apply NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
 apply NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
 apply NSGlobalDomain NSWindowResizeTime -float 0.001
+apply com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
+apply com.apple.WindowManager EnableTilingByEdgeDrag -bool false
+apply com.apple.WindowManager EnableTopTilingByEdgeDrag -bool false
+apply com.apple.WindowManager EnableTilingOptionAccelerator -bool false
+apply com.apple.WindowManager EnableTiledWindowMargins -bool false
+apply com.apple.WindowManager StandardHideDesktopIcons -bool true
 apply com.apple.print.PrintingPrefs "Quit When Finished" -bool true
 
 # ── Screen ────────────────────────────────────────────
@@ -320,13 +332,20 @@ apply com.apple.screensaver askForPassword -int 1
 apply com.apple.screensaver askForPasswordDelay -int 0
 apply com.apple.screencapture disable-shadow -bool true
 apply com.apple.screencapture type -string "png"
+SCREENSHOT_DIR="$HOME/Pictures/Screenshots"
+$DRY_RUN || mkdir -p "$SCREENSHOT_DIR"
+apply com.apple.screencapture location -string "$SCREENSHOT_DIR"
+apply com.apple.menuextra.clock ShowDate -int 0
 
 # ── Trackpad ──────────────────────────────────────────
 
 $DRY_RUN || log "Trackpad..."
 apply com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+apply com.apple.AppleMultitouchTrackpad Clicking -bool true
 apply -currentHost NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 apply NSGlobalDomain com.apple.mouse.tapBehavior -int 1
+apply NSGlobalDomain com.apple.swipescrolldirection -bool false
+apply NSGlobalDomain com.apple.trackpad.scaling -float 2
 
 # ── Sound ─────────────────────────────────────────────
 
@@ -362,6 +381,8 @@ apply com.apple.SoftwareUpdate AutomaticCheckEnabled -bool true
 apply com.apple.SoftwareUpdate ScheduleFrequency -int 1
 apply com.apple.SoftwareUpdate AutomaticDownload -int 1
 apply com.apple.SoftwareUpdate CriticalUpdateInstall -int 1
+apply com.apple.SoftwareUpdate ConfigDataInstall -int 1
+apply com.apple.commerce AutoUpdate -bool true
 
 # ── Finish ────────────────────────────────────────────
 
