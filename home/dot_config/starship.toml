@@ -11,8 +11,7 @@ ${custom.jj_change}\
 ${custom.jj_status}\
 ${custom.java}\
 $python\
-$nodejs\
-$docker_context"""
+$nodejs"""
 
 [character]
 success_symbol = '[❯](bold green)'
@@ -78,10 +77,6 @@ symbol = ' '
 
 [nodejs]
 format = '[$symbol($version)]($style) '
-symbol = ' '
-
-[docker_context]
-format = '[$symbol$context]($style) '
 symbol = ' '
 
 # --ignore-working-copy skips the working-copy snapshot (the cost that scales
