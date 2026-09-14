@@ -139,12 +139,13 @@ the gap by re-applying the current theme once when the file is missing.
 
 `sb` launches a supported agent inside a [nono](https://nono.sh) sandbox
 (Seatbelt on macOS, Landlock on Linux) using a matching profile under
-`~/.config/nono/profiles/`:
+`~/.config/nono/profiles/`. The `claude`, `codex`, and `pi` fish functions
+route through it, so a plain `claude` is already `sb claude`. Bypass the
+sandbox with `command claude`:
 
 ```sh
-sb claude
-sb codex
-sb pi
+claude            # same as: sb claude
+command claude    # no sandbox
 ```
 
 nono is the OS-level boundary. Two of the agents nest their own Seatbelt
@@ -152,16 +153,21 @@ policy inside it, which macOS refuses, so `sb` turns each one off. Claude
 Code gets `--settings '{"sandbox":{"enabled":false}}'`, without which every
 Bash command inside `sb claude` fails with `sandbox_apply: Operation not
 permitted`. Codex gets `-s danger-full-access`, which relaxes only its
-sandbox: the `on-request` approval policy still applies. Plain `claude` and
-plain `codex` (no `sb`) keep their own sandboxes.
+sandbox: the `on-request` approval policy still applies. Only `command
+claude` and `command codex` keep the agents' own sandboxes.
 
-The three profiles grant the same toolchain surface. `claude.json` inherits
-most of it from the registry-managed `claude-code` profile. `codex.json` and
-`pi.json` extend `default`, so they name the equivalent policy groups
-explicitly: `git_config`, `mise_manager`, `node_runtime`,
+The three profiles grant the same toolchain surface. All extend `default`.
+`claude.json` inlines the registry pack `always-further/claude` profile
+(groups, `~/.claude`, lock files, `open_urls`) because the pack still uses
+the `undo` field that nono 0.75 renamed to `rollback`, which makes it
+unparseable. Drop the inlined part and `extends: "claude-code"` again once
+the pack is fixed. `codex.json` and `pi.json` name the equivalent policy
+groups explicitly: `git_config`, `mise_manager`, `node_runtime`,
 `user_caches_macos`, and `unlink_protection`. All three allow
 `~/Library/Keychains` for the `gh` credential helper, and all three read
-`~/.config/gh`, `~/.config/jj`, and the mise data and state directories.
+`~/.config/gh`, `~/.config/jj`, and the mise data and state directories,
+and all three write `~/.local/state/agents`, where the status hook and
+extensions publish state for the `tmux-agents` picker.
 `codex.json` and `pi.json` also allow `~/.agents`, without which the agent
 starts with no skills, plus `~/.codex` and `~/.pi` for each agent's own
 state.
