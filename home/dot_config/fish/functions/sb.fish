@@ -1,4 +1,6 @@
 function sb -d "Run a command inside a nono sandbox"
+    # The claude, codex, and pi functions route through here, so every
+    # interactive launch is sandboxed. Use `command <tool>` to skip it.
     if test (count $argv) -eq 0
         echo "Usage: sb <command> [args...]" >&2
         echo "Runs <command> in a nono sandbox using a matching profile." >&2
@@ -22,7 +24,8 @@ function sb -d "Run a command inside a nono sandbox"
         printf '\033[33mNo sandbox available (install nono)\033[0m\n' >&2
         read -P "Continue without sandbox? [y/N] " reply
         string match -qi y -- $reply; or return 1
-        exec $cmd $rest
+        command $cmd $rest
+        return $status
     end
 
     set -l nono_args --silent --log-file /dev/null --allow-cwd --read $DOTFILES_DIR
@@ -48,5 +51,7 @@ function sb -d "Run a command inside a nono sandbox"
             set -a nono_args --profile $cmd
     end
 
-    exec nono run $nono_args -- $cmd $cmd_args $rest
+    # No exec: the claude, codex, and pi wrappers call this function and
+    # restore their tmux window state after the agent exits.
+    nono run $nono_args -- $cmd $cmd_args $rest
 end

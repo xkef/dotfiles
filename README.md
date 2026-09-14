@@ -62,7 +62,7 @@ docker run -it --rm archlinux:latest bash -c '
 | [Ghostty](https://ghostty.org)                                   | Terminal emulator config                                   |
 | [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder in the shell, tmux, and neovim                |
 | [atuin](https://atuin.sh)                                        | Searchable shell history with sync                         |
-| [Claude Code](https://claude.ai/), Codex, pi                     | AI coding agents, `sb claude` for the sandbox              |
+| [Claude Code](https://claude.ai/), Codex, pi                     | AI coding agents, always launched in a nono sandbox        |
 | [Jujutsu](https://github.com/jj-vcs/jj)                          | Git-compatible version control, `jj`, with a simpler model |
 | [Vale](https://vale.sh)                                          | Prose linter for markdown, Google style plus AI-tell rules |
 | eza, bat, fd, ripgrep, zoxide, yazi, mise                        | Modern command-line defaults and workflow tools            |

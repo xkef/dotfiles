@@ -17,7 +17,7 @@ abbr -a tn 'tmux new -s'
 abbr -a tl 'tmux list-sessions'
 
 # AI tools
-# Use `sb <tool>` for an explicit nono sandbox.
+# claude, codex, and pi (functions/) run in a nono sandbox via `sb`.
 
 # Pipe --help through bat with syntax highlighting (via folke/dot)
 abbr -a --position anywhere --set-cursor -- -h "-h 2>&1 | bat --plain --language=help"
