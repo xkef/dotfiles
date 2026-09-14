@@ -3,7 +3,7 @@
   "extends": "default",
   "meta": {
     "name": "codex",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "OpenAI Codex CLI with mise, node, jj, maven, npm, cargo, shared skills, and keychain access"
   },
   "groups": {
@@ -19,6 +19,7 @@
     "allow": [
       "$HOME/.codex",
       "$HOME/.agents",
+      "$XDG_STATE_HOME/agents",
       "$HOME/.m2",
       "$HOME/.npm",
       "$XDG_CACHE_HOME/mise",

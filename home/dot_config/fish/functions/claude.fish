@@ -4,7 +4,5 @@ function claude --wraps claude --description "claude-code: auto-install via offi
         curl -fsSL https://claude.ai/install.sh | bash -s -- latest
     end
 
-    command -q dots-skills; and dots-skills ensure claude-code
-
-    _ai_run_pinned claude claude $argv
+    _ai_run_pinned claude sb claude $argv
 end

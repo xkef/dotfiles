@@ -179,6 +179,16 @@ PLIST
     [[ "${CI:-}" == true ]]
 fi
 
+# ── Appearance ────────────────────────────────────────
+
+$DRY_RUN || log "Appearance..."
+# Liquid Glass slider, 1 is fully tinted. The universalaccess
+# writes need Full Disk Access for the terminal.
+apply NSGlobalDomain NSGlassTintAmount -float 1
+apply com.apple.universalaccess reduceTransparency -bool true
+apply com.apple.universalaccess reduceMotion -bool true
+apply com.apple.universalaccess increaseContrast -bool true
+
 # ── Finder ────────────────────────────────────────────
 
 $DRY_RUN || log "Finder..."
@@ -307,6 +317,20 @@ apply com.apple.dock expose-animation-duration -float 0.1
 apply com.apple.dock tilesize -int 36
 apply com.apple.dock expose-group-apps -bool true
 apply com.apple.dock minimize-to-application -bool true
+# Hot corners: 1 is no action.
+apply com.apple.dock wvous-br-corner -int 1
+
+# ── Windows ───────────────────────────────────────────
+
+$DRY_RUN || log "Windows..."
+apply com.apple.WindowManager GloballyEnabled -bool false
+apply com.apple.WindowManager EnableTiledWindowMargins -bool false
+apply com.apple.WindowManager EnableTilingByEdgeDrag -bool false
+apply com.apple.WindowManager EnableTopTilingByEdgeDrag -bool false
+apply com.apple.WindowManager EnableTilingOptionAccelerator -bool false
+apply com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
+apply com.apple.WindowManager StandardHideDesktopIcons -bool true
+apply com.apple.WindowManager HideDesktop -bool true
 
 # ── Dialogs & Windows ────────────────────────────────
 
@@ -317,12 +341,6 @@ apply NSGlobalDomain PMPrintingExpandedStateForPrint -bool true
 apply NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true
 apply NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
 apply NSGlobalDomain NSWindowResizeTime -float 0.001
-apply com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
-apply com.apple.WindowManager EnableTilingByEdgeDrag -bool false
-apply com.apple.WindowManager EnableTopTilingByEdgeDrag -bool false
-apply com.apple.WindowManager EnableTilingOptionAccelerator -bool false
-apply com.apple.WindowManager EnableTiledWindowMargins -bool false
-apply com.apple.WindowManager StandardHideDesktopIcons -bool true
 apply com.apple.print.PrintingPrefs "Quit When Finished" -bool true
 
 # ── Screen ────────────────────────────────────────────
@@ -346,6 +364,7 @@ apply -currentHost NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 apply NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 apply NSGlobalDomain com.apple.swipescrolldirection -bool false
 apply NSGlobalDomain com.apple.trackpad.scaling -float 2
+apply NSGlobalDomain AppleEnableSwipeNavigateWithScrolls -bool false
 
 # ── Sound ─────────────────────────────────────────────
 

@@ -4,7 +4,5 @@ function codex --wraps codex --description "OpenAI Codex CLI: pin tmux window na
         return 127
     end
 
-    command -q dots-skills; and dots-skills ensure codex
-
-    _ai_run_pinned codex codex $argv
+    _ai_run_pinned codex sb codex $argv
 end

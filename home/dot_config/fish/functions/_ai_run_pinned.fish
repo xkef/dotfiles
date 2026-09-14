@@ -1,5 +1,5 @@
-# Runs via `command`, bypassing function wrappers — the callers are the very
-# fish functions (claude, pi) that shadow the binaries they launch.
+# The callers (claude, codex, pi) pass `sb <tool>`, so the agent starts in a
+# nono sandbox and never re-enters the fish wrapper that shadows its binary.
 function _ai_run_pinned -d "Run a command with the tmux window pinned to its name"
     set -l name $argv[1]
     set -l cmd $argv[2..-1]
@@ -16,7 +16,7 @@ function _ai_run_pinned -d "Run a command with the tmux window pinned to its nam
         end
     end
 
-    command $cmd
+    $cmd
     set -l rc $status
 
     if test $pinned -eq 1
