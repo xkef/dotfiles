@@ -1,6 +1,5 @@
--- Fast motion plugin: labelled jumps like easymotion / hop.
--- Works standalone; catppuccin has first-class flash integration (see
--- colorschemes.lua).
+-- Labeled jumps, like easymotion or hop. catppuccin integrates with flash,
+-- see colorschemes.lua.
 return {
   {
     "folke/flash.nvim",
@@ -12,7 +11,7 @@ return {
       },
     },
     keys = {
-      -- @key nvim :: s :: Flash jump (labelled)
+      -- @key nvim :: s :: Flash jump (labeled)
       {
         "s",
         function()

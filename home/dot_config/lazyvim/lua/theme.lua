@@ -1,6 +1,6 @@
--- Theme system: reads the current theme from the Ghostty config and derives
--- the neovim colorscheme from the Ghostty theme name via convention.
--- Auto-reloads on FocusGained so `theme <name>` in another pane takes effect.
+-- Reads the current theme from the Ghostty config and derives the neovim
+-- colorscheme from the theme name by convention. Reloads on FocusGained so
+-- `theme <name>` in another pane takes effect.
 
 local M = {}
 
@@ -57,8 +57,8 @@ local function derive_colorscheme(ghostty_name)
   return "default"
 end
 
--- The current theme lives in the untracked include fragment written by the
--- `theme` command; the tracked Ghostty config only carries the default.
+-- The `theme` command writes the current theme to an untracked include
+-- fragment. The tracked Ghostty config carries only the default.
 function M.read()
   for _, path in ipairs({ ghostty_dir() .. "/theme", ghostty_dir() .. "/config" }) do
     local f = io.open(path, "r")

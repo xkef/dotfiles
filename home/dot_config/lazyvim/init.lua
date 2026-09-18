@@ -1,13 +1,12 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
--- The python extra reads this when its spec is imported, so it has to be set
--- before lazy.setup() below. LazyVim defaults to pyright; basedpyright is the
--- maintained fork and reports the stricter diagnostics these projects type for.
+-- The python extra reads this when lazy.setup() imports its spec, so it must
+-- come first. LazyVim defaults to pyright. basedpyright is the maintained fork
+-- and reports the stricter diagnostics these projects type for.
 vim.g.lazyvim_python_lsp = "basedpyright"
 
--- Global debug helpers backed by snacks.debug (via folke/dot).
--- Usage: dd(some_table), bt() for backtrace.
+-- Debug helpers from folke/dot: dd(value) inspects, bt() prints a backtrace.
 _G.dd = function(...)
   Snacks.debug.inspect(...)
 end
@@ -61,5 +60,5 @@ require("lazy").setup({
   },
 })
 
--- Theme auto-reload is registered in lua/config/autocmds.lua when the theme
--- package is installed. Initial colorscheme is applied above via LazyVim.
+-- lua/config/autocmds.lua registers the theme reload. LazyVim applies the
+-- initial colorscheme above.

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Desktop notification for a finished Codex turn.
 #
-# Codex passes the payload as one JSON argument rather than on stdin, and
-# emits a single event type today. Wired in through the `notify` key in
-# ~/.codex/config.toml.
+# Codex passes the payload as one JSON argument instead of on stdin, and
+# emits one event type today. The `notify` key in ~/.codex/config.toml
+# points here.
 set -euo pipefail
 
 readonly TURN_COMPLETE=agent-turn-complete

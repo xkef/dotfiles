@@ -24,10 +24,11 @@ fish_style_pwd_dir_length = 1
 truncation_symbol = '…/'
 style = 'dimmed cyan'
 
-# In colocated jj repos the jj modules own the prompt; git info (a detached
-# " HEAD", duplicate status counts) is noise. Built-in modules can't be
-# gated on external state, so this wrapper shells back into `starship module`
-# (reusing the [git_*] sections below) and only renders outside jj repos.
+# In colocated jj repos the jj modules render the prompt, and git info, a
+# detached " HEAD" and duplicate status counts, adds noise. Built-in modules
+# can't depend on external state, so this wrapper shells back into
+# `starship module`, which reuses the [git_*] sections below, and renders
+# only outside jj repos.
 [custom.git]
 command = 'starship module git_branch; starship module git_status; starship module git_metrics'
 when = '! jj --ignore-working-copy root >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1'
@@ -79,16 +80,17 @@ symbol = ' '
 format = '[$symbol($version)]($style) '
 symbol = ' '
 
-# --ignore-working-copy skips the working-copy snapshot (the cost that scales
-# with repo size); the prompt reflects the last snapshot, refreshed on any real
-# jj command.
+# --ignore-working-copy skips the working-copy snapshot, the cost that scales
+# with repo size. The prompt reflects the last snapshot, which any real jj
+# command refreshes.
 [custom.jj_change]
 command = '''jj --ignore-working-copy log --no-graph -r @ -T 'separate(" ", change_id.shortest(8), bookmarks.join(", "))' 2>/dev/null'''
 when = 'jj --ignore-working-copy root 2>/dev/null'
 format = '[ $output]($style) '
 style = 'purple'
 
-# Flags + A/M/D file counts from a single template call (no jj diff subprocess).
+# Flags and added, modified, and deleted counts from one template call,
+# without a jj diff subprocess.
 [custom.jj_status]
 command = '''jj --ignore-working-copy log --no-graph -r @ -T 'separate("", if(conflict, "⚠ "), if(empty, "∅ "), if(diff.files().filter(|f| f.status()=="added").len() > 0, "+" ++ diff.files().filter(|f| f.status()=="added").len() ++ " "), if(diff.files().filter(|f| f.status()=="modified").len() > 0, "!" ++ diff.files().filter(|f| f.status()=="modified").len() ++ " "), if(diff.files().filter(|f| f.status()=="deleted").len() > 0, "-" ++ diff.files().filter(|f| f.status()=="deleted").len() ++ " "))' 2>/dev/null'''
 when = 'jj --ignore-working-copy root 2>/dev/null'

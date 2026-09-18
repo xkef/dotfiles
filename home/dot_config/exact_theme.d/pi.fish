@@ -1,10 +1,9 @@
-# Theme adapter (agent base): regenerate pi's palette-derived theme file.
-# The tracked pi settings select the theme by name ("dots"), and pi watches
-# the active custom theme file and reloads it on change — so rewriting this
-# recolors running pi sessions, not just the next launch. The file is
-# machine-local and untracked, like the delta adapter's include.
-# Sourced by `theme` with $t_palette/$t_bg/$t_fg set; uses the _blend_hex
-# helper.
+# Theme adapter for pi: regenerates the palette-derived theme file. The
+# tracked pi settings select the theme by name, "dots". pi watches the
+# active custom theme file and reloads it on change, so rewriting it
+# recolors running pi sessions. The file is machine-local and untracked,
+# like the delta adapter's include. `theme` sources this with $t_palette,
+# $t_bg, and $t_fg set. It uses the _blend_hex helper.
 set -l pi_agent_dir (set -q PI_CODING_AGENT_DIR && echo $PI_CODING_AGENT_DIR || echo $HOME/.pi/agent)
 if test -d $pi_agent_dir
     set -l pi_red $t_palette[2]
@@ -17,7 +16,7 @@ if test -d $pi_agent_dir
     set -l pi_br_magenta $t_palette[14]
     set -l pi_br_cyan $t_palette[15]
 
-    # Blend the grays toward the foreground rather than taking the ANSI
+    # Blend the grays toward the foreground instead of taking the ANSI
     # bright-black slot, so the ramp inverts by itself under light themes.
     set -l pi_gray (_blend_hex $t_bg $t_fg 60)
     set -l pi_dim_gray (_blend_hex $t_bg $t_fg 45)
@@ -34,9 +33,9 @@ if test -d $pi_agent_dir
     set -l pi_error_bg (_blend_hex $t_bg $pi_red 14)
     set -l pi_info_bg (_blend_hex $t_bg $pi_yellow 18)
 
-    # pi requires all 51 mandatory tokens in every theme; the four optional
-    # ones are set too so search matches and the scrollbar do not collapse
-    # into selectedBg.
+    # pi requires all 51 mandatory tokens in every theme. The four optional
+    # ones follow so search matches and the scrollbar don't collapse into
+    # selectedBg.
     set -l pi_tokens \
         accent:$pi_cyan \
         border:$pi_blue \

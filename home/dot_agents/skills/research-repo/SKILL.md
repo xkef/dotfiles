@@ -1,21 +1,20 @@
 ---
 name: research-repo
-description: Research GitHub repositories, issues, PRs, users, or any GitHub-hosted information. TRIGGER when the user asks about a GitHub repo, wants to investigate a project, compare repos, or look up anything on GitHub.
+description: Research GitHub repositories, issues, pull requests, users, or anything else GitHub hosts. Use when the user asks about a GitHub repo or wants to look something up on GitHub.
 ---
 
-# Research GitHub using the `gh` CLI
+# Research GitHub with `gh`
 
-Always use the `gh` CLI to research GitHub. Never use web
-search or web fetch to access GitHub -- `gh` provides
-authenticated, structured access to all GitHub data.
+Use `gh` to research GitHub. Never use web search or web
+fetch for it. `gh` gives authenticated, structured access
+to every GitHub resource.
 
 ## Extracting the repo identifier
 
-If the user provides a full URL like
-`https://github.com/owner/repo`, extract the `owner/repo`
-portion. If the user provides just a repo name without an
-owner, use `gh search repos <name> --limit 5` to find
-candidates and confirm with the user if ambiguous.
+From a full URL like `https://github.com/owner/repo`,
+take `owner/repo`. From a bare repo name, run
+`gh search repos <name> --limit 5` and confirm the match
+with the user if more than one fits.
 
 ## Commands by category
 
@@ -68,8 +67,8 @@ gh search code <query> --limit 10
 
 ## Presenting results
 
-Synthesize gathered data into a concise, factual summary.
-Highlight anything notable (archived, no license, unusually
-active/inactive, high issue count, stale releases).
-Structure around what the user asked -- do not dump all
-available data if they asked a specific question.
+Condense the data into a short, factual summary. Call out
+warning signs: archived, no license, unusual activity
+level, high issue count, stale releases. Answer the
+question the user asked. Don't dump every field for a
+narrow question.

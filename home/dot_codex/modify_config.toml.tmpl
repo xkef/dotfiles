@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-# Merge the tracked Codex config over whatever Codex has written locally.
+# Merges the tracked Codex config over what Codex wrote locally.
 #
-# Codex owns config.toml at runtime: the model picker, the reasoning-effort
+# Codex writes config.toml at runtime. The model picker, the reasoning-effort
 # picker, and the permission and memories screens all write back to it.
 # Managing the file outright would drop that state on every apply, so this
-# re-asserts the committed keys and leaves the rest of the file alone.
+# reasserts the committed keys and leaves the rest of the file alone.
 #
-# Filter managed keys only in their own table, preserving runtime settings.
-# The status line can span multiple lines after a TOML formatter runs.
+# Managed keys get filtered only in their own table, which preserves runtime
+# settings. The status line can span several lines after a TOML formatter
+# runs.
 set -euo pipefail
 
 readonly HEADER='# Managed by chezmoi. Edit home/dot_codex/modify_config.toml.tmpl instead.'
@@ -23,8 +24,8 @@ sandbox_mode = "workspace-write"
 service_tier = "default"
 approvals_reviewer = "auto_review"
 MANAGED_TOML
-  # Codex runs the notify command directly, so the path cannot rely on a shell
-  # expanding a tilde or on ~/.local/bin being on PATH.
+  # Codex runs the notify command without a shell, so the path can't rely on
+  # tilde expansion or on ~/.local/bin in PATH.
   printf 'notify = ["%s/.local/bin/codex-notify"]\n' '{{ .chezmoi.homeDir }}'
 )
 

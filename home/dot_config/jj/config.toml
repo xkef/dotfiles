@@ -1,4 +1,3 @@
-# Jujutsu configuration
 
 [ui]
 conflict-marker-style = "git"
@@ -13,14 +12,14 @@ log-synthetic-elided-nodes = true
 color = "auto"
 
 # ── Pager: delta ─────────────────────────────────────
-# Scope delta to diff-producing commands only, so it doesn't
-# mangle output from status, bookmark list, etc.
+# Delta applies only to commands that produce diffs, so it can't
+# mangle the output of status or bookmark list.
 [[--scope]]
 --when.commands = ["diff", "show", "log"]
 [--scope.ui]
 pager = "delta"
 
-# ── Diff/merge tools ────────────────────────────────
+# ── Diff and merge tools ────────────────────────────
 [merge-tools.vimdiff]
 program = "nvim"
 
@@ -44,7 +43,7 @@ private-commits = 'description(glob:"wip:*") | description(glob:"private:*")'
 # ── Revsets ──────────────────────────────────────────
 [revsets]
 log = 'ancestors(reachable(mine() | @, mutable()), 2) | trunk() | @'
-# Keep `jj tug` targeting the completed change under the empty working copy.
+# `jj tug` targets the completed change under the empty working copy.
 bookmark-advance-to = '@-'
 
 [revset-aliases]
@@ -79,7 +78,7 @@ max-new-file-size = "2MiB"
 name = "xkef"
 email = "git@xkef.dev"
 
-# ── SSH commit signing (mirrors git config) ─────────
+# ── SSH commit signing, as in the git config ────────
 [signing]
 behavior = "own"
 backend = "ssh"

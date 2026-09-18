@@ -1,8 +1,8 @@
 -- basedpyright defaults to its "recommended" ruleset, which reports every Any
 -- that crosses a boundary. Projects here type-check with mypy in CI, so the
--- editor's job is to catch what mypy would, not to argue about untyped
--- third-party stubs. "standard" matches that; a project wanting more can set
--- typeCheckingMode in its own pyproject.toml, which wins over this.
+-- editor should catch what mypy would and stay quiet about untyped
+-- third-party stubs. "standard" matches that. A project that wants more can
+-- set typeCheckingMode in its own pyproject.toml, which wins over this.
 return {
   {
     "neovim/nvim-lspconfig",

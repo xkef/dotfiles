@@ -1,6 +1,6 @@
-# Single source of truth for packages on both OSes.
-# Consumed by home/.chezmoiscripts/run_onchange_before_10-packages-*.sh.tmpl:
-# editing this file changes the rendered script, which re-runs on next apply.
+# Package list for both OSes. The scripts in
+# home/.chezmoiscripts/run_onchange_before_10-packages-*.sh.tmpl render from
+# it, so an edit here reruns them on the next apply.
 
 [packages.darwin]
 taps = [

@@ -40,7 +40,7 @@ return {
   {
     "mfussenegger/nvim-jdtls",
     opts = {
-      -- Store jdtls workspace data outside the project to avoid conflicts with Maven/IntelliJ
+      -- Keep jdtls workspace data outside the project so it can't clash with Maven or IntelliJ.
       data_dir = vim.fn.expand("~/.cache/jdtls/workspace/"),
 
       jdtls = function(config)

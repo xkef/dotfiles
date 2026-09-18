@@ -1,7 +1,7 @@
 status is-interactive; or return
 
 # ── Line editing (built-in) ───────────────────────────
-# These are fish/readline defaults, documented here for the keys reference.
+# fish defaults, listed here for the keys reference.
 # @key shell :: Ctrl-A / E :: Beginning / end of line
 # @key shell :: Alt-F / B :: Forward / backward one word
 # @key shell :: Ctrl-W :: Delete word backward
@@ -19,12 +19,12 @@ bind \cn down-or-search
 
 # @key shell :: Ctrl-T :: File search (fzf)
 # @key shell :: Alt-C :: Directory jump under cwd (fzf + fd)
-# (bound by fzf --fish in fzf.fish)
+# fzf --fish binds these in fzf.fish.
 
 # @key shell :: Alt-Z :: Jump to visited directory (fzf+zoxide)
 # @key shell :: Alt-/ :: Live grep file contents (rg + fzf)
 # @key shell :: Alt-T :: Television smart picker
-# (bound in fzf.fish)
+# fzf.fish binds these.
 
 # @key shell :: Ctrl-X Ctrl-E :: Edit command in nvim
 bind \cx\ce edit_command_buffer

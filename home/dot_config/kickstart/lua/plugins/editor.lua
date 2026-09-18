@@ -1,6 +1,6 @@
 return {
-  -- Keep fallback nvim fixed and minimal. The main LazyVim config handles
-  -- dynamic theme switching from Ghostty.
+  -- The fallback nvim keeps a fixed theme. The LazyVim config follows the
+  -- Ghostty theme.
   {
     "catppuccin/nvim",
     name = "catppuccin",
@@ -13,7 +13,7 @@ return {
     end,
   },
 
-  -- Smart splits: seamless C-hjkl navigation between tmux panes and nvim splits
+  -- C-hjkl moves across tmux panes and nvim splits alike.
   {
     "mrjones2014/smart-splits.nvim",
     keys = {
@@ -69,8 +69,7 @@ return {
   },
 
   -- Treesitter: syntax highlighting, text objects, and incremental selection.
-  -- Parses code into an AST for accurate, language-aware highlighting.
-  -- Note: nvim-treesitter removed the configs module; use opts directly.
+  -- nvim-treesitter removed the configs module, so opts apply directly.
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
@@ -82,7 +81,6 @@ return {
     },
   },
 
-  -- Telescope: fuzzy finder for files, grep, buffers, etc.
   {
     "nvim-telescope/telescope.nvim",
     dependencies = {
@@ -110,20 +108,17 @@ return {
     end,
   },
 
-  -- Which-key: shows available keybindings in a popup
   {
     "folke/which-key.nvim",
     event = "VimEnter",
     opts = {},
   },
 
-  -- Gitsigns: git change indicators in the sign column
   {
     "lewis6991/gitsigns.nvim",
     opts = {},
   },
 
-  -- Mini.nvim: collection of small independent plugins
   {
     "echasnovski/mini.nvim",
     config = function()

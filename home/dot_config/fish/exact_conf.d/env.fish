@@ -5,8 +5,8 @@ set -gx XDG_STATE_HOME $HOME/.local/state
 set -gx XDG_CACHE_HOME $HOME/.cache
 
 # ── Telemetry opt-outs ───────────────────────────────
-# DO_NOT_TRACK is intentionally not set: Claude Code disables
-# Remote Control (feature-flag evaluation) when it is present.
+# DO_NOT_TRACK stays unset. Claude Code disables Remote Control, its
+# feature-flag evaluation, when the variable exists.
 # https://cli.github.com/telemetry
 set -gx GH_TELEMETRY false
 # https://docs.brew.sh/Analytics
@@ -55,10 +55,10 @@ end
 fish_add_path -gP /usr/local/bin
 
 # ── 1Password SSH agent ──────────────────────────────
-# git signing uses `ssh-keygen -Y sign`, which reads $SSH_AUTH_SOCK
-# directly and ignores ssh_config's IdentityAgent. Point at the
-# 1Password socket so signing reaches the same key ssh does.
-# Skip when SSH'd in to preserve a forwarded agent.
+# git signing runs `ssh-keygen -Y sign`, which reads $SSH_AUTH_SOCK and
+# ignores IdentityAgent in ssh_config. Point it at the 1Password socket so
+# signing reaches the same key ssh does. Skip over SSH to keep a forwarded
+# agent.
 if not set -q SSH_CONNECTION
     set -l _op_sock
     switch (uname -s)
@@ -72,13 +72,12 @@ if not set -q SSH_CONNECTION
     end
 end
 
-# ── GitHub token (mise rate limits) ──────────────────
-# Deliberately NOT exported as GITHUB_TOKEN: that would pin gh (and its
-# git credential helper) to one account for the shell's lifetime, breaking
-# `gh auth switch` and per-repo credential.username routing. gh reads the
-# keyring; mise gets its own variable.
-# The keyring lookup costs about 100ms, so only an interactive shell pays
-# for it. Scripts and `mise install` inherit the value from that shell.
+# ── GitHub token for mise rate limits ────────────────
+# Not exported as GITHUB_TOKEN. That would pin gh and its git credential
+# helper to one account for the shell's lifetime and break per-repo
+# credential.username routing. gh reads the keyring, and mise gets its own
+# variable. The keyring lookup costs about 100ms, so only an interactive
+# shell pays for it. Scripts and `mise install` inherit the value.
 status is-interactive; or return
 if test -z "$MISE_GITHUB_TOKEN"; and command -q gh
     set -gx MISE_GITHUB_TOKEN (gh auth token 2>/dev/null)

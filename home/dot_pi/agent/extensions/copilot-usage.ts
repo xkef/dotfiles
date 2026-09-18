@@ -155,7 +155,7 @@ async function readCodexUsage(
   ctx: ExtensionContext,
   signal: AbortSignal,
 ): Promise<UsageStatus | undefined> {
-  // Resolve through Pi so expired subscription tokens refresh normally.
+  // Resolve through pi so expired subscription tokens refresh.
   const auth = (await ctx.modelRegistry.getProviderAuth(CODEX_PROVIDER))?.auth;
   if (!auth?.apiKey || signal.aborted) {
     return undefined;
@@ -185,7 +185,7 @@ async function readCopilotUsage(signal: AbortSignal): Promise<UsageStatus | unde
     return undefined;
   }
 
-  // Use Pi's Copilot account instead of whichever GitHub account gh has active.
+  // Use pi's Copilot account instead of the active gh account.
   const result = await execFileAsync("gh", ["api", "copilot_internal/user"], {
     encoding: "utf8",
     env: { ...process.env, GH_TOKEN: token },

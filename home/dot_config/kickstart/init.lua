@@ -1,6 +1,6 @@
--- Kickstart-style neovim config — minimal, self-bootstrapping.
--- Run as: NVIM_APPNAME=kickstart nvim (or just `knvim`)
--- See: https://github.com/nvim-lua/kickstart.nvim
+-- Small self-bootstrapping neovim config after
+-- https://github.com/nvim-lua/kickstart.nvim. Run it with `knvim` or
+-- NVIM_APPNAME=kickstart nvim.
 
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"

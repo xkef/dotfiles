@@ -1,5 +1,5 @@
 # ── Theme ────────────────────────────────────────────
-# Match Ghostty: `theme = Catppuccin Frappe`
+# Matches the Ghostty theme Catppuccin Frappe.
 theme = "catppuccin_frappe"
 
 # ── Editor ──────────────────────────────────────────
@@ -51,13 +51,13 @@ newline = "none"
 space = "none"
 
 # ── Keybindings ─────────────────────────────────────
-# Keep muscle memory close to neovim where possible.
+# Stays close to the neovim bindings where possible.
 
 [keys.normal]
 ";" = "command_mode"
 C-s = ":write"
 
-# Window navigation (match tmux/nvim smart-splits C-hjkl)
+# Window navigation matches the tmux and nvim C-hjkl.
 C-h = "jump_view_left"
 C-j = "jump_view_down"
 C-k = "jump_view_up"

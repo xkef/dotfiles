@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# CPU + memory for tmux status-right (optimized for minimal forks)
+# CPU and memory for the tmux status line, with few forks.
 set -euo pipefail
 
 readonly SMOOTH="${TMPDIR:-/tmp}/tmux-sysstat-smooth"
 OS=$(uname)
 readonly OS
 
-# ── CPU (normalized 0–100%, smoothed) ────────────────
+# ── CPU, normalized to 0-100% and smoothed ───────────
 if [[ "$OS" == Darwin ]]; then
   ncpu=$(sysctl -n hw.logicalcpu)
 else
@@ -20,7 +20,7 @@ prev=${raw}
 cpu=$(awk "BEGIN {printf \"%.0f\", 0.3 * $raw + 0.7 * $prev}")
 echo "$cpu" >"$SMOOTH"
 
-# ── Memory (used / total) ────────────────────────────
+# ── Memory, used / total ─────────────────────────────
 if [[ "$OS" == Darwin ]]; then
   {
     read -r page_size

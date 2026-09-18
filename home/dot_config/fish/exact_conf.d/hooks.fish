@@ -1,5 +1,5 @@
 # ── Auto-ls on cd ────────────────────────────────────
-# Interactive only: a script that changes directory must not print a listing.
+# Interactive only. A script that changes directory must not print a listing.
 if status is-interactive
     function __auto_ls --on-variable PWD
         ls

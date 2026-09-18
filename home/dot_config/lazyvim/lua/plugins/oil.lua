@@ -1,5 +1,5 @@
--- Buffer-based file operations. Complements neo-tree (tree view) with an
--- editable buffer of the current directory.
+-- File operations in an editable buffer of the current directory, next to
+-- the neo-tree tree view.
 return {
   {
     "stevearc/oil.nvim",

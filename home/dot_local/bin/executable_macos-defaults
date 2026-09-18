@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# macOS developer defaults — run once on fresh install or after major upgrade.
-# Curated from mathiasbynens/dotfiles, wincent/wincent, and paulirish/dotfiles.
+# macOS developer defaults. Run once on a fresh install or after a major
+# upgrade. Curated from mathiasbynens/dotfiles, wincent/wincent, and
+# paulirish/dotfiles.
 #
 # Usage:
-#   ./macos-defaults               Apply all settings (backs up previous values)
-#   ./macos-defaults --dry-run     Show what would change without applying
-#   ./macos-defaults --restore     Restore from most recent backup
-#   ./macos-defaults --restore F   Restore from specific backup file F
+#   ./macos-defaults               Apply all settings, backing up previous values
+#   ./macos-defaults --dry-run     Show what would change
+#   ./macos-defaults --restore     Restore from the most recent backup
+#   ./macos-defaults --restore F   Restore from backup file F
 set -euo pipefail
 
 if [[ "$(uname -s)" != Darwin ]]; then
@@ -29,7 +30,7 @@ missing=0
 
 TMP_DOMAIN="com.dotfiles.macos-defaults-check"
 
-# Read current value of a defaults entry. Prints "" if unset.
+# Prints the current value of a defaults entry, or nothing when unset.
 read_default() {
   local flag="" domain key
   if [[ "$1" == "-currentHost" ]]; then
@@ -43,8 +44,8 @@ read_default() {
   defaults $flag read "$domain" "$key" 2>/dev/null || true
 }
 
-# Normalize a value to the format `defaults read` returns,
-# by round-tripping through a temp domain.
+# Normalizes a value to the format `defaults read` returns by round-tripping
+# it through a scratch domain.
 normalize() {
   local type="$1" value="$2"
   defaults write "$TMP_DOMAIN" __check "$type" "$value" 2>/dev/null
@@ -52,7 +53,7 @@ normalize() {
   defaults delete "$TMP_DOMAIN" __check &>/dev/null || true
 }
 
-# Apply or diff a single defaults entry.
+# Applies or diffs one defaults entry.
 # Usage: apply [-currentHost] domain key -type value
 apply() {
   local flag="" domain key type value
@@ -127,7 +128,7 @@ else
   done 2>/dev/null &
 fi
 
-# ── Typing & Input ────────────────────────────────────
+# ── Typing and input ──────────────────────────────────
 
 $DRY_RUN || log "Typing & input..."
 apply NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
@@ -144,7 +145,7 @@ apply NSGlobalDomain NSAutomaticInlinePredictionEnabled -bool false
 apply NSGlobalDomain AppleICUForce24HourTime -bool true
 apply NSGlobalDomain AppleLocale -string "en_US@rg=chzzzz"
 
-# CapsLock → Escape (hidutil persisted via LaunchAgent)
+# CapsLock to Escape, persisted through a hidutil LaunchAgent.
 HIDUTIL_PLIST="$HOME/Library/LaunchAgents/com.local.KeyRemapping.plist"
 if $DRY_RUN; then
   if [[ -f "$HIDUTIL_PLIST" ]]; then
@@ -174,7 +175,7 @@ else
 </dict>
 </plist>
 PLIST
-  # hidutil needs real HID access; tolerate failure on headless CI runners.
+  # hidutil needs real HID access. Tolerate failure on headless CI runners.
   hidutil property --set '{"UserKeyMapping":[{"HIDKeyboardModifierMappingSrc":0x700000039,"HIDKeyboardModifierMappingDst":0x700000029}]}' >/dev/null ||
     [[ "${CI:-}" == true ]]
 fi
@@ -182,7 +183,7 @@ fi
 # ── Appearance ────────────────────────────────────────
 
 $DRY_RUN || log "Appearance..."
-# Liquid Glass slider, 1 is fully tinted.
+# Liquid Glass slider. 1 means fully tinted.
 apply NSGlobalDomain NSGlassTintAmount -float 1
 
 # ── Finder ────────────────────────────────────────────
@@ -212,12 +213,11 @@ apply com.apple.desktopservices DSDontWriteUSBStores -bool true
 
 $DRY_RUN || log "Spotlight..."
 
-# Categories in menu order, 1 for on. Spotlight is a launcher
-# here, so only apps, settings panes, and the calculator and
-# converter answers are on. File categories stay off to keep
-# an app from losing the top hit to a document that shares its
-# name. MENU_SPOTLIGHT_SUGGESTIONS is off so queries stay on
-# the machine instead of going to Apple.
+# Categories in menu order, 1 for on. Spotlight is a launcher here, so
+# only apps, settings panes, and the calculator and converter
+# answers stay on. File categories stay off so a document that shares an
+# app's name can't take the top hit. MENU_SPOTLIGHT_SUGGESTIONS stays off
+# so queries never leave the machine.
 SPOTLIGHT_ITEMS=(
   "APPLICATIONS 1"
   "SYSTEM_PREFS 1"
@@ -247,9 +247,8 @@ spotlight_current=$(defaults read com.apple.Spotlight orderedItems 2>/dev/null |
   sed -n 's/.*enabled=\([01]\);name="\{0,1\}\([A-Z_]*\).*/\2 \1/p' || true)
 spotlight_desired=$(printf '%s\n' "${SPOTLIGHT_ITEMS[@]}")
 
-# Hotkey 64 is "Show Spotlight search". Its parameters are the
-# space character, the space key code, and the Command mask,
-# which spell Cmd+Space.
+# Hotkey 64 is "Show Spotlight search". Its parameters, the space
+# character, the space key code, and the Command mask, spell Cmd+Space.
 SPOTLIGHT_HOTKEY='<dict><key>enabled</key><true/><key>value</key><dict><key>parameters</key><array><integer>32</integer><integer>49</integer><integer>1048576</integer></array><key>type</key><string>standard</string></dict></dict>'
 HOTKEY_PLIST="$HOME/Library/Preferences/com.apple.symbolichotkeys.plist"
 spotlight_hotkey=$(/usr/libexec/PlistBuddy -c "Print :AppleSymbolicHotKeys:64:enabled" \
@@ -291,12 +290,12 @@ else
 
   defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 64 "$SPOTLIGHT_HOTKEY"
 
-  # The hotkey takes effect on the next login without this, and
-  # the reload needs a login session; tolerate failure on CI.
+  # Without this reload the hotkey takes effect on the next login. The
+  # reload needs a login session, so tolerate failure on CI.
   /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u ||
     [[ "${CI:-}" == true ]]
 
-  # Indexing needs real disk access; tolerate failure on CI runners.
+  # Indexing needs real disk access. Tolerate failure on CI runners.
   sudo mdutil -a -i on >/dev/null || [[ "${CI:-}" == true ]]
 fi
 
@@ -313,7 +312,7 @@ apply com.apple.dock expose-animation-duration -float 0.1
 apply com.apple.dock tilesize -int 36
 apply com.apple.dock expose-group-apps -bool true
 apply com.apple.dock minimize-to-application -bool true
-# Hot corners: 1 is no action.
+# Hot corner value 1 means no action.
 apply com.apple.dock wvous-br-corner -int 1
 
 # ── Windows ───────────────────────────────────────────
@@ -328,7 +327,7 @@ apply com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
 apply com.apple.WindowManager StandardHideDesktopIcons -bool true
 apply com.apple.WindowManager HideDesktop -bool true
 
-# ── Dialogs & Windows ────────────────────────────────
+# ── Dialogs and windows ──────────────────────────────
 
 $DRY_RUN || log "Dialogs & windows..."
 apply NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true

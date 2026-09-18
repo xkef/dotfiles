@@ -1,6 +1,7 @@
 {{ if lookPath "op" -}}
-# Secondary GitHub identity — activated by remote URL (see [includeIf] in ./config).
-# Signing key lives in the 1Password Work vault, served by the SSH agent.
+# Secondary GitHub identity. The [includeIf] in ./config activates it by
+# remote URL. The SSH agent serves the signing key from the 1Password Work
+# vault.
 
 [user]
 	name = {{ onepasswordRead "op://Work/git/name" }}

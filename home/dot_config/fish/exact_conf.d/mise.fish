@@ -1,6 +1,6 @@
 # ── Mise ─────────────────────────────────────────────
-# Disable Homebrew's vendor mise-activate.fish. Keep shims available at
-# startup, but defer project [env] until a command is about to run.
+# Disables Homebrew's vendor mise-activate.fish. Shims stay available at
+# startup. Project [env] waits until a command is about to run.
 set -q XDG_DATA_HOME; or set -gx XDG_DATA_HOME $HOME/.local/share
 set -gx MISE_ACTIVATE_AGGRESSIVE 0
 set -gx MISE_FISH_AUTO_ACTIVATE 0
@@ -8,8 +8,8 @@ set -gx MISE_FISH_AUTO_ACTIVATE 0
 command -q mise; or return
 fish_add_path -gP $XDG_DATA_HOME/mise/shims
 
-# Shims on PATH are all a script needs. The activation below installs the
-# cd and preexec hooks that apply project [env], which only a prompt uses.
+# Shims on PATH cover scripts. The activation below installs the cd and
+# preexec hooks that apply project [env], which only a prompt uses.
 status is-interactive; or return
 command mise activate fish --no-hook-env | source
 
@@ -19,9 +19,9 @@ function __mise_mark_env_dirty --on-variable PWD
     set -g __mise_env_dirty 1
 end
 
-# Warm mise's caches off the critical path so the in-process apply on the
-# next command is fast. Single-flight (skip if a prewarm is still running)
-# and edge-triggered on PWD only — never on the prompt — so it cannot loop.
+# Warms mise's caches in the background so the apply on the next command
+# runs fast. Skips while a prewarm still runs, and triggers on PWD only,
+# never on the prompt, so it can't loop.
 function __mise_prewarm --on-variable PWD
     if set -q __mise_prewarm_pid; and command kill -0 $__mise_prewarm_pid 2>/dev/null
         return

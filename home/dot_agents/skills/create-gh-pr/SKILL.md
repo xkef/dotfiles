@@ -1,6 +1,6 @@
 ---
 name: create-gh-pr
-description: Create a GitHub pull request with a well-formed title and body, following the same best practices as commits (Conventional Commits title, motivation in body, issue references). Use when the user wants to open, create, or draft a GitHub PR, or asks to "make a PR" / "send a pull request".
+description: Create a GitHub pull request with a well-formed title and body that follows the commit conventions, with a Conventional Commits title, motivation in the body, and issue references. Use when the user wants to open, create, or draft a GitHub PR.
 ---
 
 # Create a GitHub pull request
@@ -11,49 +11,49 @@ against the GitHub API.
 ## Process
 
 1. **Identify the branch and base.**
-   - Current branch: `git branch --show-current` (or
-     `jj log` in a Jujutsu repo).
-   - Default base: query with
+   - Current branch: `git branch --show-current`, or
+     `jj log` in a Jujutsu repo.
+   - Default base:
      `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`.
-   - Confirm with the user if the base is not obvious.
+   - Confirm the base with the user when in doubt.
 
-2. **Inspect the diff that will land on the base.**
-   - `git log <base>..HEAD --oneline` to see commits.
+2. **Inspect the diff against the base.**
+   - `git log <base>..HEAD --oneline` for the commits.
    - `git diff <base>...HEAD` for the full change.
    - In Jujutsu, use `jj log` and `jj diff` against the
-     appropriate revset.
+     matching revset.
 
-3. **Prefer a single commit.** The user squash-merges,
-   so the PR usually represents one logical change.
-   - If there are multiple WIP/fixup commits, suggest
-     squashing them locally before opening the PR
-     (or rely on the squash merge to collapse them —
-     but the PR title/body still needs to read as the
-     final single commit message).
-   - If the branch legitimately contains multiple
-     independent commits that should stay separate,
-     ask the user whether to split into multiple PRs.
+3. **Prefer one commit.** The user squash-merges, so
+   the PR represents one logical change.
+   - For a run of work-in-progress or fixup commits,
+     suggest squashing them locally before opening the
+     PR. The squash merge collapses them either way,
+     but the PR title and body still need to read as
+     the final commit message.
+   - If the branch holds independent commits that must
+     stay separate, ask the user whether to split them
+     into separate PRs.
 
 4. **Find related issues to reference.**
    - Search the diff and commit messages for issue
-     numbers (`#123`, `GH-123`, `org/repo#123`).
+     numbers: `#123`, `GH-123`, `org/repo#123`.
    - Search the issue tracker for plausible matches:
      `gh issue list --search "<keywords>" --state open`.
-     Pull keywords from the change (file names,
-     symbols, user-facing strings).
+     Pull keywords from the change: file names,
+     symbols, user-facing strings.
    - Present candidates to the user and confirm which
-     should be `Closes` (fully resolves) vs `Ref`
-     (related/partial). When unsure, ask.
+     get `Closes`, for a full fix, and which get `Ref`,
+     for a related or partial one. When unsure, ask.
 
 5. **Draft the PR title.**
-   - Same rules as a commit subject: Conventional
+   - Same rules as a commit subject: a Conventional
      Commits type, optional scope, imperative verb,
-     ≤72 characters.
+     at most 72 characters.
    - Example: `feat(login): add support for magic links`.
 
-6. **Draft the PR body.** Write Markdown. **Do not
-   hard-wrap the body** — GitHub renders Markdown, and
-   manual wrapping breaks list items, links, and
+6. **Draft the PR body.** Write Markdown. **Don't
+   hard-wrap the body.** GitHub renders Markdown, and
+   a manual line break splits list items, links, and
    blockquotes. Let the renderer handle line length.
    Suggested structure:
 
@@ -65,12 +65,11 @@ against the GitHub API.
    ## Motivation
 
    Why this change, what problem it solves, why this
-   approach was chosen.
+   approach won.
 
    ## Alternatives considered
 
-   (Optional) Other approaches and why they were
-   rejected.
+   (Optional) Other approaches and why they lost.
 
    ## Notes
 
@@ -81,14 +80,14 @@ against the GitHub API.
    ```
 
    - Omit empty sections.
-   - Put `Closes`/`Ref` trailers at the very bottom,
-     one per line.
-   - **Do not** include a prompt log or a
+   - Put `Closes` and `Ref` trailers last, one per
+     line.
+   - **Don't** include a prompt log or a
      `Co-Authored-By:` trailer in PR bodies.
 
 7. **Create the PR.**
-   - Write the body to a tempfile to preserve
-     formatting (avoid shell quoting issues):
+   - Write the body to a temporary file to preserve
+     formatting and avoid shell quoting:
 
      ```sh
      gh pr create \
@@ -98,42 +97,38 @@ against the GitHub API.
      ```
 
    - Add `--draft` if the user asked for a draft.
-   - Add `--web` only if the user explicitly wants to
-     open the browser.
+   - Add `--web` only if the user wants the browser.
 
 8. **Confirm.** Print the resulting PR URL.
 
 ## Wrapping rules summary
 
-| Field    | Wrap?                                     |
-| -------- | ----------------------------------------- |
-| Title    | Yes — ≤72 chars, single line              |
-| Body     | **No** — write Markdown, no hard wrapping |
-| Trailers | One per line at the end of the body       |
+| Field    | Wrap?                                |
+| -------- | ------------------------------------ |
+| Title    | Yes. At most 72 characters, one line |
+| Body     | **No.** Markdown, renderer wraps it  |
+| Trailers | One per line at the end of the body  |
 
 ## Issue reference keywords
 
-- `Closes #N` / `Fixes #N` / `Resolves #N` — GitHub
-  auto-closes the issue on merge.
-- `Ref #N` / `Refs #N` / `Related to #N` — links
-  without auto-closing.
+- `Closes #N`, `Fixes #N`, `Resolves #N`: GitHub closes
+  the issue on merge.
+- `Ref #N`, `Refs #N`, `Related to #N`: links without
+  closing.
 
-Use `Closes` only when merging the PR fully resolves
-the issue. Otherwise use `Ref`.
+Use `Closes` only when merging the PR resolves the
+issue in full. Otherwise use `Ref`.
 
-## Best practices (inherited from commits)
+## Conventions shared with commits
 
-- Title starts with a Conventional Commits type
-  (`feat`, `fix`, `chore`, `refactor`, `docs`, `test`,
-  `perf`, `style`) followed by an imperative verb.
-- Body explains *why*, not just *what* — the diff
-  already shows what.
+- Title starts with a Conventional Commits type,
+  `feat`, `fix`, `chore`, `refactor`, `docs`, `test`,
+  `perf`, or `style`, followed by an imperative verb.
+- Body explains why. The diff already shows what.
 - Note alternatives considered.
 - Link to relevant prior commits, PRs, or docs.
-- Do **not** include prompt logs or
-  `Co-Authored-By:` trailers in PR bodies (these
-  belong in commit messages only, if anywhere).
+- **Don't** include prompt logs or `Co-Authored-By:`
+  trailers in PR bodies.
 
-See also: the `commit` skill for commit message
-conventions, and the `jj` skill when working in a
-Jujutsu repo.
+See also the `commit` skill for commit message
+conventions and the `jj` skill for a Jujutsu repo.

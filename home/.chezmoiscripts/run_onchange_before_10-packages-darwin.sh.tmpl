@@ -8,8 +8,8 @@ if ! command -v brew >/dev/null; then
     [[ -x "$brew_bin" ]] && eval "$("$brew_bin" shellenv)" && break
   done
 fi
-# Newer Homebrew refuses formulae from untrusted third-party taps; the trust
-# subcommand does not exist on older brew, hence the || true.
+# Newer Homebrew refuses formulae from untrusted third-party taps. Older brew
+# lacks the trust subcommand, so the call may fail.
 {{ range .packages.darwin.taps -}}
 brew trust {{ . | quote }} 2>/dev/null || true
 {{ end -}}
@@ -22,8 +22,8 @@ brew "{{ . }}"
 {{ end -}}
 BREWFILE
 {{ if not (env "CI") -}}
-# Casks fail soft: self-updating GUI apps (zed, 1password) hit stale-receipt
-# and quarantine issues that must not block config apply.
+# Casks fail soft. Self-updating GUI apps such as zed and 1password hit
+# stale-receipt and quarantine issues that must not block the config apply.
 brew bundle --file=- <<'CASKFILE' ||
 {{ range .packages.darwin.casks -}}
 cask "{{ . }}"

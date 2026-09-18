@@ -1,7 +1,8 @@
 local map = vim.keymap.set
 
--- Cowboy mode: warn on 10+ repeated hjkl without count (via folke/dot).
--- Smart jump counting: j/k >5 lines with count added to jumplist (via wincent).
+-- Cowboy mode warns on 10 or more repeated hjkl without a count, after
+-- folke/dot. j and k with a count over 5 lines add a jumplist entry, after
+-- wincent.
 vim.g.cowboy_mode = false
 
 for _, key in ipairs({ "h", "j", "k", "l" }) do
@@ -32,7 +33,7 @@ map("n", "<leader>uC", function()
   vim.notify("Cowboy mode: " .. (vim.g.cowboy_mode and "on" or "off"), vim.log.levels.INFO)
 end, { desc = "Toggle cowboy mode" })
 
--- Jump to config files via snacks picker (shows up under <leader>f in which-key)
+-- Config file picker, listed under <leader>f in which-key.
 map("n", "<leader>fc", function()
   require("snacks").picker.files({ cwd = vim.fn.stdpath("config") })
 end, { desc = "Find config file" })

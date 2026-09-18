@@ -1,6 +1,6 @@
-# ── Host-specific configs (machine-local, not in dotfiles) ──
-# Drop *.conf files into ~/.ssh/conf.d/ for per-host overrides.
-# Example: ~/.ssh/conf.d/work.conf with Host entries for work servers.
+# ── Machine-local host configs ─────────────────────────
+# Drop *.conf files into ~/.ssh/conf.d/ for per-host overrides, such as
+# ~/.ssh/conf.d/work.conf with Host entries for work servers.
 Include conf.d/*.conf
 
 # ── Defaults ────────────────────────────────────────────
@@ -10,11 +10,11 @@ Host *
     ServerAliveInterval 60
     ServerAliveCountMax 3
     StrictHostKeyChecking accept-new
-    # Connection multiplexing (reuse TCP connections)
+    # Reuse TCP connections.
     ControlMaster auto
     ControlPath ~/.ssh/sockets/%r@%h-%p
     ControlPersist 10m
-    # Prefer modern key exchange and ciphers
+    # Modern key exchange and ciphers first.
     KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org
     HostKeyAlgorithms ssh-ed25519,ssh-ed25519-cert-v01@openssh.com
 
@@ -25,6 +25,6 @@ Match host * exec "uname -s | grep -q Darwin"
 Match host * exec "uname -s | grep -q Linux"
     IdentityAgent ~/.1password/agent.sock
 
-# ── GitHub (xkef personal, signing key served by 1Password) ──
+# ── GitHub, xkef, signing key from 1Password ───────────
 Host github.com
     IdentityFile ~/.ssh/github_xkef.pub

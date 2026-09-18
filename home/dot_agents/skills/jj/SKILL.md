@@ -1,47 +1,46 @@
 ---
 name: jj
-description: How to use `jj`, the Jujutsu version control system. Use when working in a Jujutsu repository, when a `.jj` directory is present, or when the user asks about jj/jujutsu operations.
+description: How to use `jj`, the Jujutsu version control system. Use when working in a repository with a `.jj` directory or when the user asks about jj operations.
 ---
 
-# Jujutsu (`jj`)
+# Jujutsu
 
-Jujutsu is a Git-compatible VCS used in "colocated" form
-(a `.jj` directory alongside `.git`). The presence of
-`.jj` indicates a jj repository. You can still use Git
-commands to examine objects (`git show`, `git log`,
-`git grep`), but use `jj` for creating commits.
+Jujutsu, `jj`, is a Git-compatible version control system.
+This setup runs it colocated, with a `.jj` directory next
+to `.git`. A `.jj` directory marks a jj repository. Git
+commands still work for reading objects: `git show`,
+`git log`, `git grep`. Use `jj` to create commits.
 
-## Key concept: no staging area
+## No staging area
 
-Any `jj` command automatically snapshots the working
-directory. `jj` respects `.gitignore`. To stop tracking
-an unintentionally included file, modify `.gitignore`
-then run `jj file untrack <file>...`.
+Every `jj` command snapshots the working directory. `jj`
+respects `.gitignore`. To stop tracking a file, add it to
+`.gitignore` and run `jj file untrack <file>...`.
 
-Be careful with any `jj` command that creates or modifies
-a change. Always specify files explicitly.
+Any `jj` command that creates or edits a change takes
+file arguments. Always pass them.
 
 ## Common commands
 
-| Command     | Description                                               |
-| ----------- | --------------------------------------------------------- |
-| `jj st`     | Show summary of working copy changes                      |
-| `jj diff`   | Show diff of working copy changes                         |
-| `jj log`    | Show graph of commits (by default, only unpushed commits) |
-| `jj evolog` | Show previous states (analogous to `git reflog`)          |
-| `jj op log` | Show previous operations                                  |
+| Command     | Description                                          |
+| ----------- | ---------------------------------------------------- |
+| `jj st`     | Show summary of working copy changes                 |
+| `jj diff`   | Show diff of working copy changes                    |
+| `jj log`    | Show graph of commits, by default only unpushed ones |
+| `jj evolog` | Show previous states, like `git reflog`              |
+| `jj op log` | Show previous operations                             |
 
 ## Specifying revisions
 
 | Revset   | Meaning                             |
 | -------- | ----------------------------------- |
-| `@`      | Current revision (working copy)     |
+| `@`      | Current revision, the working copy  |
 | `@-`     | Parent of current revision          |
-| `a-`     | Parent(s) of `a`                    |
-| `a--`    | Grandparent(s) of `a`               |
-| `a+`     | Child(ren) of `a`                   |
-| `::a`    | Ancestors of `a` (including `a`)    |
-| `a::`    | Descendants of `a` (including `a`)  |
+| `a-`     | Parents of `a`                      |
+| `a--`    | Grandparents of `a`                 |
+| `a+`     | Children of `a`                     |
+| `::a`    | Ancestors of `a`, including `a`     |
+| `a::`    | Descendants of `a`, including `a`   |
 | `a..b`   | Reachable from `b` but not from `a` |
 | `a \| b` | Union of `a` and `b`                |
 | `a & b`  | Intersection of `a` and `b`         |
@@ -50,13 +49,13 @@ a change. Always specify files explicitly.
 ## Creating commits
 
 Never run `jj commit` without file arguments unless
-instructed to; use `jj split <file>...` or
-`jj commit <file>...` to select specific files.
+instructed to. Use `jj split <file>...` or
+`jj commit <file>...` to select files.
 
-| Command               | Description                                                          |
-| --------------------- | -------------------------------------------------------------------- |
-| `jj commit <file>...` | Create a commit containing specific changes                          |
-| `jj split <file>...`  | Create a commit containing specific changes (also updates bookmarks) |
+| Command               | Description                                                      |
+| --------------------- | ---------------------------------------------------------------- |
+| `jj commit <file>...` | Create a commit containing specific changes                      |
+| `jj split <file>...`  | Create a commit containing specific changes and update bookmarks |
 
 For commit message formatting, see the `commit` skill.
 
@@ -67,9 +66,9 @@ For commit message formatting, see the `commit` skill.
 | `jj git fetch`                  | Fetch from default remote |
 | `jj git fetch --all-remotes`    | Fetch from all remotes    |
 | `jj git push`                   | Push to default remote    |
-| `jj git push --remote <remote>` | Push to a named remote    |
+| `jj git push --remote <remote>` | Push to that remote       |
 
-## Custom aliases (from config)
+## Custom aliases
 
 | Alias        | Description                                                      |
 | ------------ | ---------------------------------------------------------------- |
@@ -80,7 +79,7 @@ For commit message formatting, see the `commit` skill.
 | `jj tug`     | Fast-forward closest bookmark to point at recent pushable change |
 | `jj consume` | Squash another change into the current one                       |
 | `jj eject`   | Move changes from current into another change                    |
-| `jj credit`  | Annotate file (like `git blame`)                                 |
+| `jj credit`  | Annotate file, like `git blame`                                  |
 | `jj cat`     | Show file contents at a revision                                 |
 
 ## Custom revset aliases

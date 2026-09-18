@@ -1,17 +1,16 @@
 #!/usr/bin/env fish
 # shellcheck disable=all
-# dots-skills — manage shared agent skills pulled from upstream packs.
+# dots-skills: installs shared agent skills from upstream packs.
 #
-# Single owner of the install sentinel and the upstream source list.
-# Locally-tracked skills (managed by chezmoi into ~/.agents/skills/)
-# are unaffected.
+# Holds the install sentinel and the upstream source list. Tracked skills,
+# which chezmoi places in ~/.agents/skills/, stay untouched.
 #
 # Usage:
-#   dots-skills ensure [agent]    install once; no-op while the sentinel exists
+#   dots-skills ensure [agent]    install once, no-op while the sentinel exists
 #   dots-skills refresh [agent]   drop the sentinel and reinstall from upstream
 #   dots-skills                   same as refresh
 
-# Upstream skill packs: '<repo> <skill>' ('*' installs every skill).
+# Upstream skill packs as '<repo> <skill>'. '*' installs every skill.
 set -l upstreams \
     'mattpocock/skills *' \
     'vercel-labs/skills find-skills' \
@@ -25,8 +24,8 @@ set -l sentinel_dir "$HOME/.cache/dotfiles"
 set -l digest (string join \n $upstreams | shasum -a 256 | string sub -l 12)
 set -l sentinel "$sentinel_dir/skills.shared.$digest.installed"
 
-# The skills CLI installs into ~/.agents/skills via its claude-code target;
-# pi reads the same tree directly.
+# The skills CLI installs into ~/.agents/skills through its claude-code
+# target. pi reads the same tree.
 set -l install_target claude-code
 
 set -l verb $argv[1]

@@ -1,26 +1,27 @@
 #!/usr/bin/env bash
 # Cross-session agent picker.
 #
-# Joins the state files written by each agent (keyed by tmux pane id) against
-# the live pane list. An agent whose pane is gone has no row to join to, so a
+# Joins the state files each agent writes, keyed by tmux pane id, against the
+# live pane list. An agent whose pane is gone has no row to join to, so a
 # crashed session drops out of the view on its own. Claude Code writes those
-# files from a hook, pi from an extension. Codex is discovered from the live
-# pane command and shown as running. Agents publish task summaries separately.
+# files from a hook, pi from an extension. Codex has neither, so the live pane
+# command identifies it and it shows as running. Agents publish task summaries
+# separately.
 #
-#   tmux-agents          fzf picker; Enter switches to the agent's pane
-#   tmux-agents --count  status bar segment ("2◐ 1●"), empty when nothing runs
+#   tmux-agents          fzf picker. Enter switches to the agent's pane.
+#   tmux-agents --count  status line segment ("2◐ 1●"), empty when nothing runs
 set -euo pipefail
 
 readonly STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
 
-# Weight carries the meaning, so the status bar needs no color: a filled dot
-# wants you, a ring is working, a small dot is parked.
+# Glyph weight encodes the state, so the status line doesn't need color. A
+# filled dot needs input, a ring works, a small dot idles.
 readonly ICON_WAITING='•'
 readonly ICON_BUSY='◦'
 readonly ICON_RUNNING='○'
 readonly ICON_IDLE='·'
 
-# Sort ranks: what needs you first, what is working next, what is parked last.
+# Sort ranks: needs input first, working next, idle last.
 readonly RANK_WAITING=0
 readonly RANK_BUSY=1
 readonly RANK_RUNNING=2
@@ -56,7 +57,7 @@ collect() {
     sort -n
 }
 
-human_age() { # seconds -> "12s" / "6m" / "2h"
+human_age() { # seconds to "12s", "6m", or "2h"
   local s=$1
   ((s < 60)) && {
     printf '%ds' "$s"
@@ -70,10 +71,10 @@ human_age() { # seconds -> "12s" / "6m" / "2h"
 }
 
 # ── Count mode ───────────────────────────────────────
-# Every agent is counted, in the same order the picker sorts them, so a count
-# keeps its position in the bar as the states around it change. A state with no
-# agents is left out. With none running at all the segment is empty, which keeps
-# the bar as it was before any agent existed.
+# Counts every agent in the picker's sort order, so a count keeps its position
+# as the states around it change. A state without agents produces nothing. With
+# no agents at all the segment stays empty, and the status line looks as it did
+# before any agent existed.
 if [[ "${1:-}" == --count ]]; then
   waiting=0 busy=0 running=0 idle=0
   while IFS=$'\t' read -r _ _ _ state _; do
@@ -97,19 +98,19 @@ if [[ "${1:-}" == --count ]]; then
 fi
 
 # ── Picker mode ──────────────────────────────────────
-# Each fzf line is "pane<TAB>target<TAB>display"; --with-nth=3 shows only the
-# rendered column, so a path with spaces cannot break the field split.
+# Each fzf line is "pane<TAB>target<TAB>display". --with-nth=3 shows only the
+# rendered column, so a path with spaces can't break the field split.
 #
-# Columns are measured first and sized to their widest value, and a column that
-# is empty for every agent is dropped. Fixed widths padded a single agent out to
-# a line of mostly blanks.
+# Each column takes the width of its widest value, and a column that stays
+# empty for every agent disappears. Fixed widths padded one agent out to a line
+# of mostly blanks.
 render() {
   local _rank pane target state agent tool age dir task icon color display row
   local -r RED='\033[31m' YELLOW='\033[33m' DIM='\033[2m' RESET='\033[0m'
   local -a entries=()
-  # Rows are packed with a unit separator rather than a tab: read treats a tab
-  # as whitespace and folds a run of them into one, which would shift every
-  # column of an agent that has no tool.
+  # Rows use a unit separator instead of a tab. read treats a tab as
+  # whitespace and folds a run of them into one, which would shift every column
+  # of an agent without a tool.
   local -r SEP=$'\x1f'
   local w_state=0 w_agent=0 w_target=0 w_dir=0 w_tool=0 w_task=0
 
@@ -135,8 +136,8 @@ render() {
     *) icon=$ICON_IDLE color=$DIM ;;
     esac
 
-    # The state word is padded before it is colored, because printf counts the
-    # escape bytes and would otherwise pad the column short.
+    # Pad the state word before coloring it. printf counts the escape bytes and
+    # would otherwise pad the column short.
     printf -v display '%b%s %-*s%b  %-*s  %-*s' \
       "$color" "$icon" "$w_state" "$state" "$RESET" \
       "$w_agent" "$agent" "$w_target" "$target"
@@ -159,7 +160,7 @@ if [ -z "$rows" ]; then
   exit 0
 fi
 
-# --height overrides the 60% in FZF_DEFAULT_OPTS: the picker owns the whole
+# --height overrides the 60% in FZF_DEFAULT_OPTS. The picker fills the whole
 # popup, so anything less leaves the bottom of it blank.
 selection=$(printf '%s\n' "$rows" | fzf \
   --height=100% \

@@ -1,6 +1,6 @@
 {{ if and .work (lookPath "op") -}}
-# Rendered by chezmoi from the Work/git 1Password item.
-# Active only inside ~/work/ (see [includeIf] in ./config).
+# Rendered by chezmoi from the Work/git 1Password item. The [includeIf] in
+# ./config activates it inside ~/work/ only.
 
 [user]
 	name = {{ onepasswordRead "op://Work/git/name" }}

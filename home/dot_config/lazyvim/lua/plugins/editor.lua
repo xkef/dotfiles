@@ -42,7 +42,7 @@ return {
       },
     },
     init = function()
-      -- Patch Snacks diff renderer to hide hunk headers
+      -- Hide hunk headers in the Snacks diff renderer.
       local ok, diff = pcall(require, "snacks.picker.util.diff")
       if ok and diff.render then
         local orig = diff.render

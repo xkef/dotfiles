@@ -1,26 +1,26 @@
 #!/usr/bin/env fish
 # shellcheck disable=all
-# theme — unified theme switcher for ghostty, neovim, tmux, and shell tools.
+# theme: one theme switcher for ghostty, neovim, tmux, and shell tools.
 #
 # Accepts Ghostty theme names that have a matching LazyVim colorscheme plugin.
-# Palette colors are read from Ghostty's built-in theme files. The core parses
-# the palette and pushes OSC colors to running terminals; per-app application
-# lives in ~/.config/theme.d/*.fish adapter fragments, sourced in glob order.
+# The palette comes from Ghostty's built-in theme files. The core parses it
+# and pushes OSC colors to running terminals. Adapter fragments in
+# ~/.config/theme.d/*.fish, sourced in glob order, apply it per app.
 #
-# Adapter contract: fragments run with $XDG_CONFIG_HOME, $THEME_NAME,
-# $t_palette (16 colors), $t_bg, $t_fg, and $t_cursor set, and may call
-# _blend_hex / _hex_rgb. Each
-# fragment owns one app (delta include, nvim reload, pi theme file, tmux
-# refresh) and must not depend on another fragment: the core has already
-# persisted the current theme and pushed the palette to the terminal before
-# any fragment runs, so readers of that state can reload in any order.
+# Adapter contract: a fragment runs with $XDG_CONFIG_HOME, $THEME_NAME,
+# $t_palette with 16 colors, $t_bg, $t_fg, and $t_cursor set, and may call
+# _blend_hex and _hex_rgb. Each fragment handles one app, such as the delta
+# include, the nvim reload, the pi theme file, or the tmux refresh, and must
+# not depend on another fragment. The core persists the current theme and
+# pushes the palette to the terminal before any fragment runs, so fragments
+# that read that state can run in any order.
 #
 # Usage: theme [name|auto|--list|--current]
 
 set -q XDG_CONFIG_HOME; or set -gx XDG_CONFIG_HOME $HOME/.config
 set -g GHOSTTY_CONFIG $XDG_CONFIG_HOME/ghostty/config
-# Current theme lives next to the Ghostty config as an untracked include
-# fragment (`config-file = ?theme`). Neovim's theme.lua reads the same file.
+# The current theme sits next to the Ghostty config as an untracked include
+# fragment, `config-file = ?theme`. Neovim's theme.lua reads the same file.
 set -g THEME_STATE (path dirname $GHOSTTY_CONFIG)/theme
 
 # ── Ghostty theme parser ─────────────────────────────
@@ -57,15 +57,15 @@ function _parse_ghostty_theme -a name
             end
         end
     end <$theme_file
-    # The while loop's status leaks failed substitutions from the last
-    # parsed line (fish 4.7); a non-matching trailing line must not make
+    # In fish 4.7 the while loop's status leaks failed substitutions from
+    # the last parsed line. A trailing line without a match must not make
     # the parse look like a missing theme.
     return 0
 end
 
 # ── Supported themes ──────────────────────────────────
-# Only Ghostty themes with a matching nvim colorscheme plugin are offered.
-# Update this when adding/removing nvim colorscheme plugins.
+# Only Ghostty themes with a matching nvim colorscheme plugin qualify.
+# Update this list together with the nvim colorscheme plugins.
 
 function _is_supported -a name
     switch $name
@@ -86,13 +86,13 @@ end
 
 # ── Helpers ───────────────────────────────────────────
 
-# The tracked Ghostty config only carries the default; the state file wins.
+# The tracked Ghostty config carries only the default. The state file wins.
 function _current_theme
     for source in $THEME_STATE $GHOSTTY_CONFIG
         test -f $source; or continue
         set -l m (string match -r '^\s*theme\s*=\s*(.+)' <$source)
         if test (count $m) -ge 2
-            # string trim exits 1 when nothing was trimmed; don't leak that.
+            # string trim exits 1 when it trimmed nothing. Don't leak that.
             string trim $m[2]
             return 0
         end
@@ -100,7 +100,7 @@ function _current_theme
     echo "Catppuccin Mocha"
 end
 
-# Blend two hex colors: _blend_hex bg fg weight(0-100).
+# Blends two hex colors: _blend_hex bg fg weight, with weight from 0 to 100.
 function _blend_hex -a bg_hex fg_hex weight
     set -l w (test -n "$weight" && echo $weight || echo 20)
     set -l r1 (math "0x"(string sub -l 2 $bg_hex))
@@ -116,9 +116,9 @@ function _blend_hex -a bg_hex fg_hex weight
 end
 
 # ── Terminal colors ───────────────────────────────────
-# Push palette changes to the terminal via OSC 4/10/11/12.
-# Ghostty's config reload handles persistence for new windows, but OSC
-# sequences are needed to update the running terminal (especially inside tmux).
+# Pushes palette changes to the terminal over OSC 4, 10, 11, and 12. The
+# Ghostty config reload covers new windows. Running terminals, above all
+# inside tmux, need the OSC sequences.
 
 function _hex_rgb -a hex
     echo (string sub -l 2 $hex)/(string sub -s 3 -l 2 $hex)/(string sub -s 5 -l 2 $hex)
@@ -146,7 +146,7 @@ end
 
 function _write_state
     command mkdir -p (path dirname $THEME_STATE)
-    printf '# Written by `theme` — machine-local current theme.\ntheme = %s\n' \
+    printf '# Written by `theme`. Machine-local current theme.\ntheme = %s\n' \
         $THEME_NAME >$THEME_STATE
 end
 
@@ -176,14 +176,14 @@ function _apply_theme -a name
 end
 
 # ── Auto mode ─────────────────────────────────────────
-# Pick a light or dark default based on system appearance.
+# Picks the light or dark default from the system appearance.
 
 function _system_is_dark
     switch (uname)
         case Darwin
-            # `defaults read -g AppleInterfaceStyle` prints "Dark" when dark
-            # mode is active, and errors otherwise. Capture into a variable
-            # so an empty result doesn't collapse the `test` arguments.
+            # `defaults read -g AppleInterfaceStyle` prints "Dark" in dark
+            # mode and fails otherwise. Capture the output so an empty result
+            # doesn't collapse the `test` arguments.
             set -l style (defaults read -g AppleInterfaceStyle 2>/dev/null)
             test "$style" = Dark
         case Linux
@@ -195,8 +195,8 @@ function _system_is_dark
 end
 
 function _auto_theme
-    # Defaults: Catppuccin Latte (light) / Catppuccin Mocha (dark). Override
-    # via DOTS_THEME_LIGHT / DOTS_THEME_DARK in the environment.
+    # Defaults to Catppuccin Latte for light and Catppuccin Mocha for dark.
+    # DOTS_THEME_LIGHT and DOTS_THEME_DARK override them.
     set -l light_default (set -q DOTS_THEME_LIGHT && echo $DOTS_THEME_LIGHT || echo "Catppuccin Latte")
     set -l dark_default (set -q DOTS_THEME_DARK && echo $DOTS_THEME_DARK || echo "Catppuccin Mocha")
     if _system_is_dark

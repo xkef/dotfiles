@@ -1,6 +1,6 @@
-# Modern git config — following core developer recommendations
-# See: https://blog.gitbutler.com/how-git-core-devs-configure-git/
-# Personal overrides: ~/.config/git/config.local
+# Follows the core developer recommendations in
+# https://blog.gitbutler.com/how-git-core-devs-configure-git/
+# Personal overrides go in ~/.config/git/config.local.
 
 [user]
 {{- if lookPath "op" }}
@@ -42,7 +42,7 @@
 [diff "bin"]
 	textconv = hexdump -ve '1/1 "%.2x "'
 
-# ── Delta (pager) ────────────────────────────────────
+# ── Delta pager ──────────────────────────────────────
 [delta]
 	navigate = false
 	line-numbers = true
@@ -136,7 +136,6 @@
 	branches = for-each-ref --sort=-committerdate --format='%(refname:short) %(committerdate:relative)' refs/heads
 	contributors = shortlog -sn --no-merges
 	cleanup = !git branch --merged | grep -v '\\*\\|main\\|master' | xargs -n1 git branch -d
-	# Worktree shortcuts for parallel work
 	wt = worktree
 	wta = worktree add
 	wtl = worktree list
@@ -146,29 +145,29 @@
 [maintenance]
 	auto = true
 
-# ── Theme-generated overrides (delta syntax theme) ───
+# ── Delta syntax theme, written by `theme` ───────────
 [include]
 	path = ~/.config/git/delta.gitconfig
 
-# ── Signing (SSH via 1Password agent) ────────────────
+# ── SSH signing through the 1Password agent ──────────
 [gpg]
 	format = ssh
 
 [gpg "ssh"]
 	allowedSignersFile = ~/.config/git/allowed_signers
 
-# ── Local overrides (identity, signing, etc.) ────────
+# ── Local overrides: identity, signing ───────────────
 [include]
 	path = ~/.config/git/config.local
 
-# ── Work identity (rendered by install from 1Password) ─
+# ── Work identity, rendered from 1Password ───────────
 [includeIf "gitdir:~/work/"]
 	path = ~/.config/git/config.work
 
 {{- if lookPath "op" }}
 {{- $ghLogin := onepasswordRead "op://Work/git/github_login" }}
 
-# ── Secondary GitHub identity (matched by remote, both URL forms) ─
+# ── Secondary GitHub identity, matched by remote URL ─
 [includeIf "hasconfig:remote.*.url:https://github.com/{{ $ghLogin }}/**"]
 	path = ~/.config/git/config.secondary
 

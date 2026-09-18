@@ -1,49 +1,48 @@
 ---
 name: explain-diff
-description: Use when the user asks for a rich explanation of a code change, diff, branch, or PR — a literate, teachable explainer document, not a review or report. Triggers on "explain this diff/change/PR", "help me understand this change", "make an explainer".
+description: Use when the user asks for a rich explanation of a code change, diff, branch, or PR, as a literate, teachable explainer document rather than a review or report. Triggers on requests to explain a diff, change, or PR, or to make an explainer.
 ---
 
-# Explain Diff
+# Explain diff
 
-Adapted from Geoffrey Litt's explain-diff skill
-(<https://gist.github.com/geoffreylitt/a29df1b5f9865506e8952488eac3d524>).
+Adapted from Geoffrey Litt's explain-diff skill:
+<https://gist.github.com/geoffreylitt/a29df1b5f9865506e8952488eac3d524>
 
-Make a rich, interactive explanation of the specified code change.
-Broadly explore the surrounding code first — the explainer teaches the
-system, not just the diff.
+Make a rich, interactive explanation of the code change. Explore
+the surrounding code first. The explainer covers the system, not only
+the diff.
 
 ## Sections
 
-- **Background**: Explain the existing system relevant to this change.
-  We don't know how much the reader already knows, so include a deep
-  background for beginners (note that it can be skipped if the reader
-  is already familiar), then a narrower background directly relevant
-  to the change.
-- **Intuition**: Explain the core intuition for the change. Focus on
-  the essence, not the full details. Use concrete examples with toy
-  data. Use figures and diagrams liberally.
-- **Code**: A literate walkthrough of the changes — grouped and
-  ordered for understanding, with prose before each group, not a pile
-  of files in alphabetical order.
-- **Quiz**: Five multiple-choice questions testing knowledge of this
-  change. Medium difficulty — hard enough that you must understand the
-  substance to answer, but no gotchas. Interactive: clicking an answer
-  says whether it was correct and gives feedback.
+- **Background**: explain the existing system relevant to this change.
+  The reader's prior knowledge varies, so start with a deep background
+  for beginners, marked as optional, then a narrower background tied to
+  the change.
+- **Intuition**: explain the core idea of the change. Focus on the
+  essence, not the full details. Use concrete examples with toy data.
+  Use figures and diagrams liberally.
+- **Code**: a literate walkthrough of the changes, grouped and ordered
+  for understanding, with prose before each group. Never a list of files
+  in alphabetical order.
+- **Quiz**: five multiple-choice questions on this change, of medium
+  difficulty. Answering must require understanding the substance.
+  Avoid gotchas. Clicking an answer reports whether it matched and
+  gives feedback.
 
 ## Format
 
-- One single self-contained HTML file with inline CSS and JavaScript.
-  One long page with section headers and a table of contents; no tabs
-  for the top-level structure. Basic responsive styling.
+- One self-contained HTML file with inline CSS and JavaScript. One long
+  page with section headers and a table of contents. No tabs for the
+  top-level structure. Basic responsive styling.
 - Save it outside the repo with a date-prefixed filename so files stay
   time-sorted: `/tmp/YYYY-MM-DD-explanation-<slug>.html`.
-- Write with the clarity and flow of Martin Kleppmann — engaging,
-  classic style, smooth transitions between sections.
-- Diagrams: pick a small number of diagram families and reuse them
-  across the explanation. Useful families: a simplified version of the
-  UI the user sees (for UI changes); a system diagram showing data
-  flow between components, with example data. Never ASCII diagrams —
-  always simple HTML/CSS designs, HTML lists for lists.
+- Write with the clarity and flow of Martin Kleppmann: engaging, classic
+  style, with transitions between sections.
+- Diagrams: pick a few diagram families and reuse them across the
+  explanation. Useful families: a simplified version of the UI for UI
+  changes, and a system diagram of data flow between components with
+  example data. Never ASCII diagrams. Use plain HTML and CSS designs,
+  and HTML lists for lists.
 - Code blocks: use `<pre>` tags. Any custom styled div **must** have
   `white-space: pre-wrap`, or the browser collapses newlines. Before
   saving, scan each code block in the HTML source and confirm its CSS
@@ -52,8 +51,8 @@ system, not just the diff.
 
 ## Publish
 
-If the Artifact tool is available, publish the HTML file as a private
-artifact (load the `artifact-design` skill first if the harness
-requires it) and report both the local path and the URL. The file is
-already self-contained, so no CSP changes are needed. If the Artifact
-tool is unavailable, just report the local path.
+If the Artifact tool exists, publish the HTML file as a private artifact.
+Load the `artifact-design` skill first if the harness requires it. Report
+both the local path and the URL. The file already contains everything it
+needs, so leave the CSP alone. Without the Artifact tool, report the
+local path.

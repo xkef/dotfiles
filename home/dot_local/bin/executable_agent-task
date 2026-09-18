@@ -2,8 +2,8 @@
 # Publishes a short task summary for the tmux agents pane.
 set -euo pipefail
 
-# A per-user directory under /tmp is shared across panes and writable from
-# agent sandboxes without granting access to the tmux socket.
+# Every pane shares this per-user directory under /tmp, and agent sandboxes
+# can write it without access to the tmux socket.
 TASK_DIR="/tmp/tmux-agent-tasks-$(id -u)"
 readonly TASK_DIR
 readonly MAX_SUMMARY_LENGTH=60

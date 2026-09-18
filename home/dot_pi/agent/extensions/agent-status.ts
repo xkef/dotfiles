@@ -1,14 +1,14 @@
 // Publishes this agent's state for the `tmux-agents` picker, in the same
 // tab-separated format the claude-agent-status hook writes.
 //
-// pi inherits TMUX_PANE from the pane it was started in, so keying the state
+// pi inherits TMUX_PANE from the pane it started in, so keying the state
 // file by that pane id gives the picker a join back to tmux that holds across
-// sessions. Without a pane there is nothing to join to, so the extension does
-// nothing at all.
+// sessions. Without a pane there is nothing to join to, and the extension
+// does nothing.
 //
 // pi documents agent_settled and ui_prompt_start/end for status integrations
-// like this one: agent_settled is the point where pi will not continue on its
-// own, and the ui_prompt pair brackets a prompt that blocks on the user.
+// like this one. agent_settled marks the point where pi stops on its own, and
+// the ui_prompt pair brackets a prompt that blocks on the user.
 
 import { mkdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -28,8 +28,8 @@ type State = "idle" | "busy" | "waiting";
 
 function publish(state: State, tool: string, cwd: string): void {
   try {
-    // The cwd goes last so a path never shifts another field, and the write
-    // goes through a temp file so the picker never reads a half-written line.
+    // The cwd goes last so a path never shifts another field. The write goes
+    // through a temp file so the picker never reads a half-written line.
     const epoch = Math.floor(Date.now() / 1000);
     const tmp = `${stateFile}.${process.pid}`;
     writeFileSync(tmp, `${AGENT}\t${state}\t${tool}\t${epoch}\t${cwd}\n`);
@@ -65,8 +65,8 @@ export default function (pi: ExtensionAPI) {
     publish("waiting", NO_TOOL, ctx.cwd);
   });
 
-  // A prompt can close while a run is still going, so ask pi which it is
-  // rather than assuming the agent went idle.
+  // A prompt can close while a run still goes on, so ask pi which it is
+  // instead of assuming the agent went idle.
   pi.on("ui_prompt_end", async (_event, ctx) => {
     publish(ctx.isIdle() ? "idle" : "busy", NO_TOOL, ctx.cwd);
   });
@@ -75,7 +75,7 @@ export default function (pi: ExtensionAPI) {
     try {
       rmSync(stateFile, { force: true });
     } catch {
-      // Nothing to do; a stale file drops out of the picker on its own.
+      // A stale file drops out of the picker on its own.
     }
   });
 }

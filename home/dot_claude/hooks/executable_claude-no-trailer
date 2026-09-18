@@ -3,10 +3,10 @@
 # message.
 #
 # The harness tells the agent to append that trailer, and an instruction in
-# CLAUDE.md only competes with it. This blocks at the tool boundary instead,
-# which nothing in a prompt can argue its way past.
+# CLAUDE.md only competes with it. This hook blocks at the tool boundary,
+# which no prompt can talk its way past.
 #
-# The needle is assembled rather than written out, so this file does not match
+# The needle is assembled instead of written out, so this file doesn't match
 # its own pattern and stays editable through Bash.
 
 readonly TRAILER="Claude-Session"

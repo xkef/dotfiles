@@ -1,4 +1,4 @@
--- OSC 52 clipboard (works over SSH, in tmux, everywhere)
+-- OSC 52 clipboard works over SSH and inside tmux.
 if vim.env.SSH_TTY or vim.env.TMUX then
   vim.g.clipboard = {
     name = "OSC 52",

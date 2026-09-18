@@ -1,8 +1,7 @@
 #!/usr/bin/env fish
 # shellcheck disable=all
-# dots keys — show keybinding reference.
-# Collects @key annotations from tmux and fish config files and renders
-# them as a markdown table, piped through glow for terminal display.
+# dots-keys: keybinding reference. Collects @key annotations from the tmux
+# and fish configs and renders them as a markdown table through glow.
 
 set -l sources
 for f in ~/.config/tmux/conf.d/*.conf ~/.config/fish/conf.d/*.fish

@@ -1,50 +1,51 @@
 #!/usr/bin/env fish
-# vm — disposable dev VMs on Apple Silicon; a thin wrapper around tart
-# (https://tart.run). Tart does the heavy lifting (Virtualization.framework
-# VMs, distributed as OCI images); this script adds flavor presets, SSH key
+# vm: disposable dev VMs on Apple Silicon, a thin wrapper around tart
+# (https://tart.run). Tart runs the Virtualization.framework VMs and
+# distributes them as OCI images. This script adds flavor presets, SSH key
 # seeding, virtiofs shares, and dotfiles sync.
 #
 # Requirements: macOS on Apple Silicon, `brew install openai/tools/tart`.
-# Optional: `gh` (authenticated ghcr.io pulls), `expect` (macOS-guest first
-# boot only). `vm doctor` checks all of this.
+# Optional: `gh` for authenticated ghcr.io pulls, `expect` for the first boot
+# of a macOS guest. `vm doctor` checks all of this.
 #
 # Quickstart:
 #   vm pull && vm create   # fetch the base image, provision a VM from it
 #   vm ssh                 # key-based SSH with agent forwarding
-#   vm destroy             # throw the VM away (the base image stays)
+#   vm destroy             # delete the VM, keep the base image
 #
-# Flavors (-f/--flavor or VM_FLAVOR):
-#   archlinux  Default. ghcr.io/xkef/archlinux-tart — a public image built
+# Flavors, from -f/--flavor or VM_FLAVOR:
+#   archlinux  Default. ghcr.io/xkef/archlinux-tart, a public image built
 #              with Packer from https://github.com/xkef/archlinux-tart.
 #              Fork that repo or set REMOTE_IMAGE to use your own.
-#   macos      ghcr.io/cirruslabs/macos-tahoe-vanilla (~50 GB first pull).
-#              First boot authenticates with VM_INIT_PASSWORD (default:
-#              admin) to seed the SSH key.
-#   <other>    Any name works: set REMOTE_IMAGE for `vm pull`, or install
+#   macos      ghcr.io/cirruslabs/macos-tahoe-vanilla, about 50 GB on the
+#              first pull. First boot authenticates with VM_INIT_PASSWORD,
+#              default admin, to seed the SSH key.
+#   <other>    Any name works. Set REMOTE_IMAGE for `vm pull`, or install
 #              from an ISO with `vm create-linux`.
 #
-# Configuration precedence: -f flag > environment variable > flavor default.
-# The variable reference lives in `vm help`.
+# Configuration precedence: -f flag, then environment variable, then flavor
+# default. `vm help` lists the variables.
 #
-# Shares (virtiofs): ~/code is shared into every guest (tag `code`). Linux
-# guests also mount ~/work (tag `work`, added to fstab by `vm create`).
-# macOS guests see shares under "/Volumes/My Shared Files" with ~/code
-# symlinked by `vm create`/`vm bootstrap`.
+# Shares over virtiofs: every guest gets ~/code under the tag `code`. Linux
+# guests also mount ~/work under the tag `work`, which `vm create` adds to
+# fstab. macOS guests find shares under "/Volumes/My Shared Files", and
+# `vm create` or `vm bootstrap` symlinks ~/code.
 #
-# State ($VM_DIR, ~/.local/share/vm):
-#   known_hosts  VM host-key trust. Safe to delete; re-learned on connect.
-#   <vm>.log     Output of the last headless `tart run`; check it when a
+# State in $VM_DIR, ~/.local/share/vm:
+#   known_hosts  VM host-key trust. Safe to delete. The next connect
+#                relearns it.
+#   <vm>.log     Output of the last headless `tart run`. Check it when a
 #                start times out.
 #
-# macOS guests: `vm bootstrap` installs tart-guest-agent (clipboard + IP via
-# the agent resolver). `vm create` carves a `work` APFS partition out of
-# free disk space (WORK_SIZE) and relocates /opt/homebrew onto it.
+# macOS guests: `vm bootstrap` installs tart-guest-agent for the clipboard
+# and the agent IP resolver. `vm create` carves a `work` APFS partition of
+# WORK_SIZE out of free disk space and relocates /opt/homebrew onto it.
 #
 # Forking: the only personal piece is `vm sync`, which rsyncs this dotfiles
 # repo into the guest and applies it with chezmoi. Replace its body with your
-# own provisioning (or delete it); everything else is generic.
+# own provisioning or delete it. Everything else is generic.
 
-# ── Flavor & configuration ────────────────────────────
+# ── Flavor and configuration ──────────────────────────
 
 argparse -s -n vm 'f/flavor=' -- $argv; or exit 1
 
@@ -55,8 +56,8 @@ function _default -a var value
     set -q $var; or set -g $var $value
 end
 
-# Flavor presets; unknown flavors fall through to the generic defaults below
-# and need REMOTE_IMAGE (or `vm create-linux`) to become useful.
+# Flavor presets. An unknown flavor falls through to the generic defaults
+# below and needs REMOTE_IMAGE or `vm create-linux` to become useful.
 switch $VM_FLAVOR
     case archlinux
         _default REMOTE_IMAGE ghcr.io/xkef/archlinux-tart:latest
@@ -96,8 +97,8 @@ function _apply_resources
     tart set $argv[1] $args
 end
 
-# Poll a probe every 2s until it succeeds or the iteration budget runs out.
-# The probe's stdout passes through; its stderr is silenced.
+# Polls a probe every 2s until it succeeds or the iteration budget runs out.
+# The probe's stdout passes through. Its stderr goes to /dev/null.
 function _wait_for -a label iterations
     set -l probe $argv[3..-1]
     for i in (seq 1 $iterations)
@@ -110,10 +111,10 @@ end
 
 # ── SSH ───────────────────────────────────────────────
 
-# Resolve the public key used to seed and authenticate guest SSH: an explicit
+# Resolves the public key that seeds and authenticates guest SSH. An explicit
 # VM_SSH_PUBKEY_FILE wins, then conventional key names, then anything in
-# ~/.ssh. The private half may exist only inside an SSH agent (1Password,
-# ssh-agent); _ssh_opts handles that.
+# ~/.ssh. The private half may exist only inside an SSH agent such as
+# 1Password or ssh-agent. _ssh_opts handles that.
 function _ssh_key_file
     if set -q VM_SSH_PUBKEY_FILE
         test -f $VM_SSH_PUBKEY_FILE; and echo $VM_SSH_PUBKEY_FILE; and return
@@ -142,9 +143,9 @@ function _vm_ip
     if _is_macos
         tart ip $VM_NAME --resolver arp 2>/dev/null
     else
-        # The guest agent is preferred but can be slow or die mid-run; fall back
-        # to ARP (reliable once the VM holds a DHCP lease) so ssh/start/status
-        # don't report a running VM as down.
+        # The guest agent resolver comes first but can be slow or die mid-run.
+        # ARP works once the VM holds a DHCP lease, so fall back to it to keep
+        # ssh, start, and status from reporting a running VM as down.
         set -l ip (tart ip $VM_NAME --resolver agent 2>/dev/null)
         test -n "$ip"; or set ip (tart ip $VM_NAME --resolver arp 2>/dev/null)
         echo $ip
@@ -169,7 +170,7 @@ function _wait_ssh_port
     _wait_for 'SSH port' 60 nc -z -G 2 $argv[1] 22
 end
 
-# Linux guests: append the key via `tart exec`, no password needed.
+# Linux guests: append the key through `tart exec`, without a password.
 function _inject_ssh_key
     set -l pub (_ssh_key_file); or return 1
     set -l key (string trim (cat $pub))
@@ -182,7 +183,7 @@ function _inject_ssh_key
         && chmod 600 /home/$VM_USER/.ssh/authorized_keys"
 end
 
-# macOS guests have no `tart exec`; seed the key over password SSH instead.
+# macOS guests have no `tart exec`. Seed the key over password SSH instead.
 function _inject_ssh_key_password
     set -l ip $argv[1]
     set -l pub (_ssh_key_file); or return 1
@@ -217,8 +218,8 @@ end
 # Linux guests --------------------------------------------------------------
 
 function _ensure_guest_dns
-    # Corporate full-tunnel VPNs often block outbound DNS (:53) to public
-    # resolvers; fall back to DNS-over-TLS (:853), which they leave open.
+    # Corporate full-tunnel VPNs often block outbound DNS on port 53 to public
+    # resolvers. Fall back to DNS-over-TLS on port 853, which they leave open.
     tart exec $VM_NAME getent hosts github.com >/dev/null 2>&1; and return 0
     echo "  DNS over :53 is blocked — enabling DNS-over-TLS in guest..."
     tart exec $VM_NAME bash -c '
@@ -230,9 +231,9 @@ function _ensure_guest_dns
 end
 
 function _ensure_guest_work_mount
-    # The base image only mounts the 'code' virtiofs share; set up the second
-    # share (~/work -> /home/<user>/work, tag=work) ourselves via fstab so it
-    # auto-mounts on every boot.
+    # The base image mounts only the 'code' virtiofs share. Add the second
+    # share, ~/work to /home/<user>/work under tag=work, to fstab so it mounts
+    # on every boot.
     test -d $VM_WORK_DIR; or return 0
     set -l wm /home/$VM_USER/work
     echo "  Mounting ~/work → $wm in guest..."
@@ -474,21 +475,22 @@ function cmd_start
 
     if test -d $VM_SHARE_DIR
         if _is_macos
-            # Default automount tag → appears at /Volumes/My Shared Files/code inside guest.
+            # The default automount tag shows up at /Volumes/My Shared Files/code.
             set -a run_args --dir="code:$VM_SHARE_DIR"
         else
             set -a run_args --dir="$VM_SHARE_DIR:tag=code"
         end
     end
-    # Second share (Linux guests only): ~/work → /home/<user>/work, tag=work.
+    # Second share, Linux guests only: ~/work to /home/<user>/work, tag=work.
     if not _is_macos; and test -d $VM_WORK_DIR
         set -a run_args --dir="$VM_WORK_DIR:tag=work"
     end
     set -a run_args $VM_NAME
 
     if test "$mode" = headless
-        # Log instead of spraying tart output across the prompt; graphics
-        # and vnc runs keep the terminal (vnc prints its connection URL).
+        # Log to a file instead of writing tart output across the prompt.
+        # Graphics and vnc runs keep the terminal, since vnc prints its
+        # connection URL.
         set -l log $VM_DIR/$VM_NAME.log
         tart run $run_args >$log 2>&1 &
         set -l ip (_wait_ip); or begin
@@ -535,8 +537,8 @@ function cmd_sync
     ssh $opts $VM_USER@$ip 'mkdir -p ~/dotfiles'
     rsync -az --delete \
         $DOTFILES_DIR/ $VM_USER@$ip:~/dotfiles/
-    # A broken install can leave a zero-byte chezmoi that execs as an empty
-    # script (exit 0, no output), so probe the version output, not the PATH.
+    # A broken install can leave a zero-byte chezmoi that runs as an empty
+    # script with exit 0 and no output, so probe the version output, not PATH.
     ssh -tt $opts $VM_USER@$ip "sh -lc '
         PATH=\"\$HOME/.local/bin:\$PATH\"
         chezmoi --version 2>/dev/null | grep -q chezmoi \

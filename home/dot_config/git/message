@@ -4,15 +4,15 @@
 #
 # ── Body: wrap at 72 ─────────────────────────────────────────────────|
 #
-# 50 = GitHub readability sweet spot (Desktop warns here)
-# 72 = GitHub truncates subject on commit list beyond this
-# 72 = body wrap matches git log's 4-space indent on 80-col terminal
+# 50: GitHub Desktop warns beyond this
+# 72: GitHub truncates the subject in the commit list beyond this
+# 72: body wrap fits git log's 4-space indent on an 80-column terminal
 #
 # ── Conventional Commits types ────────────────────────────────────────
 #   feat      New feature
 #   fix       Bug fix
-#   refactor  Code improvement (no behavior change)
-#   docs      Documentation (including code comments)
+#   refactor  Code improvement without behavior change
+#   docs      Documentation, including code comments
 #   test      Add or change tests
 #   perf      Performance improvement
 #   style     Formatting, lint fixes
@@ -20,6 +20,6 @@
 #
 # ── Rules ─────────────────────────────────────────────────────────────
 #   Subject:  imperative mood, no period, lowercase after type
-#   Scope:    optional (e.g. feat(tmux), fix(zsh))
-#   Body:     explain *why*, not *what*
+#   Scope:    optional, such as feat(tmux) or fix(zsh)
+#   Body:     explain why, not what
 #   Footer:   Breaking-Change: / Co-Authored-By: / Refs: #issue

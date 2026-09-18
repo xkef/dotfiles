@@ -2,14 +2,14 @@
 # Records this agent's state for the `tmux-agents` picker.
 #
 # Claude Code runs hooks as child processes, so they inherit TMUX_PANE from the
-# pane the agent was started in. Keying the state file by that pane id gives the
-# picker a join back to tmux that stays valid across sessions, and lets a dead
-# pane's entry drop out of the view without a cleanup step.
+# pane the agent started in. Keying the state file by that pane id gives the
+# picker a join back to tmux that stays valid across sessions, and a dead
+# pane's entry drops out of the view without a cleanup step.
 #
-# File format is one tab-separated line: agent, state, tool, epoch, cwd. The cwd
-# goes last so a path never shifts another field. The pi extension at
-# ~/.pi/agent/extensions/agent-status.ts writes the same format, which is why
-# the directory is shared rather than living under ~/.claude.
+# The file holds one tab-separated line: agent, state, tool, epoch, cwd. The
+# cwd goes last so a path never shifts another field. The pi extension at
+# ~/.pi/agent/extensions/agent-status.ts writes the same format, so the
+# directory is shared instead of sitting under ~/.claude.
 
 [ -n "$TMUX_PANE" ] || exit 0
 
@@ -28,11 +28,11 @@ if [ "$EVENT" = SessionEnd ]; then
 fi
 
 # Only PreToolUse names a tool. Every other event describes the agent as a
-# whole, so it clears the column rather than leaving a stale tool name behind.
+# whole, so it clears the column instead of leaving a stale tool name.
 [ "$EVENT" = PreToolUse ] || TOOL=-
 
-# Notification fires both for a permission prompt and for an idle nudge. Either
-# way the agent is parked until you look at it, so both read as "waiting".
+# Notification fires for a permission prompt and for an idle nudge. Either
+# way the agent waits for a look, so both read as "waiting".
 case "$EVENT" in
 SessionStart | Stop) STATE=idle ;;
 UserPromptSubmit | PreToolUse) STATE=busy ;;

@@ -9,7 +9,7 @@ packages=(
   {{ . | quote }}
 {{ end -}}
 )
-# GUI packages only on bare metal: never in CI, VMs, or containers.
+# GUI packages only on bare metal, never in CI, VMs, or containers.
 if [[ "${CI:-}" != true ]] && ! systemd-detect-virt -q 2>/dev/null; then
   packages+=(
 {{ range .packages.arch.gui -}}
@@ -18,8 +18,8 @@ if [[ "${CI:-}" != true ]] && ! systemd-detect-virt -q 2>/dev/null; then
   )
 fi
 
-# Returns 0 only if paru exists AND runs (paru-bin can break against a
-# newer libalpm than the prebuilt release was linked with).
+# Returns 0 only if paru exists and runs. paru-bin can break against a
+# newer libalpm than the one its prebuilt release linked against.
 paru_works() {
   command -v paru >/dev/null && paru --version >/dev/null 2>&1
 }
@@ -40,13 +40,13 @@ sudo pacman -Syu --noconfirm
 if ensure_paru; then
   paru_flags=(--needed --noconfirm)
   systemd-detect-virt -q 2>/dev/null && paru_flags+=(--mflags="-A")
-  # One broken AUR package must not abort the whole apply: retry one by one
+  # One broken AUR package must not abort the whole apply. Retry one by one
   # and skip the failures with a warning.
   if ! paru -S "${paru_flags[@]}" "${packages[@]}"; then
     echo "warning: batch install failed; retrying packages individually" >&2
     for pkg in "${packages[@]}"; do
       paru -S "${paru_flags[@]}" "$pkg" ||
-        echo "warning: $pkg failed to install — skipped" >&2
+        echo "warning: $pkg failed to install, skipped" >&2
     done
   fi
 else

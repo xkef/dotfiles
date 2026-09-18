@@ -1,7 +1,7 @@
 name: CodeQL
 
-# Static analysis of the GitHub Actions workflows themselves — the only
-# CodeQL-supported language in this repo (shell, fish, and Lua are not).
+# Static analysis of the GitHub Actions workflows, the only language in this
+# repo that CodeQL supports. Shell, fish, and Lua fall outside it.
 on:
   pull_request:
   push:

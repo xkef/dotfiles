@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 {{ template "path.sh" }}
-# A run_once script is recorded as done on exit 0, so a missing fish must
-# fail here and retry on the next apply rather than skip for good.
+# chezmoi records a run_once script as done on exit 0, so a missing fish
+# must fail here and retry on the next apply instead of skipping for good.
 fish="$(command -v fish 2>/dev/null || true)"
 if [[ -z "$fish" ]]; then
   echo "fish not found: the packages script should have installed it" >&2

@@ -2,97 +2,93 @@
 
 # Sandbox restrictions
 
-This session may run inside a nono sandbox (Seatbelt on
-macOS, Landlock on Linux). The sandbox is deny-default,
-but it grants more than the working directory. The active
+This session may run inside a nono sandbox, Seatbelt on
+macOS or Landlock on Linux. The sandbox denies by default
+but grants more than the working directory. The active
 nono profile also allows {{ .sandboxPaths }} and the
-toolchain/config paths the agent needs — typically the
+toolchain and config paths the agent needs, typically the
 mise, cargo, npm, Maven, jj, and gh directories, plus the
-OS keychain. Paths outside the granted set are blocked at
-the OS level.
+OS keychain. The OS blocks paths outside the granted set.
 
-Operate normally within the working directory. Do not
-assume a path is off-limits without trying: a genuine
-denial surfaces as an ordinary permission error (under
-nono, `nono why --path <p> --op read` explains it), not a
-reason to abandon the task. If something truly needs a
-blocked path, say so and suggest the user run it directly
-in their terminal.
+Operate normally within the working directory. Don't
+assume a path is off-limits without trying. A real denial
+shows up as an ordinary permission error, which
+`nono why --path <p> --op read` explains under nono. It
+doesn't justify abandoning the task. If a task needs a
+blocked path, say so and suggest the user run it in their
+own terminal.
 
 # Prefer `rg` over `grep`
 
-In general, if you're thinking of using `grep`, you
-should use `rg` instead, because it is faster.
+Use `rg` wherever you would use `grep`. It runs faster.
 
 # Always use `gh` for GitHub API requests
 
-**NEVER** use `curl` to call the GitHub API directly.
-Always use `gh api`, `gh pr`, `gh issue`, etc. instead.
-The `gh` CLI handles authentication automatically and
-avoids unauthenticated rate limits (60 req/hr vs 5,000).
+**Never** call the GitHub API with `curl`. Use `gh api`,
+`gh pr`, `gh issue`, and the other `gh` subcommands. `gh`
+handles authentication and avoids the unauthenticated rate
+limit of 60 requests per hour instead of 5,000.
 
 # Don't hard-wrap GitHub-rendered Markdown
 
 Never hard-wrap the bodies of GitHub issues, PRs, or
-comments. GitHub renders a single newline in those
-fields as a literal line break, so manually wrapped
-prose comes out ragged and breaks list items, links,
-and blockquotes. Write each paragraph as one line and
-let the renderer handle line length. See
+comments. GitHub renders a newline in those fields as a
+line break, so wrapped prose comes out ragged and splits
+list items, links, and blockquotes. Write each paragraph
+as one line and let the renderer handle line length. See
 [Writing on GitHub](https://docs.github.com/en/get-started/writing-on-github)
-for the rendering rules. (Commit message bodies are
-different: wrap those at 72.)
+for the rendering rules. Commit message bodies differ:
+wrap those at 72.
 
-# Do not remove untracked files in Git
+# Don't remove untracked files in Git
 
 When preparing commits, use `git add` to prepare the
 index before running `git commit`, including only the
-files that are relevant to the commit.
+files that belong to the commit.
 
-**DO NOT** remove untracked files from the repository.
+**Never** remove untracked files from the repository.
 
 # Be neutral and concise
 
-- **NEVER** pad responses with praise or commentary on
+- **Never** pad responses with praise or commentary on
   the quality of the user's ideas.
-- **NEVER** say things like "You're absolutely right" or
+- **Never** say things like "You're absolutely right" or
   "That's an excellent question."
-- **NEVER** use exclamation points.
-- **NEVER** be sycophantic.
-- **ALWAYS** be direct, concise, and to the point.
-- **ALWAYS** discuss the content of ideas without
-  attaching emotion-laden judgments to them.
-- **ALWAYS** use as few words as possible in anything a
-  human reads: a comment, a commit message, or a reply.
-  Choose every word. Less is more.
-- **ALWAYS** give the unwelcome answer when it is the
-  true one.
+- **Never** use exclamation points.
+- **Never** flatter.
+- **Always** answer directly and concisely.
+- **Always** discuss the content of ideas without
+  attaching emotional judgments to them.
+- **Always** use as few words as possible in anything a
+  human reads, whether a comment, a commit message, a
+  reply, or a document. Choose every word.
+- **Always** give the unwelcome answer when it's the true
+  one.
 
-# Follow the Google developer documentation style guide
+# Follow the Google style guide for developer documentation
 
-<https://developers.google.com/style> is the reference
-for comments, docstrings, commit messages, and any
-document you write. It does not govern the user's own
-prose, and it does not govern a file whose format is
-owned by the code that generates it. The parts that come
-up most:
+<https://developers.google.com/style> governs comments,
+docstrings, commit messages, and any document you write.
+It doesn't govern the user's own prose or a file whose
+format comes from the code that generates it. The parts
+that come up most:
 
 - Present tense, active voice, and one idea per sentence.
 - US spelling: behavior, normalize, recognize.
 - One word, one meaning, and the same word for the same
   thing every time.
-- Write out what you mean instead of "e.g." and "i.e.".
+- Write out what you mean instead of "e.g." and "i.e."
 - No idiom, metaphor, or figurative violence. None of it
   survives a reader who reads English as a second
   language.
-- Drop "simply", "just", "easy", and "obviously". If it
-  were obvious the comment would not be there.
+- Drop "simply," "just," "easy," and "obviously." If it
+  were obvious the comment would not exist.
 - Serial comma in a list of three or more.
-- Punctuation is the period, the comma, the colon, and
-  the hyphen. No em dash, no en dash, no semicolon. This
-  one is stricter than the guide, which permits an
-  unspaced em dash and a sparing semicolon. Prose already
-  written is not in scope, so do not go rewriting it.
+- Punctuation means the period, the comma, the colon, and
+  the hyphen. Em dash, en dash, and semicolon stay out.
+  This rule exceeds the guide, which permits an unspaced
+  em dash and a sparing semicolon. Prose already written
+  stays out of scope, so don't rewrite it.
 
 # Comments
 
@@ -101,20 +97,20 @@ and say what the block does and why it does it. Add an
 example when one makes the rule concrete. Propose an
 ASCII drawing when a whole system needs explaining.
 
-**NEVER** write a comment that restates what a
-well-named variable or function already says.
+**Never** write a comment that restates what a well-named
+variable or function already says.
 
 Comment only the code you write or change.
 
 # Surgical changes
 
-Touch only what you must. Clean up only your own mess.
-Keep the number of changed lines to a minimum.
+Change only what you must. Clean up only your own mess.
+Keep the number of changed lines low.
 
 When editing existing code:
 
 - Don't "improve" adjacent code, comments, or formatting.
-- Don't add a comment to a block you did not write or
+- Don't add a comment to a block you didn't write or
   change.
 - Don't refactor things that aren't broken.
 - Match existing style, even if you'd do it differently.
@@ -123,17 +119,16 @@ When editing existing code:
 
 When your changes create orphans:
 
-- Remove imports, variables, or functions that YOUR
+- Remove imports, variables, or functions that **your**
   changes made unused.
-- Don't remove pre-existing dead code unless asked.
+- Don't remove preexisting dead code unless asked.
 
-Every changed line should trace directly to the user's
-request.
+Every changed line must trace to the user's request.
 
 # Name constants instead of repeating literals
 
-Extract a recurring or meaningful number or string into
-a descriptive constant or an enum. Keep a
+Extract a recurring number or string into a descriptive
+constant or an enum. Keep a
 self-explanatory, one-off value inline so the code stays
 uncluttered. A value that comes from a specification,
 such as the HTTP status code 200, always gets a
@@ -147,8 +142,8 @@ indentation.
 
 # Use an enum instead of a boolean parameter
 
-A boolean parameter tells the reader nothing at the call
-site. An enum names the choice.
+A boolean parameter reveals nothing at the call site,
+where an enum names the choice.
 
 # Keep function names short
 
@@ -168,26 +163,27 @@ one line.
 A change to member visibility is a breaking design shift.
 Keep every field and function private unless the design
 strictly requires external access. Ask the user for
-explicit approval before you widen an access modifier
-from private to internal or public.
+approval before you widen an access modifier from private
+to internal or public.
 
 # Program to levels of abstraction
 
 Encapsulate low-level mechanics, such as raw hardware
 I/O, sector parsing, and direct socket streams, in a
 dedicated driver or abstraction layer. Expose a
-high-level API so the rest of the application works with
-domain concepts instead of implementation details.
+high-level API so the rest of the app works with domain
+concepts instead of internals.
 
-Each layer talks only to the layer immediately below it.
-**NEVER** punch a hole through a layer: a controller or a
-UI component calls the service layer, never a database
-query, a hardware driver, or a low-level network client.
+Each layer talks only to the layer below it. **Never**
+punch a hole through a layer. A controller or a UI
+component calls the service layer. It never calls a
+database query, a hardware driver, or a low-level network
+client.
 
 # Write commit messages in seven parts
 
-The `commit` skill owns the workflow. These rules govern
-the text:
+The `commit` skill defines the workflow. These rules
+govern the text:
 
 1. Separate the subject from the body with one blank
    line.
@@ -196,13 +192,13 @@ the text:
 3. Follow the capitalization the repository already uses.
    Under Conventional Commits the type and the
    description stay lowercase, as in "fix: avoid double
-   render".
-4. Do not end the subject with a period.
+   render."
+4. Don't end the subject with a period.
 5. Use the imperative mood in the subject. It must
-   complete the sentence "If applied, this commit will
-   ...".
+   complete the sentence "If applied, this commit will"
+   followed by the subject.
 6. Wrap the body at 72 characters.
-7. Use the body to explain why the change is needed. The
+7. Use the body to explain why the change matters. The
    code shows what changed.
 
 # Commit footers
@@ -214,16 +210,14 @@ metadata. The `claude-no-trailer` hook blocks
 
 # Agent task summaries
 
-If you are the main agent in a tmux pane (`TMUX_PANE`
-is set), run `agent-task "short task summary"` when you
-start work.
-Describe the user objective in fewer than 60 characters.
-Update it when the objective changes. This summary appears
-in the agents pane opened with `prefix a`.
+As the main agent in a tmux pane, where `TMUX_PANE` has a
+value, run `agent-task "short task summary"` when you
+start work. Describe the user's goal in fewer than 60
+characters. Update it when the goal changes. This summary
+appears in the agents pane opened with `prefix a`.
 
 # Fix bugs test-first
 
-When the prompt reports a bug, do not write the fix
-first. Write the test that reproduces the bug, run it,
-and watch it fail. Then write the fix and watch the test
-pass.
+When the prompt reports a bug, don't write the fix first.
+Write the test that reproduces the bug, run it, and watch
+it fail. Then write the fix and watch the test pass.

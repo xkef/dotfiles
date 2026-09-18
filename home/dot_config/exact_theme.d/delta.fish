@@ -1,6 +1,6 @@
-# Theme adapter (vcs package): regenerate delta's palette-derived include.
-# ~/.config/git/config includes delta.gitconfig (untracked, gitignored).
-# Sourced by `theme` with $t_palette/$t_bg set; uses the _blend_hex helper.
+# Theme adapter for delta: regenerates the palette-derived include.
+# ~/.config/git/config includes the untracked delta.gitconfig. `theme`
+# sources this with $t_palette and $t_bg set. It uses the _blend_hex helper.
 set -l delta_red $t_palette[2]
 set -l delta_green $t_palette[3]
 set -l delta_dim $t_palette[9]

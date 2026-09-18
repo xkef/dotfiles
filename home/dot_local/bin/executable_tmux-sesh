@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Sesh session picker — uses fzf-tmux to create a native tmux popup.
-# See: https://github.com/joshmedeski/sesh
+# Sesh session picker in an fzf-tmux popup.
+# See https://github.com/joshmedeski/sesh
 set -euo pipefail
 
 if ! command -v sesh >/dev/null 2>&1; then

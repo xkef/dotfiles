@@ -1,16 +1,13 @@
 return {
-  -- LSP: language server protocol support
   {
     "neovim/nvim-lspconfig",
     dependencies = {
-      -- Mason: portable LSP/formatter/linter installer
       { "mason-org/mason.nvim", opts = {} },
       "mason-org/mason-lspconfig.nvim",
-      -- Lua LSP config for editing neovim config (adds vim.* types)
+      -- Adds vim.* types when editing the neovim config.
       { "folke/lazydev.nvim", ft = "lua", opts = {} },
     },
     config = function()
-      -- Keymaps activated when an LSP attaches to a buffer
       vim.api.nvim_create_autocmd("LspAttach", {
         callback = function(event)
           local map = function(keys, func, desc)

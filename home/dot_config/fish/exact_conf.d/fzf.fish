@@ -9,9 +9,9 @@ if command -q fd
     set -gx FZF_ALT_C_COMMAND 'fd --type d --hidden --follow --exclude .git .'
 end
 
-# Default options apply to every fzf invocation. Per-mode opts below only add
-# --preview commands and headers; layout/look is centralised here so a single
-# tweak re-skins everything (and so fzf adapts to narrow tmux popups).
+# Default options apply to every fzf invocation. The per-mode options below
+# add only --preview commands and headers. Layout and look live here, so one
+# change restyles everything, and fzf adapts to narrow tmux popups.
 set -gx FZF_DEFAULT_OPTS "\
     --height=60% --layout=reverse --info=inline-right \
     --tiebreak=chunk,length \
@@ -26,7 +26,7 @@ set -gx FZF_DEFAULT_OPTS "\
     --bind 'ctrl-d:preview-half-page-down,ctrl-u:preview-half-page-up' \
     --bind 'ctrl-f:preview-page-down,ctrl-b:preview-page-up'"
 
-# Centred popup when running inside tmux — matches lazygit/jjui/scooter popups.
+# Centered popup inside tmux, matching the lazygit, jjui, and scooter popups.
 set -gx FZF_TMUX_OPTS '-p 80%,70%'
 
 set -gx FZF_CTRL_T_OPTS "\
@@ -38,24 +38,22 @@ set -gx FZF_ALT_C_OPTS "\
     --scheme=path \
     --preview 'eza -T --color=always --icons --level=2 {} 2>/dev/null || ls -la {}'"
 
-# Tab completion: hide fish's tab-separated description from the list (preview
-# still receives the full token via fzf-preview, which strips it). Restores
-# fzf's default tab=accept behaviour.
+# Tab completion hides fish's tab-separated description from the list. The
+# preview still receives the full token, and fzf-preview strips it.
 set -gx FZF_COMPLETION_OPTS "\
     --no-multi \
     --bind 'tab:down,btab:up' \
     --with-nth=1 --delimiter='\t' \
     --preview 'fzf-preview {1}'"
 
-# The FZF_* variables above are exported so scripts and tmux popups inherit
-# the look. Everything below is key bindings and widgets for a human at a
-# prompt, so scripts skip it.
+# Scripts and tmux popups inherit the exported FZF_* variables above. The
+# key bindings and widgets below serve a prompt, so scripts skip them.
 status is-interactive; or return
 
-# fzf shell integration (Ctrl-T, Ctrl-R, Alt-C)
+# Ctrl-T, Ctrl-R, and Alt-C
 fzf --fish | source
 
-# Override fzf's built-in multi-select completion with single-select
+# Single-select completion instead of fzf's built-in multi-select
 function __fzf_cmd_tokens
     commandline --tokenize --cut-at-cursor
 end
@@ -77,19 +75,17 @@ function fzf-completion --description 'fzf tab completion (single-select)'
     end
 end
 
-# atuin replaces fzf's Ctrl-R history widget
+# atuin takes over Ctrl-R
 if command -q atuin
     set -gx ATUIN_TMUX_POPUP false
     atuin init fish --disable-up-arrow | source
 end
 
-# Replace default Tab with fzf-powered completion
 bind \t fzf-completion
 
-# Custom widgets
-bind \ez __fzf_zoxide # Alt-Z: zoxide jump
-bind \e/ __fzf_grep # Alt-/: live grep
+bind \ez __fzf_zoxide
+bind \e/ __fzf_grep
 
 if command -q tv
-    bind \et __tv_smart # Alt-T: television
+    bind \et __tv_smart
 end

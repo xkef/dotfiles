@@ -1,4 +1,4 @@
-# Yazi keymap — vim-centric defaults with a few extras
+# vim-style keymap with a few extras.
 
 [manager]
 prepend_keymap = [
