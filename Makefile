@@ -1,6 +1,6 @@
 TRACKED_FILES := $(wildcard $(shell git ls-files))
 TRACKED_TEXT_FILES := $(filter-out %.png %.jpg %.jpeg %.gif %.webp,$(TRACKED_FILES))
-# Run scripts are templates, so shellcheck sees them rendered in `check`.
+# Run scripts are templates. `check` renders them for shellcheck.
 SHELL_FILES := $(filter-out home/.chezmoiscripts/%,$(shell awk 'FNR == 1 && /^\#!.*(env[[:space:]]+bash|\/bash|\/sh)([[:space:]]|$$)/ { print FILENAME }' $(TRACKED_TEXT_FILES) 2>/dev/null))
 FISH_FILES := $(filter %.fish,$(TRACKED_FILES))
 
@@ -60,6 +60,11 @@ check: ## Apply the source tree into a throwaway HOME and assert results
 	done; \
 	test -x "$$tmp/home/.local/bin/theme" || { echo "theme not executable"; exit 1; }; \
 	test ! -e "$$tmp/home/.config/git/config.work" || { echo "unexpected config.work"; exit 1; }; \
+	if command -v fish >/dev/null; then \
+		for f in "$$tmp"/home/.config/fish/conf.d/*.fish "$$tmp"/home/.config/fish/functions/*.fish; do \
+			fish --no-execute "$$f" || exit 1; \
+		done; \
+	fi; \
 	chezmoi verify --source . --destination "$$tmp/home" \
 		--config "$$tmp/chezmoi.toml" --persistent-state "$$tmp/state.db" \
 		--exclude scripts || exit 1; \

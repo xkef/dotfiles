@@ -73,7 +73,8 @@ docker run -it --rm archlinux:latest bash -c '
 .
 ├── home/                          # chezmoi source state — mirrors $HOME
 │   ├── .chezmoidata/
-│   │   └── packages.toml          #   every package on both OSes, one file
+│   │   ├── packages.toml          #   every package on both OSes, one file
+│   │   └── agents.toml            #   AI agents: launchers, sandbox, profiles
 │   ├── .chezmoiscripts/           #   hooks: packages, defaults, mise, shell
 │   ├── .chezmoitemplates/         #   shared agent-rules template
 │   ├── dot_config/                #   ~/.config — one dir per tool:
@@ -105,9 +106,10 @@ unmanaged files, and `.tmpl` files render as templates at apply time.
 - A template renders the git identity for work, gated on the one-time
   `work` prompt and on `op`. `onepasswordRead` fills it at apply time, so
   the repo doesn't store secrets.
-- Agent rule files (`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`,
-  `~/.pi/agent/AGENTS.md`) render from one shared template plus per-tool
-  additions ([details](docs/ai.md)).
+- [`home/.chezmoidata/agents.toml`](home/.chezmoidata/agents.toml)
+  declares each AI agent once. The fish launchers, the `sb` sandbox
+  wrapper, and the nono profiles render from it, and the agent rule files
+  render from one shared template ([details](docs/ai.md)).
 - `exact_` directories (fish `conf.d`, tmux `conf.d`, `theme.d`) remove
   files the repo no longer manages, so stale fragments can't survive.
 - Run scripts put the package prefixes on their own `PATH`

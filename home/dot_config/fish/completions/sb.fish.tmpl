@@ -1,0 +1,4 @@
+complete -c sb -f
+{{ range $name, $agent := .agents -}}
+complete -c sb -n __fish_use_subcommand -a {{ $name }} -d '{{ $agent.description }} (sandboxed)'
+{{ end -}}

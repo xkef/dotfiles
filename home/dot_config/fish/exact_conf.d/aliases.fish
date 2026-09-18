@@ -1,7 +1,7 @@
 # ── Abbreviations ────────────────────────────────────
-# Fish abbreviations expand inline (like aliases but you see the full command).
-# Use `abbr` for commands you type; `alias` for transparent replacements.
-# Interactive only: an alias like `mkdir -pv` must not leak into scripts.
+# Abbreviations expand inline, so the full command stays visible. Use `abbr`
+# for commands you type and `alias` for transparent replacements. Interactive
+# only: an alias like `mkdir -pv` must not leak into scripts.
 status is-interactive; or return
 
 # Quick edit
@@ -16,10 +16,7 @@ abbr -a ta 'tmux attach -t'
 abbr -a tn 'tmux new -s'
 abbr -a tl 'tmux list-sessions'
 
-# AI tools
-# claude, codex, and pi (functions/) run in a nono sandbox via `sb`.
-
-# Pipe --help through bat with syntax highlighting (via folke/dot)
+# Pipe -h output through bat, after folke/dot.
 abbr -a --position anywhere --set-cursor -- -h "-h 2>&1 | bat --plain --language=help"
 
 # Misc
@@ -32,6 +29,7 @@ abbr -a extract 'ouch decompress'
 abbr -a compress 'ouch compress'
 
 # ── Modern replacements ──────────────────────────────
-# eza/bat/dust/duf/procs wrappers live in functions/ (ls, ll, lt, la, eza, cat,
-# catn, du, df, ps). They check `command -q` at call time, so they degrade
-# gracefully and don't depend on PATH being set by another conf.d file first.
+# The eza, bat, dust, duf, and procs wrappers sit in functions/ as ls, ll,
+# lt, la, eza, cat, catn, du, df, and ps. They check `command -q` at call
+# time, so they fall back to the base tool and don't depend on PATH from
+# another conf.d file.

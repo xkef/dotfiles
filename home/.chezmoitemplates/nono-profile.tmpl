@@ -1,0 +1,43 @@
+{{- /* Renders one nono profile from .agents.<name>.nono. This file declares
+       the toolchain surface every agent needs once: mise, jj, maven, npm,
+       cargo, gh, shared skills, keychain, and the agent state the tmux
+       picker reads. The agent adds its own state directories, extra policy
+       groups, and anything beyond that surface through `extra`.
+       Called with (dict "name" <agent> "agent" .agents.<agent>). */ -}}
+{{- $n := .agent.nono -}}
+{{- $groups := list
+      "git_config"
+      "mise_manager"
+      "node_runtime"
+      (dict "name" "user_caches_macos" "when" "macos")
+      "unlink_protection" -}}
+{{- $allow := list
+      "$HOME/.agents"
+      "$XDG_STATE_HOME/agents"
+      "$HOME/.m2"
+      "$HOME/.npm"
+      "$XDG_CACHE_HOME/mise"
+      "$XDG_CONFIG_HOME/jj"
+      "$XDG_DATA_HOME/cargo"
+      "$HOME/Library/Keychains" -}}
+{{- $read := list
+      "$XDG_DATA_HOME/mise"
+      "$XDG_STATE_HOME/mise"
+      "$XDG_CONFIG_HOME/gh"
+      "$XDG_CONFIG_HOME/nono/profiles"
+      "$XDG_CONFIG_HOME/nono/packages" -}}
+{{- $filesystem := dict
+      "allow" (concat (get $n "allow" | default list) $allow)
+      "read" $read
+      "bypass_protection" (list "$HOME/Library/Keychains") -}}
+{{- if hasKey $n "allow_file" -}}
+{{-   $_ := set $filesystem "allow_file" $n.allow_file -}}
+{{- end -}}
+{{- $profile := dict
+      "$schema" "https://nono.dev/schemas/nono-profile.schema.json"
+      "extends" "default"
+      "meta" (dict "name" .name "version" $n.version "description" $n.description)
+      "groups" (dict "include" (concat $groups (get $n "groups" | default list)))
+      "filesystem" $filesystem
+      "workdir" (dict "access" "readwrite") -}}
+{{- mergeOverwrite $profile (get $n "extra" | default dict) | toPrettyJson }}
