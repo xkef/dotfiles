@@ -182,10 +182,8 @@ fi
 # ── Appearance ────────────────────────────────────────
 
 $DRY_RUN || log "Appearance..."
-# Liquid Glass slider, 1 is fully tinted. The universalaccess
-# write needs Full Disk Access for the terminal.
+# Liquid Glass slider, 1 is fully tinted.
 apply NSGlobalDomain NSGlassTintAmount -float 1
-apply com.apple.universalaccess reduceMotion -bool true
 
 # ── Finder ────────────────────────────────────────────
 
