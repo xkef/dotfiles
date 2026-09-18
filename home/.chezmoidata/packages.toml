@@ -77,7 +77,7 @@ casks = [
   "dockdoor",                      # Dock previews and window switcher
   "firefox@developer-edition",     # Firefox Developer Edition browser
   "handy",                         # offline speech-to-text app
-  "thaw",                          # hide menu bar icons
+  "hiddenbar",                     # hide menu bar icons
   "rectangle",                     # window snapping via keyboard
   "font-jetbrains-mono-nerd-font", # patched dev font with icons
 ]
