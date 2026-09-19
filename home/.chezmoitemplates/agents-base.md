@@ -18,6 +18,22 @@ doesn't justify abandoning the task. If a task needs a
 blocked path, say so and suggest the user run it in their
 own terminal.
 
+# The user's shell is fish
+
+Write every command meant for the user to run in fish
+syntax. Fish differs from POSIX shells:
+
+- Command substitution is `(cmd)`, not backticks.
+- Environment for one command is `env VAR=x cmd` or
+  `VAR=x cmd`.
+- Variables are set with `set -x VAR value`, not
+  `export VAR=value`.
+- Conditionals and loops end with `end`, not `fi` or
+  `done`. `&&` and `||` work.
+
+Commands the agent runs itself through its own tool can
+stay in whatever shell that tool uses.
+
 # Prefer `rg` over `grep`
 
 Use `rg` wherever you would use `grep`. It runs faster.
