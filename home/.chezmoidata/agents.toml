@@ -7,6 +7,8 @@
 #   description  function description and `sb` completion text
 #   install      fish command the launcher runs when the binary is missing.
 #                Absent means the package manager installs it.
+#   unsandboxed  subcommands the launcher runs outside the sandbox, such as
+#                a self-update that replaces the binary
 #   prelaunch    fish snippet the launcher runs before starting the agent
 #   args         arguments `sb` passes to the agent inside the sandbox
 #   touch        files `sb` creates before launch so allow_file grants apply
@@ -17,6 +19,11 @@
 [agents.claude]
 description = "Claude Code"
 install = "curl -fsSL https://claude.ai/install.sh | bash -s -- latest"
+# `claude update` writes a new version under ~/.local/share/claude and
+# replaces the ~/.local/bin/claude symlink. The profile grants neither, and
+# widening it would let the agent replace its own binary and every other
+# user tool in ~/.local/bin.
+unsandboxed = ["update"]
 # nono is the OS-level sandbox, and macOS can't nest Seatbelt, so Claude
 # Code's own bash sandbox stays off. With it on, every Bash command fails
 # with "sandbox_apply: Operation not permitted".

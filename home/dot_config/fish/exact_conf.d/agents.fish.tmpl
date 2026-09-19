@@ -12,6 +12,13 @@ function {{ $name }} --wraps {{ $name }} --description "{{ $agent.description }}
         return 127
 {{- end }}
     end
+{{- if (get $agent "unsandboxed") }}
+    # Subcommands that rewrite the install itself run outside the sandbox.
+    if contains -- "$argv[1]" {{ (get $agent "unsandboxed") | join " " }}
+        command {{ $name }} $argv
+        return
+    end
+{{- end }}
 {{- if (get $agent "prelaunch") }}
 
 {{ (get $agent "prelaunch") | indent 4 }}
