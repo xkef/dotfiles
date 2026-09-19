@@ -1,5 +1,5 @@
 #!/bin/sh
 # Launch kickstart-style nvim with isolated config/data/state/cache.
-# Config lives in nvim/.config/kickstart/ (stowed alongside lazyvim).
+# Config lives in ~/.config/kickstart, next to lazyvim.
 # See: :help NVIM_APPNAME
 NVIM_APPNAME=kickstart exec nvim "$@"
