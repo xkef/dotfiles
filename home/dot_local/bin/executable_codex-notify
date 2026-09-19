@@ -13,11 +13,5 @@ payload=${1:-}
 
 [ "$(jq -r '.type // empty' <<<"$payload")" = "$TURN_COMPLETE" ] || exit 0
 
-msg=$(jq -r '."last-assistant-message" // empty' <<<"$payload")
-
-if command -v terminal-notifier &>/dev/null; then
-  terminal-notifier -title Codex -subtitle Notification \
-    -activate com.mitchellh.ghostty -message "$msg"
-elif command -v notify-send &>/dev/null; then
-  notify-send Codex "$msg"
-fi
+"$HOME/.local/bin/agent-notify" Codex \
+  "$(jq -r '."last-assistant-message" // empty' <<<"$payload")"

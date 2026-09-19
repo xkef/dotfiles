@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Desktop notification for an agent event: agent-notify <title> <message>.
+# terminal-notifier on macOS, notify-send on Linux, silent without either.
+set -euo pipefail
+
+title=$1
+message=$2
+
+if command -v terminal-notifier >/dev/null; then
+  terminal-notifier -title "$title" -subtitle Notification \
+    -activate com.mitchellh.ghostty -message "$message"
+elif command -v notify-send >/dev/null; then
+  notify-send "$title" "$message"
+fi

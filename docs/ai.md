@@ -19,7 +19,8 @@ Everything lands in `$HOME` via `chezmoi apply`.
 | `~/.pi/agent/`                                    | pi rules, settings, and status extensions |
 | `~/.config/fish/functions/{claude,codex,pi}.fish` | agent launchers                           |
 | `~/.config/fish/functions/_ai_run_pinned.fish`    | shared tmux window pinning for launchers  |
-| `~/.local/bin/codex-notify`                       | Codex turn-complete desktop notification  |
+| `~/.local/bin/agent-notify`                       | desktop notification shared by the agents |
+| `~/.local/bin/codex-notify`                       | Codex turn-complete notification          |
 | `~/.local/bin/dots-skills`                        | skills pipeline (install/refresh)         |
 
 ### Editing agent rules
@@ -64,10 +65,10 @@ settings, including project trust and the model selected in the TUI.
 Codex's committed set pins `model_reasoning_effort`, `approval_policy`,
 `sandbox_mode`, `service_tier`, `approvals_reviewer`, and `notify`. The
 `[tui]` block sets the status line items and enables their colors.
-`notify` points at `~/.local/bin/codex-notify`, which turns the
-turn-complete payload into a `terminal-notifier` or `notify-send`
-notification. Codex runs that command directly, so the script renders an
-absolute path rather than relying on `PATH`.
+`notify` points at `~/.local/bin/codex-notify`, which hands the
+turn-complete message to `agent-notify`, the script the Claude
+Notification hook calls too. Codex runs that command directly, so the
+script renders an absolute path rather than relying on `PATH`.
 
 Claude's committed set is a plain JSON file under `.chezmoitemplates/`, so it
 stays diffable and lints as JSON. The script pulls it in with
@@ -88,12 +89,6 @@ and when the objective changes. New sessions load these instructions.
 You can also run the command manually in a pane. Summaries are stored
 under `/tmp/tmux-agent-tasks-<uid>`, which is writable from agent sandboxes.
 
-Run the config merge and agent picker tests with Node, chezmoi, and taplo:
-
-```sh
-node --test tests/codex.test.mjs
-```
-
 ### Usage status
 
 The pi footer follows the selected provider. GitHub Copilot shows used and
@@ -104,12 +99,6 @@ including API-key OpenAI, show no account balance.
 Usage refreshes at session start, on model selection, and after the agent
 settles. Offline mode skips requests. Codex uses ChatGPT's internal usage
 endpoint, so changes to that endpoint can make the status unavailable.
-
-Run the extension tests with Node 24 or newer:
-
-```sh
-node --experimental-test-module-mocks --test tests/pi-usage.test.mjs
-```
 
 ### Theming
 
