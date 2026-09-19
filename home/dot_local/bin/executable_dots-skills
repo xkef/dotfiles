@@ -11,8 +11,6 @@
 #   dots-skills refresh [agent]   drop the sentinel and reinstall from upstream
 #   dots-skills                   same as refresh
 
-set -l sentinel "$HOME/.cache/dotfiles/skills.shared.v6.installed"
-
 # Upstream skill packs: '<repo> <skill>' ('*' installs every skill).
 set -l upstreams \
     'mattpocock/skills *' \
@@ -20,6 +18,12 @@ set -l upstreams \
     '2ykwang/agent-skills html-visual' \
     'Cocoon-AI/architecture-diagram-generator architecture-diagram' \
     'blader/humanizer humanizer'
+
+# The sentinel name carries a digest of the list above, so editing the list
+# reinstalls on the next launch without a manual version bump.
+set -l sentinel_dir "$HOME/.cache/dotfiles"
+set -l digest (string join \n $upstreams | shasum -a 256 | string sub -l 12)
+set -l sentinel "$sentinel_dir/skills.shared.$digest.installed"
 
 # The skills CLI installs into ~/.agents/skills via its claude-code target;
 # pi reads the same tree directly.
@@ -38,7 +42,7 @@ switch "$verb"
 end
 
 if test "$verb" = refresh
-    rm -f $sentinel
+    rm -f $sentinel_dir/skills.shared.*.installed
 end
 
 test -f $sentinel; and exit 0
@@ -52,5 +56,6 @@ for entry in $upstreams
     or exit $status
 end
 
-mkdir -p (dirname $sentinel)
+mkdir -p $sentinel_dir
+rm -f $sentinel_dir/skills.shared.*.installed
 touch $sentinel
