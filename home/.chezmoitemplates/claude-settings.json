@@ -119,10 +119,6 @@
       {
         "hooks": [
           {
-            "command": "~/.claude/hooks/claude-stop-hook",
-            "type": "command"
-          },
-          {
             "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
