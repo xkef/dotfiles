@@ -176,9 +176,11 @@ template declares the shared toolchain surface once:
 - Write access to `~/.agents`, without which the agent starts without
   skills, and to `~/.local/state/agents`, where the status hook and
   extensions publish state for the `tmux-agents` picker.
-- Read access to `~/.config/gh`, `~/.config/jj`, and the mise data and
-  state directories.
+- Read access to `~/.config/gh`, `~/.config/git`, `~/.ssh/*.pub`, and the
+  mise data and state directories.
 - `~/Library/Keychains` for the `gh` credential helper.
+- Connect access to the 1Password agent socket, so `ssh-keygen -Y sign`
+  can sign commits from inside the sandbox.
 
 Each agent adds its own state directories under `nono.allow`, such as
 `~/.codex` and `~/.pi`.

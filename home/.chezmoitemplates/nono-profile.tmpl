@@ -24,12 +24,23 @@
       "$XDG_DATA_HOME/mise"
       "$XDG_STATE_HOME/mise"
       "$XDG_CONFIG_HOME/gh"
+      "$XDG_CONFIG_HOME/git"
+      "$HOME/.ssh/*.pub"
       "$XDG_CONFIG_HOME/nono/profiles"
       "$XDG_CONFIG_HOME/nono/packages" -}}
+{{- /* Commit signing runs `ssh-keygen -Y sign`, which reads the public key
+       and the git config, then asks the 1Password agent for the signature.
+       deny_credentials covers ~/.ssh and deny_macos_private covers the
+       1Password container, so both need a bypass. Only public keys and the
+       socket get through. */ -}}
+{{- $sockets := list
+      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+      "$HOME/.1password/agent.sock" -}}
 {{- $filesystem := dict
       "allow" (concat (get $n "allow" | default list) $allow)
       "read" $read
-      "bypass_protection" (list "$HOME/Library/Keychains") -}}
+      "unix_socket" $sockets
+      "bypass_protection" (concat (list "$HOME/Library/Keychains" "$HOME/.ssh/*.pub") $sockets) -}}
 {{- if hasKey $n "allow_file" -}}
 {{-   $_ := set $filesystem "allow_file" $n.allow_file -}}
 {{- end -}}
