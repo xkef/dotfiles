@@ -1,9 +1,7 @@
 function ll --description "long list with git status"
     if command -q eza
-        command eza --group-directories-first -la --git $argv
-    else if test (uname) = Darwin
-        command ls -Gla $argv
+        ls -la --git $argv
     else
-        command ls -la $argv
+        ls -la $argv
     end
 end
