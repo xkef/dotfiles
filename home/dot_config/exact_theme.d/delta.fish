@@ -9,7 +9,7 @@ set -l delta_minus_emph (_blend_hex $t_bg $delta_red 30)
 set -l delta_plus_bg (_blend_hex $t_bg $delta_green 15)
 set -l delta_plus_emph (_blend_hex $t_bg $delta_green 30)
 
-set -l delta_conf (set -q XDG_CONFIG_HOME && echo $XDG_CONFIG_HOME || echo $HOME/.config)/git/delta.gitconfig
+set -l delta_conf $XDG_CONFIG_HOME/git/delta.gitconfig
 printf '[delta]
 \tsyntax-theme = ansi
 \tminus-style = syntax "#%s"
