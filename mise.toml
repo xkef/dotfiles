@@ -52,10 +52,3 @@ run = "vale --no-global --config home/dot_config/vale/dot_vale.ini sync"
 description = "Load LazyVim headless (local only; needs plugins)"
 env = { NVIM_APPNAME = "lazyvim" }
 run = "nvim --headless +\"lua require('lazy')\" +qa"
-
-[tasks.clean]
-description = "Remove caches and generated files"
-run = [
-  "find . -name .DS_Store -delete 2>/dev/null || true",
-  "rm -rf home/dot_config/lazyvim/.luarc.json",
-]
