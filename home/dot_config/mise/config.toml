@@ -1,5 +1,8 @@
 [settings]
 fetch_remote_versions_cache = "7d"
+# Fuzzy versions such as "3.14" resolve only to releases older than 7 days.
+# Exact pins bypass the cooldown.
+minimum_release_age = "7d"
 
 [tools]
 node = "24.16.0"

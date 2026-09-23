@@ -1,0 +1,3 @@
+# Skip package versions published in the last 7 days. User-level config has
+# the lowest precedence, so a project that pins exclude-newer keeps its date.
+exclude-newer = "7 days"

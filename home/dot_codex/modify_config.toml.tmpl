@@ -59,13 +59,21 @@ printf '%s' "$local_config" | CODEX_MANAGED_TUI="$tui" awk \
   /^[[:space:]]*\[/ {
     in_table = 1
     in_tui = $0 ~ /^[[:space:]]*\[tui\][[:space:]]*(#.*)?$/
+    in_analytics = $0 ~ /^[[:space:]]*\[analytics\][[:space:]]*(#.*)?$/
     print
     if (in_tui) {
       print tui
       has_tui = 1
     }
+    if (in_analytics) {
+      print "enabled = false"
+      has_analytics = 1
+    }
     next
   }
+  # Analytics stays off on this machine. The key has to live in the
+  # [analytics] table, so the table gets the same treatment as [tui].
+  in_analytics && $0 ~ /^[[:space:]]*enabled[[:space:]]*=/ { next }
   in_tui && $0 ~ "^[[:space:]]*(" tui_keys ")[[:space:]]*=" {
     skip_array = $0 ~ /\[/ && $0 !~ /\]/
     next
@@ -76,5 +84,6 @@ printf '%s' "$local_config" | CODEX_MANAGED_TUI="$tui" awk \
   { print }
   END {
     if (!has_tui) { printf "\n[tui]\n%s\n", tui }
+    if (!has_analytics) { printf "\n[analytics]\nenabled = false\n" }
   }
 '

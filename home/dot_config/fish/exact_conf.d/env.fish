@@ -11,6 +11,15 @@ set -gx XDG_CACHE_HOME $HOME/.cache
 set -gx GH_TELEMETRY false
 # https://docs.brew.sh/Analytics
 set -gx HOMEBREW_NO_ANALYTICS 1
+# https://github.com/cloudflare/workers-sdk/blob/main/packages/wrangler/telemetry.md
+set -gx WRANGLER_SEND_METRICS false
+
+# ── Package release cooldown ─────────────────────────
+# Skip package versions published in the last 7 days. Malicious releases
+# are usually reported and pulled within that window. npm counts days and
+# pnpm counts minutes. mise and uv set theirs in their config files.
+set -gx npm_config_min_release_age 7
+set -gx pnpm_config_minimum_release_age 10080
 
 # ── Homebrew ─────────────────────────────────────────
 if test -d /opt/homebrew
