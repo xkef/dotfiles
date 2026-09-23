@@ -1,131 +1,98 @@
-return {
-  -- The fallback nvim keeps a fixed theme. The LazyVim config follows the
-  -- Ghostty theme.
-  {
-    "catppuccin/nvim",
-    name = "catppuccin",
-    lazy = false,
-    priority = 1000,
-    opts = { flavour = "auto" },
-    config = function(_, opts)
-      require("catppuccin").setup(opts)
-      vim.cmd.colorscheme("catppuccin")
-    end,
-  },
+local function gh(repo)
+  return "https://github.com/" .. repo
+end
 
-  -- C-hjkl moves across tmux panes and nvim splits alike.
-  {
-    "mrjones2014/smart-splits.nvim",
-    keys = {
-      {
-        "<C-h>",
-        function()
-          require("smart-splits").move_cursor_left()
-        end,
-      },
-      {
-        "<C-j>",
-        function()
-          require("smart-splits").move_cursor_down()
-        end,
-      },
-      {
-        "<C-k>",
-        function()
-          require("smart-splits").move_cursor_up()
-        end,
-      },
-      {
-        "<C-l>",
-        function()
-          require("smart-splits").move_cursor_right()
-        end,
-      },
-      {
-        "<A-h>",
-        function()
-          require("smart-splits").resize_left()
-        end,
-      },
-      {
-        "<A-j>",
-        function()
-          require("smart-splits").resize_down()
-        end,
-      },
-      {
-        "<A-k>",
-        function()
-          require("smart-splits").resize_up()
-        end,
-      },
-      {
-        "<A-l>",
-        function()
-          require("smart-splits").resize_right()
-        end,
-      },
-    },
-  },
+vim.pack.add({
+  { src = gh("catppuccin/nvim"), name = "catppuccin" },
+  gh("mrjones2014/smart-splits.nvim"),
+  { src = gh("nvim-treesitter/nvim-treesitter"), version = "main" },
+  gh("nvim-lua/plenary.nvim"),
+  gh("nvim-telescope/telescope.nvim"),
+  gh("nvim-telescope/telescope-fzf-native.nvim"),
+  gh("nvim-telescope/telescope-ui-select.nvim"),
+  gh("folke/which-key.nvim"),
+  gh("lewis6991/gitsigns.nvim"),
+  gh("nvim-mini/mini.nvim"),
+})
 
-  -- Treesitter: syntax highlighting, text objects, and incremental selection.
-  -- nvim-treesitter removed the configs module, so opts apply directly.
-  {
-    "nvim-treesitter/nvim-treesitter",
-    build = ":TSUpdate",
-    opts = {
-      ensure_installed = { "lua", "vim", "vimdoc", "bash", "json", "yaml", "toml", "markdown" },
-      auto_install = true,
-      highlight = { enable = true },
-      indent = { enable = true },
-    },
-  },
+-- The fallback nvim keeps a fixed theme. The LazyVim config follows the
+-- Ghostty theme.
+require("catppuccin").setup({ flavour = "auto" })
+vim.cmd.colorscheme("catppuccin")
 
-  {
-    "nvim-telescope/telescope.nvim",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
-      "nvim-telescope/telescope-ui-select.nvim",
-    },
-    config = function()
-      local telescope = require("telescope")
-      telescope.setup({
-        extensions = {
-          ["ui-select"] = { require("telescope.themes").get_dropdown() },
-        },
-      })
-      pcall(telescope.load_extension, "fzf")
-      pcall(telescope.load_extension, "ui-select")
+-- C-hjkl moves across tmux panes and nvim splits alike.
+local smart_splits = require("smart-splits")
+for key, fn in pairs({
+  ["<C-h>"] = "move_cursor_left",
+  ["<C-j>"] = "move_cursor_down",
+  ["<C-k>"] = "move_cursor_up",
+  ["<C-l>"] = "move_cursor_right",
+  ["<A-h>"] = "resize_left",
+  ["<A-j>"] = "resize_down",
+  ["<A-k>"] = "resize_up",
+  ["<A-l>"] = "resize_right",
+}) do
+  vim.keymap.set("n", key, smart_splits[fn])
+end
 
-      local builtin = require("telescope.builtin")
-      vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Find files" })
-      vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Live grep" })
-      vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Buffers" })
-      vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Help tags" })
-      vim.keymap.set("n", "<leader>fr", builtin.oldfiles, { desc = "Recent files" })
-      vim.keymap.set("n", "<leader><leader>", builtin.buffers, { desc = "Buffers" })
-    end,
-  },
+-- Treesitter: the main branch of nvim-treesitter only installs parsers.
+-- This autocmd starts highlighting and indentation per buffer, and installs
+-- a missing parser on first use.
+local treesitter = require("nvim-treesitter")
+treesitter.install({ "lua", "vim", "vimdoc", "bash", "json", "yaml", "toml", "markdown" })
+local available_parsers = treesitter.get_available()
 
-  {
-    "folke/which-key.nvim",
-    event = "VimEnter",
-    opts = {},
-  },
+local function treesitter_attach(buf, lang)
+  if not vim.treesitter.language.add(lang) or not vim.api.nvim_buf_is_valid(buf) then
+    return
+  end
 
-  {
-    "lewis6991/gitsigns.nvim",
-    opts = {},
-  },
+  vim.treesitter.start(buf, lang)
+  if vim.treesitter.query.get(lang, "indents") then
+    vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+  end
+end
 
-  {
-    "echasnovski/mini.nvim",
-    config = function()
-      require("mini.ai").setup()
-      require("mini.surround").setup()
-      require("mini.statusline").setup()
-      require("mini.pairs").setup()
-    end,
+vim.api.nvim_create_autocmd("FileType", {
+  callback = function(args)
+    local lang = vim.treesitter.language.get_lang(args.match)
+    if not lang then
+      return
+    end
+
+    local installed = vim.tbl_contains(treesitter.get_installed("parsers"), lang)
+    if installed or not vim.tbl_contains(available_parsers, lang) then
+      treesitter_attach(args.buf, lang)
+      return
+    end
+
+    treesitter.install(lang):await(function()
+      treesitter_attach(args.buf, lang)
+    end)
+  end,
+})
+
+local telescope = require("telescope")
+telescope.setup({
+  extensions = {
+    ["ui-select"] = { require("telescope.themes").get_dropdown() },
   },
-}
+})
+pcall(telescope.load_extension, "fzf")
+pcall(telescope.load_extension, "ui-select")
+
+local builtin = require("telescope.builtin")
+vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Find files" })
+vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Live grep" })
+vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Buffers" })
+vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Help tags" })
+vim.keymap.set("n", "<leader>fr", builtin.oldfiles, { desc = "Recent files" })
+vim.keymap.set("n", "<leader><leader>", builtin.buffers, { desc = "Buffers" })
+
+require("which-key").setup({})
+require("gitsigns").setup({})
+
+require("mini.ai").setup()
+require("mini.surround").setup()
+require("mini.statusline").setup()
+require("mini.pairs").setup()
