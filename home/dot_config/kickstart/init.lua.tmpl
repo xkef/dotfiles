@@ -2,7 +2,7 @@
 -- https://github.com/nvim-lua/kickstart.nvim. Run it with `knvim` or
 -- NVIM_APPNAME=kickstart nvim.
 
-vim.g.mapleader = " "
+vim.g.mapleader = {{ .keys.leader | quote }}
 vim.g.maplocalleader = "\\"
 
 -- Bootstrap lazy.nvim

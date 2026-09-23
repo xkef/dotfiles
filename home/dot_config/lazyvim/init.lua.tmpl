@@ -1,4 +1,4 @@
-vim.g.mapleader = " "
+vim.g.mapleader = {{ .keys.leader | quote }}
 vim.g.maplocalleader = "\\"
 
 -- The python extra reads this when lazy.setup() imports its spec, so it must

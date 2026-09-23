@@ -39,13 +39,13 @@ set -g renumber-windows on
 setw -g aggressive-resize on        # resize to the smallest client viewing the window
 
 # ── Prefix key ───────────────────────────────────────
-# Ctrl-Space as prefix, after wincent. Space is the neovim leader and
-# Ctrl-Space the tmux prefix, so the same physical key serves both. Ctrl-A
-# and Ctrl-B stay free for readline beginning-of-line and page-up.
+# Set in .chezmoidata/keys.toml. Pairing the prefix with the neovim leader,
+# after wincent, lets one physical key serve both. Ctrl-A and Ctrl-B stay
+# free for readline beginning-of-line and page-up.
 # See https://github.com/wincent/wincent
 unbind C-b
-set -g prefix C-Space
-bind C-Space send-prefix
+set -g prefix {{ .keys.prefix }}
+bind {{ .keys.prefix }} send-prefix
 
-# @key tmux :: Ctrl-Space :: Toggle last window (double-tap)
-bind ^space last-window
+# @key tmux :: {{ .keys.prefix_label }} :: Toggle last window (double-tap)
+bind {{ .keys.prefix }} last-window

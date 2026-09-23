@@ -34,7 +34,8 @@ installs the mise toolchain, and sets fish as the default shell.
 
 ## Keys
 
-`Space` is the Neovim leader and `Ctrl-Space` the tmux prefix. `leader ?`
+`Space` is the Neovim leader and `Ctrl-Space` the tmux prefix. Change
+both in [`home/.chezmoidata/keys.toml`](home/.chezmoidata/keys.toml). `leader ?`
 and `prefix ?` list the bindings.
 
 `theme <name>` switches Ghostty, Neovim, tmux, and delta together.

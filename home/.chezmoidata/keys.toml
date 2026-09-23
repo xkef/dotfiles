@@ -1,0 +1,8 @@
+# Neovim leader and tmux prefix. Each key has the form its tool reads and
+# a label for help text.
+
+[keys]
+leader = " "
+leader_label = "Space"
+prefix = "C-Space"
+prefix_label = "Ctrl-Space"
