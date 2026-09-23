@@ -14,9 +14,9 @@ CDN
 chezmoi
 colocated
 colorscheme
-Commits
 configs?
 Conventional
+Conventional Commits
 CSP
 ctrl
 diffable

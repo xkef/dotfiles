@@ -44,6 +44,8 @@ jobs:
         run: dprint check --config .config/dprint.json
       - name: Markdown lint
         run: mise run lint-md
+      - name: Prose lint
+        run: mise run lint-prose
 
   check:
     strategy:

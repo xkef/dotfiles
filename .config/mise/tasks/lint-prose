@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#MISE description="Lint prose with vale and fail on any alert"
+#MISE depends=["vale-sync"]
+set -eu
+
+# The repo lints with the vale config it installs on every machine. vale
+# fails only on errors, so any output, including a suggestion, fails here.
+# --no-global stops vale from merging the applied ~/.config/vale config,
+# which lags behind the source until the next `chezmoi apply`.
+# agents-base.md quotes the phrases its own rules ban.
+alerts=$(git ls-files -z '*.md' ':!home/.chezmoitemplates/agents-base.md' |
+  xargs -0 vale --no-global --config home/dot_config/vale/dot_vale.ini --output=line 2>&1 || true)
+if [ -n "$alerts" ]; then
+  echo "$alerts"
+  exit 1
+fi

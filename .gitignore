@@ -8,3 +8,9 @@ Thumbs.db
 
 # Build artifacts
 /.rumdl_cache/
+
+# vale sync downloads style packages next to the tracked vocabulary
+/home/dot_config/vale/styles/*
+!/home/dot_config/vale/styles/config/
+/home/dot_config/vale/styles/config/*
+!/home/dot_config/vale/styles/config/vocabularies/

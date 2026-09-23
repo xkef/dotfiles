@@ -138,7 +138,7 @@ Repo maintenance:
 
 ```sh
 mise run fmt     # format everything (stylua, shfmt, fish_indent, dprint, taplo)
-mise run lint    # shellcheck, fish syntax, markdown, headless LazyVim
+mise run lint    # shellcheck, fish syntax, markdown, prose, headless LazyVim
 mise run check   # apply the tree into a throwaway HOME and assert results
 ```
 
