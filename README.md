@@ -7,7 +7,7 @@ Every push runs the full setup end-to-end on macOS and Arch: packages
 install, configs apply, and CI verifies that fish boots, tmux starts, and
 the helper scripts run.
 
-![screenshot](docs/scrot.png)
+![screenshot](.github/scrot.png)
 
 Managed with [chezmoi](https://www.chezmoi.io).
 Supports macOS and Arch Linux, btw.
@@ -82,8 +82,7 @@ docker run -it --rm archlinux:latest bash -c '
 │   ├── dot_local/bin/             #   theme, dots-keys, macos-defaults, vm
 │   ├── dot_claude/ dot_codex/ dot_pi/ # AI agent rules from one template
 │   └── private_dot_ssh/           #   ~/.ssh, 0700/0600 enforced by chezmoi
-├── docs/                          # screenshot + AI tooling docs
-├── Makefile                       # fmt / lint / check
+├── mise.toml                      # tools + fmt / lint / check tasks
 └── .github/workflows/ci.yml      # lint + apply check + e2e (macOS & Arch)
 ```
 
@@ -94,8 +93,8 @@ unmanaged files, and `.tmpl` files render as templates at apply time.
 ## How it works
 
 - Source state sits under [`home/`](home), which `.chezmoiroot` selects.
-  The repo root holds only metadata, meaning package manifests, the
-  Makefile, docs, and CI.
+  The repo root holds only metadata, meaning mise tasks, linter
+  configs, and CI.
 - [`home/.chezmoidata/packages.toml`](home/.chezmoidata/packages.toml)
   declares every package on both OSes exactly once. The `run_onchange`
   hooks template over it and re-run `brew bundle` or `paru` when the
@@ -109,15 +108,15 @@ unmanaged files, and `.tmpl` files render as templates at apply time.
 - [`home/.chezmoidata/agents.toml`](home/.chezmoidata/agents.toml)
   declares each AI agent once. The fish launchers, the `sb` sandbox
   wrapper, and the nono profiles render from it, and the agent rule files
-  render from one shared template ([details](docs/ai.md)).
+  render from one shared template.
 - `exact_` directories (fish `conf.d`, tmux `conf.d`, `theme.d`) remove
   files the repo no longer manages, so stale fragments can't survive.
 - Run scripts put the package prefixes on their own `PATH`
-  ([`path.sh`](home/.chezmoitemplates/path.sh)), so the one-liner works from
+  ([`header.sh`](home/.chezmoitemplates/header.sh)), so the one-liner works from
   a shell that predates Homebrew. The macOS end-to-end job runs with that
   bare `PATH` to keep it true.
 - CI applies the whole tree into a throwaway `$HOME` on Linux and macOS
-  (`make check`) and lints shell, fish, and markdown.
+  (`mise run check`) and lints shell, fish, and markdown.
 
 ## Daily workflow
 
@@ -138,9 +137,9 @@ chezmoi re-add ~/.config/lazyvim/lazy-lock.json ~/.config/kickstart/lazy-lock.js
 Repo maintenance:
 
 ```sh
-make fmt         # format everything (stylua, shfmt, fish_indent, dprint, taplo)
-make lint        # shellcheck, fish syntax, markdown, headless LazyVim
-make check       # apply the tree into a throwaway HOME and assert results
+mise run fmt     # format everything (stylua, shfmt, fish_indent, dprint, taplo)
+mise run lint    # shellcheck, fish syntax, markdown, headless LazyVim
+mise run check   # apply the tree into a throwaway HOME and assert results
 ```
 
 ---
@@ -179,7 +178,7 @@ bat rides the terminal palette via `BAT_THEME=ansi`, and eza inherits it
 from the default terminal colors. Neither one needs per-theme config.
 
 pi can't read the terminal palette, so the `theme.d` adapter renders it a
-theme file instead. See [AI tooling](docs/ai.md#theming).
+theme file instead.
 
 ## Local overrides
 
@@ -192,8 +191,6 @@ theme file instead. See [AI tooling](docs/ai.md#theming).
 | Neovim            | `~/.config/lazyvim/lua/plugins/*.lua` |
 | tmux              | `~/.config/tmux/local.conf`           |
 | SSH               | `~/.ssh/conf.d/*.conf`                |
-
-AI tooling details live in [docs/ai.md](docs/ai.md).
 
 ## Make it yours
 

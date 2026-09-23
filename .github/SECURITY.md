@@ -14,7 +14,7 @@ reports, so response times vary.
 This repository holds personal dotfiles and the scripts that install them.
 Reports of interest:
 
-- Install or update scripts (`install`, `dots`, Makefile targets) that run
+- Install or update scripts (`install`, `dots`, mise tasks) that run
   untrusted input or fetch artifacts over insecure channels.
 - Workflow or token-permission weaknesses in `.github/workflows/`.
 - Secrets or credentials committed to the repository.
