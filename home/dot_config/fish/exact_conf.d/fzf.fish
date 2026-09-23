@@ -63,7 +63,3 @@ bind \t fzf_complete
 
 bind \ez __fzf_zoxide
 bind \e/ __fzf_grep
-
-if command -q tv
-    bind \et __tv_smart
-end

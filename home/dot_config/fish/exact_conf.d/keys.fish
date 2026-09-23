@@ -22,7 +22,6 @@ bind \cn down-or-search
 
 # @key shell :: Alt-Z :: Jump to visited directory (fzf+zoxide)
 # @key shell :: Alt-/ :: Live grep file contents (rg + fzf)
-# @key shell :: Alt-T :: Television smart picker
 # fzf.fish binds these.
 
 # @key shell :: Ctrl-X Ctrl-E :: Edit command in nvim

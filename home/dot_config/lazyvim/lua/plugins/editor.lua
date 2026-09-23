@@ -58,17 +58,4 @@ return {
     "ThePrimeagen/refactoring.nvim",
     dependencies = { "lewis6991/async.nvim" },
   },
-
-  {
-    "alexpasmantier/tv.nvim",
-    keys = {
-      { "<leader>Tt", "<cmd>Tv<cr>", desc = "Television (channel picker)" },
-      { "<leader>Tg", "<cmd>Tv git-log<cr>", desc = "Television git log" },
-      { "<leader>Tb", "<cmd>Tv git-branch<cr>", desc = "Television git branches" },
-      { "<leader>Td", "<cmd>Tv git-diff<cr>", desc = "Television git diff" },
-      { "<leader>Te", "<cmd>Tv env<cr>", desc = "Television env vars" },
-    },
-    cmd = { "Tv" },
-    opts = {},
-  },
 }
