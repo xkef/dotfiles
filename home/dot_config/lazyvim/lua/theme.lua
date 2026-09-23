@@ -11,7 +11,13 @@ end
 
 local function configure_colorscheme(ghostty_name)
   local normalized = ghostty_name:lower():gsub("%s+", "-")
-  if normalized:find("light") or normalized:find("latte") or normalized:find("day") or normalized:find("dawn") then
+  if
+    normalized:find("light")
+    or normalized:find("latte")
+    or normalized:find("day")
+    or normalized:find("dawn")
+    or normalized:find("lotus")
+  then
     vim.o.background = "light"
   else
     vim.o.background = "dark"

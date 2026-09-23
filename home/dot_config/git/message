@@ -20,6 +20,6 @@
 #
 # ── Rules ─────────────────────────────────────────────────────────────
 #   Subject:  imperative mood, no period, lowercase after type
-#   Scope:    optional, such as feat(tmux) or fix(zsh)
+#   Scope:    optional, such as feat(tmux) or fix(fish)
 #   Body:     explain why, not what
-#   Footer:   Breaking-Change: / Co-Authored-By: / Refs: #issue
+#   Footer:   BREAKING CHANGE: / Co-Authored-By: / Refs: #issue

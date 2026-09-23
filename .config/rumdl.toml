@@ -1,4 +1,4 @@
-# Markdown linter config (migrated from .markdownlint-cli2.yaml).
+# Markdown linter config.
 # rumdl respects .gitignore, so untracked generated files are skipped
 # automatically.
 

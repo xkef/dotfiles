@@ -5,7 +5,7 @@ default-command = "log"
 editor = "nvim"
 diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
 diff-instructions = false
-diff.format = "color-words"
+diff-formatter = ":color-words"
 graph.style = "square"
 log-word-wrap = true
 log-synthetic-elided-nodes = true
@@ -35,7 +35,6 @@ diff-expected-exit-codes = [0, 1]
 
 # ── Git interop ──────────────────────────────────────
 [git]
-auto-local-bookmark = false
 write-change-id-header = true
 sign-on-push = false
 private-commits = 'description(glob:"wip:*") | description(glob:"private:*")'

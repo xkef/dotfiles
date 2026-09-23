@@ -13,9 +13,5 @@ if command -q zoxide
     zoxide init fish --cmd z | source
 end
 
-if command -q navi
-    navi widget fish | source
-end
-
 # The 1Password CLI completion costs about 108ms at startup, so it stays
 # out. fish loads it on the first `op` command.

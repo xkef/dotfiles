@@ -1,6 +1,6 @@
 # vim-style keymap with a few extras.
 
-[manager]
+[mgr]
 prepend_keymap = [
   { on = "<C-s>", run = "shell '$SHELL' --block --confirm", desc = "Open shell here" },
 ]

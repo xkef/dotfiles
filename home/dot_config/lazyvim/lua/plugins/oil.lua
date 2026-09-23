@@ -26,7 +26,6 @@ return {
       },
     },
     keys = {
-      -- @key nvim :: - :: Open parent directory (oil)
       { "-", "<cmd>Oil<cr>", desc = "Open parent directory (oil)" },
     },
   },

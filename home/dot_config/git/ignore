@@ -47,6 +47,7 @@ npm-debug.log*
 .cache/
 
 **/.claude/settings.local.json
+.claude-notes/
 
 # IDE / Eclipse / Maven
 .classpath
@@ -54,5 +55,3 @@ npm-debug.log*
 .project
 .settings/
 .mvn/
-
-**/.claude/.cc-writes/

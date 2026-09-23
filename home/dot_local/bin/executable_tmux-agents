@@ -9,7 +9,7 @@
 # separately.
 #
 #   tmux-agents          fzf picker. Enter switches to the agent's pane.
-#   tmux-agents --count  status line segment ("2◐ 1●"), empty when nothing runs
+#   tmux-agents --count  status line segment ("2• 1◦"), empty when nothing runs
 set -euo pipefail
 
 readonly STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/agents"

@@ -26,7 +26,7 @@ set -gx FZF_DEFAULT_OPTS "\
     --bind 'ctrl-d:preview-half-page-down,ctrl-u:preview-half-page-up' \
     --bind 'ctrl-f:preview-page-down,ctrl-b:preview-page-up'"
 
-# Centered popup inside tmux, matching the lazygit, jjui, and scooter popups.
+# Centered popup inside tmux.
 set -gx FZF_TMUX_OPTS '-p 80%,70%'
 
 set -gx FZF_CTRL_T_OPTS "\
@@ -53,35 +53,13 @@ status is-interactive; or return
 # Ctrl-T, Ctrl-R, and Alt-C
 fzf --fish | source
 
-# Single-select completion instead of fzf's built-in multi-select
-function __fzf_cmd_tokens
-    commandline --tokenize --cut-at-cursor
-end
-
-function __fzf_complete_native
-    fzf_complete
-end
-
-function fzf-completion --description 'fzf tab completion (single-select)'
-    set -l tokens (__fzf_cmd_tokens)
-    set -l current_token (commandline -t)
-    set -l cmd_name $tokens[1]
-
-    if test -n "$tokens"; and functions -q _fzf_complete_$cmd_name
-        _fzf_complete_$cmd_name $tokens
-    else
-        set -l fzf_opt --query=$current_token
-        __fzf_complete_native "$tokens $current_token" $fzf_opt
-    end
-end
-
 # atuin takes over Ctrl-R
 if command -q atuin
     set -gx ATUIN_TMUX_POPUP false
     atuin init fish --disable-up-arrow | source
 end
 
-bind \t fzf-completion
+bind \t fzf_complete
 
 bind \ez __fzf_zoxide
 bind \e/ __fzf_grep

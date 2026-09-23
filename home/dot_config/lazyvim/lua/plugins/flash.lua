@@ -11,7 +11,6 @@ return {
       },
     },
     keys = {
-      -- @key nvim :: s :: Flash jump (labeled)
       {
         "s",
         function()
@@ -20,7 +19,6 @@ return {
         mode = { "n", "x", "o" },
         desc = "Flash",
       },
-      -- @key nvim :: S :: Flash treesitter (jump to syntax node)
       {
         "S",
         function()

@@ -6,8 +6,8 @@
 # CLAUDE.md only competes with it. This hook blocks at the tool boundary,
 # which no prompt can talk its way past.
 #
-# The needle is assembled instead of written out, so this file doesn't match
-# its own pattern and stays editable through Bash.
+# The pattern requires the trailing colon, so this file doesn't match itself
+# and stays editable through Bash.
 
 readonly TRAILER="Claude-Session"
 

@@ -1,4 +1,4 @@
-# Sourced for interactive shells after every conf.d/ file. Environment
+# Sourced for every shell after every conf.d/ file. Environment
 # variables sit in conf.d/. Functions sit in functions/ and load on first
 # call.
 

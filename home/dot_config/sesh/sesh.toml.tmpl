@@ -7,7 +7,7 @@ preview_command = "eza -la --group-directories-first --git --icons --color=alway
 
 [[session]]
 name = "dotfiles"
-path = "~/dotfiles/"
+path = {{ .chezmoi.workingTree | quote }}
 
 [[wildcard]]
 pattern = "~/code/*"

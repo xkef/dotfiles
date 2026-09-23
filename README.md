@@ -25,7 +25,7 @@ installs the mise toolchain, and sets fish as the default shell.
 | [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org) | Editor with the LazyVim distro, kickstart as fallback      |
 | [tmux](https://github.com/tmux/tmux)                             | Terminal multiplexer with vim navigation                   |
 | [Ghostty](https://ghostty.org)                                   | Terminal emulator config                                   |
-| [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder in the shell, tmux, and neovim                |
+| [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder in the shell and tmux                         |
 | [atuin](https://atuin.sh)                                        | Searchable shell history with sync                         |
 | [Claude Code](https://claude.ai/), Codex, pi                     | AI coding agents, always launched in a nono sandbox        |
 | [Jujutsu](https://github.com/jj-vcs/jj)                          | Git-compatible version control, `jj`, with a simpler model |
@@ -43,7 +43,8 @@ and `prefix ?` list the bindings.
 ## Make it yours
 
 Edit [`home/.chezmoidata/identity.toml`](home/.chezmoidata/identity.toml).
-Git, jj, and SSH read your name, email, and signing key from it.
+Git, jj, and SSH read your name, email, and signing key from it. When the
+1Password `op` command exists, git reads name and email from 1Password.
 
 ## Credits
 

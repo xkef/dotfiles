@@ -109,6 +109,7 @@ main = [
   "xh",              # fast HTTP client (HTTPie-compatible)
   "hurl",            # HTTP request testing with plain text files
   "sd",              # intuitive find-and-replace (sed alt)
+  "scooter",         # interactive find-and-replace TUI
   "dust",            # disk usage viewer (du alt)
   "duf",             # disk free viewer (df alt)
   "procs",           # modern ps replacement
@@ -135,10 +136,12 @@ main = [
   "hyperfine",       # command-line benchmarking
   "bandwhich",       # per-process bandwidth monitor
   "xdg-ninja",       # audit XDG base-dir compliance
+  "jdtls",           # Java language server (AUR)
 ]
 gui = [
   "xclip",         # X11 clipboard utility
   "wl-clipboard",  # Wayland clipboard utility
+  "libnotify",     # notify-send for agent notifications
   "ghostty",       # GPU-accelerated terminal
   "neovide",       # GUI client for Neovim
   "1password",     # password manager

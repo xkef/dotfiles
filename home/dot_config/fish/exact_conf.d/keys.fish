@@ -12,7 +12,6 @@ status is-interactive; or return
 
 # ── Custom keybindings ───────────────────────────────
 # @key shell :: Ctrl-R :: Atuin history search
-# @key shell :: Ctrl-G :: Navi cheatsheets
 # @key shell :: Ctrl-P / N :: Prefix history search (also arrows)
 bind \cp up-or-search
 bind \cn down-or-search

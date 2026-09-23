@@ -45,7 +45,6 @@ setw -g aggressive-resize on        # resize to the smallest client viewing the 
 # See https://github.com/wincent/wincent
 unbind C-b
 set -g prefix {{ .keys.prefix }}
-bind {{ .keys.prefix }} send-prefix
 
 # @key tmux :: {{ .keys.prefix_label }} :: Toggle last window (double-tap)
 bind {{ .keys.prefix }} last-window

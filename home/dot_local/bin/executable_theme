@@ -1,5 +1,4 @@
 #!/usr/bin/env fish
-# shellcheck disable=all
 # theme: one theme switcher for ghostty, neovim, tmux, and shell tools.
 #
 # Accepts Ghostty theme names that have a matching LazyVim colorscheme plugin.
@@ -116,9 +115,9 @@ function _blend_hex -a bg_hex fg_hex weight
 end
 
 # ── Terminal colors ───────────────────────────────────
-# Pushes palette changes to the terminal over OSC 4, 10, 11, and 12. The
-# Ghostty config reload covers new windows. Running terminals, above all
-# inside tmux, need the OSC sequences.
+# Pushes palette changes to running terminals, tmux included, over OSC 4,
+# 10, 11, and 12. New Ghostty windows pick up the theme file only after a
+# Ghostty config reload.
 
 function _hex_rgb -a hex
     echo (string sub -l 2 $hex)/(string sub -s 3 -l 2 $hex)/(string sub -s 5 -l 2 $hex)

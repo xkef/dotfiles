@@ -7,14 +7,9 @@ function _ai_run_pinned -d "Run a command with the tmux window pinned to its nam
 
     set -l pinned 0
     if set -q TMUX
-        # A window with @agent-slug set belongs to a workspace agent. Pin
-        # only plain interactive windows.
-        set -l agent_slug (tmux display-message -p '#{@agent-slug}' 2>/dev/null)
-        if test -z "$agent_slug"
-            tmux rename-window $name
-            tmux set-window-option allow-rename off
-            set pinned 1
-        end
+        tmux rename-window $name
+        tmux set-window-option allow-rename off
+        set pinned 1
     end
 
     $cmd

@@ -1,5 +1,4 @@
 #!/usr/bin/env fish
-# shellcheck disable=all
 # dots-skills: installs shared agent skills from upstream packs.
 #
 # Holds the install sentinel and the upstream source list. Tracked skills,

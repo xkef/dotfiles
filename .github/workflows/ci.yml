@@ -1,12 +1,12 @@
 name: CI
 
 # lint runs the portable subset of `mise run lint`. The Neovim check needs
-# installed plugins and stays local. check runs `mise run check`, which applies
-# the whole chezmoi source tree into a throwaway HOME and asserts the result,
-# a fast signal on every push. e2e-macos and e2e-arch run the real thing:
-# chezmoi init --apply with run scripts, so packages install, macos-defaults
-# applies, and the resulting shell starts. The package script templates skip
-# casks and Arch GUI packages under CI.
+# installed plugins and stays local. check runs `mise run check`, which
+# applies the whole chezmoi source tree into a throwaway HOME and asserts the
+# result, a fast signal on every push. e2e-macos and e2e-arch run the real
+# thing: chezmoi init --apply with run scripts, so packages install,
+# macos-defaults applies, and the resulting shell starts. The package script
+# templates skip casks and Arch GUI packages under CI.
 on:
   pull_request:
   push:
@@ -41,7 +41,7 @@ jobs:
       - name: Fish syntax
         run: mise run lint-fish
       - name: Markdown format
-        run: dprint check --config .config/dprint.json
+        run: mise run lint-fmt
       - name: Markdown lint
         run: mise run lint-md
       - name: Prose lint
@@ -65,6 +65,8 @@ jobs:
         with:
           install: true
           cache: true
+      - name: Install fish
+        run: if [ "$RUNNER_OS" = Linux ]; then sudo apt-get update && sudo apt-get install -y fish; else brew install fish; fi
       - name: Apply into throwaway HOME
         run: mise run check
 

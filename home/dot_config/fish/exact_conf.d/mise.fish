@@ -1,7 +1,6 @@
 # ── Mise ─────────────────────────────────────────────
 # Disables Homebrew's vendor mise-activate.fish. Shims stay available at
 # startup. Project [env] waits until a command is about to run.
-set -q XDG_DATA_HOME; or set -gx XDG_DATA_HOME $HOME/.local/share
 set -gx MISE_ACTIVATE_AGGRESSIVE 0
 set -gx MISE_FISH_AUTO_ACTIVATE 0
 

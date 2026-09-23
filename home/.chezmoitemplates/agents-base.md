@@ -221,8 +221,7 @@ govern the text:
 
 The `commit` skill defines the allowed footer fields.
 Never append generated-by attribution or agent session
-metadata. The `claude-no-trailer` hook blocks
-"Claude-Session" trailers.
+metadata.
 
 # Agent task summaries
 

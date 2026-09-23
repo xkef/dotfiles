@@ -1,5 +1,4 @@
 #!/usr/bin/env fish
-# shellcheck disable=all
 # dots: dotfiles management command, a thin dispatcher over chezmoi and jj.
 #
 # Usage: dots <command> [args]
@@ -41,7 +40,7 @@ switch $argv[1]
         echo "Usage: dots <command>"
         echo ""
         echo "Commands:"
-        echo "  update    Pull the repo and apply changes (chezmoi update)"
+        echo "  update    Pull the repo and apply changes (jj fetch and rebase, chezmoi apply)"
         echo "  lock      Record the live LazyVim plugin lockfile in the repo"
         echo "  doctor    Check dotfiles health (chezmoi doctor)"
         echo "  diff      Show pending changes (chezmoi diff)"

@@ -61,7 +61,6 @@ return {
     name = "rose-pine",
     lazy = true,
     opts = {
-      dark_variant = "moon",
       dim_inactive_windows = true,
       styles = {
         bold = true,

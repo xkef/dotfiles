@@ -1,5 +1,4 @@
 -- Options loaded after all plugins (after/plugin/ runs last).
--- Matches the main nvim config's preferences.
 
 vim.opt.wrap = true
 vim.opt.number = true

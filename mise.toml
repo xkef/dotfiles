@@ -11,20 +11,22 @@ vale = "3"
 # shfmt -f skips .tmpl files, but the Codex modify script is plain bash.
 [vars]
 shell_files = "$(shfmt -f .) home/dot_codex/modify_config.toml.tmpl"
+# Fish scripts in bin have no .fish extension. dots-keys is a template.
+fish_files = "$(git ls-files '*.fish') home/dot_local/bin/executable_dots home/dot_local/bin/executable_dots-skills home/dot_local/bin/executable_theme home/dot_local/bin/executable_vm"
 
 [tasks.fmt]
 description = "Format all dotfiles"
 run = [
   "stylua home/dot_config/lazyvim/ home/dot_config/kickstart/",
   "shfmt -w {{vars.shell_files}}",
-  "fish_indent -w $(git ls-files '*.fish')",
+  "fish_indent -w {{vars.fish_files}}",
   "dprint fmt --config .config/dprint.json",
   "taplo fmt",
 ]
 
 [tasks.lint]
 description = "Lint everything"
-depends = ["lint-sh", "lint-fish", "lint-md", "lint-prose", "lint-nvim"]
+depends = ["lint-sh", "lint-fish", "lint-fmt", "lint-md", "lint-prose", "lint-nvim"]
 
 [tasks.lint-sh]
 description = "Shellcheck bash scripts"
@@ -32,7 +34,11 @@ run = "shellcheck -S warning {{vars.shell_files}}"
 
 [tasks.lint-fish]
 description = "Syntax-check fish files"
-run = 'for f in $(git ls-files "*.fish"); do fish --no-execute "$f" || exit 1; done'
+run = 'for f in {{vars.fish_files}}; do fish --no-execute "$f" || exit 1; done'
+
+[tasks.lint-fmt]
+description = "Check markdown formatting"
+run = "dprint check --config .config/dprint.json"
 
 [tasks.lint-md]
 description = "Lint markdown"

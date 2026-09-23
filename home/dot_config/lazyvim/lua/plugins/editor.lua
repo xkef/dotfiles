@@ -61,7 +61,6 @@ return {
 
   {
     "alexpasmantier/tv.nvim",
-    dependencies = { "alexpasmantier/television" },
     keys = {
       { "<leader>tt", "<cmd>Tv<cr>", desc = "Television (channel picker)" },
       { "<leader>tg", "<cmd>Tv git-log<cr>", desc = "Television git log" },

@@ -14,9 +14,6 @@ if vim.env.SSH_TTY or vim.env.TMUX then
 end
 
 vim.opt.wrap = true
-vim.opt.number = true
-vim.opt.relativenumber = true
-vim.opt.list = true
 vim.opt.listchars = {
   tab = "→ ",
   trail = "·",
@@ -25,8 +22,3 @@ vim.opt.listchars = {
   precedes = "«",
   lead = "·",
 }
-
-vim.diagnostic.config({
-  virtual_text = { current_line = true, priority = 10000 },
-  virtual_lines = false,
-})
