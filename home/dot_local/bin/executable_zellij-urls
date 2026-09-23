@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Opens URLs from a pane's scrollback, after tmux-fzf-url. It runs in a
+# floating pane, so it reads the focused tiled pane of its own tab, the pane
+# that had focus when the key was pressed.
+set -euo pipefail
+
+readonly HISTORY_LIMIT=2000
+
+panes=$(zellij action list-panes -a -j)
+target=$(jq -r --argjson me "$ZELLIJ_PANE_ID" '
+  map(select(.is_plugin | not)) as $terms
+  | ($terms[] | select(.id == $me) | .tab_id) as $tab
+  | $terms[] | select(.tab_id == $tab and .is_focused and (.is_floating | not)) | .id
+' <<<"$panes")
+
+# Newest first, each URL once, without the punctuation that ends a sentence.
+urls=$(zellij action dump-screen --full --pane-id "$target" |
+  tail -n "$HISTORY_LIMIT" |
+  rg -o "https?://[^[:space:]<>\"'\`)\\]]+" |
+  sed -E 's/[.,;:!?]+$//' |
+  awk '{ line[NR] = $0 } END { for (i = NR; i > 0; i--) if (!seen[line[i]]++) print line[i] }') || true
+
+if [ -z "$urls" ]; then
+  echo "No URLs found"
+  sleep 1
+  exit 0
+fi
+
+opener=xdg-open
+[[ "$(uname)" == Darwin ]] && opener=open
+
+printf '%s\n' "$urls" |
+  fzf --height=100% --multi --reverse --prompt '  ' --border-label ' Open URL ' |
+  while read -r url; do
+    "$opener" "$url"
+  done

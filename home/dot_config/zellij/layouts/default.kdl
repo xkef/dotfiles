@@ -1,0 +1,61 @@
+// Every tab gets the zjstatus bar at the bottom, styled after
+// tmux/conf.d/theme.conf. Colors are ANSI palette slots so the bar follows
+// the `theme` command. See https://github.com/dj95/zjstatus/wiki
+layout {
+    default_tab_template {
+        children
+        pane size=1 borderless=true {
+            plugin location="https://github.com/dj95/zjstatus/releases/download/v0.25.0/zjstatus.wasm" {
+                // Left: session name and a § separator, then the tabs.
+                format_left  "#[fg=5,bold,italic]{session} § {tabs}"
+                // Right: mode while the prefix is active, agent count, system
+                // stats, clock, and hostname.
+                format_right "{mode}{command_agents}{command_sysstat}  {command_clock}  #[fg=6,bold]{command_host} "
+                format_space ""
+
+                // Locked is the resting mode, so it shows nothing.
+                mode_locked          ""
+                mode_tmux            "#[fg=3,bold]PREFIX  "
+                mode_default_to_mode "tmux"
+                mode_resize          "#[fg=3,bold]RESIZE  "
+                mode_scroll          "#[fg=2,bold]-- SCROLL --  "
+                mode_search          "#[fg=2,bold]-- SEARCH --  "
+                mode_enter_search    "#[fg=2,bold]-- SEARCH --  "
+
+                // A tab reads " index:name ". The active one uses bold blue
+                // reverse video, and a Z marks a fullscreen pane.
+                tab_normal              "#[fg=8]  {index}:{name} "
+                tab_active              "#[fg=4,bold,reverse]  {index}:{name} "
+                tab_active_fullscreen   "#[fg=4,bold,reverse]  {index}:{name} #[fg=3,bold]Z"
+                tab_rename              "#[fg=3,bold,reverse]  {index}:{name} "
+
+                // ZELLIJ selects the zellij backend of tmux-agents, which
+                // counts the agents in every zellij session.
+                command_agents_command  "sh -c \"$HOME/.local/bin/tmux-agents --count\""
+                command_agents_format   "{stdout}"
+                command_agents_interval "5"
+                command_agents_env {
+                    ZELLIJ "0"
+                }
+
+                // zjstatus runs commands without a shell. tmux-sysstat prints
+                // tmux styles such as #[fg=colour8], and sed turns them into
+                // the zjstatus form #[fg=8].
+                command_sysstat_command    "sh -c \"$HOME/.local/bin/tmux-sysstat | sed s/colour//g\""
+                command_sysstat_format     "{stdout}"
+                command_sysstat_interval   "5"
+                command_sysstat_rendermode "dynamic"
+
+                // date reads the local timezone, which the WASM sandbox of
+                // the datetime widget can't.
+                command_clock_command    "date +%H:%M"
+                command_clock_format     "#[fg=8]{stdout}"
+                command_clock_interval   "5"
+
+                command_host_command  "hostname -s"
+                command_host_format   "{stdout}"
+                command_host_interval "0"
+            }
+        }
+    }
+}

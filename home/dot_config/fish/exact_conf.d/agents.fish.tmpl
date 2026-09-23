@@ -1,6 +1,6 @@
 # Agent launchers, one per entry in .chezmoidata/agents.toml. Each function
 # installs its agent on first use, then runs it through `sb` with the tmux
-# window pinned to the agent name. `command <agent>` skips both.
+# window or zellij tab pinned to the agent name. `command <agent>` skips both.
 {{ range $name, $agent := .agents }}
 function {{ $name }} --wraps {{ $name }} --description "{{ $agent.description }} in a nono sandbox"
     if not command -q {{ $name }}

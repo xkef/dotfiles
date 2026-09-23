@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# Session picker for zellij, after tmux-sesh. sesh connects through tmux
+# only, so this lists zellij sessions and zoxide directories itself. A
+# directory maps to a session named after its basename, which zellij creates
+# on first switch.
+#
+#   zellij-sesh         fzf picker
+#   zellij-sesh --last  switch back to the session the last switch left
+set -euo pipefail
+
+readonly LAST_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/zellij/last-session"
+
+# Rows read "kind<TAB>value<TAB>display". fzf shows the display column only.
+list() {
+  local what=${1:-all}
+  if [[ "$what" == all || "$what" == sessions ]]; then
+    # list-sessions also shows resurrectable sessions, marked EXITED.
+    zellij list-sessions -n | awk -v self="$ZELLIJ_SESSION_NAME" \
+      '!/EXITED/ && $1 != self { printf "session\t%s\t\033[34m\033[0m %s\n", $1, $1 }'
+  fi
+  if [[ "$what" == all || "$what" == zoxide ]]; then
+    zoxide query -l | awk -v home="$HOME" \
+      '{ d = $0; sub("^" home, "~", d); printf "dir\t%s\t\033[36m\033[0m %s\n", $0, d }'
+  fi
+  if [[ "$what" == find ]]; then
+    fd -H -d 2 -t d -E .Trash . ~ | awk '{ printf "dir\t%s\t %s\n", $0, $0 }'
+  fi
+}
+
+preview() {
+  local kind=$1 value=$2
+  if [[ "$kind" == session ]]; then
+    zellij --session "$value" action dump-screen --ansi
+    return
+  fi
+  eza -la --group-directories-first --git --icons --color=always "$value"
+}
+
+# Records the session being left so --last can return to it.
+switch_to() {
+  local session=$1 cwd=${2:-}
+  mkdir -p "$(dirname "$LAST_FILE")"
+  printf '%s\n' "$ZELLIJ_SESSION_NAME" >"$LAST_FILE"
+  zellij action switch-session "$session" ${cwd:+--cwd "$cwd"}
+}
+
+case "${1:-}" in
+--list)
+  list "${2:-all}"
+  exit 0
+  ;;
+--preview)
+  preview "$2" "$3"
+  exit 0
+  ;;
+--last)
+  last=$(cat "$LAST_FILE" 2>/dev/null) || last=""
+  if [ -z "$last" ] || [ "$last" = "$ZELLIJ_SESSION_NAME" ]; then
+    echo "No previous session"
+    sleep 1
+    exit 0
+  fi
+  switch_to "$last"
+  exit 0
+  ;;
+esac
+
+# --height overrides the 60% in FZF_DEFAULT_OPTS, so the picker fills its
+# floating pane.
+selection=$(list | fzf \
+  --height=100% \
+  --ansi --no-sort --reverse \
+  --gap=0 --no-separator \
+  --delimiter='\t' --with-nth=3 \
+  --border-label ' sessions ' --prompt '> ' \
+  --header 'C-a all | C-s sessions | C-x zoxide | C-f find | C-w kill | C-/ preview' \
+  --bind 'tab:down,btab:up' \
+  --bind "ctrl-a:change-prompt(> )+reload($0 --list all)" \
+  --bind "ctrl-s:change-prompt(sessions> )+reload($0 --list sessions)" \
+  --bind "ctrl-x:change-prompt(zoxide> )+reload($0 --list zoxide)" \
+  --bind "ctrl-f:change-prompt(find> )+reload($0 --list find)" \
+  --bind 'ctrl-d:preview-half-page-down' \
+  --bind 'ctrl-u:preview-half-page-up' \
+  --bind 'ctrl-/:toggle-preview' \
+  --bind "ctrl-w:execute-silent([ {1} = session ] && zellij delete-session --force {2})+change-prompt(> )+reload($0 --list all)" \
+  --preview-window 'right:55%,hidden,wrap' \
+  --preview "$0 --preview {1} {2}") || exit 0
+
+IFS=$'\t' read -r kind value _ <<<"$selection"
+if [[ "$kind" == session ]]; then
+  switch_to "$value"
+  exit 0
+fi
+
+switch_to "$(basename "$value")" "$value"

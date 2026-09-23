@@ -11,11 +11,13 @@
 # ~/.pi/agent/extensions/agent-status.ts writes the same format, so the
 # directory is shared instead of sitting under ~/.claude.
 
-[ -n "$TMUX_PANE" ] || exit 0
+# A zellij pane id repeats across sessions, so its key adds the session name.
+PANE=${TMUX_PANE:-${ZELLIJ_PANE_ID:+zellij-$ZELLIJ_SESSION_NAME-$ZELLIJ_PANE_ID}}
+[ -n "$PANE" ] || exit 0
 
 AGENT=claude
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
-STATE_FILE="$STATE_DIR/$TMUX_PANE"
+STATE_FILE="$STATE_DIR/$PANE"
 
 INPUT=$(cat)
 IFS=$'\t' read -r EVENT TOOL CWD < <(

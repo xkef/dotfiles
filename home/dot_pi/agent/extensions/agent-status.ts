@@ -17,7 +17,11 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 const AGENT = "pi";
 const NO_TOOL = "-";
 
-const pane = process.env.TMUX_PANE;
+// A zellij pane id repeats across sessions, so its key adds the session name.
+const { TMUX_PANE, ZELLIJ_PANE_ID, ZELLIJ_SESSION_NAME } = process.env;
+const pane =
+  TMUX_PANE ||
+  (ZELLIJ_PANE_ID ? `zellij-${ZELLIJ_SESSION_NAME}-${ZELLIJ_PANE_ID}` : undefined);
 const stateDir = join(
   process.env.XDG_STATE_HOME ?? join(process.env.HOME ?? "", ".local", "state"),
   "agents",

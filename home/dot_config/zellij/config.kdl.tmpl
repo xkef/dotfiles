@@ -1,0 +1,315 @@
+{{- $prefix := .keys.prefix | replace "C-" "Ctrl " -}}
+// Zellij config that mirrors the tmux UX in ~/.config/tmux. Locked mode
+// passes every key to the pane, as tmux does. The prefix from
+// .chezmoidata/keys.toml enters tmux mode, and each binding there returns to
+// locked mode. See https://zellij.dev/documentation/configuration
+
+default_mode "locked"
+default_shell "fish"
+scroll_buffer_size 50000
+copy_on_select true
+// Copy mode: EditScrollback opens the scrollback in nvim with copy-mode.lua
+// as its only config. -i NONE keeps it off the shada file of the main nvim.
+scrollback_editor "nvim --noplugin -i NONE -u {{ .chezmoi.homeDir }}/.config/zellij/copy-mode.lua"
+show_startup_tips false
+show_release_notes false
+
+// zjstatus in layouts/default.kdl draws the status bar and manages pane
+// frames, so zellij's own frames stay off.
+default_layout "default"
+pane_frames false
+
+// ANSI palette slots instead of hex values, as in tmux/conf.d/theme.conf.
+// The `theme` command pushes a new palette over OSC and zellij follows. The
+// components repeat zellij's mapping of a legacy fg/bg/red/... theme, except
+// that pane dividers use colour8 for every pane, as tmux's pane borders do.
+// The legacy format always draws the focused pane's divider green.
+theme "terminal"
+themes {
+    terminal {
+        text_unselected {
+            base 7
+            background 0
+            emphasis_0 11
+            emphasis_1 6
+            emphasis_2 2
+            emphasis_3 5
+        }
+        text_selected {
+            base 7
+            background 0
+            emphasis_0 11
+            emphasis_1 6
+            emphasis_2 2
+            emphasis_3 5
+        }
+        ribbon_unselected {
+            base 0
+            background 7
+            emphasis_0 1
+            emphasis_1 7
+            emphasis_2 4
+            emphasis_3 5
+        }
+        ribbon_selected {
+            base 0
+            background 2
+            emphasis_0 1
+            emphasis_1 11
+            emphasis_2 5
+            emphasis_3 4
+        }
+        exit_code_success {
+            base 2
+            emphasis_0 6
+            emphasis_1 0
+            emphasis_2 5
+            emphasis_3 4
+        }
+        exit_code_error {
+            base 1
+            emphasis_0 3
+            emphasis_1 3
+            emphasis_2 7
+            emphasis_3 5
+        }
+        frame_unselected {
+            base 8
+            emphasis_0 11
+            emphasis_1 6
+            emphasis_2 5
+            emphasis_3 3
+        }
+        frame_selected {
+            base 8
+            emphasis_0 11
+            emphasis_1 6
+            emphasis_2 5
+            emphasis_3 3
+        }
+        frame_highlight {
+            base 11
+            emphasis_0 5
+            emphasis_1 5
+            emphasis_2 11
+            emphasis_3 11
+        }
+        table_title {
+            base 2
+            background 8
+            emphasis_0 11
+            emphasis_1 6
+            emphasis_2 2
+            emphasis_3 5
+        }
+        table_cell_unselected {
+            base 7
+            background 0
+            emphasis_0 11
+            emphasis_1 6
+            emphasis_2 2
+            emphasis_3 5
+        }
+        table_cell_selected {
+            base 7
+            background 0
+            emphasis_0 11
+            emphasis_1 6
+            emphasis_2 2
+            emphasis_3 5
+        }
+        list_unselected {
+            base 7
+            background 0
+            emphasis_0 11
+            emphasis_1 6
+            emphasis_2 2
+            emphasis_3 5
+        }
+        list_selected {
+            base 7
+            background 0
+            emphasis_0 11
+            emphasis_1 6
+            emphasis_2 2
+            emphasis_3 5
+        }
+        multiplayer_user_colors {
+            player_1 5
+            player_2 4
+            player_3 5
+            player_4 3
+            player_5 6
+            player_6 3
+            player_7 1
+            player_8 7
+            player_9 13
+            player_10 3
+        }
+    }
+}
+
+// vim-zellij-navigator forwards Ctrl-hjkl to neovim when it has focus, so
+// smart-splits.nvim moves across splits. Otherwise it moves zellij focus.
+plugins {
+    navigator location="https://github.com/hiasr/vim-zellij-navigator/releases/download/0.3.0/vim-zellij-navigator.wasm"
+}
+
+keybinds clear-defaults=true {
+    locked {
+        bind "{{ $prefix }}" { SwitchToMode "tmux"; }
+    }
+
+    // The `// @key` lines feed the dots-keys reference.
+    tmux {
+        bind "Esc" "Ctrl c" { SwitchToMode "locked"; }
+        // @key zellij :: {{ .keys.prefix_label }} :: Toggle last tab (double-tap)
+        bind "{{ $prefix }}" { ToggleTab; SwitchToMode "locked"; }
+        // @key zellij :: Ctrl-l :: Clear scrollback history
+        bind "Ctrl l" { Clear; SwitchToMode "locked"; }
+
+        // Panes
+        // @key zellij :: h/j/k/l :: Navigate panes (and nvim splits)
+        // @key zellij :: | / - :: Split right / down
+        // @key zellij :: x :: Close pane
+        // @key zellij :: z :: Toggle pane zoom (fullscreen)
+        // @key zellij :: ! :: Break pane into a new tab
+        bind "h" { MessagePlugin "navigator" { name "move_focus"; payload "left"; }; SwitchToMode "locked"; }
+        bind "j" { MessagePlugin "navigator" { name "move_focus"; payload "down"; }; SwitchToMode "locked"; }
+        bind "k" { MessagePlugin "navigator" { name "move_focus"; payload "up"; }; SwitchToMode "locked"; }
+        bind "l" { MessagePlugin "navigator" { name "move_focus"; payload "right"; }; SwitchToMode "locked"; }
+        bind "|" { NewPane "Right"; SwitchToMode "locked"; }
+        bind "-" { NewPane "Down"; SwitchToMode "locked"; }
+        bind "x" { CloseFocus; SwitchToMode "locked"; }
+        bind "z" { ToggleFocusFullscreen; SwitchToMode "locked"; }
+        bind "!" { BreakPane; SwitchToMode "locked"; }
+
+        // Resize mode repeats H/J/K/L until Esc, like tmux `bind -r`.
+        // @key zellij :: H/J/K/L :: Resize pane (repeats until Esc)
+        bind "H" { Resize "Increase Left"; SwitchToMode "resize"; }
+        bind "J" { Resize "Increase Down"; SwitchToMode "resize"; }
+        bind "K" { Resize "Increase Up"; SwitchToMode "resize"; }
+        bind "L" { Resize "Increase Right"; SwitchToMode "resize"; }
+
+        // Tabs
+        // @key zellij :: c :: New tab
+        // @key zellij :: n / p :: Next / previous tab
+        // @key zellij :: Tab :: Last tab
+        // @key zellij :: < / > :: Move tab left / right
+        // @key zellij :: , :: Rename tab
+        // @key zellij :: & :: Close tab
+        // @key zellij :: 1-9 :: Go to tab
+        bind "c" { NewTab; SwitchToMode "locked"; }
+        bind "n" { GoToNextTab; SwitchToMode "locked"; }
+        bind "p" { GoToPreviousTab; SwitchToMode "locked"; }
+        bind "Tab" { ToggleTab; SwitchToMode "locked"; }
+        bind "<" { MoveTab "Left"; SwitchToMode "locked"; }
+        bind ">" { MoveTab "Right"; SwitchToMode "locked"; }
+        bind "," { SwitchToMode "renametab"; TabNameInput 0; }
+        bind "&" { CloseTab; SwitchToMode "locked"; }
+        bind "1" { GoToTab 1; SwitchToMode "locked"; }
+        bind "2" { GoToTab 2; SwitchToMode "locked"; }
+        bind "3" { GoToTab 3; SwitchToMode "locked"; }
+        bind "4" { GoToTab 4; SwitchToMode "locked"; }
+        bind "5" { GoToTab 5; SwitchToMode "locked"; }
+        bind "6" { GoToTab 6; SwitchToMode "locked"; }
+        bind "7" { GoToTab 7; SwitchToMode "locked"; }
+        bind "8" { GoToTab 8; SwitchToMode "locked"; }
+        bind "9" { GoToTab 9; SwitchToMode "locked"; }
+
+        // Scrollback. Zellij has no keyboard selection, so copy mode opens the
+        // scrollback in nvim. Scroll mode scrolls and searches the live pane.
+        // @key zellij :: Enter :: Copy mode (scrollback in nvim, y yanks)
+        // @key zellij :: [ :: Enter scroll mode
+        // @key zellij :: / :: Search scrollback
+        // @key zellij :: o / i :: Jump to prev / next prompt
+        bind "Enter" { EditScrollback; SwitchToMode "locked"; }
+        bind "[" { SwitchToMode "scroll"; }
+        bind "/" { SwitchToMode "entersearch"; SearchInput 0; }
+        bind "o" { SwitchToMode "scroll"; ScrollToPreviousPrompt; }
+        bind "i" { SwitchToMode "scroll"; ScrollToNextPrompt; }
+
+        // Floating panes. * shows or hides the floating layer and opens a
+        // shell there when it's empty. Run starts in the focused pane's
+        // directory but keeps the server's $PWD, which yazi prefers, so env
+        // drops it.
+        // @key zellij :: * :: Show / hide floating panes
+        // @key zellij :: e :: Floating file manager (yazi)
+        // @key zellij :: G :: Floating jj UI (jjui)
+        // @key zellij :: g :: Floating lazygit
+        // @key zellij :: R :: Floating scooter search and replace
+        // @key zellij :: d :: Floating lazydocker
+        // @key zellij :: u :: Open URL from scrollback (fzf)
+        // @key zellij :: ? :: This reference (floating)
+        bind "*" { ToggleFloatingPanes; SwitchToMode "locked"; }
+        bind "e" { Run "env" "-u" "PWD" "yazi" { floating true; close_on_exit true; x "10%"; y "10%"; width "80%"; height "80%"; }; SwitchToMode "locked"; }
+        bind "G" { Run "jjui" { floating true; close_on_exit true; x "10%"; y "10%"; width "80%"; height "80%"; }; SwitchToMode "locked"; }
+        bind "g" { Run "lazygit" { floating true; close_on_exit true; x "5%"; y "5%"; width "90%"; height "90%"; }; SwitchToMode "locked"; }
+        bind "R" { Run "scooter" { floating true; close_on_exit true; x "5%"; y "5%"; width "90%"; height "90%"; }; SwitchToMode "locked"; }
+        bind "d" { Run "lazydocker" { floating true; close_on_exit true; x "5%"; y "5%"; width "90%"; height "90%"; }; SwitchToMode "locked"; }
+        bind "u" { Run "zellij-urls" { floating true; close_on_exit true; x "20%"; y "30%"; width "60%"; height "40%"; }; SwitchToMode "locked"; }
+        bind "?" { Run "sh" "-c" "dots-keys --raw | glow -p -" { floating true; close_on_exit true; x "20%"; y "10%"; width "60%"; height "80%"; }; SwitchToMode "locked"; }
+
+        // Sessions and agents. The pickers run in a floating pane that
+        // closes when they exit.
+        // @key zellij :: f :: Session picker (sessions + zoxide)
+        // @key zellij :: F :: Toggle last session
+        // @key zellij :: s / w :: Session manager
+        // @key zellij :: a :: Agent picker (all sessions)
+        // @key zellij :: D :: Detach
+        bind "f" { Run "zellij-sesh" { floating true; close_on_exit true; x "10%"; y "15%"; width "80%"; height "70%"; }; SwitchToMode "locked"; }
+        bind "F" { Run "zellij-sesh" "--last" { floating true; close_on_exit true; x "30%"; y "45%"; width "40%"; height "10%"; }; SwitchToMode "locked"; }
+        bind "s" "w" { LaunchOrFocusPlugin "session-manager" { floating true; move_to_focused_tab true; }; SwitchToMode "locked"; }
+        bind "a" { Run "tmux-agents" { floating true; close_on_exit true; x "2%"; y "7%"; width "95%"; height "85%"; }; SwitchToMode "locked"; }
+        bind "D" { Detach; }
+    }
+
+    resize {
+        bind "Esc" "Enter" "Ctrl c" { SwitchToMode "locked"; }
+        bind "{{ $prefix }}" { SwitchToMode "tmux"; }
+        bind "H" "h" { Resize "Increase Left"; }
+        bind "J" "j" { Resize "Increase Down"; }
+        bind "K" "k" { Resize "Increase Up"; }
+        bind "L" "l" { Resize "Increase Right"; }
+    }
+
+    // @key scroll :: v :: Copy mode (scrollback in nvim, y yanks)
+    // @key scroll :: o / i :: Previous / next prompt
+    // @key scroll :: / then n / N :: Search, next / previous match
+    // @key scroll :: Ctrl-u / d :: Half page up / down
+    // @key scroll :: g / G :: Top / bottom
+    // @key scroll :: Esc / q :: Leave scroll mode
+    scroll {
+        bind "v" { EditScrollback; SwitchToMode "locked"; }
+        bind "o" { ScrollToPreviousPrompt; }
+        bind "i" { ScrollToNextPrompt; }
+    }
+
+    search {
+        bind "n" { Search "down"; }
+        bind "N" { Search "up"; }
+    }
+
+    shared_among "scroll" "search" {
+        bind "Esc" "q" "Ctrl c" { ScrollToBottom; SwitchToMode "locked"; }
+        bind "/" { SwitchToMode "entersearch"; SearchInput 0; }
+        bind "j" "Down" { ScrollDown; }
+        bind "k" "Up" { ScrollUp; }
+        bind "Ctrl d" { HalfPageScrollDown; }
+        bind "Ctrl u" { HalfPageScrollUp; }
+        bind "Ctrl f" "PageDown" { PageScrollDown; }
+        bind "Ctrl b" "PageUp" { PageScrollUp; }
+        bind "g" { ScrollToTop; }
+        bind "G" { ScrollToBottom; }
+    }
+
+    entersearch {
+        bind "Esc" "Ctrl c" { SwitchToMode "scroll"; }
+        bind "Enter" { SwitchToMode "search"; }
+    }
+
+    renametab {
+        bind "Enter" { SwitchToMode "locked"; }
+        bind "Esc" { UndoRenameTab; SwitchToMode "locked"; }
+    }
+}

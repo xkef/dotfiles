@@ -10,6 +10,8 @@
 #
 #   tmux-agents          fzf picker. Enter switches to the agent's pane.
 #   tmux-agents --count  status line segment ("2• 1◦"), empty when nothing runs
+#
+# Under zellij, where $ZELLIJ is set, the same views cover zellij panes.
 set -euo pipefail
 
 readonly STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
@@ -21,11 +23,38 @@ readonly ICON_BUSY='◦'
 readonly ICON_RUNNING='○'
 readonly ICON_IDLE='·'
 
+# zjstatus launches the count again on every zellij event, and the zellij calls
+# in list_panes fire events, so the launches would pile up until the server ran
+# out of file descriptors. Under zellij a count younger than the TTL answers
+# from this cache instead.
+COUNT_CACHE="${TMPDIR:-/tmp}/zellij-agents-count-$(id -u)"
+readonly COUNT_CACHE
+readonly COUNT_TTL=4
+
 # Sort ranks: needs input first, working next, idle last.
 readonly RANK_WAITING=0
 readonly RANK_BUSY=1
 readonly RANK_RUNNING=2
 readonly RANK_IDLE=3
+
+# Emits tab-separated pane key, target, command, and cwd for every pane. A
+# zellij pane id repeats across sessions, so its key adds the session name,
+# as the agents do when they write their state.
+list_panes() {
+  if [ -z "${ZELLIJ:-}" ]; then
+    tmux list-panes -a -F '#{pane_id}	#{session_name}:#{window_index}	#{pane_current_command}	#{pane_current_path}'
+    return
+  fi
+
+  # list-sessions also shows resurrectable sessions, marked EXITED.
+  local session
+  zellij list-sessions -n | awk '!/EXITED/ { print $1 }' | while read -r session; do
+    zellij --session "$session" action list-panes -a -j | jq -r --arg s "$session" '
+      .[] | select(.is_plugin | not)
+      | ["zellij-\($s)-\(.id)", "\($s):\(.tab_position + 1)", .pane_command // "-", .pane_cwd // "-"]
+      | @tsv'
+  done
+}
 
 # Emits tab-separated rank, pane, target, state, agent, tool, age, dir, and task.
 collect() {
@@ -52,7 +81,7 @@ collect() {
     printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
       "$rank" "$pane" "$target" "$state" "$agent" "$tool" \
       "$age" "${cwd/#$HOME/~}" "$task"
-  done < <(tmux list-panes -a -F '#{pane_id}	#{session_name}:#{window_index}	#{pane_current_command}	#{pane_current_path}') |
+  done < <(list_panes) |
     sort -n
 }
 
@@ -69,12 +98,56 @@ human_age() { # seconds to "12s", "6m", or "2h"
   printf '%dh' $((s / 3600))
 }
 
+# Prints a pane's screen with colors. A zellij target reads "session:tab".
+preview() {
+  local pane=$1 target=$2
+  if [ -z "${ZELLIJ:-}" ]; then
+    tmux capture-pane -p -e -t "$pane"
+    return
+  fi
+  zellij --session "${target%:*}" action dump-screen --ansi --pane-id "${pane##*-}"
+}
+
+# Focuses the pane, switching session first when it lives in another one.
+jump() {
+  local pane=$1 target=$2
+  if [ -z "${ZELLIJ:-}" ]; then
+    tmux switch-client -t "$target"
+    tmux select-pane -t "$pane"
+    return
+  fi
+
+  local session=${target%:*} id="terminal_${pane##*-}"
+  if [ "$session" = "$ZELLIJ_SESSION_NAME" ]; then
+    zellij action focus-pane-id "$id"
+  else
+    zellij action switch-session "$session" --pane-id "$id"
+  fi
+}
+
+if [[ "${1:-}" == --preview ]]; then
+  preview "$2" "$3"
+  exit 0
+fi
+
 # ── Count mode ───────────────────────────────────────
 # Counts every agent in the picker's sort order, so a count keeps its position
 # as the states around it change. A state without agents produces nothing. With
 # no agents at all the segment stays empty, and the status line looks as it did
 # before any agent existed.
 if [[ "${1:-}" == --count ]]; then
+  # The cache holds "epoch<TAB>segment". Stamping it before the count runs
+  # makes the launches during this run answer from the cache too.
+  if [ -n "${ZELLIJ:-}" ]; then
+    now=$(date +%s) stamp=0 cached=""
+    { IFS=$'\t' read -r stamp cached <"$COUNT_CACHE"; } 2>/dev/null || true
+    if ((now - stamp < COUNT_TTL)); then
+      printf '%s' "$cached"
+      exit 0
+    fi
+    printf '%s\t%s\n' "$now" "$cached" >"$COUNT_CACHE"
+  fi
+
   waiting=0 busy=0 running=0 idle=0
   while IFS=$'\t' read -r _ _ _ state _; do
     case "$state" in
@@ -92,7 +165,9 @@ if [[ "${1:-}" == --count ]]; then
   ((running > 0)) && append "$running" "$ICON_RUNNING"
   ((idle > 0)) && append "$idle" "$ICON_IDLE"
 
-  [ -n "$segment" ] && printf '%s  ' "$segment"
+  [ -n "$segment" ] && segment="$segment  "
+  [ -n "${ZELLIJ:-}" ] && printf '%s\t%s\n' "$(date +%s)" "$segment" >"$COUNT_CACHE"
+  printf '%s' "$segment"
   exit 0
 fi
 
@@ -155,7 +230,13 @@ render() {
 
 rows=$(collect | render)
 if [ -z "$rows" ]; then
-  tmux display-message "No agents running"
+  if [ -z "${ZELLIJ:-}" ]; then
+    tmux display-message "No agents running"
+  else
+    # The picker runs in a floating pane that closes on exit.
+    echo "No agents running"
+    sleep 1
+  fi
   exit 0
 fi
 
@@ -173,8 +254,7 @@ selection=$(printf '%s\n' "$rows" | fzf \
   --bind 'ctrl-u:preview-half-page-up' \
   --bind 'ctrl-/:toggle-preview' \
   --preview-window 'down:75%,wrap,follow' \
-  --preview 'tmux capture-pane -p -e -t {1}') || exit 0
+  --preview "$0 --preview {1} {2}") || exit 0
 
 IFS=$'\t' read -r pane target _ <<<"$selection"
-tmux switch-client -t "$target"
-tmux select-pane -t "$pane"
+jump "$pane" "$target"

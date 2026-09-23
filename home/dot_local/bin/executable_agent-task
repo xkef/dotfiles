@@ -8,15 +8,17 @@ TASK_DIR="/tmp/tmux-agent-tasks-$(id -u)"
 readonly TASK_DIR
 readonly MAX_SUMMARY_LENGTH=60
 
-pane=${TMUX_PANE:-}
+# A zellij pane id repeats across sessions, so its key adds the session name.
+readonly PANE_KEY='^(%[0-9]+|zellij-[^/]+-[0-9]+)$'
+pane=${TMUX_PANE:-${ZELLIJ_PANE_ID:+zellij-$ZELLIJ_SESSION_NAME-$ZELLIJ_PANE_ID}}
 if [[ "${1:-}" == --read ]]; then
   pane=${2:-$pane}
-  [[ "$pane" =~ ^%[0-9]+$ ]] || exit 1
+  [[ "$pane" =~ $PANE_KEY ]] || exit 1
   cat "$TASK_DIR/$pane" 2>/dev/null
   exit 0
 fi
 
-[[ "$pane" =~ ^%[0-9]+$ ]] || exit 0
+[[ "$pane" =~ $PANE_KEY ]] || exit 0
 summary=$(printf '%s' "$*" | tr '\t\r\n' '   ')
 [ -n "$summary" ] || exit 0
 
