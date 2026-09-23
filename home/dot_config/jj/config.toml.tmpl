@@ -82,7 +82,7 @@ email = {{ .identity.email | quote }}
 [signing]
 behavior = "own"
 backend = "ssh"
-key = "~/.ssh/github.pub"
+key = {{ .identity.signingkey | quote }}
 
 [signing.backends.ssh]
 allowed-signers = "~/.config/git/allowed_signers"
