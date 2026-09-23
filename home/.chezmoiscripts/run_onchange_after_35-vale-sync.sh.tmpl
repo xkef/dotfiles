@@ -1,6 +1,4 @@
-#!/bin/bash
-set -euo pipefail
-{{ template "path.sh" }}
+{{ template "header.sh" }}
 # vale config hash: {{ include "dot_config/vale/dot_vale.ini" | sha256sum }}
 # Downloads the style packages named in ~/.config/vale/.vale.ini into
 # ~/.config/vale/styles.

@@ -1,6 +1,4 @@
-#!/bin/bash
-set -euo pipefail
-{{ template "path.sh" }}
+{{ template "header.sh" }}
 # chezmoi records a run_once script as done on exit 0, so a missing fish
 # must fail here and retry on the next apply instead of skipping for good.
 fish="$(command -v fish 2>/dev/null || true)"

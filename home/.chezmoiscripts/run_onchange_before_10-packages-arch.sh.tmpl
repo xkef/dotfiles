@@ -1,8 +1,6 @@
 {{ if eq .chezmoi.os "linux" -}}
 {{ if or (eq .chezmoi.osRelease.id "arch") (eq .chezmoi.osRelease.id "archarm") -}}
-#!/bin/bash
-set -euo pipefail
-{{ template "path.sh" }}
+{{ template "header.sh" }}
 
 packages=(
 {{ range .packages.arch.main -}}

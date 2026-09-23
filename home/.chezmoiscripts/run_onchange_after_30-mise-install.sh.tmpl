@@ -1,6 +1,4 @@
-#!/bin/bash
-set -euo pipefail
-{{ template "path.sh" }}
+{{ template "header.sh" }}
 # mise config hash: {{ include "dot_config/mise/config.toml" | sha256sum }}
 mise trust 2>/dev/null || true
 {{ if and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arm64") -}}
