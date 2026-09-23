@@ -28,6 +28,13 @@ set -l sentinel "$sentinel_dir/skills.shared.$digest.installed"
 # target. pi reads the same tree.
 set -l install_target claude-code
 
+# fish fails a command whose wildcard matches nothing. set accepts an empty
+# match, so the glob expands there first.
+function remove_sentinels --inherit-variable sentinel_dir
+    set -l stale $sentinel_dir/skills.shared.*.installed
+    rm -f $stale
+end
+
 set -l verb $argv[1]
 set -l agent (test -n "$argv[2]"; and echo $argv[2]; or echo agents)
 
@@ -41,7 +48,7 @@ switch "$verb"
 end
 
 if test "$verb" = refresh
-    rm -f $sentinel_dir/skills.shared.*.installed
+    remove_sentinels
 end
 
 test -f $sentinel; and exit 0
@@ -56,5 +63,5 @@ for entry in $upstreams
 end
 
 mkdir -p $sentinel_dir
-rm -f $sentinel_dir/skills.shared.*.installed
+remove_sentinels
 touch $sentinel
