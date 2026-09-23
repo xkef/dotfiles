@@ -21,6 +21,11 @@ set -s extended-keys-format csi-u
 set -as terminal-features ',*:usstyle'
 set -as terminal-features ',*:sync'
 
+# tmux stores OSC 8 hyperlinks, such as delta's file links, but re-emits
+# them only to terminals with the hyperlinks feature. It doesn't detect
+# Ghostty.
+set -as terminal-features ',xterm-ghostty:hyperlinks'
+
 # ── General options ──────────────────────────────────
 set -ga update-environment PATH     # inherit PATH from the attaching shell
 set -g mouse on
