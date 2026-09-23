@@ -75,14 +75,14 @@ auto-update-stale = true
 max-new-file-size = "2MiB"
 
 [user]
-name = "xkef"
-email = "git@xkef.dev"
+name = {{ .identity.name | quote }}
+email = {{ .identity.email | quote }}
 
 # ── SSH commit signing, as in the git config ────────
 [signing]
 behavior = "own"
 backend = "ssh"
-key = "~/.ssh/github_xkef.pub"
+key = "~/.ssh/github.pub"
 
 [signing.backends.ssh]
 allowed-signers = "~/.config/git/allowed_signers"

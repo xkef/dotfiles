@@ -25,6 +25,6 @@ Match host * exec "uname -s | grep -q Darwin"
 Match host * exec "uname -s | grep -q Linux"
     IdentityAgent ~/.1password/agent.sock
 
-# ── GitHub, xkef, signing key from 1Password ───────────
+# ── GitHub, signing key from 1Password ─────────────────
 Host github.com
-    IdentityFile ~/.ssh/github_xkef.pub
+    IdentityFile ~/.ssh/github.pub

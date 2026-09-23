@@ -7,10 +7,10 @@
 	name = {{ onepasswordRead "op://Personal/git/name" }}
 	email = {{ onepasswordRead "op://Personal/git/email" }}
 {{- else }}
-	name = xkef
-	email = git@xkef.dev
+	name = {{ .identity.name }}
+	email = {{ .identity.email }}
 {{- end }}
-	signingkey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFXPTYbJpNsexhTZ+x8Ci8tVkGV/d0MvWqFrlyT3yTki
+	signingkey = key::{{ .identity.signingkey }}
 
 [init]
 	defaultBranch = main
