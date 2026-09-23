@@ -20,7 +20,7 @@ switch $argv[1]
         and chezmoi apply $argv[2..-1]
     case lock
         # Verbatim copy. lazy.nvim writes this file, and dprint.json excludes
-        # it so `make fmt` doesn't reflow it.
+        # it so `mise run fmt` doesn't reflow it.
         set -l live ~/.config/lazyvim/lazy-lock.json
         if test -f $live
             cp $live $DOTFILES_DIR/home/dot_config/lazyvim/lazy-lock.json

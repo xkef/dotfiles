@@ -2,8 +2,88 @@
 chezmoi = "2"
 stylua = "2"
 shfmt = "3"
-ruff = "0"
 taplo = "0"
 shellcheck = "0"
 rumdl = "0"
 dprint = "0"
+
+# shfmt -f skips .tmpl files, but the Codex modify script is plain bash.
+[vars]
+shell_files = "$(shfmt -f .) home/dot_codex/modify_config.toml.tmpl"
+
+[tasks.fmt]
+description = "Format all dotfiles"
+run = """
+#!/usr/bin/env bash
+set -eu
+stylua home/dot_config/lazyvim/ home/dot_config/kickstart/
+shfmt -w {{vars.shell_files}}
+fish_indent -w $(git ls-files '*.fish')
+dprint fmt --config .config/dprint.json
+taplo fmt
+"""
+
+[tasks.lint]
+description = "Lint everything"
+depends = ["lint-sh", "lint-fish", "lint-md", "lint-nvim"]
+
+[tasks.lint-sh]
+description = "Shellcheck bash scripts"
+run = "shellcheck -S warning {{vars.shell_files}}"
+
+[tasks.lint-fish]
+description = "Syntax-check fish files"
+run = """
+#!/usr/bin/env bash
+set -eu
+for f in $(git ls-files '*.fish'); do fish --no-execute "$f"; done
+"""
+
+[tasks.lint-md]
+description = "Lint markdown"
+run = "rumdl check"
+
+[tasks.lint-nvim]
+description = "Load LazyVim headless (local only; needs plugins)"
+env = { NVIM_APPNAME = "lazyvim" }
+run = "nvim --headless +\"lua require('lazy')\" +qa"
+
+[tasks.check]
+description = "Apply the source tree into a throwaway HOME and assert results"
+run = """
+#!/usr/bin/env bash
+set -eu
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+mkdir -p "$tmp/home"
+flags=(--source . --destination "$tmp/home" --config "$tmp/chezmoi.toml" --persistent-state "$tmp/state.db")
+
+chezmoi init "${flags[@]}" \
+  --promptBool "work machine (render 1Password git identity)=false" \
+  --exclude scripts --apply
+
+test ! -e "$tmp/home/.config/git/config.work" || { echo "unexpected config.work"; exit 1; }
+
+if command -v fish >/dev/null; then
+  for f in "$tmp"/home/.config/fish/conf.d/*.fish "$tmp"/home/.config/fish/functions/*.fish; do
+    fish --no-execute "$f"
+  done
+fi
+
+chezmoi verify "${flags[@]}" --exclude scripts
+
+mkdir -p "$tmp/scripts"
+for f in home/.chezmoiscripts/*.tmpl; do
+  out="$tmp/scripts/$(basename "$f" .tmpl)"
+  chezmoi execute-template "${flags[@]}" <"$f" >"$out"
+  if [ -s "$out" ]; then shellcheck -S warning "$out"; fi
+done
+echo "chezmoi smoke ok"
+"""
+
+[tasks.clean]
+description = "Remove caches and generated files"
+run = """
+find . -name .DS_Store -delete 2>/dev/null || true
+rm -rf home/dot_config/lazyvim/.luarc.json
+"""
