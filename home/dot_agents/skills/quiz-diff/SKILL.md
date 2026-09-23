@@ -15,7 +15,7 @@ about it.
    or the branch against `main`. Accept an explicit revision, commit
    range, or PR number. Read the full diff and enough surrounding code
    to write substantive questions.
-2. Write five multiple-choice questions of medium difficulty. Answering
+2. Write five questions with answer choices, of medium difficulty. Answering
    must require understanding the change. Avoid gotchas and trivia.
    Wrong options must look plausible. Cover different aspects: why the
    change exists, how the mechanism works, behavior at edges, and what

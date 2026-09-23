@@ -21,10 +21,10 @@ the diff.
 - **Intuition**: explain the core idea of the change. Focus on the
   essence, not the full details. Use concrete examples with toy data.
   Use figures and diagrams liberally.
-- **Code**: a literate walkthrough of the changes, grouped and ordered
+- **Code**: a literate walkthrough that groups and orders the changes
   for understanding, with prose before each group. Never a list of files
   in alphabetical order.
-- **Quiz**: five multiple-choice questions on this change, of medium
+- **Quiz**: five questions with answer choices on this change, of medium
   difficulty. Answering must require understanding the substance.
   Avoid gotchas. Clicking an answer reports whether it matched and
   gives feedback.

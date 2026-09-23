@@ -1,6 +1,6 @@
 ---
 name: microworld
-description: Build a throwaway interactive microworld, a visualization, step-through debugger, or simulation of a system's internals, so the user can explore how it behaves. Use when the user wants to get a feel for code, to see internal state or execution step by step, or to walk through a script or migration before trusting it, or asks for a microworld.
+description: Build a throwaway interactive microworld, a visualization, step-through debugger, or simulation of a system's internals, so the user can explore how it behaves. Use when the user wants a feel for code, a step-by-step view of internal state, or a walkthrough of a script or migration before trusting it. Also use when the user asks for a microworld.
 ---
 
 # Microworld

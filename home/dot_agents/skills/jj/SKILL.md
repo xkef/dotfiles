@@ -5,7 +5,7 @@ description: How to use `jj`, the Jujutsu version control system. Use when worki
 
 # Jujutsu
 
-Jujutsu, `jj`, is a Git-compatible version control system.
+Jujutsu, `jj`, works as a Git-compatible version control system.
 This setup runs it colocated, with a `.jj` directory next
 to `.git`. A `.jj` directory marks a jj repository. Git
 commands still work for reading objects: `git show`,
