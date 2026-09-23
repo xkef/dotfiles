@@ -11,6 +11,7 @@
     "**/node_modules/**",
     ".claude-notes/**",
     "**/lazy-lock.json",
+    "**/nvim-pack-lock.json",
     "**/modify_*"
   ],
   "plugins": [

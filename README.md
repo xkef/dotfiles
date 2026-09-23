@@ -44,7 +44,7 @@ and `prefix ?` list the bindings.
 
 Edit [`home/.chezmoidata/identity.toml`](home/.chezmoidata/identity.toml).
 Git, jj, and SSH read your name, email, and signing key from it. When the
-1Password `op` command exists, git reads name and email from 1Password.
+1Password `op` command exists, git and jj read name and email from 1Password.
 
 ## Credits
 

@@ -18,11 +18,12 @@ switch $argv[1]
         and jj -R $DOTFILES_DIR rebase -d 'trunk()'
         and chezmoi apply $argv[2..-1]
     case lock
-        # Verbatim copy. lazy.nvim writes this file, and dprint.json excludes
-        # it so `mise run fmt` doesn't reflow it.
-        set -l live ~/.config/lazyvim/lazy-lock.json
-        if test -f $live
-            cp $live $DOTFILES_DIR/home/dot_config/lazyvim/lazy-lock.json
+        # Verbatim copies. lazy.nvim and vim.pack write these files, and
+        # dprint.json excludes them so `mise run fmt` doesn't reflow them.
+        for lock in lazyvim/lazy-lock.json kickstart/nvim-pack-lock.json
+            if test -f ~/.config/$lock
+                cp ~/.config/$lock $DOTFILES_DIR/home/dot_config/$lock
+            end
         end
     case doctor check
         chezmoi doctor $argv[2..-1]
@@ -41,7 +42,7 @@ switch $argv[1]
         echo ""
         echo "Commands:"
         echo "  update    Pull the repo and apply changes (jj fetch and rebase, chezmoi apply)"
-        echo "  lock      Record the live LazyVim plugin lockfile in the repo"
+        echo "  lock      Record the live nvim plugin lockfiles in the repo"
         echo "  doctor    Check dotfiles health (chezmoi doctor)"
         echo "  diff      Show pending changes (chezmoi diff)"
         echo "  apply     Apply the source state (chezmoi apply)"

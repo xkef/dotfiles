@@ -6,7 +6,6 @@ Include conf.d/*.conf
 # ── Defaults ────────────────────────────────────────────
 Host *
     AddKeysToAgent yes
-    IdentitiesOnly yes
     ServerAliveInterval 60
     ServerAliveCountMax 3
     StrictHostKeyChecking accept-new
@@ -27,4 +26,5 @@ Match host * exec "uname -s | grep -q Linux"
 
 # ── GitHub, signing key from 1Password ─────────────────
 Host github.com
+    IdentitiesOnly yes
     IdentityFile ~/.ssh/github.pub

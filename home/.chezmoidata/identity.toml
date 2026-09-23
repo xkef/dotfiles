@@ -1,6 +1,6 @@
 # Personal identity. A fork edits only this file. Git, jj, and SSH render
 # their user and signing key from it. On a machine with 1Password `op`,
-# git reads the name and email from op://Personal/git/* instead.
+# git and jj read the name and email from op://Personal/git/* instead.
 
 [identity]
 name = "xkef"

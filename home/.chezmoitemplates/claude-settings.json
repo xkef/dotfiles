@@ -18,7 +18,7 @@
     "claude-md-management@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
-    "commit-commands@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": false,
     "context7@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
     "hookify@claude-plugins-official": true,

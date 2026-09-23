@@ -63,19 +63,20 @@ credit = ["file", "annotate"]
 cat = ["file", "show"]
 streamline = ["simplify-parents"]
 
-# ── Diff styling ─────────────────────────────────────
-[colors]
-"diff removed token" = { bg = "#331111", underline = false }
-"diff added token" = { bg = "#113311", underline = false }
-
 # ── Snapshot ─────────────────────────────────────────
 [snapshot]
 auto-update-stale = true
 max-new-file-size = "2MiB"
 
+# Same identity sources as the git config.
 [user]
+{{- if lookPath "op" }}
+name = {{ onepasswordRead "op://Personal/git/name" | quote }}
+email = {{ onepasswordRead "op://Personal/git/email" | quote }}
+{{- else }}
 name = {{ .identity.name | quote }}
 email = {{ .identity.email | quote }}
+{{- end }}
 
 # ── SSH commit signing, as in the git config ────────
 [signing]
@@ -85,3 +86,14 @@ key = "~/.ssh/github.pub"
 
 [signing.backends.ssh]
 allowed-signers = "~/.config/git/allowed_signers"
+{{- if and .work (lookPath "op") }}
+
+# Work identity inside ~/work/, unsigned, as in the git config.work.
+[[--scope]]
+--when.repositories = ["~/work"]
+[--scope.user]
+name = {{ onepasswordRead "op://Work/git/name" | quote }}
+email = {{ onepasswordRead "op://Work/git/email" | quote }}
+[--scope.signing]
+behavior = "drop"
+{{- end }}

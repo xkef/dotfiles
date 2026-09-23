@@ -26,7 +26,8 @@ install = "curl -fsSL https://claude.ai/install.sh | bash -s -- latest"
 unsandboxed = ["update"]
 # nono is the OS-level sandbox, and macOS can't nest Seatbelt, so Claude
 # Code's own bash sandbox stays off. With it on, every Bash command fails
-# with "sandbox_apply: Operation not permitted".
+# with "sandbox_apply: Operation not permitted". The sandbox block in
+# claude-settings.json applies only to `command claude` runs.
 args = ["--settings", '{"sandbox":{"enabled":false}}']
 touch = ["$HOME/.claude.json.lock"]
 
@@ -50,6 +51,7 @@ groups = [
 ]
 allow = [
   "$HOME/.claude",
+  "$XDG_CONFIG_HOME/claude-code",
   "$HOME/.local/state/claude/locks",
   "$HOME/.cache/claude",
   "$HOME/.config/nono/profile-drafts",
@@ -82,9 +84,20 @@ exclude_globs = ["*.tmp.[0-9]*.[0-9]*"]
 
 [agents.codex]
 description = "OpenAI Codex CLI"
+# Homebrew installs Codex on macOS. Arch has no package for it.
+install = "npm install -g @openai/codex"
+# The pane command of a sandboxed agent reads `nono`, so tmux-agents can't
+# spot Codex by name. Codex has no hook to report its state, so the launcher
+# records it as running.
+prelaunch = '''
+if set -q TMUX_PANE
+    mkdir -p $XDG_STATE_HOME/agents
+    printf 'codex\trunning\t-\t%s\t%s\n' (date +%s) $PWD >$XDG_STATE_HOME/agents/$TMUX_PANE
+end'''
 # Codex nests its own Seatbelt policy, which macOS refuses inside nono, so
 # nono alone holds the OS boundary. This relaxes only the sandbox. The
-# approval policy stays on.
+# approval policy stays on. The sandbox_mode in the Codex config applies
+# only to `command codex` runs.
 args = ["-s", "danger-full-access"]
 
 [agents.codex.nono]

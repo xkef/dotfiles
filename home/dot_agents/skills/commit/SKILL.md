@@ -7,11 +7,11 @@ description: Create a commit in a repository
 
 ## Git commits
 
-In a Git repository, the commit normally includes every
-change in the working directory. Run `command git diff`
-to see the changes and `command git diff --staged` to see
-what the index already holds. When the user wants only a
-subset, they say so.
+In a Git repository, run `command git diff` to see the
+changes and `command git diff --staged` to see what the
+index already holds. Stage the files that belong to the
+commit with `git add <file>...`. Every change belongs
+unless the user names a subset.
 
 ## Jujutsu commits
 

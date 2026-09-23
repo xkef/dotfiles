@@ -1,13 +1,15 @@
+{{- /* Zed names the space key "space". */ -}}
+{{- $leader := .keys.leader | replace " " "space" -}}
 [
   {
     "context": "Editor && vim_mode == normal && !menu",
     "bindings": {
-      "space f f": "file_finder::Toggle",
-      "space e": "project_panel::ToggleFocus",
-      "space t": "terminal_panel::ToggleFocus",
-      "space c a": "editor::ToggleCodeActions",
-      "space c r": "editor::Rename",
-      "space c f": "editor::Format",
+      "{{ $leader }} f f": "file_finder::Toggle",
+      "{{ $leader }} e": "project_panel::ToggleFocus",
+      "{{ $leader }} t": "terminal_panel::ToggleFocus",
+      "{{ $leader }} c a": "editor::ToggleCodeActions",
+      "{{ $leader }} c r": "editor::Rename",
+      "{{ $leader }} c f": "editor::Format",
       "g d": "editor::GoToDefinition",
       "g r": "editor::FindAllReferences",
       "g I": "editor::GoToImplementation",
@@ -17,7 +19,7 @@
       "[ d": "editor::GoToPreviousDiagnostic",
       "] h": "editor::GoToHunk",
       "[ h": "editor::GoToPreviousHunk",
-      "space f b": "tab_switcher::Toggle",
+      "{{ $leader }} f b": "tab_switcher::Toggle",
       "shift-h": "pane::ActivatePreviousItem",
       "shift-l": "pane::ActivateNextItem",
       "ctrl-h": "workspace::ActivatePaneLeft",
@@ -60,7 +62,7 @@
   {
     "context": "ProjectPanel",
     "bindings": {
-      "space e": "workspace::ToggleLeftDock",
+      "{{ $leader }} e": "workspace::ToggleLeftDock",
       "ctrl-l": "workspace::ActivatePaneRight",
       "ctrl-h": "workspace::ToggleLeftDock"
     }

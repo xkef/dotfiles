@@ -5,8 +5,8 @@
 This repository uses Jujutsu, `jj`, in colocated mode. The `.jj/` directory
 belongs to the repo state.
 
-- Use `jj` for status, diff, history, commit, bookmark, rebase, squash, split,
-  and restore operations.
+- Use `jj` for status, diff, history, commit, bookmark, rebase, squash, and
+  split operations.
 - Don't use `git status`, `git diff`, `git add`, `git commit`, `git checkout`,
   `git reset`, or `git stash` unless the user asks for a Git command or the
   operation inspects Git objects.

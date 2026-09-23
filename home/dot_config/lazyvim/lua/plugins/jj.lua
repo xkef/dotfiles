@@ -52,28 +52,28 @@ return {
     },
     keys = {
       {
-        "[c",
+        "[h",
         function()
           require("vcsigns.actions").hunk_prev(0, vim.v.count1)
         end,
         desc = "Previous hunk (vcs)",
       },
       {
-        "]c",
+        "]h",
         function()
           require("vcsigns.actions").hunk_next(0, vim.v.count1)
         end,
         desc = "Next hunk (vcs)",
       },
       {
-        "<leader>hu",
+        "<leader>ghu",
         function()
           require("vcsigns.actions").hunk_undo(0)
         end,
         desc = "Undo hunk (vcs)",
       },
       {
-        "<leader>hd",
+        "<leader>ghd",
         function()
           require("vcsigns.actions").toggle_hunk_diff(0)
         end,

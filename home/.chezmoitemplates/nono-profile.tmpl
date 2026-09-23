@@ -1,6 +1,6 @@
 {{- /* Renders one nono profile from .agents.<name>.nono. This file declares
        the toolchain surface every agent needs once: mise, jj, maven, npm,
-       cargo, gh, shared skills, keychain, and the agent state the tmux
+       cargo, rustup, gh, shared skills, keychain, and the agent state the tmux
        picker reads. The agent adds its own state directories, extra policy
        groups, and anything beyond that surface through `extra`.
        Called with (dict "name" <agent> "agent" .agents.<agent>). */ -}}
@@ -19,6 +19,7 @@
       "$XDG_CACHE_HOME/mise"
       "$XDG_CONFIG_HOME/jj"
       "$XDG_DATA_HOME/cargo"
+      "$XDG_DATA_HOME/rustup"
       "$HOME/Library/Keychains" -}}
 {{- $read := list
       "$XDG_DATA_HOME/mise"

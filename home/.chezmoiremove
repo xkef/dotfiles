@@ -7,3 +7,6 @@
 .config/fish/functions/claude.fish
 .config/fish/functions/codex.fish
 .config/fish/functions/pi.fish
+.ssh/github_secondary.pub
+.config/kickstart/lazy-lock.json
+.pi/agent/extensions/pi-show-diffs.json

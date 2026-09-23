@@ -4,9 +4,9 @@
 # Joins the state files each agent writes, keyed by tmux pane id, against the
 # live pane list. An agent whose pane is gone has no row to join to, so a
 # crashed session drops out of the view on its own. Claude Code writes those
-# files from a hook, pi from an extension. Codex has neither, so the live pane
-# command identifies it and it shows as running. Agents publish task summaries
-# separately.
+# files from a hook, pi from an extension. Codex has neither, so its launcher
+# writes a running entry that holds only while the pane runs the sandbox.
+# Agents publish task summaries separately.
 #
 #   tmux-agents          fzf picker. Enter switches to the agent's pane.
 #   tmux-agents --count  status line segment ("2• 1◦"), empty when nothing runs
@@ -33,13 +33,12 @@ collect() {
   now=$(date +%s)
 
   while IFS=$'\t' read -r pane target command cwd; do
-    if [[ "$command" == codex ]]; then
-      agent=codex state=running tool=- age=-
-    else
-      [ -f "$STATE_DIR/$pane" ] || continue
-      IFS=$'\t' read -r agent state tool epoch cwd <"$STATE_DIR/$pane" || continue
-      age=$(human_age $((now - epoch)))
-    fi
+    [ -f "$STATE_DIR/$pane" ] || continue
+    IFS=$'\t' read -r agent state tool epoch cwd <"$STATE_DIR/$pane" || continue
+    # Codex leaves its entry behind on exit. The pane returning to a shell
+    # ends it.
+    [[ "$agent" == codex && "$command" != nono && "$command" != codex ]] && continue
+    age=$(human_age $((now - epoch)))
     task=$(agent-task --read "$pane" 2>/dev/null) || task=-
     task=${task:--}
 
