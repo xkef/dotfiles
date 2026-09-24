@@ -1,4 +1,0 @@
-{{- /* pi writes settings.json at runtime: changelog state, trust decisions,
-       and model swaps made in its UI. Edit .chezmoitemplates/pi-settings.json
-       to change the committed set. */ -}}
-{{ template "merge-json.sh" (include ".chezmoitemplates/pi-settings.json") }}

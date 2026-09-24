@@ -1,4 +1,0 @@
-{{ if lookPath "op" }}{{ onepasswordRead "op://Personal/git/email" }}{{ else }}{{ .identity.email }}{{ end }} namespaces="git" {{ .identity.signingkey }}
-{{ if lookPath "op" -}}
-{{ onepasswordRead "op://Work/git/noreply_email" }} namespaces="git" {{ onepasswordRead "op://Work/4iwi4zirnfsx643om5beg2y5ua/public key" }}
-{{ end -}}

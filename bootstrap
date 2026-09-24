@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# First install on a new machine: installs Nix, then applies the flake for
+# this platform. Later changes apply with `dots switch`.
+#
+#   git clone https://github.com/xkef/dotfiles ~/dotfiles && ~/dotfiles/bootstrap
+#
+# On Arch, pacman and paru first install nix/arch-packages.txt: the login
+# shell, GUI apps, and the tools nixpkgs lags on.
+set -euo pipefail
+cd "$(dirname "$0")"
+
+readonly NIX=(nix --extra-experimental-features "nix-command flakes")
+
+# Arch packages, GUI ones only on bare metal. paru builds the AUR ones.
+install_arch() {
+  local packages
+  if [[ "${CI:-}" == true ]] || systemd-detect-virt -q; then
+    packages=$(sed -n '/^$/q; /^[^#]/p' nix/arch-packages.txt)
+  else
+    packages=$(grep -v '^#' nix/arch-packages.txt)
+  fi
+
+  sudo pacman -Syu --needed --noconfirm base-devel git
+  if ! command -v paru >/dev/null; then
+    local tmp
+    tmp=$(mktemp -d)
+    git clone https://aur.archlinux.org/paru-bin.git "$tmp"
+    (cd "$tmp" && makepkg -si --noconfirm)
+    rm -rf "$tmp"
+  fi
+  # shellcheck disable=SC2086 # one package per word
+  paru -S --needed --noconfirm $packages
+
+  [[ "$SHELL" == */fish ]] || chsh -s /usr/bin/fish
+}
+
+if ! command -v nix >/dev/null; then
+  curl -fsSL https://nixos.org/nix/install | sh -s -- --daemon --yes
+  # shellcheck disable=SC1091 # written by the installer
+  . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+fi
+
+case "$(uname -s)" in
+Darwin)
+  sudo "${NIX[@]}" run nix-darwin/master#darwin-rebuild -- switch --flake ".#mac"
+  ;;
+Linux)
+  if command -v pacman >/dev/null; then
+    install_arch
+  fi
+  # home-manager's first switch fails without a profile directory.
+  mkdir -p ~/.local/state/nix/profiles
+  "${NIX[@]}" run home-manager -- switch -b hm-bak --flake ".#$(uname -m)-linux"
+  ;;
+esac

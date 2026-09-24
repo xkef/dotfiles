@@ -1,5 +1,0 @@
-{{- /* Claude Code writes settings.json at runtime. Auto mode writes a
-       generated autoMode.environment profile into it, and the plugin list
-       changes with every install. Edit .chezmoitemplates/claude-settings.json
-       to change the committed set. */ -}}
-{{ template "merge-json.sh" (include ".chezmoitemplates/claude-settings.json") }}

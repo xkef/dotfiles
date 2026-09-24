@@ -1,12 +1,11 @@
 name: CI
 
 # lint runs the portable subset of `mise run lint`. The Neovim check needs
-# installed plugins and stays local. check runs `mise run check`, which
-# applies the whole chezmoi source tree into a throwaway HOME and asserts the
-# result, a fast signal on every push. e2e-macos and e2e-arch run the real
-# thing: chezmoi init --apply with run scripts, so packages install,
-# macos-defaults applies, and the resulting shell starts. The package script
-# templates skip casks and Arch GUI packages under CI.
+# installed plugins and stays local. darwin builds the whole nix-darwin
+# system, which evaluates every module and fetches every package, without
+# switching the runner to it. linux runs the real thing: home-manager
+# switches a fresh account, so packages install, activation runs, and the
+# resulting shell starts.
 on:
   pull_request:
   push:
@@ -47,98 +46,65 @@ jobs:
       - name: Prose lint
         run: mise run lint-prose
 
-  check:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
-    steps:
-      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        if: runner.os == 'Linux'
-        with:
-          egress-policy: audit
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
-        with:
-          install: true
-          cache: true
-      - name: Install fish
-        run: if [ "$RUNNER_OS" = Linux ]; then sudo apt-get update && sudo apt-get install -y fish; else brew install fish; fi
-      - name: Apply into throwaway HOME
-        run: mise run check
-
-  e2e-macos:
+  darwin:
     runs-on: macos-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install chezmoi
-        run: brew install chezmoi
-      - name: Full setup (files + run scripts)
-        env:
-          GITHUB_TOKEN: ${{ github.token }} # mise version lookups rate-limit without it
-        # A fresh Mac runs the README one-liner from a shell that predates
-        # Homebrew, so PATH has no /opt/homebrew/bin. Reproduce that. The run
-        # scripts must find the tools they install on their own.
-        run: |
-          env PATH=/usr/bin:/bin:/usr/sbin:/sbin "$(brew --prefix)/bin/chezmoi" init --source "$PWD" \
-            --promptBool "work machine (render 1Password git identity)=false" \
-            --apply
-      - name: Verify the machine actually works
-        run: |
-          chezmoi doctor
-          chezmoi verify --exclude scripts
-          fish -c 'echo fish boots'
-          for f in ~/.config/fish/config.fish ~/.config/fish/conf.d/*.fish ~/.config/fish/functions/*.fish; do fish -n "$f"; done
-          ~/.local/bin/theme --current
-          ~/.local/bin/dots-keys --raw | tail -3
-          # The run script installs the global toolchain from HOME, so
-          # assert from there. This repo's own mise.toml holds lint tools
-          # that a machine bootstrap doesn't install.
-          cd ~
-          mise ls
-          test -z "$(mise ls --missing)"
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      - name: Build the nix-darwin system
+        run: nix build .#darwinConfigurations.mac.system
 
-  e2e-arch:
+  linux:
     runs-on: ubuntu-latest
-    container: archlinux:latest
     timeout-minutes: 60
     steps:
-      - name: Bootstrap container (sudo + builder user)
-        run: |
-          pacman -Syu --noconfirm sudo git base-devel chezmoi
-          useradd -m builder
-          echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Full setup as builder (real pacman + paru/AUR)
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      # The config names its account and checkout path, so switch as that
+      # account with the repo where it expects it. Each step runs as the
+      # account with a clean environment, as a fresh login would, because
+      # the runner exports XDG_* variables that point into its own home.
+      - name: Create the account
+        run: |
+          sudo useradd -m kk
+          sudo cp -r "$PWD" /home/kk/dotfiles
+          sudo chown -R kk: /home/kk/dotfiles
+          # home-manager's first switch fails without a profile directory.
+          sudo -u kk mkdir -p /home/kk/.local/state/nix/profiles
+      - name: Switch with home-manager
         env:
           GITHUB_TOKEN: ${{ github.token }} # mise version lookups rate-limit without it
         run: |
-          chown -R builder: "$PWD"
-          sudo -u builder env HOME=/home/builder CI=true GITHUB_TOKEN="$GITHUB_TOKEN" chezmoi init \
-            --source "$PWD" \
-            --promptBool "work machine (render 1Password git identity)=false" \
-            --apply
+          sudo -u kk env -i HOME=/home/kk USER=kk GITHUB_TOKEN="$GITHUB_TOKEN" \
+            PATH=/nix/var/nix/profiles/default/bin:/usr/bin:/bin \
+            nix run home-manager -- switch --flake /home/kk/dotfiles#x86_64-linux
+      # A login shell reads conf.d, which puts the home-manager profile on
+      # PATH. fish comes from nixpkgs, since Ubuntu ships fish 3 and every
+      # machine this config targets runs fish 4.
       - name: Verify the machine actually works
-        # TMPDIR must share a mount with the checkout. doctor's hardlink
-        # check links from the source dir into TMPDIR, and /tmp sits on the
-        # container filesystem while the workspace is a Docker volume.
         run: |
-          tmp="$(dirname "$PWD")/tmp"
-          mkdir -p "$tmp" && chown builder: "$tmp"
-          sudo -u builder env HOME=/home/builder TMPDIR="$tmp" sh -c '
-            set -e
-            chezmoi doctor
-            chezmoi verify --exclude scripts
-            fish -c "echo fish boots"
-            for f in ~/.config/fish/config.fish ~/.config/fish/conf.d/*.fish ~/.config/fish/functions/*.fish; do fish -n "$f"; done
-            ~/.local/bin/theme --current
-            ~/.local/bin/dots-keys --raw | tail -3
+          sudo -u kk env -i HOME=/home/kk USER=kk \
+            PATH=/nix/var/nix/profiles/default/bin:/usr/bin:/bin \
+            nix shell nixpkgs#fish --command fish --login -c '
+            echo fish boots
+            fish --version; functions --details fish_add_path test
+            ls -ld /usr/local/bin ~/.local/bin ~/.nix-profile/bin
+            fish_add_path -v -gP /usr/local/bin ~/.local/bin
+            string join \n $PATH
+            for f in ~/.config/fish/config.fish ~/.config/fish/conf.d/*.fish ~/.config/fish/functions/*.fish
+              fish -n $f; or exit 1
+            end
+            theme --current; or exit 1
+            dots-keys --raw | tail -3; or exit 1
+            test -s ~/.config/nono/profiles/claude.json; or exit 1
+            cd ~; mise ls; or exit 1
+            test -z (mise ls --missing | string collect); or exit 1
           '

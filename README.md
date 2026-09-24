@@ -5,16 +5,31 @@
 
 ![screenshot](.github/scrot.png)
 
-macOS and Arch Linux dotfiles, managed with [chezmoi](https://www.chezmoi.io).
+macOS and Arch Linux dotfiles, managed with [Nix](https://nixos.org):
+[nix-darwin](https://github.com/nix-darwin/nix-darwin) on macOS and
+[home-manager](https://github.com/nix-community/home-manager) everywhere.
 
 ## Install
 
 ```bash
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply xkef/dotfiles
+git clone https://github.com/xkef/dotfiles ~/dotfiles && ~/dotfiles/bootstrap
 ```
 
-This installs packages with Homebrew or pacman, writes configs into `$HOME`,
-installs the mise toolchain, and sets fish as the default shell.
+This installs Nix and applies the flake. Command-line tools come from
+nixpkgs, GUI apps from Homebrew casks or pacman, and language toolchains from
+mise. On macOS, nix-darwin also applies the system settings. Later changes
+apply with `dots switch`.
+
+## Layout
+
+| Path                                   | Holds                                                      |
+| -------------------------------------- | ---------------------------------------------------------- |
+| [`home/`](home)                        | Files that mirror `$HOME`, linked into place, live on edit |
+| [`nix/settings.nix`](nix/settings.nix) | Username, checkout path, and git identity                  |
+| [`nix/packages.nix`](nix/packages.nix) | Command-line tools for every machine                       |
+| [`nix/darwin.nix`](nix/darwin.nix)     | macOS system settings, login shell, and Homebrew casks     |
+| [`nix/home.nix`](nix/home.nix)         | The links, generated files, and activation steps           |
+| [`nix/agents.toml`](nix/agents.toml)   | AI agent registry: launchers, sandbox profiles, and rules  |
 
 ## Included tools
 
@@ -33,9 +48,9 @@ installs the mise toolchain, and sets fish as the default shell.
 
 ## Keys
 
-Neovim uses `Space` as leader and WezTerm uses `Ctrl-Space`.
-Change them in [`home/.chezmoidata/keys.toml`](home/.chezmoidata/keys.toml) and
-[`home/dot_config/wezterm/keys.lua`](home/dot_config/wezterm/keys.lua). `leader ?`
+Neovim uses `Space` as leader and WezTerm uses `Ctrl-Space`. Change them in
+[`home/.config/lazyvim/init.lua`](home/.config/lazyvim/init.lua) and
+[`home/.config/wezterm/keys.lua`](home/.config/wezterm/keys.lua). `leader ?`
 in either lists the bindings.
 
 `theme` switches WezTerm, Neovim, delta, and pi together through
@@ -43,9 +58,9 @@ in either lists the bindings.
 
 ## Make it yours
 
-Edit [`home/.chezmoidata/identity.toml`](home/.chezmoidata/identity.toml).
-Git, jj, and SSH read your name, email, and signing key from it. When the
-1Password `op` command exists, git and jj read name and email from 1Password.
+Edit [`nix/settings.nix`](nix/settings.nix). Git, jj, and SSH read your name,
+email, and signing key from it. When the 1Password `op` command can read the
+vault, git and jj read name and email from 1Password.
 
 ## Credits
 

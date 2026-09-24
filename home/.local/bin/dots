@@ -1,0 +1,67 @@
+#!/usr/bin/env fish
+# dots: dotfiles management command, a thin dispatcher over Nix and jj.
+#
+# Usage: dots <command> [args]
+
+# The flake for this repo at jj's working-copy commit. jj records the working
+# copy as a Git commit, so Nix sees new files without a `git add`.
+function _flake
+    set -l rev (jj -R $DOTFILES_DIR log -r @ --no-graph -T commit_id); or return
+    echo "git+file://$DOTFILES_DIR?rev=$rev"
+end
+
+function _switch
+    set -l flake (_flake); or return
+    switch (uname -s)
+        case Darwin
+            sudo darwin-rebuild switch --flake "$flake#mac" $argv
+        case '*'
+            home-manager switch -b hm-bak --flake "$flake#"(uname -m)"-linux" $argv
+    end
+end
+
+switch $argv[1]
+    case switch
+        _switch $argv[2..-1]
+    case update up
+        # Rebase onto the latest main, move the flake inputs forward, and
+        # refresh what activation only fetches once.
+        jj -R $DOTFILES_DIR git fetch
+        and jj -R $DOTFILES_DIR rebase -d 'trunk()'
+        and nix flake update --flake $DOTFILES_DIR
+        and _switch
+        and tinty sync
+        and vale --config ~/.config/vale/.vale.ini sync
+    case diff
+        # Builds the new generation and compares it with the running one.
+        set -l flake (_flake); or return
+        set -l target darwinConfigurations.mac.system
+        set -l current /run/current-system
+        if test (uname -s) != Darwin
+            set target homeConfigurations.(uname -m)-linux.activationPackage
+            set current ~/.local/state/nix/profiles/home-manager
+        end
+        set -l new (nix build "$flake#$target" --no-link --print-out-paths); or return
+        nix store diff-closures $current $new
+    case keys
+        dots-keys $argv[2..-1]
+    case skills
+        dots-skills $argv[2..-1]
+    case theme
+        theme $argv[2..-1]
+    case help -h --help ''
+        echo "Usage: dots <command>"
+        echo ""
+        echo "Commands:"
+        echo "  switch    Apply the config (darwin-rebuild or home-manager)"
+        echo "  update    Pull the repo, update flake inputs, and switch"
+        echo "  diff      Show what a switch would change"
+        echo "  keys      Show keybinding reference"
+        echo "  skills    Refresh shared agent skills from upstream"
+        echo "  theme     Switch terminal + editor theme"
+        echo ""
+    case '*'
+        echo "Unknown command: $argv[1]"
+        echo "Run 'dots help' for usage."
+        return 1
+end

@@ -1,0 +1,84 @@
+
+[ui]
+conflict-marker-style = "git"
+default-command = "log"
+editor = "nvim"
+diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
+diff-instructions = false
+diff-formatter = ":color-words"
+graph.style = "square"
+log-word-wrap = true
+log-synthetic-elided-nodes = true
+color = "auto"
+
+# ── Pager: delta ─────────────────────────────────────
+# Delta applies only to commands that produce diffs, so it can't
+# mangle the output of status or bookmark list.
+[[--scope]]
+--when.commands = ["diff", "show", "log"]
+[--scope.ui]
+pager = "delta"
+
+# ── Diff and merge tools ────────────────────────────
+[merge-tools.vimdiff]
+program = "nvim"
+
+[merge-tools.delta]
+program = "delta"
+diff-args = ["--color-only", "$left", "$right"]
+diff-expected-exit-codes = [0, 1]
+
+[merge-tools.difft]
+program = "difft"
+diff-args = ["--color=always", "$left", "$right"]
+diff-expected-exit-codes = [0, 1]
+
+# ── Git interop ──────────────────────────────────────
+[git]
+write-change-id-header = true
+sign-on-push = false
+private-commits = 'description(glob:"wip:*") | description(glob:"private:*")'
+
+# ── Revsets ──────────────────────────────────────────
+[revsets]
+log = 'ancestors(reachable(mine() | @, mutable()), 2) | trunk() | @'
+# `jj tug` targets the completed change under the empty working copy.
+bookmark-advance-to = '@-'
+
+[revset-aliases]
+'immutable_heads()' = 'present(trunk()) | untracked_remote_bookmarks() | tags()'
+'stack()' = 'ancestors(reachable(@, mutable()), 2)'
+'stack(x)' = 'ancestors(reachable(x, mutable()), 2)'
+
+# ── Aliases ──────────────────────────────────────────
+[aliases]
+examine = ["log", "-T", "builtin_log_detailed", "-p", "-r"]
+nt = ["new", "trunk()"]
+retrunk = ["rebase", "-d", "trunk()"]
+reheat = ["rebase", "-d", "trunk()", "-s", "all:roots(trunk()..stack(@))"]
+tug = ["bookmark", "advance"]
+consume = ["squash", "--into", "@", "--from"]
+eject = ["squash", "--from", "@", "--into"]
+credit = ["file", "annotate"]
+cat = ["file", "show"]
+streamline = ["simplify-parents"]
+
+# ── Diff styling ─────────────────────────────────────
+[colors]
+"diff removed token" = { bg = "#331111", underline = false }
+"diff added token" = { bg = "#113311", underline = false }
+
+# ── Snapshot ─────────────────────────────────────────
+[snapshot]
+auto-update-stale = true
+max-new-file-size = "2MiB"
+
+# ── SSH commit signing, as in the git config ────────
+# `git-identity` writes the user, the signing key, and the work scope to
+# conf.d/identity.toml on every switch.
+[signing]
+behavior = "own"
+backend = "ssh"
+
+[signing.backends.ssh]
+allowed-signers = "~/.config/git/allowed_signers"

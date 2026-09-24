@@ -1,32 +1,4 @@
 #!/usr/bin/env bash
-#MISE description="Apply the source tree into a throwaway HOME and assert results"
+#MISE description="Evaluate the flake: every configuration and module"
 set -eu
-tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT
-mkdir -p "$tmp/home"
-flags=(--source . --destination "$tmp/home" --config "$tmp/chezmoi.toml" --persistent-state "$tmp/state.db")
-
-chezmoi init "${flags[@]}" \
-  --promptBool "work machine (render 1Password git identity)=false" \
-  --exclude scripts --apply
-
-test ! -e "$tmp/home/.config/git/config.work" || {
-  echo "unexpected config.work"
-  exit 1
-}
-
-if command -v fish >/dev/null; then
-  for f in "$tmp"/home/.config/fish/conf.d/*.fish "$tmp"/home/.config/fish/functions/*.fish; do
-    fish --no-execute "$f"
-  done
-fi
-
-chezmoi verify "${flags[@]}" --exclude scripts
-
-mkdir -p "$tmp/scripts"
-for f in home/.chezmoiscripts/*.tmpl; do
-  out="$tmp/scripts/$(basename "$f" .tmpl)"
-  chezmoi execute-template "${flags[@]}" <"$f" >"$out"
-  if [ -s "$out" ]; then shellcheck -S warning "$out"; fi
-done
-echo "chezmoi smoke ok"
+nix flake check --no-build

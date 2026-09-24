@@ -1,0 +1,15 @@
+# pacman and AUR packages for Arch. nixpkgs supplies the command-line
+# tools. These are the pieces it can't: the login shell, GUI apps that
+# need the host's graphics stack, and tools nixpkgs lags on. `bootstrap`
+# installs them. Lines after a blank line are GUI packages, skipped in
+# VMs and containers.
+fish
+nono-ai
+
+wezterm-git
+neovide
+1password
+1password-cli
+handy
+xclip
+wl-clipboard

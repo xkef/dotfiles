@@ -1,0 +1,53 @@
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
+
+-- The python extra reads this when lazy.setup() imports its spec, so it must
+-- come first. LazyVim defaults to pyright. basedpyright is the maintained fork
+-- and reports the stricter diagnostics these projects type for.
+vim.g.lazyvim_python_lsp = "basedpyright"
+
+-- Debug helpers from folke/dot: dd(value) inspects, bt() prints a backtrace.
+_G.dd = function(...)
+  Snacks.debug.inspect(...)
+end
+_G.bt = function()
+  Snacks.debug.backtrace()
+end
+vim.print = _G.dd
+
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.uv.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable",
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+require("lazy").setup({
+  spec = {
+    {
+      "LazyVim/LazyVim",
+      import = "lazyvim.plugins",
+      -- lua/plugins/colorscheme.lua applies the scheme on startup.
+      opts = {
+        colorscheme = function() end,
+      },
+    },
+    { import = "lazyvim.plugins.extras.lang.java" },
+    { import = "lazyvim.plugins.extras.lang.yaml" },
+    { import = "lazyvim.plugins.extras.lang.docker" },
+    { import = "lazyvim.plugins.extras.lang.python" },
+    { import = "lazyvim.plugins.extras.lang.rust" },
+    { import = "lazyvim.plugins.extras.lang.typescript" },
+    { import = "lazyvim.plugins.extras.dap.core" },
+    { import = "lazyvim.plugins.extras.test.core" },
+    { import = "lazyvim.plugins.extras.editor.harpoon2" },
+    { import = "lazyvim.plugins.extras.editor.illuminate" },
+    { import = "plugins" },
+  },
+})

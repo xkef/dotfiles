@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# Writes the git, jj, and SSH identity files. home-manager runs it on every
+# switch with the identity from nix/settings.nix. When the 1Password CLI
+# can read the vault, the personal name and email come from
+# op://Personal/git instead, and the work identities from the Work vault.
+# Nix evaluates without secrets, so this step runs at activation time.
+#
+#   git-identity <name> <email> <signing-key>
+#
+# Writes:
+#   ~/.config/git/identity             [user], and the identities that switch
+#                                      by directory or remote
+#   ~/.config/git/config.work          work identity inside ~/work/, unsigned
+#   ~/.config/git/config.secondary     secondary GitHub identity
+#   ~/.config/git/allowed_signers      keys git and jj trust for signatures
+#   ~/.config/jj/conf.d/identity.toml  the same identities for jj
+#   ~/.ssh/github.pub                  public half of the signing key
+set -euo pipefail
+
+[ $# -eq 3 ] || {
+  sed -n 's/^#   //p' "$0" >&2
+  exit 2
+}
+name=$1 email=$2 signing_key=$3
+default_email=$email
+
+readonly GIT_DIR="$HOME/.config/git"
+readonly JJ_DIR="$HOME/.config/jj/conf.d"
+
+# Prints the secret, or nothing when op is missing, signed out, or the item
+# doesn't exist.
+secret() {
+  command -v op >/dev/null || return 0
+  op read "$1" 2>/dev/null || true
+}
+
+personal_name=$(secret "op://Personal/git/name")
+personal_email=$(secret "op://Personal/git/email")
+work_name=$(secret "op://Work/git/name")
+work_email=$(secret "op://Work/git/email")
+work_noreply=$(secret "op://Work/git/noreply_email")
+work_key=$(secret "op://Work/4iwi4zirnfsx643om5beg2y5ua/public key")
+work_login=$(secret "op://Work/git/github_login")
+name=${personal_name:-$name}
+email=${personal_email:-$email}
+
+mkdir -p "$GIT_DIR" "$JJ_DIR" "$HOME/.ssh"
+
+{
+  printf '[user]\n\tname = %s\n\temail = %s\n\tsigningkey = key::%s\n' \
+    "$name" "$email" "$signing_key"
+  if [ -n "$work_email" ]; then
+    printf '\n[includeIf "gitdir:~/work/"]\n\tpath = %s/config.work\n' "$GIT_DIR"
+  fi
+  if [ -n "$work_login" ] && [ -n "$work_key" ]; then
+    printf '\n[includeIf "hasconfig:remote.*.url:https://github.com/%s/**"]\n\tpath = %s/config.secondary\n' \
+      "$work_login" "$GIT_DIR"
+    printf '\n[includeIf "hasconfig:remote.*.url:git@github.com:%s/**"]\n\tpath = %s/config.secondary\n' \
+      "$work_login" "$GIT_DIR"
+  fi
+} >"$GIT_DIR/identity"
+
+if [ -n "$work_email" ]; then
+  printf '[user]\n\tname = %s\n\temail = %s\n\n[commit]\n\tgpgsign = false\n\n[tag]\n\tgpgsign = false\n' \
+    "$work_name" "$work_email" >"$GIT_DIR/config.work"
+fi
+
+if [ -n "$work_key" ]; then
+  printf '[user]\n\tname = %s\n\temail = %s\n\tsigningkey = key::%s\n' \
+    "$work_name" "$work_noreply" "$work_key" >"$GIT_DIR/config.secondary"
+fi
+
+{
+  printf '%s namespaces="git" %s\n' "$email" "$signing_key"
+  if [ -n "$work_key" ]; then
+    printf '%s namespaces="git" %s\n' "$work_noreply" "$work_key"
+  fi
+} >"$GIT_DIR/allowed_signers"
+
+{
+  printf '[user]\nname = "%s"\nemail = "%s"\n\n[signing]\nkey = "%s"\n' \
+    "$name" "$email" "$signing_key"
+  if [ -n "$work_email" ]; then
+    printf '\n[[--scope]]\n--when.repositories = ["~/work"]\n[--scope.user]\nname = "%s"\nemail = "%s"\n[--scope.signing]\nbehavior = "drop"\n' \
+      "$work_name" "$work_email"
+  fi
+} >"$JJ_DIR/identity.toml"
+
+printf '%s %s\n' "$signing_key" "$default_email" >"$HOME/.ssh/github.pub"

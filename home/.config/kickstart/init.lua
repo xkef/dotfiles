@@ -1,0 +1,36 @@
+-- Small neovim config after https://github.com/nvim-lua/kickstart.nvim,
+-- using the built-in vim.pack plugin manager. Run it with `knvim` or
+-- NVIM_APPNAME=kickstart nvim. `:lua vim.pack.update()` updates plugins
+-- and nvim-pack-lock.json.
+
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
+
+-- Build steps after vim.pack installs or updates a plugin. The autocmd
+-- must exist before the first vim.pack.add() call.
+vim.api.nvim_create_autocmd("PackChanged", {
+  callback = function(ev)
+    local kind, name = ev.data.kind, ev.data.spec.name
+    if kind ~= "install" and kind ~= "update" then
+      return
+    end
+
+    if name == "nvim-treesitter" then
+      if not ev.data.active then
+        vim.cmd.packadd("nvim-treesitter")
+      end
+      vim.cmd("TSUpdate")
+      return
+    end
+
+    if name == "telescope-fzf-native.nvim" then
+      local result = vim.system({ "make" }, { cwd = ev.data.path }):wait()
+      if result.code ~= 0 then
+        vim.notify("Build failed for " .. name .. ":\n" .. result.stderr, vim.log.levels.ERROR)
+      end
+    end
+  end,
+})
+
+require("plugins.editor")
+require("plugins.lsp")
