@@ -16,7 +16,7 @@ vim.pack.add({
 })
 
 -- The fallback nvim keeps a fixed theme. The LazyVim config follows the
--- Ghostty theme.
+-- tinty scheme.
 require("catppuccin").setup({ flavour = "auto" })
 vim.cmd.colorscheme("catppuccin")
 

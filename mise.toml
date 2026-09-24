@@ -12,7 +12,7 @@ vale = "3"
 [vars]
 shell_files = "$(shfmt -f .) home/dot_codex/modify_config.toml.tmpl"
 # Fish scripts in bin have no .fish extension. dots-keys is a template.
-fish_files = "$(git ls-files '*.fish') home/dot_local/bin/executable_dots home/dot_local/bin/executable_dots-skills home/dot_local/bin/executable_theme home/dot_local/bin/executable_vm"
+fish_files = "$(git ls-files '*.fish') home/dot_local/bin/executable_dots home/dot_local/bin/executable_dots-skills home/dot_local/bin/executable_theme home/dot_local/bin/executable_vm home/dot_config/tinted-theming/tinty/executable_pi-theme"
 
 [tasks.fmt]
 description = "Format all dotfiles"

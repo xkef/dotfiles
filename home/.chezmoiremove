@@ -24,3 +24,5 @@
 .local/bin/tmux-agents
 .local/bin/tmux-sesh
 .local/bin/tmux-sysstat
+.config/theme.d
+.config/git/delta.gitconfig

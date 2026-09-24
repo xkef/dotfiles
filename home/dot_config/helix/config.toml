@@ -1,5 +1,5 @@
 # ── Theme ────────────────────────────────────────────
-# Matches the Ghostty theme Catppuccin Mocha.
+# Matches the default tinty scheme, Catppuccin Mocha.
 theme = "catppuccin_mocha"
 
 # ── Editor ──────────────────────────────────────────

@@ -38,7 +38,8 @@ Change them in [`home/.chezmoidata/keys.toml`](home/.chezmoidata/keys.toml) and
 [`home/dot_config/wezterm/keys.lua`](home/dot_config/wezterm/keys.lua). `leader ?`
 in either lists the bindings.
 
-`theme <name>` switches WezTerm, Neovim, and delta together.
+`theme` switches WezTerm, Neovim, delta, and pi together through
+[tinty](https://github.com/tinted-theming/tinty).
 
 ## Make it yours
 

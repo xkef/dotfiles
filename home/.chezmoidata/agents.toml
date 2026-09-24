@@ -103,15 +103,6 @@ allow = ["$HOME/.codex"]
 [agents.pi]
 description = "pi.dev coding agent"
 install = "npm install -g @earendil-works/pi-coding-agent"
-# pi picks its theme by name from a file the theme.d adapter renders. A
-# machine that has never switched themes has no file yet, and pi falls back
-# to its built-in dark theme without reporting it. Render the current theme
-# once.
-prelaunch = '''
-set -l pi_agent_dir (set -q PI_CODING_AGENT_DIR && echo $PI_CODING_AGENT_DIR || echo $HOME/.pi/agent)
-if command -q theme; and not test -f $pi_agent_dir/themes/dots.json
-    theme (theme --current) >/dev/null
-end'''
 
 [agents.pi.nono]
 version = "1.1.2"

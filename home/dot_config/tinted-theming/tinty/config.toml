@@ -1,0 +1,23 @@
+# tinty switches the color scheme of every app at once. `theme` wraps it.
+# Apps that use ANSI colors, such as fish, fzf, bat, starship, and eza,
+# follow the terminal and need no entry. Neovim's tinted-nvim plugin reads
+# the current scheme itself.
+# See https://github.com/tinted-theming/tinty/blob/main/USAGE.md
+default-scheme = "base16-catppuccin-mocha"
+
+# WezTerm loads repos/tinted-terminal/themes/wezterm/<scheme>.toml and
+# reloads when the current scheme changes. The hook derives the pi theme
+# from the same file.
+[[items]]
+name = "tinted-terminal"
+path = "https://github.com/tinted-theming/tinted-terminal"
+themes-dir = "themes/wezterm"
+supported-systems = ["base16", "base24"]
+hook = "~/.config/tinted-theming/tinty/pi-theme %f"
+
+# ~/.config/git/config includes the generated file.
+[[items]]
+name = "tinted-delta"
+path = "https://github.com/tinted-theming/tinted-delta"
+themes-dir = "configs"
+supported-systems = ["base16", "base24"]

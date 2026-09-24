@@ -1,5 +1,4 @@
--- Labeled jumps, like easymotion or hop. catppuccin integrates with flash,
--- see colorschemes.lua.
+-- Labeled jumps, like easymotion or hop.
 return {
   {
     "folke/flash.nvim",
