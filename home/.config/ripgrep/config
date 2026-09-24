@@ -1,0 +1,4 @@
+# Loaded through RIPGREP_CONFIG_PATH, set in conf.d/env.fish.
+# Each match links to its file and line over OSC 8. WezTerm opens the link
+# in Neovim. ripgrep writes links only when it writes color.
+--hyperlink-format=file://{path}:{line}

@@ -4,8 +4,9 @@
 --   agent         agent name, such as claude
 --   agent_state   waiting, busy, or idle. Empty means no agent.
 --   agent_detail  the tool in use, or the message that asks for input
---   agent_task    the summary the agent publishes for its goal
 --
+-- The task column shows the pane title, which Claude Code sets to a summary
+-- of the current task.
 -- The state dies with the pane, so a closed pane needs no cleanup.
 local wezterm = require("wezterm")
 local act = wezterm.action
@@ -54,7 +55,7 @@ function M.list()
             state = state,
             agent = vars.agent or "?",
             detail = vars.agent_detail or "",
-            task = vars.agent_task or "",
+            task = pane:get_title(),
             workspace = window:get_workspace(),
             tab = index,
             age = human_age(os.time() - (since[tostring(id)] or os.time())),

@@ -13,11 +13,13 @@ local REPEAT_MS = 500
 
 -- Opens a program in a zoomed split. WezTerm has no floating panes, and a
 -- zoomed split stands in for one: it covers the tab, `z` reveals the panes
--- beneath, and the split closes when the program exits. No arguments opens
--- a shell.
-local function overlay(args)
+-- beneath, and the split closes when the program exits. The command runs
+-- through fish, so it sees the shell's environment, such as $EDITOR. No
+-- command opens a shell.
+local function overlay(command)
   return wezterm.action_callback(function(window, pane)
     local cwd = pane:get_current_working_dir()
+    local args = command and { "fish", "-c", command }
     local split = pane:split({ args = args, cwd = cwd and cwd.file_path, direction = "Bottom" })
     window:perform_action(act.SetPaneZoomState(true), split)
   end)
@@ -118,17 +120,17 @@ function M.apply(config)
     -- @key wezterm :: * :: Overlay shell (zoomed split)
     { key = "*", mods = "LEADER", action = overlay() },
     -- @key wezterm :: e :: File manager (yazi)
-    { key = "e", mods = "LEADER", action = overlay({ "yazi" }) },
+    { key = "e", mods = "LEADER", action = overlay("yazi") },
     -- @key wezterm :: g :: Lazygit
-    { key = "g", mods = "LEADER", action = overlay({ "lazygit" }) },
+    { key = "g", mods = "LEADER", action = overlay("lazygit") },
     -- @key wezterm :: G :: jj UI (jjui)
-    { key = "G", mods = "LEADER", action = overlay({ "jjui" }) },
+    { key = "G", mods = "LEADER", action = overlay("jjui") },
     -- @key wezterm :: R :: Search and replace (scooter)
-    { key = "R", mods = "LEADER", action = overlay({ "scooter" }) },
+    { key = "R", mods = "LEADER", action = overlay("scooter") },
     -- @key wezterm :: d :: Lazydocker
-    { key = "d", mods = "LEADER", action = overlay({ "lazydocker" }) },
+    { key = "d", mods = "LEADER", action = overlay("lazydocker") },
     -- @key wezterm :: ? :: This reference
-    { key = "?", mods = "LEADER", action = overlay({ "dots-keys" }) },
+    { key = "?", mods = "LEADER", action = overlay("dots-keys") },
 
     -- @key wezterm :: f :: Workspace picker (workspaces + zoxide)
     { key = "f", mods = "LEADER", action = workspaces.picker() },
@@ -150,6 +152,18 @@ function M.apply(config)
     -- @key wezterm :: o / i :: Jump to previous / next prompt
     { key = "o", mods = "LEADER", action = act.ScrollToPrompt(-1) },
     { key = "i", mods = "LEADER", action = act.ScrollToPrompt(1) },
+    -- @key wezterm :: O :: Select the last command's output (copy mode)
+    {
+      key = "O",
+      mods = "LEADER",
+      action = act.Multiple({
+        act.ActivateCopyMode,
+        act.CopyMode({ MoveBackwardZoneOfType = "Output" }),
+        act.CopyMode({ SetSelectionMode = "SemanticZone" }),
+      }),
+    },
+    -- @key wezterm :: D :: Open a tab on another host (SSH, Lima)
+    { key = "D", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "FUZZY|DOMAINS" }) },
     -- @key wezterm :: t :: Hint-copy visible text (quick select)
     { key = "t", mods = "LEADER", action = act.QuickSelect },
     -- @key wezterm :: u :: Open URL on screen (quick select)
@@ -165,6 +179,16 @@ function M.apply(config)
   }
 
   config.key_tables = { ["repeat"] = repeat_keys }
+
+  -- A triple click selects a whole command output or prompt, from the
+  -- OSC 133 marks fish writes, instead of one line.
+  config.mouse_bindings = {
+    {
+      event = { Down = { streak = 3, button = "Left" } },
+      mods = "NONE",
+      action = act.SelectTextAtMouseCursor("SemanticZone"),
+    },
+  }
 end
 
 return M

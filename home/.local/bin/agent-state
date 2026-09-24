@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# Publishes coding-agent state to the terminal. The Claude Code hook, the
-# agent launchers, and agents publishing a task summary all write through
-# this script, so the format lives in one place.
+# Publishes coding-agent state to the terminal. The Claude Code hook and
+# the agent launchers write through this script, so the format lives in one
+# place.
 #
 #   agent-state set <agent> <state> [detail]
-#   agent-state task <summary>
 #   agent-state clear
 #
 # Each command writes OSC 1337 SetUserVar sequences to the controlling
@@ -13,8 +12,6 @@
 # picker. The state dies with the pane, so nothing needs cleanup. Outside
 # WezTerm, or without a terminal, the commands do nothing.
 set -euo pipefail
-
-readonly MAX_TASK_LENGTH=60
 
 usage() {
   sed -n 's/^#   //p' "$0" >&2
@@ -51,13 +48,8 @@ set)
   esac
   set_vars agent "$1" agent_state "$2" agent_detail "${3:-}"
   ;;
-task)
-  [ $# -ge 1 ] || exit 0
-  summary=$*
-  set_vars agent_task "${summary:0:MAX_TASK_LENGTH}"
-  ;;
 clear)
-  set_vars agent "" agent_state "" agent_detail "" agent_task ""
+  set_vars agent "" agent_state "" agent_detail ""
   ;;
 *) usage ;;
 esac

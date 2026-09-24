@@ -65,9 +65,13 @@ local function update(window, pane)
   end
   table.insert(right, { Foreground = { AnsiColor = "Grey" } })
   table.insert(right, { Text = wezterm.strftime("%H:%M") .. "  " })
+  -- The host comes from the OSC 7 directory report, so a pane running SSH
+  -- or a Lima shell names the machine it's on.
+  local cwd = pane:get_current_working_dir()
+  local host = cwd and cwd.host ~= "" and cwd.host or wezterm.hostname()
   table.insert(right, { Foreground = { AnsiColor = "Teal" } })
   table.insert(right, { Attribute = { Intensity = "Bold" } })
-  table.insert(right, { Text = wezterm.hostname() .. " " })
+  table.insert(right, { Text = host:gsub("%..*$", "") .. " " })
   window:set_right_status(wezterm.format(right))
 end
 

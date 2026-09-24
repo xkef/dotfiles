@@ -28,6 +28,8 @@ return {
   {
     "folke/snacks.nvim",
     opts = {
+      -- Renders images inline through WezTerm's kitty graphics support.
+      image = { enabled = true },
       picker = {
         sources = {
           files = { hidden = true },
