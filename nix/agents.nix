@@ -70,7 +70,7 @@ let
 
   # The toolchain surface every agent needs: the Nix store, which holds the
   # tools and the linked configs, mise, jj, maven, npm, cargo, rustup, gh,
-  # shared skills, and keychain. Commit signing runs `ssh-keygen
+  # and keychain. Commit signing runs `ssh-keygen
   # -Y sign`, which asks the 1Password agent for the signature. git and jj
   # inline the public key, so ~/.ssh stays denied. deny_macos_private covers
   # the 1Password container, so only the socket gets a bypass.
@@ -104,7 +104,6 @@ let
       ++ n.groups or [ ];
       filesystem = {
         allow = n.allow or [ ] ++ [
-          "$HOME/.agents"
           "$HOME/.m2"
           "$HOME/.npm"
           "$XDG_CACHE_HOME/mise"
@@ -169,11 +168,6 @@ in
 
           set -l cmd $argv[1]
           set -l rest $argv[2..-1]
-
-          switch $cmd
-              case ${lib.concatStringsSep " " names}
-                  command -q dots-skills; and dots-skills ensure $cmd
-          end
 
           if not command -q nono
               printf '\033[33mNo sandbox available (install nono)\033[0m\n' >&2

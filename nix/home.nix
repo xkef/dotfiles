@@ -58,7 +58,6 @@ in
         # LazyVim <leader>fC picker all agree on the repo path.
         set -gx DOTFILES_DIR ${dotfiles}
       '';
-      ".claude/skills".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.agents/skills";
     };
 
   home.activation = {

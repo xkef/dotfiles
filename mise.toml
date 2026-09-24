@@ -10,7 +10,7 @@ vale = "3"
 [vars]
 shell_files = "$(shfmt -f .)"
 # Fish scripts in bin have no .fish extension.
-fish_files = "$(git ls-files '*.fish') home/.local/bin/dots home/.local/bin/dots-keys home/.local/bin/dots-skills home/.local/bin/theme"
+fish_files = "$(git ls-files '*.fish') home/.local/bin/dots home/.local/bin/dots-keys home/.local/bin/theme"
 
 [tasks.fmt]
 description = "Format all dotfiles"
