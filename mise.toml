@@ -15,7 +15,7 @@ fish_files = "$(git ls-files '*.fish') home/.local/bin/dots home/.local/bin/dots
 [tasks.fmt]
 description = "Format all dotfiles"
 run = [
-  "stylua home/.config/lazyvim/ home/.config/kickstart/ home/.config/wezterm/",
+  "stylua home/.config/lazyvim/ home/.config/wezterm/",
   "shfmt -w {{vars.shell_files}}",
   "fish_indent -w {{vars.fish_files}}",
   "dprint fmt --config .config/dprint.json",

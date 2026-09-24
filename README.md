@@ -37,7 +37,7 @@ apply with `dots switch`.
 | ---------------------------------------------------------------- | ---------------------------------------------------------- |
 | [Fish](https://fishshell.com)                                    | Shell with fzf completions and practical defaults          |
 | [Starship](https://starship.rs)                                  | Minimal, cross-shell prompt                                |
-| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org) | Editor with the LazyVim distro, kickstart as fallback      |
+| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org) | Editor with the LazyVim distro                             |
 | [WezTerm](https://wezterm.org)                                   | Terminal and multiplexer, with an agent-aware status line  |
 | [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder in the shell                                  |
 | [atuin](https://atuin.sh)                                        | Searchable shell history with sync                         |
