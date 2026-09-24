@@ -55,6 +55,9 @@ with pkgs;
   bandwhich # per-process bandwidth monitor
   xdg-ninja # audit XDG base-dir compliance
 ]
+++ lib.optionals stdenv.isDarwin [
+  lima # Linux dev VMs (home/.config/lima/dev.yaml)
+]
 ++ lib.optionals stdenv.isLinux [
   trash-cli # move files to trash instead of rm (macOS ships `trash`)
 ]

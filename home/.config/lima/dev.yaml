@@ -1,0 +1,61 @@
+# Linux dev VM on Apple Silicon: Debian with the same home-manager setup as
+# every other machine, so the guest distro doesn't matter.
+#
+#   limactl start --name=dev ~/.config/lima/dev.yaml   create and boot
+#   limactl shell dev                                  shell in the guest
+#   ssh lima-dev                                       plain SSH
+#   limactl delete --force dev                         throw it away
+#
+# The guest sees ~/code and ~/work read-write, and this repo read-only, at
+# the same paths under its own home. Lima forwards the guest's ports to
+# localhost and the host's SSH agent into the guest.
+minimumLimaVersion: 2.0.0
+
+base:
+  - template:_images/debian-13
+
+vmType: vz
+cpus: 4
+memory: 8GiB
+
+mountType: virtiofs
+mounts:
+  - location: ~/code
+    mountPoint: "{{.Home}}/code"
+    writable: true
+  - location: ~/work
+    mountPoint: "{{.Home}}/work"
+    writable: true
+  - location: ~/dotfiles
+    mountPoint: "{{.Home}}/dotfiles"
+
+# The dotfiles expect /home/<user>, not Lima's default /home/<user>.linux.
+user:
+  home: "/home/{{.User}}"
+
+ssh:
+  forwardAgent: true
+
+# fish is the login shell. Nix installs as root, then home-manager applies
+# the flake as the user.
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update
+      apt-get install -y curl git xz-utils fish
+      chsh -s /usr/bin/fish "{{.User}}"
+      if [ ! -d /nix ]; then
+        curl -fsSL https://nixos.org/nix/install | sh -s -- --daemon --yes
+      fi
+  - mode: user
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+      # home-manager's first switch fails without a profile directory.
+      mkdir -p ~/.local/state/nix/profiles
+      nix --extra-experimental-features "nix-command flakes" \
+        run home-manager -- switch -b hm-bak --flake "$HOME/dotfiles#$(uname -m)-linux"

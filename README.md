@@ -43,6 +43,7 @@ apply with `dots switch`.
 | [atuin](https://atuin.sh)                                        | Searchable shell history with sync                         |
 | [Claude Code](https://claude.ai/), Codex, pi                     | AI coding agents, always launched in a nono sandbox        |
 | [Jujutsu](https://github.com/jj-vcs/jj)                          | Git-compatible version control, `jj`, with a simpler model |
+| [Lima](https://lima-vm.io)                                       | Linux development VM with the host's home-manager setup    |
 | [Vale](https://vale.sh)                                          | Prose linter for markdown, Google style plus AI-tell rules |
 | eza, bat, fd, ripgrep, zoxide, yazi, mise                        | Command-line replacements and workflow tools               |
 
