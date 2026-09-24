@@ -1,49 +1,43 @@
-// Publishes this agent's state for the `tmux-agents` picker, in the same
-// tab-separated format the claude-agent-status hook writes.
+// Maps pi events to agent states for the `tmux-agents` picker.
+// `agent-state` owns the storage and the format.
 //
-// pi inherits TMUX_PANE from the pane it started in, so keying the state
-// file by that pane id gives the picker a join back to tmux that holds across
-// sessions. Without a pane there is nothing to join to, and the extension
-// does nothing.
+// pi inherits TMUX_PANE from the pane it started in, and `agent-state` keys
+// the entry by it. Without a pane there is nothing to join to, and the
+// extension does nothing.
 //
 // pi documents agent_settled and ui_prompt_start/end for status integrations
 // like this one. agent_settled marks the point where pi stops on its own, and
 // the ui_prompt pair brackets a prompt that blocks on the user.
 
-import { mkdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { execFile, execFileSync } from "node:child_process";
 import { join } from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const AGENT = "pi";
 const NO_TOOL = "-";
-
-const pane = process.env.TMUX_PANE;
-const stateDir = join(
-  process.env.XDG_STATE_HOME ?? join(process.env.HOME ?? "", ".local", "state"),
-  "agents",
-);
-const stateFile = pane ? join(stateDir, pane) : "";
+const AGENT_STATE = join(process.env.HOME ?? "", ".local", "bin", "agent-state");
 
 type State = "idle" | "busy" | "waiting";
 
+// Each write waits for the one before it. Concurrent processes could land
+// out of order and leave a finished run reading busy.
+let queue: Promise<void> = Promise.resolve();
+
 function publish(state: State, tool: string, cwd: string): void {
-  try {
-    // The cwd goes last so a path never shifts another field. The write goes
-    // through a temp file so the picker never reads a half-written line.
-    const epoch = Math.floor(Date.now() / 1000);
-    const tmp = `${stateFile}.${process.pid}`;
-    writeFileSync(tmp, `${AGENT}\t${state}\t${tool}\t${epoch}\t${cwd}\n`);
-    renameSync(tmp, stateFile);
-  } catch {
-    // A status file is never worth interrupting the agent over.
-  }
+  queue = queue.then(
+    () =>
+      new Promise<void>((resolve) => {
+        // A status entry is never worth interrupting the agent over, so
+        // errors resolve too.
+        execFile(AGENT_STATE, ["set", AGENT, state, tool, cwd], () => resolve());
+      }),
+  );
 }
 
 export default function (pi: ExtensionAPI) {
-  if (!pane) {
+  if (!process.env.TMUX_PANE) {
     return;
   }
-  mkdirSync(stateDir, { recursive: true });
 
   pi.on("session_start", async (_event, ctx) => {
     publish("idle", NO_TOOL, ctx.cwd);
@@ -71,11 +65,14 @@ export default function (pi: ExtensionAPI) {
     publish(ctx.isIdle() ? "idle" : "busy", NO_TOOL, ctx.cwd);
   });
 
+  // Synchronous, so the entry is gone before pi exits. The launcher clears
+  // it again after pi returns.
   pi.on("session_shutdown", async () => {
+    await queue;
     try {
-      rmSync(stateFile, { force: true });
+      execFileSync(AGENT_STATE, ["clear"]);
     } catch {
-      // A stale file drops out of the picker on its own.
+      // A stale entry drops out of the picker once its pane closes.
     }
   });
 }

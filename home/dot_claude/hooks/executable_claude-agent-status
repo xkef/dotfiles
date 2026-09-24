@@ -1,21 +1,13 @@
 #!/bin/bash
-# Records this agent's state for the `tmux-agents` picker.
+# Maps Claude Code hook events to agent states for the `tmux-agents` picker.
+# `agent-state` owns the storage and the format.
 #
-# Claude Code runs hooks as child processes, so they inherit TMUX_PANE from the
-# pane the agent started in. Keying the state file by that pane id gives the
-# picker a join back to tmux that stays valid across sessions, and a dead
-# pane's entry drops out of the view without a cleanup step.
-#
-# The file holds one tab-separated line: agent, state, tool, epoch, cwd. The
-# cwd goes last so a path never shifts another field. The pi extension at
-# ~/.pi/agent/extensions/agent-status.ts writes the same format, so the
-# directory is shared instead of sitting under ~/.claude.
+# Claude Code runs hooks as child processes, so they inherit TMUX_PANE from
+# the pane the agent started in, and `agent-state` keys the entry by it.
 
 [ -n "$TMUX_PANE" ] || exit 0
 
-AGENT=claude
-STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
-STATE_FILE="$STATE_DIR/$TMUX_PANE"
+AGENT_STATE="$HOME/.local/bin/agent-state"
 
 INPUT=$(cat)
 IFS=$'\t' read -r EVENT TOOL CWD < <(
@@ -23,7 +15,7 @@ IFS=$'\t' read -r EVENT TOOL CWD < <(
 )
 
 if [ "$EVENT" = SessionEnd ]; then
-  rm -f "$STATE_FILE"
+  "$AGENT_STATE" clear
   exit 0
 fi
 
@@ -40,11 +32,6 @@ Notification) STATE=waiting ;;
 *) exit 0 ;;
 esac
 
-mkdir -p "$STATE_DIR"
-
-# Write through a temp file so the picker never reads a half-written line.
-TMP="$STATE_FILE.$$"
-printf '%s\t%s\t%s\t%s\t%s\n' "$AGENT" "$STATE" "$TOOL" "$(date +%s)" "$CWD" >"$TMP"
-mv -f "$TMP" "$STATE_FILE"
-
+# Exit 0 whatever happens. Exit 2 from a PreToolUse hook blocks the tool.
+"$AGENT_STATE" set claude "$STATE" "$TOOL" "$CWD"
 exit 0

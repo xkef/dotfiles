@@ -25,5 +25,11 @@ function {{ $name }} --wraps {{ $name }} --description "{{ $agent.description }}
 {{- end }}
 
     _ai_run_pinned {{ $name }} sb {{ $name }} $argv
+    set -l rc $status
+
+    # The agent may exit without removing its tmux-agents entry: a crash,
+    # a killed sandbox, or Codex, which has no exit hook.
+    agent-state clear
+    return $rc
 end
 {{ end -}}

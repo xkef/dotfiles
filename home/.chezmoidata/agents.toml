@@ -88,12 +88,8 @@ description = "OpenAI Codex CLI"
 install = "npm install -g @openai/codex"
 # The pane command of a sandboxed agent reads `nono`, so tmux-agents can't
 # spot Codex by name. Codex has no hook to report its state, so the launcher
-# records it as running.
-prelaunch = '''
-if set -q TMUX_PANE
-    mkdir -p $XDG_STATE_HOME/agents
-    printf 'codex\trunning\t-\t%s\t%s\n' (date +%s) $PWD >$XDG_STATE_HOME/agents/$TMUX_PANE
-end'''
+# records it as running. The launcher clears the entry when Codex exits.
+prelaunch = "agent-state set codex running"
 # Codex nests its own Seatbelt policy, which macOS refuses inside nono, so
 # nono alone holds the OS boundary. This relaxes only the sandbox. The
 # approval policy stays on. The sandbox_mode in the Codex config applies

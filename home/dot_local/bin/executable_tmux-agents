@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
 # Cross-session agent picker.
 #
-# Joins the state files each agent writes, keyed by tmux pane id, against the
-# live pane list. An agent whose pane is gone has no row to join to, so a
+# Joins the entries from `agent-state list`, keyed by tmux pane id, against
+# the live pane list. An agent whose pane is gone has no row to join to, so a
 # crashed session drops out of the view on its own. Claude Code writes those
-# files from a hook, pi from an extension. Codex has neither, so its launcher
-# writes a running entry that holds only while the pane runs the sandbox.
-# Agents publish task summaries separately.
+# entries from a hook, pi from an extension, and the Codex launcher directly.
 #
 #   tmux-agents          fzf picker. Enter switches to the agent's pane.
 #   tmux-agents --count  status line segment ("2• 1◦"), empty when nothing runs
 set -euo pipefail
-
-readonly STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
 
 # Glyph weight encodes the state, so the status line doesn't need color. A
 # filled dot needs input, a ring works, a small dot idles.
@@ -29,18 +25,11 @@ readonly RANK_IDLE=3
 
 # Emits tab-separated rank, pane, target, state, agent, tool, age, dir, and task.
 collect() {
-  local now pane target command agent state tool epoch cwd rank age task
+  local now pane target agent state tool epoch cwd task rank age
   now=$(date +%s)
 
-  while IFS=$'\t' read -r pane target command cwd; do
-    [ -f "$STATE_DIR/$pane" ] || continue
-    IFS=$'\t' read -r agent state tool epoch cwd <"$STATE_DIR/$pane" || continue
-    # Codex leaves its entry behind on exit. The pane returning to a shell
-    # ends it.
-    [[ "$agent" == codex && "$command" != nono && "$command" != codex ]] && continue
+  while IFS=$'\t' read -r pane target agent state tool epoch cwd task; do
     age=$(human_age $((now - epoch)))
-    task=$(agent-task --read "$pane" 2>/dev/null) || task=-
-    task=${task:--}
 
     case "$state" in
     waiting) rank=$RANK_WAITING ;;
@@ -52,8 +41,23 @@ collect() {
     printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
       "$rank" "$pane" "$target" "$state" "$agent" "$tool" \
       "$age" "${cwd/#$HOME/~}" "$task"
-  done < <(tmux list-panes -a -F '#{pane_id}	#{session_name}:#{window_index}	#{pane_current_command}	#{pane_current_path}') |
+  done < <(join_panes) |
     sort -n
+}
+
+# Emits tab-separated pane, target, and the `agent-state list` fields after
+# the pane, for every entry whose pane is live. The tmux side splits on the
+# first space: a pane id never holds one, and tmux 3.4 prints a tab in a
+# format as "_".
+join_panes() {
+  awk -F'\t' -v OFS='\t' '
+    FILENAME == ARGV[1] { entry[$1] = substr($0, length($1) + 2); next }
+    {
+      split_at = index($0, " ")
+      pane = substr($0, 1, split_at - 1)
+      if (pane in entry) { print pane, substr($0, split_at + 1), entry[pane] }
+    }
+  ' <(agent-state list) <(tmux list-panes -a -F '#{pane_id} #{session_name}:#{window_index}')
 }
 
 human_age() { # seconds to "12s", "6m", or "2h"
