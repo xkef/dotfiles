@@ -11,7 +11,7 @@ end
 
 # Default options apply to every fzf invocation. The per-mode options below
 # add only --preview commands and headers. Layout and look live here, so one
-# change restyles everything, and fzf adapts to narrow tmux popups.
+# change restyles everything, and fzf adapts to narrow panes.
 set -gx FZF_DEFAULT_OPTS "\
     --height=60% --layout=reverse --info=inline-right \
     --tiebreak=chunk,length \
@@ -25,9 +25,6 @@ set -gx FZF_DEFAULT_OPTS "\
     --bind 'ctrl-y:execute-silent(echo -n {+} | pbcopy 2>/dev/null || echo -n {+} | wl-copy 2>/dev/null || echo -n {+} | xclip -sel clip 2>/dev/null)' \
     --bind 'ctrl-d:preview-half-page-down,ctrl-u:preview-half-page-up' \
     --bind 'ctrl-f:preview-page-down,ctrl-b:preview-page-up'"
-
-# Centered popup inside tmux.
-set -gx FZF_TMUX_OPTS '-p 80%,70%'
 
 set -gx FZF_CTRL_T_OPTS "\
     --scheme=path \
@@ -46,7 +43,7 @@ set -gx FZF_COMPLETION_OPTS "\
     --with-nth=1 --delimiter='\t' \
     --preview 'fzf-preview {1}'"
 
-# Scripts and tmux popups inherit the exported FZF_* variables above. The
+# Scripts inherit the exported FZF_* variables above. The
 # key bindings and widgets below serve a prompt, so scripts skip them.
 status is-interactive; or return
 
@@ -55,7 +52,6 @@ fzf --fish | source
 
 # atuin takes over Ctrl-R
 if command -q atuin
-    set -gx ATUIN_TMUX_POPUP false
     atuin init fish --disable-up-arrow | source
 end
 

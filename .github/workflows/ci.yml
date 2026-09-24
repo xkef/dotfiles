@@ -95,7 +95,6 @@ jobs:
           chezmoi verify --exclude scripts
           fish -c 'echo fish boots'
           for f in ~/.config/fish/config.fish ~/.config/fish/conf.d/*.fish ~/.config/fish/functions/*.fish; do fish -n "$f"; done
-          tmux -L ci -f ~/.config/tmux/tmux.conf start-server \; kill-server
           ~/.local/bin/theme --current
           ~/.local/bin/dots-keys --raw | tail -3
           # The run script installs the global toolchain from HOME, so
@@ -140,7 +139,6 @@ jobs:
             chezmoi verify --exclude scripts
             fish -c "echo fish boots"
             for f in ~/.config/fish/config.fish ~/.config/fish/conf.d/*.fish ~/.config/fish/functions/*.fish; do fish -n "$f"; done
-            tmux -L ci -f ~/.config/tmux/tmux.conf start-server \; kill-server
             ~/.local/bin/theme --current
             ~/.local/bin/dots-keys --raw | tail -3
           '

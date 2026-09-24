@@ -1,6 +1,6 @@
 # Agent launchers, one per entry in .chezmoidata/agents.toml. Each function
-# installs its agent on first use, then runs it through `sb` with the tmux
-# window pinned to the agent name. `command <agent>` skips both.
+# installs its agent on first use, then runs it through `sb`. `command
+# <agent>` skips both.
 {{ range $name, $agent := .agents }}
 function {{ $name }} --wraps {{ $name }} --description "{{ $agent.description }} in a nono sandbox"
     if not command -q {{ $name }}
@@ -24,10 +24,10 @@ function {{ $name }} --wraps {{ $name }} --description "{{ $agent.description }}
 {{ (get $agent "prelaunch") | indent 4 }}
 {{- end }}
 
-    _ai_run_pinned {{ $name }} sb {{ $name }} $argv
+    sb {{ $name }} $argv
     set -l rc $status
 
-    # The agent may exit without removing its tmux-agents entry: a crash,
+    # The agent may exit without clearing its pane's agent state: a crash,
     # a killed sandbox, or Codex, which has no exit hook.
     agent-state clear
     return $rc

@@ -23,8 +23,8 @@ vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.undofile = true
 
--- OSC 52 clipboard (works over SSH and in tmux)
-if vim.env.SSH_TTY or vim.env.TMUX then
+-- OSC 52 clipboard (works over SSH)
+if vim.env.SSH_TTY then
   vim.g.clipboard = {
     name = "OSC 52",
     copy = {

@@ -43,7 +43,7 @@ function sb -d "Run a command inside a nono sandbox"
 {{- end }}
     end
 
-    # Not exec: the launchers call this function and restore their tmux
-    # window state after the agent exits.
+    # Not exec: the launchers call this function and clear the agent state
+    # after the agent exits.
     nono run $nono_args -- $cmd $cmd_args $rest
 end

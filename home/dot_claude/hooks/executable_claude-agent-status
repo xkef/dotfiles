@@ -1,17 +1,20 @@
 #!/bin/bash
-# Maps Claude Code hook events to agent states for the `tmux-agents` picker.
-# `agent-state` owns the storage and the format.
+# Maps Claude Code hook events to agent states for the WezTerm status line
+# and agent picker. `agent-state` owns the format.
 #
-# Claude Code runs hooks as child processes, so they inherit TMUX_PANE from
-# the pane the agent started in, and `agent-state` keys the entry by it.
+# Claude Code runs hooks as child processes that share the agent's
+# controlling terminal, so `agent-state` reaches the agent's pane through
+# /dev/tty.
 
-[ -n "$TMUX_PANE" ] || exit 0
+[ -n "$WEZTERM_PANE" ] || exit 0
 
 AGENT_STATE="$HOME/.local/bin/agent-state"
 
 INPUT=$(cat)
-IFS=$'\t' read -r EVENT TOOL CWD < <(
-  echo "$INPUT" | jq -r '[.hook_event_name, (.tool_name // "-"), (.cwd // "-")] | @tsv'
+# "-" stands in for an absent field, because `read` folds a run of tabs
+# into one and would shift the message into the tool column.
+IFS=$'\t' read -r EVENT TOOL MESSAGE < <(
+  echo "$INPUT" | jq -r '[.hook_event_name, (.tool_name // "-"), (.message // "-")] | @tsv'
 )
 
 if [ "$EVENT" = SessionEnd ]; then
@@ -19,19 +22,26 @@ if [ "$EVENT" = SessionEnd ]; then
   exit 0
 fi
 
+# Notification fires for a permission prompt and for an idle nudge. Either
+# way the agent waits for a look, so both read as "waiting". Claude Code
+# raises the desktop notification itself over OSC 9.
+if [ "$EVENT" = Notification ]; then
+  "$AGENT_STATE" set claude waiting "$MESSAGE"
+  exit 0
+fi
+
 # Only PreToolUse names a tool. Every other event describes the agent as a
 # whole, so it clears the column instead of leaving a stale tool name.
-[ "$EVENT" = PreToolUse ] || TOOL=-
+if [ "$EVENT" != PreToolUse ] || [ "$TOOL" = - ]; then
+  TOOL=
+fi
 
-# Notification fires for a permission prompt and for an idle nudge. Either
-# way the agent waits for a look, so both read as "waiting".
 case "$EVENT" in
 SessionStart | Stop) STATE=idle ;;
 UserPromptSubmit | PreToolUse) STATE=busy ;;
-Notification) STATE=waiting ;;
 *) exit 0 ;;
 esac
 
 # Exit 0 whatever happens. Exit 2 from a PreToolUse hook blocks the tool.
-"$AGENT_STATE" set claude "$STATE" "$TOOL" "$CWD"
+"$AGENT_STATE" set claude "$STATE" "$TOOL"
 exit 0

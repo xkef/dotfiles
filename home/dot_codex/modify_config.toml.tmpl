@@ -13,7 +13,7 @@ set -euo pipefail
 
 readonly HEADER='# Managed by chezmoi. Edit home/dot_codex/modify_config.toml.tmpl instead.'
 readonly MANAGED_KEYS='model_reasoning_effort|approval_policy|sandbox_mode|notify|service_tier|approvals_reviewer'
-readonly TUI_KEYS='status_line|status_line_use_colors'
+readonly TUI_KEYS='status_line|status_line_use_colors|notifications'
 
 managed=$(
   printf '%s\n' "$HEADER"
@@ -24,11 +24,11 @@ sandbox_mode = "workspace-write"
 service_tier = "default"
 approvals_reviewer = "auto_review"
 MANAGED_TOML
-  # Codex runs the notify command without a shell, so the path can't rely on
-  # tilde expansion or on ~/.local/bin in PATH.
-  printf 'notify = ["%s/.local/bin/codex-notify"]\n' '{{ .chezmoi.homeDir }}'
 )
 
+# `notifications` raises desktop notifications over OSC 9, which WezTerm
+# shows while the pane is out of view. MANAGED_KEYS still lists `notify`,
+# which drops the notify-script setting from older configs.
 tui=$(
   cat <<'TUI_TOML'
 status_line = [
@@ -42,6 +42,7 @@ status_line = [
   "estimated-thread-cost",
 ]
 status_line_use_colors = true
+notifications = true
 TUI_TOML
 )
 

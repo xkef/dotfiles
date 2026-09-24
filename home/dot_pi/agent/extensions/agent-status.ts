@@ -1,9 +1,9 @@
-// Maps pi events to agent states for the `tmux-agents` picker.
+// Maps pi events to agent states for the WezTerm status line and agent
+// picker.
 // `agent-state` owns the storage and the format.
 //
-// pi inherits TMUX_PANE from the pane it started in, and `agent-state` keys
-// the entry by it. Without a pane there is nothing to join to, and the
-// extension does nothing.
+// pi shares its pane's terminal with `agent-state`, which writes the state
+// there. Outside WezTerm the extension does nothing.
 //
 // pi documents agent_settled and ui_prompt_start/end for status integrations
 // like this one. agent_settled marks the point where pi stops on its own, and
@@ -35,7 +35,7 @@ function publish(state: State, tool: string, cwd: string): void {
 }
 
 export default function (pi: ExtensionAPI) {
-  if (!process.env.TMUX_PANE) {
+  if (!process.env.WEZTERM_PANE) {
     return;
   }
 

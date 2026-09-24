@@ -1,7 +1,6 @@
 {{- /* Renders one nono profile from .agents.<name>.nono. This file declares
        the toolchain surface every agent needs once: mise, jj, maven, npm,
-       cargo, rustup, gh, shared skills, keychain, and the agent state the tmux
-       picker reads. The agent adds its own state directories, extra policy
+       cargo, rustup, gh, shared skills, and keychain. The agent adds its own state directories, extra policy
        groups, and anything beyond that surface through `extra`.
        Called with (dict "name" <agent> "agent" .agents.<agent>). */ -}}
 {{- $n := .agent.nono -}}

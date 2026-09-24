@@ -42,10 +42,6 @@
       {
         "hooks": [
           {
-            "command": "~/.claude/hooks/claude-notify-hook",
-            "type": "command"
-          },
-          {
             "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
@@ -175,7 +171,7 @@
     ]
   },
   "plansDirectory": ".claude-notes",
-  "preferredNotifChannel": "ghostty",
+  "preferredNotifChannel": "iterm2",
   "respectGitignore": true,
   "sandbox": {
     "credentials": {

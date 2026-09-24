@@ -1,8 +1,8 @@
-# Neovim leader and tmux prefix. Each key has the form its tool reads and
-# a label for help text.
+# Neovim leader and WezTerm leader. The Neovim leader has the form Neovim
+# reads. ~/.config/wezterm/keys.lua sets the WezTerm leader, and the labels
+# name both in help text.
 
 [keys]
 leader = " "
 leader_label = "Space"
-prefix = "C-Space"
 prefix_label = "Ctrl-Space"

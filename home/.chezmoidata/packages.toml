@@ -13,7 +13,6 @@ brews = [
   "gh",                # GitHub from the command line
   "jq",                # JSON processor
   "age",               # simple file encryption
-  "terminal-notifier", # macOS notifications from scripts
   "xz",                # xz compression for VM image archives
   "fish",              # shell
   "starship",          # cross-shell prompt
@@ -23,8 +22,6 @@ brews = [
   "helix",             # modal text editor (Rust)
   "neovim",            # text editor
   "tree-sitter-cli",   # parser generator CLI (nvim-treesitter build)
-  "tmux",              # terminal multiplexer
-  "sesh",              # smart tmux session manager
   "presenterm",        # markdown-driven terminal slides
   "eza",               # modern ls replacement
   "bat",               # cat with syntax highlighting
@@ -68,7 +65,7 @@ brews = [
 ]
 casks = [
   "codex",                         # OpenAI Codex CLI (shipped as a cask)
-  "ghostty",                       # GPU-accelerated terminal
+  "wezterm@nightly",               # terminal and multiplexer (no stable release since 2024-02)
   "zed",                           # GPU-accelerated code editor
   "neovide-app",                   # GUI client for Neovim
   "1password",                     # password manager
@@ -97,8 +94,6 @@ main = [
   "helix",           # modal text editor (Rust)
   "neovim",          # text editor
   "tree-sitter-cli", # parser generator CLI (nvim-treesitter build)
-  "tmux",            # terminal multiplexer
-  "sesh-bin",        # smart tmux session manager (AUR; ships an aarch64 binary)
   "presenterm",      # markdown-driven terminal slides
   "eza",             # modern ls replacement
   "bat",             # cat with syntax highlighting
@@ -140,7 +135,7 @@ gui = [
   "xclip",         # X11 clipboard utility
   "wl-clipboard",  # Wayland clipboard utility
   "libnotify",     # notify-send for agent notifications
-  "ghostty",       # GPU-accelerated terminal
+  "wezterm-git",   # terminal and multiplexer (AUR; the repo package is the 2024-02 release)
   "neovide",       # GUI client for Neovim
   "1password",     # password manager
   "1password-cli", # 1Password CLI (op)
