@@ -12,3 +12,4 @@
 .pi/agent/extensions/pi-show-diffs.json
 .config/television/config.toml
 .config/fish/functions/__tv_smart.fish
+.local/bin/agent-task

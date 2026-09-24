@@ -226,8 +226,8 @@ metadata.
 # Agent task summaries
 
 As the main agent in a tmux pane, where `TMUX_PANE` has a
-value, run `agent-task "short task summary"` when you
-start work. Describe the user's goal in fewer than 60
+value, run `agent-state task "short task summary"` when
+you start work. Describe the user's goal in fewer than 60
 characters. Update it when the goal changes. This summary
 appears in the agents pane opened with `prefix a`.
 

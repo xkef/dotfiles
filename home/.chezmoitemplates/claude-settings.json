@@ -191,7 +191,7 @@
     "enabled": true,
     "excludedCommands": ["gh *", "jj *"],
     "filesystem": {
-      "allowWrite": ["~/.cache/mise", "~/.config/chezmoi"]
+      "allowWrite": ["~/.cache/mise", "~/.config/chezmoi", "~/.local/state/agents"]
     }
   },
   "skipDangerousModePermissionPrompt": true,
