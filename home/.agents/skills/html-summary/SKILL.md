@@ -13,7 +13,7 @@ findings into a short, visual explanation.
 Accept any of these:
 
 - Current conversation context
-- An exported pi or Claude HTML, Markdown, or text transcript, or a session
+- An exported Claude HTML, Markdown, or text transcript, or a session
   JSONL path
 - A diff, PR, issue, commit range, or changed-file list
 - A codebase or subsystem the user names

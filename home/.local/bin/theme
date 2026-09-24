@@ -1,6 +1,6 @@
 #!/usr/bin/env fish
-# theme: switches the color scheme of WezTerm, Neovim, delta, and pi
-# through tinty, configured in ~/.config/tinted-theming/tinty/config.toml.
+# theme: switches the color scheme of WezTerm, Neovim, and delta through
+# tinty, configured in ~/.config/tinted-theming/tinty/config.toml.
 #
 # Usage:
 #   theme            Pick a scheme with fzf

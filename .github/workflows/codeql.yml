@@ -1,7 +1,7 @@
 name: CodeQL
 
-# Static analysis of the GitHub Actions workflows. The pi extensions in
-# TypeScript stay out of scope. Shell, fish, and Lua fall outside CodeQL.
+# Static analysis of the GitHub Actions workflows. Shell, fish, Lua, and
+# Nix fall outside CodeQL.
 on:
   pull_request:
   push:

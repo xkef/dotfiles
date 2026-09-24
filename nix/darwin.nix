@@ -54,7 +54,6 @@ in
       "nono" # sandbox for AI agents; the profiles need 0.75+, nixpkgs has 0.74
     ];
     casks = [
-      "codex" # OpenAI Codex CLI (shipped as a cask)
       "wezterm@nightly" # terminal and multiplexer (no stable release since 2024-02)
       "zed" # GPU-accelerated code editor
       "neovide-app" # GUI client for Neovim

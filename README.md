@@ -41,7 +41,7 @@ apply with `dots switch`.
 | [WezTerm](https://wezterm.org)                                   | Terminal and multiplexer, with an agent-aware status line  |
 | [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder in the shell                                  |
 | [atuin](https://atuin.sh)                                        | Searchable shell history with sync                         |
-| [Claude Code](https://claude.ai/), Codex, pi                     | AI coding agents, always launched in a nono sandbox        |
+| [Claude Code](https://claude.ai/)                                | AI coding agent, always launched in a nono sandbox         |
 | [Jujutsu](https://github.com/jj-vcs/jj)                          | Git-compatible version control, `jj`, with a simpler model |
 | [Lima](https://lima-vm.io)                                       | Linux development VM with the host's home-manager setup    |
 | [Vale](https://vale.sh)                                          | Prose linter for markdown, Google style plus AI-tell rules |
@@ -54,7 +54,7 @@ Neovim uses `Space` as leader and WezTerm uses `Ctrl-Space`. Change them in
 [`home/.config/wezterm/keys.lua`](home/.config/wezterm/keys.lua). `leader ?`
 in either lists the bindings.
 
-`theme` switches WezTerm, Neovim, delta, and pi together through
+`theme` switches WezTerm, Neovim, and delta together through
 [tinty](https://github.com/tinted-theming/tinty).
 
 ## Make it yours

@@ -51,8 +51,8 @@ let
         "    sb ${name} $argv"
         "    set -l rc $status"
         ""
-        "    # The agent may exit without clearing its pane's agent state: a crash,"
-        "    # a killed sandbox, or Codex, which has no exit hook."
+        "    # The agent may exit without clearing its pane's agent state, as after"
+        "    # a crash or a killed sandbox."
         "    agent-state clear"
         "    return $rc"
         "end"
@@ -132,7 +132,7 @@ let
   # Tracked keys win, and the rest stays.
   mergeSettings = pkgs.writeShellScript "merge-agent-settings" ''
     set -euo pipefail
-    export PATH=${lib.makeBinPath [ pkgs.bash pkgs.jq pkgs.gawk pkgs.coreutils ]}
+    export PATH=${lib.makeBinPath [ pkgs.jq pkgs.coreutils ]}
     home=${config.home.homeDirectory}
 
     merge_json() {
@@ -144,13 +144,6 @@ let
     }
 
     merge_json "$home/.claude/settings.json" ${./files/claude-settings.json}
-    merge_json "$home/.pi/agent/settings.json" ${./files/pi-settings.json}
-
-    codex="$home/.codex/config.toml"
-    mkdir -p "$(dirname "$codex")"
-    touch "$codex"
-    ${./files/codex-config.sh} <"$codex" >"$codex.tmp"
-    mv "$codex.tmp" "$codex"
   '';
 in
 {

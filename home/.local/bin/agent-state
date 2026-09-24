@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Publishes coding-agent state to the terminal. The Claude Code hook, the pi
-# extension, the Codex launcher, and agents publishing a task summary all
-# write through this script, so the format lives in one place.
+# Publishes coding-agent state to the terminal. The Claude Code hook, the
+# agent launchers, and agents publishing a task summary all write through
+# this script, so the format lives in one place.
 #
 #   agent-state set <agent> <state> [detail]
 #   agent-state task <summary>
@@ -43,7 +43,7 @@ case "$cmd" in
 set)
   [ $# -ge 2 ] || usage
   case "$2" in
-  idle | busy | waiting | running) ;;
+  idle | busy | waiting) ;;
   *)
     echo "agent-state: unknown state '$2'" >&2
     exit 2

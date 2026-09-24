@@ -1,8 +1,8 @@
 -- Coding-agent state. `agent-state` sets these user vars on the agent's
 -- pane over OSC 1337, and WezTerm stores them with the pane:
 --
---   agent         agent name, such as claude, codex, or pi
---   agent_state   waiting, busy, running, or idle. Empty means no agent.
+--   agent         agent name, such as claude
+--   agent_state   waiting, busy, or idle. Empty means no agent.
 --   agent_detail  the tool in use, or the message that asks for input
 --   agent_task    the summary the agent publishes for its goal
 --
@@ -14,10 +14,10 @@ local M = {}
 
 -- Glyph weight encodes the state, so the status line needs no color. A
 -- filled dot needs input, a ring works, a small dot idles.
-local ICON = { waiting = "•", busy = "◦", running = "○", idle = "·" }
-local COLOR = { waiting = "Maroon", busy = "Olive", running = "Grey", idle = "Grey" }
-local ORDER = { "waiting", "busy", "running", "idle" }
-local RANK = { waiting = 1, busy = 2, running = 3, idle = 4 }
+local ICON = { waiting = "•", busy = "◦", idle = "·" }
+local COLOR = { waiting = "Maroon", busy = "Olive", idle = "Grey" }
+local ORDER = { "waiting", "busy", "idle" }
+local RANK = { waiting = 1, busy = 2, idle = 3 }
 
 local function state_of(vars)
   local state = vars.agent_state
