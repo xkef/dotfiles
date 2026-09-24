@@ -13,7 +13,7 @@ with pkgs;
   age # simple file encryption
   starship # cross-shell prompt
   atuin # shell history search/sync
-  fzf # fuzzy finder
+  television # fuzzy finder with channels (tv)
   zoxide # smarter cd with frecency
   helix # modal text editor (Rust)
   neovim # text editor

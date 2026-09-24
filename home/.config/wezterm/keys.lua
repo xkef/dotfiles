@@ -23,16 +23,16 @@ local function overlay(args)
   end)
 end
 
--- Moves between panes, or hands Ctrl plus the key to Neovim or fzf so that
+-- Moves between panes, or hands Ctrl plus the key to Neovim or tv so that
 -- smart-splits.nvim moves across Neovim's own splits first.
 -- smart-splits.nvim sets the IS_NVIM user var, which works over the mux.
--- The process name covers fzf in local panes.
+-- The process name covers tv in local panes.
 local function is_vim(pane)
   if pane:get_user_vars().IS_NVIM == "true" then
     return true
   end
   local name = pane:get_foreground_process_name() or ""
-  return name:match("n?vim$") ~= nil or name:match("fzf$") ~= nil
+  return name:match("n?vim$") ~= nil or name:match("/tv$") ~= nil
 end
 
 local function navigate(key, direction)

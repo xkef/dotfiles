@@ -57,7 +57,7 @@ function M.apply(config)
   config.default_cursor_style = "SteadyBlock"
   config.scrollback_lines = 50000
 
-  -- Left Option sends Alt for the shell and fzf bindings. Right Option
+  -- Left Option sends Alt for the shell and tv bindings. Right Option
   -- still types special characters such as @, [], and {}.
   config.send_composed_key_when_left_alt_is_pressed = false
   config.send_composed_key_when_right_alt_is_pressed = true

@@ -35,11 +35,11 @@ apply with `dots switch`.
 
 | Tool                                                             | What it does                                               |
 | ---------------------------------------------------------------- | ---------------------------------------------------------- |
-| [Fish](https://fishshell.com)                                    | Shell with fzf completions and practical defaults          |
+| [Fish](https://fishshell.com)                                    | Shell with television pickers and practical defaults       |
 | [Starship](https://starship.rs)                                  | Minimal, cross-shell prompt                                |
 | [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org) | Editor with the LazyVim distro                             |
 | [WezTerm](https://wezterm.org)                                   | Terminal and multiplexer, with an agent-aware status line  |
-| [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder in the shell                                  |
+| [television](https://github.com/alexpasmantier/television)       | Fuzzy finder in the shell and Neovim, one channel per task |
 | [atuin](https://atuin.sh)                                        | Searchable shell history with sync                         |
 | [Claude Code](https://claude.ai/)                                | AI coding agent, always launched in a nono sandbox         |
 | [Jujutsu](https://github.com/jj-vcs/jj)                          | Git-compatible version control, `jj`, with a simpler model |

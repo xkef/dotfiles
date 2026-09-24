@@ -1,5 +1,5 @@
 # tinty switches the color scheme of every app at once. `theme` wraps it.
-# Apps that use ANSI colors, such as fish, fzf, bat, starship, and eza,
+# Apps that use ANSI colors, such as fish, tv, bat, starship, and eza,
 # follow the terminal and need no entry. Neovim's tinted-nvim plugin reads
 # the current scheme itself.
 # See https://github.com/tinted-theming/tinty/blob/main/USAGE.md

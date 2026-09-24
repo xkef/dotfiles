@@ -12,6 +12,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+    # television's channel files, pinned to the release nixpkgs packages.
+    # Bump the tag together with the package.
+    television = {
+      url = "github:alexpasmantier/television/0.15.9";
+      flake = false;
+    };
   };
 
   # One configuration per platform. `dots switch` picks the one for the
@@ -28,16 +34,21 @@
       nix-darwin,
       home-manager,
       nix-homebrew,
+      television,
       ...
     }:
     let
       settings = import ./nix/settings.nix;
+      args = {
+        inherit settings;
+        tvCable = "${television}/cable/unix";
+      };
 
       linux =
         system:
         home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.${system};
-          extraSpecialArgs = { inherit settings; };
+          extraSpecialArgs = args;
           modules = [
             ./nix/home.nix
             { home.homeDirectory = "/home/${settings.user}"; }
@@ -57,7 +68,7 @@
             # Moves a file that isn't a home-manager link aside instead of
             # failing, as on the first switch over a chezmoi install.
             home-manager.backupFileExtension = "hm-bak";
-            home-manager.extraSpecialArgs = { inherit settings; };
+            home-manager.extraSpecialArgs = args;
             home-manager.users.${settings.user} = import ./nix/home.nix;
           }
         ];

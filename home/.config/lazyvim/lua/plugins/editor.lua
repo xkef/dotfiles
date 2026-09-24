@@ -58,4 +58,18 @@ return {
     "ThePrimeagen/refactoring.nvim",
     dependencies = { "lewis6991/async.nvim" },
   },
+
+  -- television channels inside Neovim, the same pickers as in the shell.
+  {
+    "alexpasmantier/tv.nvim",
+    keys = {
+      { "<leader>Tt", "<cmd>Tv<cr>", desc = "Television (channel picker)" },
+      { "<leader>Tl", "<cmd>Tv jj-log<cr>", desc = "Television jj log" },
+      { "<leader>Tb", "<cmd>Tv jj-bookmark<cr>", desc = "Television jj bookmarks" },
+      { "<leader>Td", "<cmd>Tv jj-diff<cr>", desc = "Television jj diff" },
+      { "<leader>Te", "<cmd>Tv env<cr>", desc = "Television env vars" },
+    },
+    cmd = { "Tv" },
+    opts = {},
+  },
 }

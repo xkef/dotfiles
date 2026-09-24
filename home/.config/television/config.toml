@@ -1,0 +1,26 @@
+# https://alexpasmantier.github.io/television/user-guide/configuration
+# home-manager links the upstream channels, pinned by flake.lock, into
+# ./cable. Channels of your own go there too, under a name of their own.
+
+[ui]
+# The default theme uses ANSI color names, so it follows the tinty scheme.
+theme = "default"
+
+[ui.input_bar]
+border_type = "rounded"
+
+[ui.results_panel]
+border_type = "rounded"
+
+[ui.preview_panel]
+border_type = "rounded"
+
+[keybindings]
+ctrl-d = "scroll_preview_half_page_down"
+ctrl-u = "scroll_preview_half_page_up"
+
+# Ctrl-T picks the channel from the command being typed. These add jj to
+# tv's built-in triggers.
+[shell_integration.channel_triggers]
+"jj-bookmark" = ["jj bookmark", "jj rebase", "jj new"]
+"jj-log" = ["jj show", "jj edit", "jj squash", "jj abandon"]

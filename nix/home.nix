@@ -12,6 +12,7 @@
   lib,
   pkgs,
   settings,
+  tvCable,
   ...
 }:
 let
@@ -52,6 +53,10 @@ in
       source = link path;
     })
     // {
+      ".config/television/cable" = {
+        source = tvCable;
+        recursive = true;
+      };
       ".config/fish/conf.d/dotfiles.fish".text = ''
         # ── Dotfiles directory ───────────────────────────────
         # Written by home-manager from nix/settings.nix, so dots, sb, and the

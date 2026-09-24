@@ -3,7 +3,7 @@
 # tinty, configured in ~/.config/tinted-theming/tinty/config.toml.
 #
 # Usage:
-#   theme            Pick a scheme with fzf
+#   theme            Pick a scheme with tv
 #   theme <scheme>   Apply a scheme, such as base16-catppuccin-mocha
 #   theme --current  Print the current scheme
 #   theme --list     List the schemes
@@ -16,7 +16,7 @@ switch "$argv[1]"
     case --help -h
         sed -n 's/^#   //p' (status filename)
     case ''
-        set -l scheme (tinty list | fzf --prompt 'theme> ' --query (tinty current 2>/dev/null)); or return
+        set -l scheme (tv --source-command 'tinty list' --input (tinty current 2>/dev/null)); or return
         tinty apply $scheme
     case '*'
         tinty apply $argv[1]
