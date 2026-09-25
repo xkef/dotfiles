@@ -26,7 +26,14 @@ run = [
 
 [tasks.lint]
 description = "Lint everything"
-depends = ["lint-sh", "lint-fish", "lint-fmt", "lint-md", "lint-prose", "lint-nvim"]
+depends = [
+  "lint-sh",
+  "lint-fish",
+  "lint-fmt",
+  "lint-md",
+  "lint-prose",
+  "lint-nvim",
+]
 
 [tasks.lint-sh]
 description = "Shellcheck bash scripts"
