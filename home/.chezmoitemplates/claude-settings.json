@@ -1,7 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "agentPushNotifEnabled": true,
-  "alwaysThinkingEnabled": true,
   "attribution": {
     "commit": "",
     "pr": ""
@@ -10,9 +9,7 @@
   "autoMode": {
     "classifyAllShell": true
   },
-  "autoUpdatesChannel": "latest",
   "cleanupPeriodDays": 99999,
-  "effortLevel": "high",
   "enabledPlugins": {
     "claude-code-setup@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
@@ -33,7 +30,6 @@
     "typescript-lsp@claude-plugins-official": true
   },
   "env": {
-    "BASH_DEFAULT_TIMEOUT_MS": "120000",
     "GITHUB_TOKEN": "",
     "INSIDE_CLAUDE_CODE": "1"
   },
@@ -49,8 +45,7 @@
             "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
-        ],
-        "matcher": ""
+        ]
       }
     ],
     "PostToolUse": [
@@ -61,7 +56,7 @@
             "type": "command"
           }
         ],
-        "matcher": "Edit|MultiEdit|Write"
+        "matcher": "Edit|Write"
       }
     ],
     "PreToolUse": [
@@ -72,7 +67,7 @@
             "type": "command"
           }
         ],
-        "matcher": "Edit|MultiEdit|Write"
+        "matcher": "Edit|Write"
       },
       {
         "hooks": [
@@ -89,8 +84,7 @@
             "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
-        ],
-        "matcher": ""
+        ]
       }
     ],
     "SessionEnd": [
@@ -100,8 +94,7 @@
             "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
-        ],
-        "matcher": ""
+        ]
       }
     ],
     "SessionStart": [
@@ -111,8 +104,7 @@
             "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
-        ],
-        "matcher": ""
+        ]
       }
     ],
     "Stop": [
@@ -122,8 +114,7 @@
             "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
-        ],
-        "matcher": ""
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -133,12 +124,16 @@
             "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
           }
-        ],
-        "matcher": ""
+        ]
       }
     ]
   },
   "model": "opus",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
   "outputStyle": "concise",
   "permissions": {
     "allow": [
@@ -176,7 +171,6 @@
   },
   "plansDirectory": ".claude-notes",
   "preferredNotifChannel": "iterm2",
-  "respectGitignore": true,
   "sandbox": {
     "credentials": {
       "files": [
@@ -203,9 +197,7 @@
   },
   "statusLine": {
     "command": "~/.claude/hooks/claude-statusline",
-    "padding": 0,
     "type": "command"
   },
-  "tui": "fullscreen",
-  "verbose": false
+  "tui": "fullscreen"
 }
