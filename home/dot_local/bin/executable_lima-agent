@@ -27,8 +27,18 @@ fi
 # The VM mounts the agent state directory, which must exist first.
 mkdir -p "${XDG_STATE_HOME:-$HOME/.local/state}/agents"
 
+# Reads the token before the VM starts, so a missing token fails fast.
+token=$(op read "$TOKEN_REF")
 token_file=".cache/lima-agent/token.$$"
-op read "$TOKEN_REF" |
+
+# The guest's fish runs without a prompt, so it never reports its
+# directory. OSC 7 with the VM's host name tells WezTerm the pane works in
+# the VM, which the status line marks and splits follow.
+if [ -t 1 ]; then
+  printf '\e]7;file://lima-%s%s\e\\' "$VM" "$PWD"
+fi
+
+printf '%s' "$token" |
   limactl shell --start --workdir / "$VM" -- \
     sh -c 'f="$HOME/$1" && umask 077 && mkdir -p "${f%/*}" && cat >"$f"' sh "$token_file"
 
@@ -36,6 +46,17 @@ exec limactl shell --workdir "$PWD" "$VM" -- \
   env WEZTERM_PANE="${WEZTERM_PANE:-}" fish -lc '
     set -lx CLAUDE_CODE_OAUTH_TOKEN (cat ~/$argv[1])
     rm ~/$argv[1]
+    # First-run onboarding asks for a login even with a token set, and
+    # the VM replaces the folder trust prompt. Claude Code rewrites this
+    # file while it runs, so it changes only when a key is missing.
+    set -l cfg ~/.claude.json
+    set -l ready ".hasCompletedOnboarding and .projects[\$dir].hasTrustDialogAccepted"
+    test -f $cfg; or echo "{}" >$cfg
+    if not jq -e --arg dir $PWD $ready $cfg >/dev/null
+        set -l tmp (mktemp)
+        jq --arg dir $PWD ".hasCompletedOnboarding = true | .projects[\$dir].hasTrustDialogAccepted = true" $cfg >$tmp
+        and mv $tmp $cfg
+    end
     command claude --dangerously-skip-permissions $argv[2..]
     set -l rc $status
     agent-state clear

@@ -8,7 +8,7 @@ local act = wezterm.action
 
 local M = {}
 
-local HOST = "lima-dev"
+M.HOST = "lima-dev"
 local SHELL = { "limactl", "shell", "dev" }
 
 -- A tab with a shell in the VM, in the current directory.
@@ -17,9 +17,14 @@ M.shell_tab = act.SpawnCommandInNewTab({ args = SHELL })
 -- The pane's directory when the pane runs in the VM, else nil.
 local function vm_dir(pane)
   local cwd = pane:get_current_working_dir()
-  if cwd and cwd.host == HOST then
+  if cwd and cwd.host == M.HOST then
     return cwd.file_path
   end
+end
+
+-- Whether the pane runs in the VM.
+function M.in_vm(pane)
+  return vm_dir(pane) ~= nil
 end
 
 -- Splits toward direction, "Right" or "Bottom", in the VM for a VM pane

@@ -2,6 +2,7 @@
 -- color names an ANSI slot, so a tinty switch recolors the bar with the
 -- terminal.
 local wezterm = require("wezterm")
+local lima = require("lima")
 local path = require("path")
 
 local M = {}
@@ -92,9 +93,14 @@ local function update(window, pane)
   end
   table.insert(right, { Foreground = { AnsiColor = "Grey" } })
   table.insert(right, { Text = wezterm.strftime("%H:%M") .. "  " })
-  table.insert(right, { Foreground = { AnsiColor = "Teal" } })
+  -- The host the active pane runs on, marked while it's the Lima VM.
+  local host, color = wezterm.hostname(), "Teal"
+  if lima.in_vm(pane) then
+    host, color = "sandbox " .. lima.HOST, "Maroon"
+  end
+  table.insert(right, { Foreground = { AnsiColor = color } })
   table.insert(right, { Attribute = { Intensity = "Bold" } })
-  table.insert(right, { Text = wezterm.hostname() .. " " })
+  table.insert(right, { Text = host .. " " })
   window:set_right_status(wezterm.format(right))
 end
 
