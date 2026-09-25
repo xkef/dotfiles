@@ -16,19 +16,24 @@ if [[ "${CI:-}" != true ]] && ! systemd-detect-virt -q 2>/dev/null; then
   )
 fi
 
-# Returns 0 only if paru exists and runs. paru-bin can break against a
-# newer libalpm than the one its prebuilt release linked against.
+# Returns 0 only if paru exists and runs. A paru binary breaks when pacman
+# ships a newer libalpm than the one it linked against.
 paru_works() {
   command -v paru >/dev/null && paru --version >/dev/null 2>&1
 }
 
+# Builds paru from source so it links the installed libalpm. The prebuilt
+# paru-bin lags behind pacman and conflicts with paru, so it goes first.
 ensure_paru() {
   paru_works && return 0
   local tmpdir
   tmpdir="$(mktemp -d)"
   sudo pacman -S --needed --noconfirm base-devel
-  git clone https://aur.archlinux.org/paru-bin.git "$tmpdir/paru-bin"
-  (cd "$tmpdir/paru-bin" && makepkg -si --noconfirm)
+  if pacman -Q paru-bin >/dev/null 2>&1; then
+    sudo pacman -Rdd --noconfirm paru-bin
+  fi
+  git clone https://aur.archlinux.org/paru.git "$tmpdir/paru"
+  (cd "$tmpdir/paru" && makepkg -si --noconfirm)
   rm -rf "$tmpdir"
   paru_works
 }
