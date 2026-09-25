@@ -2,7 +2,6 @@
 ## https://docs.atuin.sh/configuration/config/
 
 # Minimal UI
-style = "compact"
 invert = true
 show_preview = false
 show_help = false
@@ -12,9 +11,3 @@ exit_mode = "return-query"
 
 [logs]
 dir = "~/.local/share/atuin/logs"
-
-[sync]
-records = false
-
-[keys]
-scroll_exits = true
