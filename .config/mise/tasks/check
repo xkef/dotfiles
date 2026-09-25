@@ -6,6 +6,23 @@ trap 'rm -rf "$tmp"' EXIT
 mkdir -p "$tmp/home"
 flags=(--source . --destination "$tmp/home" --config "$tmp/chezmoi.toml" --persistent-state "$tmp/state.db")
 
+# Hide the 1Password CLI so the templates render their fallbacks, as in CI.
+# Each PATH directory that holds op becomes a copy of links without it.
+# Otherwise the check needs an unlocked 1Password and reads real secrets.
+path=
+IFS=: read -ra dirs <<<"$PATH"
+for d in "${dirs[@]}"; do
+  if [ -x "$d/op" ]; then
+    shim=$(mktemp -d "$tmp/path.XXXX")
+    for f in "$d"/*; do
+      [ "${f##*/}" = op ] || ln -s "$f" "$shim/"
+    done
+    d=$shim
+  fi
+  path+="$d:"
+done
+export PATH="${path%:}"
+
 chezmoi init "${flags[@]}" \
   --promptBool "work machine (render 1Password git identity)=false" \
   --exclude scripts --apply
