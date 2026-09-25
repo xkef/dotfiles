@@ -5,11 +5,8 @@ default-command = "log"
 editor = "nvim"
 diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
 diff-instructions = false
-diff-formatter = ":color-words"
 graph.style = "square"
 log-word-wrap = true
-log-synthetic-elided-nodes = true
-color = "auto"
 
 # ── Pager: delta ─────────────────────────────────────
 # Delta applies only to commands that produce diffs, so it can't
@@ -24,19 +21,15 @@ pager = "delta"
 program = "nvim"
 
 [merge-tools.delta]
-program = "delta"
 diff-args = ["--color-only", "$left", "$right"]
 diff-expected-exit-codes = [0, 1]
 
 [merge-tools.difft]
-program = "difft"
 diff-args = ["--color=always", "$left", "$right"]
 diff-expected-exit-codes = [0, 1]
 
 # ── Git interop ──────────────────────────────────────
 [git]
-write-change-id-header = true
-sign-on-push = false
 private-commits = 'description(glob:"wip:*") | description(glob:"private:*")'
 
 # ── Revsets ──────────────────────────────────────────
@@ -54,8 +47,8 @@ bookmark-advance-to = '@-'
 [aliases]
 examine = ["log", "-T", "builtin_log_detailed", "-p", "-r"]
 nt = ["new", "trunk()"]
-retrunk = ["rebase", "-d", "trunk()"]
-reheat = ["rebase", "-d", "trunk()", "-s", "all:roots(trunk()..stack(@))"]
+retrunk = ["rebase", "-o", "trunk()"]
+reheat = ["rebase", "-o", "trunk()", "-s", "roots(trunk()..stack(@))"]
 tug = ["bookmark", "advance"]
 consume = ["squash", "--into", "@", "--from"]
 eject = ["squash", "--from", "@", "--into"]
