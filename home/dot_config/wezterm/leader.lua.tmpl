@@ -3,6 +3,7 @@
 -- holds the Cmd and Ctrl-Shift bindings, and these add to them.
 local wezterm = require("wezterm")
 local act = wezterm.action
+local lima = require("lima")
 local picker = require("picker")
 local workspaces = require("workspaces")
 
@@ -143,17 +144,17 @@ function M.apply(config)
     repeatable("L", act.AdjustPaneSize({ "Right", 5 })),
 
     -- @key wezterm :: | / - :: Split right / down
-    { key = "|", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-    { key = "-", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
+    { key = "|", mods = "LEADER", action = lima.split(act.SplitHorizontal({ domain = "CurrentPaneDomain" }), "Right") },
+    { key = "-", mods = "LEADER", action = lima.split(act.SplitVertical({ domain = "CurrentPaneDomain" }), "Bottom") },
     -- @key wezterm :: z :: Toggle pane zoom
     { key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
     -- @key wezterm :: x :: Close pane
     { key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = true }) },
 
     -- @key wezterm :: c :: New tab
-    { key = "c", mods = "LEADER", action = act.SpawnTab("CurrentPaneDomain") },
+    { key = "c", mods = "LEADER", action = lima.tab(act.SpawnTab("CurrentPaneDomain")) },
     -- @key wezterm :: v :: New tab in the Lima VM
-    { key = "v", mods = "LEADER", action = act.SpawnTab({ DomainName = "lima-dev" }) },
+    { key = "v", mods = "LEADER", action = lima.shell_tab },
     -- @key wezterm :: n / p :: Next / previous tab (repeatable)
     repeatable("n", act.ActivateTabRelative(1)),
     repeatable("p", act.ActivateTabRelative(-1)),

@@ -8,6 +8,7 @@
 --   picker.lua      tv pickers in a zoomed split, and their choices
 --   workspaces.lua  workspace switching
 --   status.lua      tab titles and the status line, with the agent count
+--   lima.lua        new panes and tabs that stay in the Lima VM
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 
@@ -33,11 +34,6 @@ require("status").setup()
 -- of killing the shells. The next launch reattaches.
 config.unix_domains = { { name = "unix" } }
 config.default_gui_startup_args = { "connect", "unix" }
-
--- The Lima VM from ~/.config/lima/dev.yaml, through the lima-dev alias Lima
--- writes to the SSH config. Panes in this domain run in the VM, and splits
--- of them stay there.
-config.ssh_domains = { { name = "lima-dev", remote_address = "lima-dev", multiplexing = "None" } }
 config.set_environment_variables = { PATH = require("path").PATH }
 
 config.font = wezterm.font(FONT)

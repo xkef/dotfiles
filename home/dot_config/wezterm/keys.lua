@@ -3,6 +3,7 @@
 -- Ctrl-Shift-Space, take keys that the shell, Neovim, and agents use.
 local wezterm = require("wezterm")
 local act = wezterm.action
+local lima = require("lima")
 
 local M = {}
 
@@ -19,7 +20,7 @@ local SHARED = {
   { key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
   { key = "v", mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
   { key = "n", mods = "CTRL|SHIFT", action = act.SpawnWindow },
-  { key = "t", mods = "CTRL|SHIFT", action = act.SpawnTab("CurrentPaneDomain") },
+  { key = "t", mods = "CTRL|SHIFT", action = lima.tab(act.SpawnTab("CurrentPaneDomain")) },
   { key = "w", mods = "CTRL|SHIFT", action = act.CloseCurrentPane({ confirm = false }) },
   { key = "phys:Equal", mods = "CTRL|SHIFT", action = act.IncreaseFontSize },
   { key = "phys:Minus", mods = "CTRL|SHIFT", action = act.DecreaseFontSize },
@@ -43,7 +44,7 @@ local MAC = {
   { key = "i", mods = "SUPER|ALT", action = act.ShowDebugOverlay },
 
   { key = "n", mods = "SUPER", action = act.SpawnWindow },
-  { key = "t", mods = "SUPER", action = act.SpawnTab("CurrentPaneDomain") },
+  { key = "t", mods = "SUPER", action = lima.tab(act.SpawnTab("CurrentPaneDomain")) },
   { key = "w", mods = "SUPER", action = act.CloseCurrentPane({ confirm = false }) },
   { key = "w", mods = "SUPER|ALT", action = act.CloseCurrentTab({ confirm = false }) },
   { key = "q", mods = "SUPER", action = act.QuitApplication },
@@ -58,8 +59,12 @@ local MAC = {
   { key = "}", mods = "SUPER|SHIFT", action = act.ActivateTabRelative(1) },
   { key = "9", mods = "SUPER", action = act.ActivateTab(-1) },
 
-  { key = "d", mods = "SUPER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-  { key = "d", mods = "SUPER|SHIFT", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
+  { key = "d", mods = "SUPER", action = lima.split(act.SplitHorizontal({ domain = "CurrentPaneDomain" }), "Right") },
+  {
+    key = "d",
+    mods = "SUPER|SHIFT",
+    action = lima.split(act.SplitVertical({ domain = "CurrentPaneDomain" }), "Bottom"),
+  },
   { key = "Enter", mods = "SUPER|SHIFT", action = act.TogglePaneZoomState },
   { key = "[", mods = "SUPER", action = act.ActivatePaneDirection("Prev") },
   { key = "]", mods = "SUPER", action = act.ActivatePaneDirection("Next") },

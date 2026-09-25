@@ -61,5 +61,7 @@ provision:
         case "$mount" in "$HOME"/*) continue ;; esac
         ln -sfn "$mount" "$HOME/$(basename "$mount")"
       done
-      chezmoi init --apply --source "$HOME/dotfiles" --promptDefaults
+      # The Claude Code installer rewrites settings.json, so chezmoi runs
+      # after it.
       curl -fsSL https://claude.ai/install.sh | bash
+      chezmoi init --apply --source "$HOME/dotfiles" --promptDefaults
