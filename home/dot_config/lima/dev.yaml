@@ -28,7 +28,7 @@ mounts:
   - location: ~/work
     writable: true
   - location: ~/dotfiles
-  # Agent hooks in the guest report to the host's WezTerm agent picker.
+  # Agent hooks in the guest report to the host's `mux-agents` picker.
   - location: ~/.local/state/agents
     mountPoint: "{{.Home}}/.local/state/agents"
     writable: true
