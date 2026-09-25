@@ -3,8 +3,9 @@
 --
 --   path.lua        PATH for panes and helper programs
 --   colors.lua      the palette of the tinty scheme that `theme` applied
---   keys.lua        macOS-style key and mouse bindings
---   leader.lua      leader bindings for panes, tabs, and pickers
+--   keys.lua        macOS-style key and mouse bindings, and copy mode
+--   keymap.lua      the leader key, which chezmoi fills in
+--   leader.lua      leader bindings and the command palette
 --   picker.lua      tv pickers in a zoomed split, and their choices
 --   workspaces.lua  workspace switching
 --   status.lua      tab titles and the status line
@@ -37,6 +38,15 @@ require("status").setup()
 config.unix_domains = { { name = "unix" } }
 config.default_gui_startup_args = { "connect", "unix" }
 config.set_environment_variables = { PATH = require("path").PATH }
+
+-- GitHub references such as wezterm/wezterm#1234 become links, and quick
+-- select also hints jj change ids, which use only the letters k to z.
+config.hyperlink_rules = wezterm.default_hyperlink_rules()
+table.insert(config.hyperlink_rules, {
+  regex = [[\b([\w.-]+/[\w.-]+)#(\d+)\b]],
+  format = "https://github.com/$1/issues/$2",
+})
+config.quick_select_patterns = { [[\b[k-z]{8,}\b]] }
 
 config.font = wezterm.font(FONT)
 

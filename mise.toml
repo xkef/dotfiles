@@ -17,7 +17,7 @@ fish_files = "$(git ls-files '*.fish') home/dot_local/bin/executable_dots home/d
 [tasks.fmt]
 description = "Format all dotfiles"
 run = [
-  "stylua home/dot_config/lazyvim/ home/dot_config/kickstart/ home/dot_config/wezterm/ home/dot_config/wezterm/leader.lua.tmpl",
+  "stylua home/dot_config/lazyvim/ home/dot_config/kickstart/ home/dot_config/wezterm/ home/dot_config/wezterm/keymap.lua.tmpl",
   "shfmt -w {{vars.shell_files}}",
   "fish_indent -w {{vars.fish_files}}",
   "dprint fmt --config .config/dprint.json",
@@ -33,6 +33,7 @@ depends = [
   "lint-md",
   "lint-prose",
   "lint-nvim",
+  "lint-wezterm",
 ]
 
 [tasks.lint-sh]
@@ -54,6 +55,18 @@ run = "rumdl check"
 [tasks.vale-sync]
 description = "Download the vale style packages"
 run = "vale --no-global --config home/dot_config/vale/dot_vale.ini sync"
+
+# WezTerm logs a config error and falls back to defaults with exit 0, so
+# the task fails on the logged ERROR instead.
+[tasks.lint-wezterm]
+description = "Load the WezTerm config headless (local only; needs wezterm)"
+run = """
+xdg=$(mktemp -d)
+mkdir "$xdg/wezterm"
+cp home/dot_config/wezterm/*.lua "$xdg/wezterm"
+chezmoi execute-template --source . <home/dot_config/wezterm/keymap.lua.tmpl >"$xdg/wezterm/keymap.lua"
+! XDG_CONFIG_HOME="$xdg" WEZTERM_CONFIG_FILE="$xdg/wezterm/wezterm.lua" wezterm ls-fonts 2>&1 >/dev/null | grep ERROR
+"""
 
 [tasks.lint-nvim]
 description = "Load LazyVim headless (local only; needs plugins)"

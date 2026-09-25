@@ -102,7 +102,9 @@ end
 
 -- Cmd-click, or Ctrl-click off macOS, opens a link, and a plain click only
 -- selects. The press does nothing, so Neovim doesn't see it. The
--- mouse_reporting copies apply while a program holds the mouse.
+-- mouse_reporting copies apply while a program holds the mouse. A triple
+-- click selects the semantic zone, such as a whole command's output, from
+-- fish's OSC 133 marks.
 local function mouse_bindings()
   local link_mods = IS_MAC and "SUPER" or "CTRL"
   local bindings = {
@@ -110,6 +112,11 @@ local function mouse_bindings()
       event = { Up = { streak = 1, button = "Left" } },
       mods = "NONE",
       action = act.CompleteSelection("ClipboardAndPrimarySelection"),
+    },
+    {
+      event = { Down = { streak = 3, button = "Left" } },
+      mods = "NONE",
+      action = act.SelectTextAtMouseCursor("SemanticZone"),
     },
   }
   for _, reporting in ipairs({ false, true }) do
@@ -139,9 +146,62 @@ local function search_mode()
   return keys
 end
 
+-- Additions to WezTerm's vi-style copy mode: Y copies to
+-- the end of the line, o and i jump between prompts, and / and ? search.
+-- WezTerm's search starts upward, so Enter moves up and Ctrl-n down.
+local COPY_MODE = {
+  {
+    key = "Y",
+    mods = "SHIFT",
+    action = act.Multiple({
+      act.CopyMode({ SetSelectionMode = "Cell" }),
+      act.CopyMode("MoveToEndOfLineContent"),
+      act.CopyTo("ClipboardAndPrimarySelection"),
+      act.CopyMode("Close"),
+    }),
+  },
+  { key = "o", mods = "NONE", action = act.CopyMode({ MoveBackwardZoneOfType = "Prompt" }) },
+  { key = "i", mods = "NONE", action = act.CopyMode({ MoveForwardZoneOfType = "Prompt" }) },
+  { key = "/", mods = "NONE", action = act.CopyMode("EditPattern") },
+  { key = "?", mods = "SHIFT", action = act.CopyMode("EditPattern") },
+}
+
+-- Identifies a binding by key and modifiers. WezTerm writes no modifiers
+-- as nil, "", or "NONE".
+local function binding_id(binding)
+  local mods = binding.mods
+  if mods == nil or mods == "" then
+    mods = "NONE"
+  end
+  return binding.key .. "+" .. mods
+end
+
+-- WezTerm's copy_mode table with COPY_MODE replacing the bindings of the
+-- same keys.
+local function copy_mode()
+  local taken = {}
+  for _, binding in ipairs(COPY_MODE) do
+    taken[binding_id(binding)] = true
+  end
+
+  local keys = {}
+  for _, binding in ipairs(wezterm.gui.default_key_tables().copy_mode) do
+    if not taken[binding_id(binding)] then
+      table.insert(keys, binding)
+    end
+  end
+  for _, binding in ipairs(COPY_MODE) do
+    table.insert(keys, binding)
+  end
+  return keys
+end
+
 function M.apply(config)
   config.disable_default_key_bindings = true
-  config.keys = SHARED
+  config.keys = config.keys or {}
+  for _, binding in ipairs(SHARED) do
+    table.insert(config.keys, binding)
+  end
   if IS_MAC then
     for _, binding in ipairs(MAC) do
       table.insert(config.keys, binding)
@@ -152,7 +212,9 @@ function M.apply(config)
 
   -- wezterm.gui is absent when a headless mux server loads the config.
   if wezterm.gui then
-    config.key_tables = { search_mode = search_mode() }
+    config.key_tables = config.key_tables or {}
+    config.key_tables.search_mode = search_mode()
+    config.key_tables.copy_mode = copy_mode()
   end
 end
 

@@ -3,6 +3,7 @@
 -- holds the Cmd and Ctrl-Shift bindings, and these add to them.
 local wezterm = require("wezterm")
 local act = wezterm.action
+local keymap = require("keymap")
 local lima = require("lima")
 local picker = require("picker")
 local workspaces = require("workspaces")
@@ -70,63 +71,48 @@ local function repeatable(key, action)
   return { key = key, mods = "LEADER", action = again }
 end
 
--- Additions to WezTerm's vi-style copy mode: Y copies to
--- the end of the line, o and i jump between prompts, and / and ? search.
--- WezTerm's search starts upward, so Enter moves up and Ctrl-n down.
-local COPY_MODE = {
-  {
-    key = "Y",
-    mods = "SHIFT",
-    action = act.Multiple({
-      act.CopyMode({ SetSelectionMode = "Cell" }),
-      act.CopyMode("MoveToEndOfLineContent"),
-      act.CopyTo("ClipboardAndPrimarySelection"),
-      act.CopyMode("Close"),
-    }),
-  },
-  { key = "o", mods = "NONE", action = act.CopyMode({ MoveBackwardZoneOfType = "Prompt" }) },
-  { key = "i", mods = "NONE", action = act.CopyMode({ MoveForwardZoneOfType = "Prompt" }) },
-  { key = "/", mods = "NONE", action = act.CopyMode("EditPattern") },
-  { key = "?", mods = "SHIFT", action = act.CopyMode("EditPattern") },
+local PICKERS = {
+  workspaces = picker.open({ "mux-workspaces" }),
+  tabs = picker.open({ "mux-tabs" }),
+  agents = picker.open({ "mux-agents" }),
+  urls = picker.open({ "mux-urls" }),
 }
 
--- Identifies a binding by key and modifiers. WezTerm writes no modifiers
--- as nil, "", or "NONE".
-local function binding_id(binding)
-  local mods = binding.mods
-  if mods == nil or mods == "" then
-    mods = "NONE"
-  end
-  return binding.key .. "+" .. mods
-end
+local TOOLS = {
+  yazi = overlay({ "yazi" }),
+  lazygit = overlay({ "lazygit" }),
+  jjui = overlay({ "jjui" }),
+  scooter = overlay({ "scooter" }),
+  lazydocker = overlay({ "lazydocker" }),
+  keys = overlay({ "dots-keys" }),
+}
 
--- WezTerm's copy_mode table with COPY_MODE replacing the bindings of the
--- same keys.
-local function copy_mode()
-  local taken = {}
-  for _, binding in ipairs(COPY_MODE) do
-    taken[binding_id(binding)] = true
-  end
+local LIMA_AGENT = act.SpawnCommandInNewTab({ args = { "lima-agent" } })
 
-  local keys = {}
-  for _, binding in ipairs(wezterm.gui.default_key_tables().copy_mode) do
-    if not taken[binding_id(binding)] then
-      table.insert(keys, binding)
-    end
-  end
-  for _, binding in ipairs(COPY_MODE) do
-    table.insert(keys, binding)
-  end
-  return keys
-end
+-- Command palette entries for the pickers and tools, so Cmd-Shift-P finds
+-- them by name.
+local PALETTE = {
+  { brief = "Workspaces", icon = "cod_window", action = PICKERS.workspaces },
+  { brief = "Tabs in every workspace", icon = "cod_list_flat", action = PICKERS.tabs },
+  { brief = "Agents", icon = "cod_hubot", action = PICKERS.agents },
+  { brief = "Open URL from scrollback", icon = "cod_link_external", action = PICKERS.urls },
+  { brief = "Swap pane", icon = "cod_arrow_swap", action = act.PaneSelect({ mode = "SwapWithActive" }) },
+  { brief = "Lima VM shell in a new tab", icon = "cod_vm", action = lima.shell_tab },
+  { brief = "Claude Code in the Lima VM", icon = "cod_hubot", action = LIMA_AGENT },
+  { brief = "Files (yazi)", icon = "cod_files", action = TOOLS.yazi },
+  { brief = "Lazygit", icon = "cod_source_control", action = TOOLS.lazygit },
+  { brief = "jj UI (jjui)", icon = "cod_source_control", action = TOOLS.jjui },
+  { brief = "Search and replace (scooter)", icon = "cod_replace_all", action = TOOLS.scooter },
+  { brief = "Lazydocker", icon = "cod_package", action = TOOLS.lazydocker },
+  { brief = "Key reference", icon = "md_keyboard", action = TOOLS.keys },
+}
 
 function M.apply(config)
-  -- .chezmoidata/keys.toml sets the leader.
-  config.leader = { key = "{{ .keys.prefix }}", mods = "{{ .keys.prefix_mods }}", timeout_milliseconds = 1000 }
+  config.leader = { key = keymap.key, mods = keymap.mods, timeout_milliseconds = 1000 }
 
   local keys = {
-    -- @key wezterm :: {{ .keys.prefix_label }} :: Last tab (double-tap)
-    { key = "{{ .keys.prefix }}", mods = "LEADER|{{ .keys.prefix_mods }}", action = act.ActivateLastTab },
+    -- @key wezterm :: leader twice :: Last tab
+    { key = keymap.key, mods = "LEADER|" .. keymap.mods, action = act.ActivateLastTab },
     -- @key wezterm :: r :: Reload config
     { key = "r", mods = "LEADER", action = act.ReloadConfiguration },
     -- @key wezterm :: Ctrl-l :: Clear scrollback
@@ -150,6 +136,10 @@ function M.apply(config)
     { key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
     -- @key wezterm :: x :: Close pane
     { key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = true }) },
+    -- @key wezterm :: q :: Jump to a pane by label
+    { key = "q", mods = "LEADER", action = act.PaneSelect },
+    -- @key wezterm :: m :: Swap the pane with a labeled one
+    { key = "m", mods = "LEADER", action = act.PaneSelect({ mode = "SwapWithActive" }) },
 
     -- @key wezterm :: c :: New tab
     { key = "c", mods = "LEADER", action = lima.tab(act.SpawnTab("CurrentPaneDomain")) },
@@ -167,20 +157,20 @@ function M.apply(config)
     -- @key wezterm :: * :: Overlay shell (zoomed split)
     { key = "*", mods = "LEADER", action = overlay() },
     -- @key wezterm :: e :: File manager (yazi)
-    { key = "e", mods = "LEADER", action = overlay({ "yazi" }) },
+    { key = "e", mods = "LEADER", action = TOOLS.yazi },
     -- @key wezterm :: g :: Lazygit
-    { key = "g", mods = "LEADER", action = overlay({ "lazygit" }) },
+    { key = "g", mods = "LEADER", action = TOOLS.lazygit },
     -- @key wezterm :: G :: jj UI (jjui)
-    { key = "G", mods = "LEADER", action = overlay({ "jjui" }) },
+    { key = "G", mods = "LEADER", action = TOOLS.jjui },
     -- @key wezterm :: R :: Search and replace (scooter)
-    { key = "R", mods = "LEADER", action = overlay({ "scooter" }) },
+    { key = "R", mods = "LEADER", action = TOOLS.scooter },
     -- @key wezterm :: d :: Lazydocker
-    { key = "d", mods = "LEADER", action = overlay({ "lazydocker" }) },
+    { key = "d", mods = "LEADER", action = TOOLS.lazydocker },
     -- @key wezterm :: ? :: This reference
-    { key = "?", mods = "LEADER", action = overlay({ "dots-keys" }) },
+    { key = "?", mods = "LEADER", action = TOOLS.keys },
 
     -- @key wezterm :: f :: Workspace picker (workspaces, zoxide)
-    { key = "f", mods = "LEADER", action = picker.open({ "mux-workspaces" }) },
+    { key = "f", mods = "LEADER", action = PICKERS.workspaces },
     -- @key wezterm :: F :: Last workspace
     { key = "F", mods = "LEADER", action = workspaces.last() },
     -- @key wezterm :: S :: New named workspace
@@ -188,11 +178,11 @@ function M.apply(config)
     -- @key wezterm :: s :: Browse workspaces
     { key = "s", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
     -- @key wezterm :: w :: Switch tab, all workspaces
-    { key = "w", mods = "LEADER", action = picker.open({ "mux-tabs" }) },
+    { key = "w", mods = "LEADER", action = PICKERS.tabs },
     -- @key wezterm :: a :: Agent picker (all workspaces)
-    { key = "a", mods = "LEADER", action = picker.open({ "mux-agents" }) },
+    { key = "a", mods = "LEADER", action = PICKERS.agents },
     -- @key wezterm :: A :: Claude Code in the Lima VM, new tab
-    { key = "A", mods = "LEADER", action = act.SpawnCommandInNewTab({ args = { "lima-agent" } }) },
+    { key = "A", mods = "LEADER", action = LIMA_AGENT },
 
     -- @key wezterm :: Enter :: Copy mode
     { key = "Enter", mods = "LEADER", action = act.ActivateCopyMode },
@@ -204,23 +194,19 @@ function M.apply(config)
     -- @key wezterm :: t :: Hint-copy visible text (quick select)
     { key = "t", mods = "LEADER", action = act.QuickSelect },
     -- @key wezterm :: u :: Open URL from scrollback (tv)
-    {
-      key = "u",
-      mods = "LEADER",
-      action = picker.open({ "mux-urls" }),
-    },
+    { key = "u", mods = "LEADER", action = PICKERS.urls },
   }
 
+  config.keys = config.keys or {}
   for _, binding in ipairs(keys) do
     table.insert(config.keys, binding)
   end
   config.key_tables = config.key_tables or {}
   config.key_tables["repeat"] = repeat_keys
 
-  -- wezterm.gui is absent when a headless mux server loads the config.
-  if wezterm.gui then
-    config.key_tables.copy_mode = copy_mode()
-  end
+  wezterm.on("augment-command-palette", function()
+    return PALETTE
+  end)
 end
 
 return M
