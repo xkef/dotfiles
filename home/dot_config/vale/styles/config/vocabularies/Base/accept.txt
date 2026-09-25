@@ -67,6 +67,7 @@ seatbelt
 starship
 subcommands?
 taplo
+tinty
 tmux
 TOML
 toolchain

@@ -24,11 +24,12 @@ installs the mise toolchain, and sets fish as the default shell.
 | [Starship](https://starship.rs)                                  | Minimal, cross-shell prompt                                |
 | [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org) | Editor with the LazyVim distro, kickstart as fallback      |
 | [WezTerm](https://wezterm.org)                                   | Terminal and multiplexer, with an agent-aware status line  |
-| [tinty](https://github.com/tinted-theming/tinty)                 | Color schemes for the terminal, Neovim, delta, and pi      |
+| [tinty](https://github.com/tinted-theming/tinty)                 | Color themes for the terminal, Neovim, delta, and pi       |
 | [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder in the shell and WezTerm pickers              |
 | [atuin](https://atuin.sh)                                        | Searchable shell history with sync                         |
 | [Claude Code](https://claude.ai/), Codex, pi                     | AI coding agents, always launched in a nono sandbox        |
 | [Jujutsu](https://github.com/jj-vcs/jj)                          | Git-compatible version control, `jj`, with a simpler model |
+| [Lima](https://lima-vm.io)                                       | Linux development VM with the host's chezmoi setup         |
 | [Vale](https://vale.sh)                                          | Prose linter for markdown, Google style plus AI-tell rules |
 | eza, bat, fd, ripgrep, zoxide, yazi, mise                        | Command-line replacements and workflow tools               |
 
