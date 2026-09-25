@@ -96,7 +96,7 @@ local function update(window, pane)
   -- The host the active pane runs on, marked while it's the Lima VM.
   local host, color = wezterm.hostname(), "Teal"
   if lima.in_vm(pane) then
-    host, color = "sandbox " .. lima.HOST, "Maroon"
+    host, color = lima.MARK .. " " .. lima.HOST, "Maroon"
   end
   table.insert(right, { Foreground = { AnsiColor = color } })
   table.insert(right, { Attribute = { Intensity = "Bold" } })
@@ -106,17 +106,20 @@ end
 
 -- A tab reads " index:name ", named by program(): a gap of spaces, then
 -- the active tab reversed on blue and the others grey, or olive after
--- unseen output.
+-- unseen output. A tab whose active pane runs in the Lima VM adds the
+-- shield and takes maroon for blue.
 local function tab_title(tab, background)
   local pane = tab.active_pane
-  local text = " " .. tab.tab_index + 1 .. ":" .. program(pane) .. " "
+  local sandbox = lima.info_in_vm(pane)
+  local mark = sandbox and lima.MARK .. " " or ""
+  local text = " " .. tab.tab_index + 1 .. ":" .. mark .. program(pane) .. " "
   local gap = { { Background = { Color = background } }, { Text = TAB_GAP } }
 
   if tab.is_active then
     return {
       gap[1],
       gap[2],
-      { Background = { AnsiColor = "Navy" } },
+      { Background = { AnsiColor = sandbox and "Maroon" or "Navy" } },
       { Foreground = { Color = background } },
       { Attribute = { Intensity = "Bold" } },
       { Text = text },
@@ -129,7 +132,7 @@ local function tab_title(tab, background)
   return {
     gap[1],
     gap[2],
-    { Foreground = { AnsiColor = unseen and "Olive" or "Grey" } },
+    { Foreground = { AnsiColor = unseen and "Olive" or sandbox and "Maroon" or "Grey" } },
     { Text = text },
   }
 end

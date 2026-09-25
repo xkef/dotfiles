@@ -28,6 +28,10 @@ readonly ICON_WAITING='•'
 readonly ICON_BUSY='◦'
 readonly ICON_RUNNING='○'
 readonly ICON_IDLE='·'
+# The shield marks an agent in the Lima VM, as tab titles and the status
+# line do. Its pane reports the VM host through OSC 7.
+readonly SANDBOX_MARK=''
+readonly SANDBOX_CWD='file://lima-dev/'
 
 # Sort ranks: needs input first, working next, idle last.
 readonly RANK_WAITING=0
@@ -37,11 +41,13 @@ readonly RANK_IDLE=3
 
 # Emits tab-separated rank, pane, target, state, agent, tool, age, dir, and task.
 collect() {
-  local now pane target agent state tool epoch cwd task rank age
+  local now pane target agent state tool epoch cwd task rank age sandboxed
   now=$(date +%s)
+  sandboxed=" $(sandbox_panes | tr '\n' ' ') "
 
   while IFS=$'\t' read -r pane target agent state tool epoch cwd task; do
     age=$(human_age $((now - epoch)))
+    [[ "$sandboxed" == *" $pane "* ]] && agent="$SANDBOX_MARK $agent"
 
     case "$state" in
     waiting) rank=$RANK_WAITING ;;
@@ -69,6 +75,12 @@ join_panes() {
       if (pane in entry) { print pane, substr($0, split_at + 1), entry[pane] }
     }
   ' <(agent-state list) <(live_panes)
+}
+
+# Emits wezterm-<pane> for every pane that runs in the Lima VM.
+sandbox_panes() {
+  wezterm cli list --format json |
+    jq -r --arg cwd "$SANDBOX_CWD" '.[] | select(.cwd | startswith($cwd)) | "wezterm-\(.pane_id)"'
 }
 
 # Emits "pane target" for every live pane. A target reads "workspace:tab".
