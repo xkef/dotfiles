@@ -7,7 +7,7 @@
 # those entries from a hook, pi from an extension, and the Codex launcher
 # directly.
 #
-#   mux-agents          fzf picker. Enter switches to the agent's pane.
+#   mux-agents          tv picker. Enter switches to the agent's pane.
 #   mux-agents --count  status line segment ("2• 1◦"), empty when nothing runs
 #
 # It jumps by focusing the pane through `wezterm cli` and setting the
@@ -18,6 +18,9 @@ set -euo pipefail
 
 # How long the picker waits to be closed after it reports a choice.
 readonly PICKER_WAIT=5
+
+# Picker size in percent: the whole picker, and the preview inside it.
+readonly UI_SCALE=90 PREVIEW_SIZE=75
 
 # Glyph weight encodes the state, so the status line doesn't need color. A
 # filled dot needs input, a ring works, a small dot idles.
@@ -114,15 +117,14 @@ if [[ "${1:-}" == --count ]]; then
 fi
 
 # ── Picker mode ──────────────────────────────────────
-# Each fzf line is "pane<TAB>target<TAB>display". --with-nth=3 shows only the
+# Each tv line is "pane<TAB>target<TAB>display". tv shows only the
 # rendered column, so a path with spaces can't break the field split.
 #
 # Each column takes the width of its widest value, and a column that stays
 # empty for every agent disappears. Fixed widths padded one agent out to a line
 # of mostly blanks.
 render() {
-  local _rank pane target state agent tool age dir task icon color display row
-  local -r RED='\033[31m' YELLOW='\033[33m' DIM='\033[2m' RESET='\033[0m'
+  local _rank pane target state agent tool age dir task icon display row
   local -a entries=()
   # Rows use a unit separator instead of a tab. read treats a tab as
   # whitespace and folds a run of them into one, which would shift every column
@@ -146,16 +148,14 @@ render() {
   for row in "${entries[@]}"; do
     IFS=$SEP read -r pane target state agent tool age dir task <<<"$row"
     case "$state" in
-    waiting) icon=$ICON_WAITING color=$RED ;;
-    busy) icon=$ICON_BUSY color=$YELLOW ;;
-    running) icon=$ICON_RUNNING color=$DIM ;;
-    *) icon=$ICON_IDLE color=$DIM ;;
+    waiting) icon=$ICON_WAITING ;;
+    busy) icon=$ICON_BUSY ;;
+    running) icon=$ICON_RUNNING ;;
+    *) icon=$ICON_IDLE ;;
     esac
 
-    # Pad the state word before coloring it. printf counts the escape bytes and
-    # would otherwise pad the column short.
-    printf -v display '%b%s %-*s%b  %-*s  %-*s' \
-      "$color" "$icon" "$w_state" "$state" "$RESET" \
+    printf -v display '%s %-*s  %-*s  %-*s' \
+      "$icon" "$w_state" "$state" \
       "$w_agent" "$agent" "$w_target" "$target"
     if ((w_task > 0)); then
       printf -v display '%s  %-*s' "$display" "$w_task" "$task"
@@ -164,7 +164,7 @@ render() {
     if ((w_tool > 0)); then
       printf -v display '%s  %-*s' "$display" "$w_tool" "$tool"
     fi
-    printf -v display '%s  %b%s%b' "$display" "$DIM" "$age" "$RESET"
+    printf -v display '%s  %s' "$display" "$age"
 
     printf '%s\t%s\t%s\n' "${pane#wezterm-}" "$target" "$display"
   done
@@ -177,21 +177,22 @@ if [ -z "$rows" ]; then
   exit 0
 fi
 
-# --height overrides the 60% in FZF_DEFAULT_OPTS. The picker runs in a zoomed
-# split that fills the tab, and the margin insets it like a popup.
-selection=$(printf '%s\n' "$rows" | fzf \
-  --height=100% --margin=7%,2% \
-  --ansi --no-sort --reverse \
-  --gap=0 --no-separator \
-  --delimiter='\t' --with-nth=3 \
-  --border-label ' agents ' --prompt '> ' \
-  --header 'enter jump | ctrl-/ preview' \
-  --bind 'tab:down,btab:up' \
-  --bind 'ctrl-d:preview-half-page-down' \
-  --bind 'ctrl-u:preview-half-page-up' \
-  --bind 'ctrl-/:toggle-preview' \
-  --preview-window 'down:75%,wrap,follow' \
-  --preview 'wezterm cli get-text --escapes --pane-id {1}') || exit 0
+# tv can't follow the end of a preview, so the preview keeps as many of the
+# pane's last lines as fit. See mux-tabs.
+height=$(stty size </dev/tty | cut -d' ' -f1)
+preview_lines=$((height * UI_SCALE * PREVIEW_SIZE / 10000 - 6))
+
+# The picker runs in a zoomed split that fills the tab, and the scale
+# insets it like a popup.
+selection=$(printf '%s\n' "$rows" | tv \
+  --ui-scale "$UI_SCALE" --no-sort --no-remote \
+  --source-display '{split:\t:2}' \
+  --input-header 'agents' \
+  --keybindings 'tab="select_next_entry";backtab="select_prev_entry"' \
+  --layout portrait --preview-size "$PREVIEW_SIZE" \
+  --preview-header '{split:\t:1}' \
+  --preview-command "mux-tabs preview {split:\t:0} $preview_lines")
+[ -n "$selection" ] || exit 0
 
 IFS=$'\t' read -r pane target _ <<<"$selection"
 wezterm cli activate-pane --pane-id "$pane"

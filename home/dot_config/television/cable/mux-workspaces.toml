@@ -1,0 +1,40 @@
+# WezTerm workspace picker. mux-workspaces opens it and acts on the choice.
+# Each row reads "display<TAB>name<TAB>path". Ctrl-S cycles the sources.
+[metadata]
+name = "mux-workspaces"
+description = "WezTerm workspaces, zoxide directories, and a directory search"
+requirements = ["mux-workspaces"]
+
+[source]
+command = [
+  { name = "All", run = "mux-workspaces list all" },
+  { name = "Workspaces", run = "mux-workspaces list workspaces" },
+  { name = "Zoxide", run = "mux-workspaces list zoxide" },
+  { name = "Find", run = "mux-workspaces list find" },
+]
+no_sort = true
+display = "{split:\\t:0}"
+
+[preview]
+command = "mux-workspaces preview '{split:\\t:1}' '{split:\\t:2}'"
+
+[ui]
+ui_scale = 80
+
+[ui.input_bar]
+header = "workspaces │ C-s source │ C-w kill"
+
+[ui.preview_panel]
+header = "{split:\\t:1}"
+size = 55
+hidden = true
+
+[keybindings]
+tab = "select_next_entry"
+backtab = "select_prev_entry"
+ctrl-w = ["actions:kill", "reload_source"]
+
+[actions.kill]
+description = "Close every pane of the workspace"
+command = "mux-workspaces kill '{split:\\t:1}'"
+mode = "fork"

@@ -4,12 +4,16 @@
 # sets the switch_workspace user var to its workspace, and waits. ~/.config/wezterm/picker.lua reads it, closes the
 # picker, and switches.
 #
-#   mux-tabs         fzf picker
+#   mux-tabs         tv picker
 #   mux-tabs panes   every live pane with its workspace and tab
+#   mux-tabs preview <pane> [lines]  the pane's screen, or its last lines
 set -euo pipefail
 
 # How long the picker waits to be closed after it reports a choice.
 readonly PICKER_WAIT=5
+
+# Picker size in percent: the whole picker, and the preview inside it.
+readonly UI_SCALE=60 PREVIEW_SIZE=60
 
 # Emits "pane<TAB>workspace<TAB>workspace:tab<TAB>active<TAB>title" for every
 # live pane, with tabs numbered from 1 in each window's order. mux-agents
@@ -29,10 +33,16 @@ if [ "${1:-}" = panes ]; then
   exit 0
 fi
 
+# tv prints the ESC ( B charset escape as text, so the preview drops it.
+if [ "${1:-}" = preview ]; then
+  wezterm cli get-text --escapes --pane-id "$2" | sed $'s/\e(B//g' | tail -n "${3:-+1}"
+  exit 0
+fi
+
 # One row per tab, by its active pane. The picker's own tab drops out,
 # since its active pane is the picker.
 rows=$(panes | awk -F'\t' -v OFS='\t' -v self="${WEZTERM_PANE:-}" '
-  $4 == "true" && $1 != self { print $1, $2, "\033[34m" $3 "\033[0m", $5 }')
+  $4 == "true" && $1 != self { print $1, $2, $3, $5 }')
 
 if [ -z "$rows" ]; then
   echo "No other tabs"
@@ -40,19 +50,23 @@ if [ -z "$rows" ]; then
   exit 0
 fi
 
-# The picker runs in a zoomed split that fills the tab, and the margin
-# insets it like a 60% popup.
-selection=$(printf '%s\n' "$rows" | fzf \
-  --height=100% --margin=20%,20% \
-  --ansi --no-sort --reverse \
-  --gap=0 --no-separator \
-  --delimiter='\t' --with-nth=3.. \
-  --border-label ' tabs ' --prompt '> ' \
-  --header 'enter switch | ctrl-/ preview' \
-  --bind 'tab:down,btab:up' \
-  --bind 'ctrl-/:toggle-preview' \
-  --preview-window 'down:60%,wrap,follow' \
-  --preview 'wezterm cli get-text --escapes --pane-id {1}') || exit 0
+# tv can't follow the end of a preview, so the preview keeps as many of the
+# pane's last lines as fit. Borders, the input bar, and the status bar take
+# about 6 rows, measured on tv 0.15.
+height=$(stty size </dev/tty | cut -d' ' -f1)
+preview_lines=$((height * UI_SCALE * PREVIEW_SIZE / 10000 - 6))
+
+# The picker runs in a zoomed split that fills the tab, and the scale
+# insets it like a popup.
+selection=$(printf '%s\n' "$rows" | tv \
+  --ui-scale "$UI_SCALE" --no-sort --no-remote \
+  --source-display '{split:\t:2..}' \
+  --input-header 'tabs' \
+  --keybindings 'tab="select_next_entry";backtab="select_prev_entry"' \
+  --layout portrait --preview-size "$PREVIEW_SIZE" \
+  --preview-header '{split:\t:2}' \
+  --preview-command "mux-tabs preview {split:\t:0} $preview_lines")
+[ -n "$selection" ] || exit 0
 
 IFS=$'\t' read -r pane workspace _ <<<"$selection"
 wezterm cli activate-pane --pane-id "$pane"

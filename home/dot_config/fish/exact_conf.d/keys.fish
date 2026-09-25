@@ -16,13 +16,11 @@ status is-interactive; or return
 bind \cp up-or-search
 bind \cn down-or-search
 
-# @key shell :: Ctrl-T :: File search (fzf)
-# @key shell :: Alt-C :: Directory jump under cwd (fzf + fd)
-# fzf --fish binds these in fzf.fish.
-
-# @key shell :: Alt-Z :: Jump to visited directory (fzf+zoxide)
-# @key shell :: Alt-/ :: Live grep file contents (rg + fzf)
-# fzf.fish binds these.
+# @key shell :: Ctrl-T :: Pick for the current command (tv)
+# @key shell :: Alt-C :: Directory jump under cwd (tv)
+# @key shell :: Alt-Z :: Jump to visited directory (tv + zoxide)
+# @key shell :: Alt-/ :: Grep file contents (tv)
+# television.fish binds these.
 
 # @key shell :: Ctrl-X Ctrl-E :: Edit command in nvim
 bind \cx\ce edit_command_buffer

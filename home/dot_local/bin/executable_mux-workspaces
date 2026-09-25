@@ -2,7 +2,7 @@
 # Workspace picker for WezTerm. Lists open workspaces, zoxide directories,
 # and a directory search.
 #
-#   mux-workspaces                  fzf picker. Enter switches workspace.
+#   mux-workspaces                  tv picker. Enter switches workspace.
 #   mux-workspaces list <source>    rows for all, workspaces, zoxide, or find
 #   mux-workspaces preview <name> <path>
 #   mux-workspaces kill <name>      closes every pane of a workspace
@@ -11,12 +11,11 @@
 # WezTerm can't switch workspace from the CLI, so the picker sets the
 # switch_workspace user var to "name<TAB>path" and waits.
 # ~/.config/wezterm/picker.lua reads it, closes the picker, and switches.
+# The mux-workspaces channel in ~/.config/television/cable defines the picker.
 set -euo pipefail
 
 # How long the picker waits to be closed after it reports a choice.
 readonly PICKER_WAIT=5
-
-readonly BLUE='\033[34m' CYAN='\033[36m' YELLOW='\033[33m' RESET='\033[0m'
 
 # Nerd Font icons per source: terminal, folder, and magnifier.
 readonly ICON_WORKSPACE=$'\xef\x92\x89' ICON_ZOXIDE=$'\xef\x81\xbb'
@@ -32,25 +31,25 @@ tilde() {
 
 # Emits rows for directories on stdin, named after their last component.
 dir_rows() {
-  local color=$1 icon=$2 dir
+  local icon=$1 dir
   while IFS= read -r dir; do
-    printf '%b%s%b %s\t%s\t%s\n' "$color" "$icon" "$RESET" "$(tilde "$dir")" "${dir##*/}" "$dir"
+    printf '%s %s\t%s\t%s\n' "$icon" "$(tilde "$dir")" "${dir##*/}" "$dir"
   done
 }
 
 workspaces() {
   wezterm cli list --format json | jq -r '[.[].workspace] | unique[]' |
     while IFS= read -r name; do
-      printf '%b%s%b %s\t%s\t\n' "$BLUE" "$ICON_WORKSPACE" "$RESET" "$name" "$name"
+      printf '%s %s\t%s\t\n' "$ICON_WORKSPACE" "$name" "$name"
     done
 }
 
 zoxide_dirs() {
-  zoxide query --list 2>/dev/null | dir_rows "$CYAN" "$ICON_ZOXIDE"
+  zoxide query --list 2>/dev/null | dir_rows "$ICON_ZOXIDE"
 }
 
 find_dirs() {
-  fd -H -d 2 -t d -E .Trash . "$HOME" 2>/dev/null | sed 's:/$::' | dir_rows "$YELLOW" "$ICON_FIND"
+  fd -H -d 2 -t d -E .Trash . "$HOME" 2>/dev/null | sed 's:/$::' | dir_rows "$ICON_FIND"
 }
 
 list() {
@@ -74,7 +73,7 @@ preview() {
   fi
   pane=$(wezterm cli list --format json |
     jq -r --arg w "$name" 'first(.[] | select(.workspace == $w) | .pane_id)')
-  wezterm cli get-text --escapes --pane-id "$pane"
+  mux-tabs preview "$pane"
 }
 
 kill_workspace() {
@@ -100,26 +99,8 @@ kill)
   ;;
 esac
 
-# The picker runs in a zoomed split that fills the tab, and the margin
-# insets it like an 80% by 70% popup.
-selection=$(list all | fzf \
-  --height=100% --margin=15%,10% \
-  --ansi --no-sort --reverse \
-  --gap=0 --no-separator \
-  --delimiter='\t' --with-nth=1 \
-  --border-label ' workspaces ' --prompt '> ' \
-  --header 'C-a all | C-t workspaces | C-x zoxide | C-f find | C-w kill | C-/ preview' \
-  --bind 'tab:down,btab:up' \
-  --bind 'ctrl-a:change-prompt(> )+reload(mux-workspaces list all)' \
-  --bind 'ctrl-t:change-prompt(workspaces> )+reload(mux-workspaces list workspaces)' \
-  --bind 'ctrl-x:change-prompt(zoxide> )+reload(mux-workspaces list zoxide)' \
-  --bind 'ctrl-f:change-prompt(find> )+reload(mux-workspaces list find)' \
-  --bind 'ctrl-d:preview-half-page-down' \
-  --bind 'ctrl-u:preview-half-page-up' \
-  --bind 'ctrl-/:toggle-preview' \
-  --bind 'ctrl-w:execute(mux-workspaces kill {2})+change-prompt(> )+reload(mux-workspaces list all)' \
-  --preview-window 'right:55%,hidden,wrap' \
-  --preview 'mux-workspaces preview {2} {3}') || exit 0
+selection=$(tv mux-workspaces --no-remote)
+[ -n "$selection" ] || exit 0
 
 IFS=$'\t' read -r _ name dir <<<"$selection"
 printf '\033]1337;SetUserVar=switch_workspace=%s\007' \

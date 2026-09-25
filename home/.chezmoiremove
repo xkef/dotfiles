@@ -10,8 +10,10 @@
 .ssh/github_secondary.pub
 .config/kickstart/lazy-lock.json
 .pi/agent/extensions/pi-show-diffs.json
-.config/television/config.toml
 .config/fish/functions/__tv_smart.fish
+.config/fish/functions/__fzf_grep.fish
+.config/fish/functions/__fzf_zoxide.fish
+.local/bin/fzf-preview
 .local/bin/agent-task
 .config/tmux
 .config/sesh

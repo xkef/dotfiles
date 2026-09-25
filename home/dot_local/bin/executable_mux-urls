@@ -26,14 +26,12 @@ if [ -z "$urls" ]; then
   exit 0
 fi
 
-# The picker runs in a zoomed split that fills the tab, and the margin
-# insets it like a 60% by 40% popup.
-picked=$(printf '%s\n' "$urls" | fzf \
-  --height=100% --margin=30%,20% \
-  --multi --no-sort --reverse \
-  --gap=0 --no-separator \
-  --border-label ' Open URL ' --prompt '> ' \
-  --header 'enter open | tab mark') || exit 0
+# The picker runs in a zoomed split that fills the tab, and the scale
+# insets it like a popup. Tab marks more than one URL.
+picked=$(printf '%s\n' "$urls" | tv \
+  --ui-scale 60 --no-sort --no-remote --no-preview \
+  --input-header 'Open URL')
+[ -n "$picked" ] || exit 0
 
 case "$(uname)" in
 Darwin) opener=open ;;

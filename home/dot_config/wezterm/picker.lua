@@ -1,4 +1,4 @@
--- Opens an fzf picker script in a zoomed split and acts on its choice.
+-- Opens a tv picker script in a zoomed split and acts on its choice.
 --
 -- A script reports its choice by setting a user var on its own pane, such
 -- as switch_workspace, and lingers until this module closes the pane. The

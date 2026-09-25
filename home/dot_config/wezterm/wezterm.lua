@@ -5,7 +5,7 @@
 --   colors.lua      the palette of the tinty scheme that `theme` applied
 --   keys.lua        macOS-style key and mouse bindings
 --   leader.lua      leader bindings for panes, tabs, and pickers
---   picker.lua      fzf pickers in a zoomed split, and their choices
+--   picker.lua      tv pickers in a zoomed split, and their choices
 --   workspaces.lua  workspace switching
 --   status.lua      tab titles and the status line, with the agent count
 local wezterm = require("wezterm")
@@ -89,7 +89,7 @@ config.scrollback_lines = 50000
 config.audible_bell = "Disabled"
 config.notification_handling = "SuppressFromFocusedPane"
 
--- Left Option sends Alt for the shell and fzf bindings. Right Option still
+-- Left Option sends Alt for the shell and tv bindings. Right Option still
 -- types special characters such as @, [], and {}.
 config.send_composed_key_when_left_alt_is_pressed = false
 config.send_composed_key_when_right_alt_is_pressed = true

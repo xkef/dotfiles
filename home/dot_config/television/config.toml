@@ -1,0 +1,10 @@
+# https://alexpasmantier.github.io/television/user-guide/configuration
+# tv merges this file over its defaults. Channels of your own go in ./cable.
+
+[ui]
+# The default theme uses ANSI color names, so it follows the tinty scheme.
+theme = "default"
+
+[keybindings]
+ctrl-d = "scroll_preview_half_page_down"
+ctrl-u = "scroll_preview_half_page_up"

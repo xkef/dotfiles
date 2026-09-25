@@ -72,6 +72,7 @@ tmux
 TOML
 toolchain
 TUI
+tv
 unescaped
 unmanaged
 unpushed
