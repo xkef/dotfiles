@@ -1,7 +1,6 @@
 gui:
   nerdFontsVersion: "3"
   showBottomLine: false
-  border: rounded
 git:
-  pagers:
-    - pager: delta --paging=never --side-by-side --hunk-header-style=omit
+  diffRenderers:
+    - command: delta --paging=never --side-by-side --hunk-header-style=omit
