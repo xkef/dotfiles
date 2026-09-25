@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Runs Claude Code in the Lima VM from ~/.config/lima/dev.yaml, in the
+# current directory, with permission prompts off. The VM is the sandbox:
+# it sees ~/code and ~/work at their host paths and nothing else of $HOME.
+#
+#   lima-agent [claude args...]
+#
+# The OAuth token comes from 1Password on every launch and reaches the
+# guest through stdin, so it never shows up in a process list. The guest
+# deletes its copy once the agent has it in its environment. WEZTERM_PANE
+# goes along so the agent's hooks report to the `mux-agents` picker.
+set -euo pipefail
+
+readonly VM=dev
+readonly TOKEN_REF="op://Private/Claude Code/token"
+readonly SHARED_DIRS=("$HOME/code" "$HOME/work")
+
+shared=false
+for dir in "${SHARED_DIRS[@]}"; do
+  case "$PWD/" in "$dir"/*) shared=true ;; esac
+done
+if [ "$shared" = false ]; then
+  echo "lima-agent: $PWD is not shared with the VM" >&2
+  exit 1
+fi
+
+# The VM mounts the agent state directory, which must exist first.
+mkdir -p "${XDG_STATE_HOME:-$HOME/.local/state}/agents"
+
+token_file=".cache/lima-agent/token.$$"
+op read "$TOKEN_REF" |
+  limactl shell --start --workdir / "$VM" -- \
+    sh -c 'umask 077 && mkdir -p "${1%/*}" && cat >"$1"' sh "$token_file"
+
+exec limactl shell --workdir "$PWD" "$VM" -- \
+  env WEZTERM_PANE="${WEZTERM_PANE:-}" fish -lc '
+    set -lx CLAUDE_CODE_OAUTH_TOKEN (cat ~/$argv[1])
+    rm ~/$argv[1]
+    command claude --dangerously-skip-permissions $argv[2..]
+    set -l rc $status
+    agent-state clear
+    exit $rc' "$token_file" "$@"

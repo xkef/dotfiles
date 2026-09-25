@@ -152,6 +152,8 @@ function M.apply(config)
 
     -- @key wezterm :: c :: New tab
     { key = "c", mods = "LEADER", action = act.SpawnTab("CurrentPaneDomain") },
+    -- @key wezterm :: v :: New tab in the Lima VM
+    { key = "v", mods = "LEADER", action = act.SpawnTab({ DomainName = "lima-dev" }) },
     -- @key wezterm :: n / p :: Next / previous tab (repeatable)
     repeatable("n", act.ActivateTabRelative(1)),
     repeatable("p", act.ActivateTabRelative(-1)),
@@ -188,6 +190,8 @@ function M.apply(config)
     { key = "w", mods = "LEADER", action = picker.open({ "mux-tabs" }) },
     -- @key wezterm :: a :: Agent picker (all workspaces)
     { key = "a", mods = "LEADER", action = picker.open({ "mux-agents" }) },
+    -- @key wezterm :: A :: Claude Code in the Lima VM, new tab
+    { key = "A", mods = "LEADER", action = act.SpawnCommandInNewTab({ args = { "lima-agent" } }) },
 
     -- @key wezterm :: Enter :: Copy mode
     { key = "Enter", mods = "LEADER", action = act.ActivateCopyMode },
