@@ -7,10 +7,11 @@ packages=(
   {{ . | quote }}
 {{ end -}}
 )
-# GUI packages only on bare metal, never in CI, VMs, or containers.
+# GUI apps and the agent sandbox only on bare metal, never in CI, VMs, or
+# containers.
 if [[ "${CI:-}" != true ]] && ! systemd-detect-virt -q 2>/dev/null; then
   packages+=(
-{{ range .packages.arch.gui -}}
+{{ range .packages.arch.bare_metal -}}
     {{ . | quote }}
 {{ end -}}
   )

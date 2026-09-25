@@ -102,7 +102,7 @@ main = [
   "xh",              # fast HTTP client (HTTPie-compatible)
   "hurl",            # HTTP request testing with plain text files
   "sd",              # intuitive find-and-replace (sed alt)
-  "scooter",         # interactive find-and-replace TUI
+  "scooter-bin",     # interactive find-and-replace TUI (AUR)
   "dust",            # disk usage viewer (du alt)
   "duf",             # disk free viewer (df alt)
   "procs",           # modern ps replacement
@@ -112,13 +112,12 @@ main = [
   "difftastic",      # structural diff tool
   "lazygit",         # terminal UI for git
   "jujutsu",         # Jujutsu version control
-  "jjui",            # terminal UI for jj
+  "jjui-bin",        # terminal UI for jj (AUR)
   "mise",            # dev tool version manager
   "podman",          # rootless container engine
   "lazydocker",      # terminal UI for Docker/Podman
   "fx",              # terminal JSON viewer
   "bubblewrap",      # unprivileged sandboxing
-  "nono-ai",         # capability-based sandbox (AUR; plain "nono" is a puzzle game)
   "ccusage",         # Claude Code usage analyzer (AUR)
   "yazi",            # terminal file manager
   "glow",            # terminal markdown renderer
@@ -131,13 +130,14 @@ main = [
   "xdg-ninja",       # audit XDG base-dir compliance
   "jdtls",           # Java language server (AUR)
 ]
-gui = [
-  "xclip",         # X11 clipboard utility
-  "wl-clipboard",  # Wayland clipboard utility
-  "libnotify",     # notify-send for agent notifications
-  "wezterm-git",   # terminal and multiplexer (AUR; the repo package is the 2024-02 release)
-  "neovide",       # GUI client for Neovim
-  "1password",     # password manager
-  "1password-cli", # 1Password CLI (op)
-  "handy",         # offline speech-to-text app
+bare_metal = [
+  "xclip",               # X11 clipboard utility
+  "wl-clipboard",        # Wayland clipboard utility
+  "libnotify",           # notify-send for agent notifications
+  "wezterm-nightly-bin", # terminal and multiplexer (AUR; the repo package is the 2024-02 release)
+  "neovide",             # GUI client for Neovim
+  "1password",           # password manager
+  "1password-cli",       # 1Password CLI (op)
+  "handy-bin",           # offline speech-to-text app (AUR, x86_64 only)
+  "nono-ai-bin",         # capability-based sandbox (AUR; plain "nono" is a puzzle game)
 ]
