@@ -18,4 +18,3 @@ ctrl-d = ["actions:remove", "reload_source"]
 [actions.remove]
 description = "Remove the directory from zoxide"
 command = "zoxide remove '{}'"
-mode = "fork"
