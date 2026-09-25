@@ -5,8 +5,8 @@ description: Create single-file HTML summaries of agent sessions, agent output, 
 
 # HTML summary
 
-Create a self-contained HTML report that turns agent output or codebase
-findings into a short, visual explanation.
+Create a self-contained HTML report that turns agent output or codebase findings
+into a short, visual explanation.
 
 ## Inputs
 

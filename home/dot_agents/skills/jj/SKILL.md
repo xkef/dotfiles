@@ -5,20 +5,19 @@ description: How to use `jj`, the Jujutsu version control system. Use when worki
 
 # Jujutsu
 
-Jujutsu, `jj`, works as a Git-compatible version control system.
-This setup runs it colocated, with a `.jj` directory next
-to `.git`. A `.jj` directory marks a jj repository. Git
-commands still work for reading objects: `git show`,
+Jujutsu, `jj`, works as a Git-compatible version control system. This setup runs
+it colocated, with a `.jj` directory next to `.git`. A `.jj` directory marks a
+jj repository. Git commands still work for reading objects: `git show`,
 `git log`, `git grep`. Use `jj` to create commits.
 
 ## No staging area
 
-Every `jj` command snapshots the working directory. `jj`
-respects `.gitignore`. To stop tracking a file, add it to
-`.gitignore` and run `jj file untrack <file>...`.
+Every `jj` command snapshots the working directory. `jj` respects `.gitignore`.
+To stop tracking a file, add it to `.gitignore` and run
+`jj file untrack <file>...`.
 
-Any `jj` command that creates or edits a change takes
-file arguments. Always pass them.
+Any `jj` command that creates or edits a change takes file arguments. Always
+pass them.
 
 ## Common commands
 
@@ -48,9 +47,8 @@ file arguments. Always pass them.
 
 ## Creating commits
 
-Never run `jj commit` without file arguments unless
-instructed to. Use `jj split <file>...` or
-`jj commit <file>...` to select files.
+Never run `jj commit` without file arguments unless instructed to. Use
+`jj split <file>...` or `jj commit <file>...` to select files.
 
 | Command               | Description                                                      |
 | --------------------- | ---------------------------------------------------------------- |

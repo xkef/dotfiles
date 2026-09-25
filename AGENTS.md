@@ -11,8 +11,8 @@ belongs to the repo state.
   `git reset`, or `git stash` unless the user asks for a Git command or the
   operation inspects Git objects.
 - When committing, use the `commit` skill and the `jj` skill if available.
-- Pass file paths to mutating jj commands so unrelated user changes stay out
-  of the operation.
+- Pass file paths to mutating jj commands so unrelated user changes stay out of
+  the operation.
 - Never include `.claude-notes/` or ignored local runtime and config files in a
   commit unless the user asks.
 
@@ -20,8 +20,8 @@ belongs to the repo state.
 
 More than one gh login exists. The primary account, `xkef`, holds this repo and
 sits keyring-active in gh. git and jj pushes route through
-`gh auth git-credential`, which picks the active account. To run one command
-as another account without touching global state, set `GH_TOKEN` inline. The
+`gh auth git-credential`, which picks the active account. To run one command as
+another account without touching global state, set `GH_TOKEN` inline. The
 credential helper follows it, so this routes `gh`, `git`, and `jj git push`
 alike:
 
@@ -34,5 +34,5 @@ mise, as in this `mise.local.toml`:
     GH_TOKEN = "{{ exec(command='gh auth token --user <account>') }}"
 
 Don't run `gh auth switch`. It misroutes concurrent sessions. A stray
-`GITHUB_TOKEN` in the environment pins plain `gh` to that account.
-`GH_TOKEN` overrides it, or prefix the command with `env -u GITHUB_TOKEN`.
+`GITHUB_TOKEN` in the environment pins plain `gh` to that account. `GH_TOKEN`
+overrides it, or prefix the command with `env -u GITHUB_TOKEN`.

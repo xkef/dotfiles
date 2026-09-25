@@ -5,21 +5,19 @@ description: Research GitHub repositories, issues, pull requests, users, or anyt
 
 # Research GitHub with `gh`
 
-Use `gh` to research GitHub. Never use web search or web
-fetch for it. `gh` gives authenticated, structured access
-to every GitHub resource.
+Use `gh` to research GitHub. Never use web search or web fetch for it. `gh`
+gives authenticated, structured access to every GitHub resource.
 
 ## Extracting the repo identifier
 
-From a full URL like `https://github.com/owner/repo`,
-take `owner/repo`. From a bare repo name, run
-`gh search repos <name> --limit 5` and confirm the match
+From a full URL like `https://github.com/owner/repo`, take `owner/repo`. From a
+bare repo name, run `gh search repos <name> --limit 5` and confirm the match
 with the user if more than one fits.
 
 ## Commands by category
 
-Run independent commands in parallel. Replace `owner/repo`
-with the actual identifier.
+Run independent commands in parallel. Replace `owner/repo` with the actual
+identifier.
 
 ### Repo overview
 
@@ -67,8 +65,7 @@ gh search code <query> --limit 10
 
 ## Presenting results
 
-Condense the data into a short, factual summary. Call out
-warning signs: archived, no license, unusual activity
-level, high issue count, stale releases. Answer the
-question the user asked. Don't dump every field for a
-narrow question.
+Condense the data into a short, factual summary. Call out warning signs:
+archived, no license, unusual activity level, high issue count, stale releases.
+Answer the question the user asked. Don't dump every field for a narrow
+question.

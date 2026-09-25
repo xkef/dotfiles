@@ -35,17 +35,17 @@ installs the mise toolchain, and sets fish as the default shell.
 
 ## Keys
 
-Neovim uses `Space` as leader and WezTerm uses `Ctrl-Space`.
-Change both in [`home/.chezmoidata/keys.toml`](home/.chezmoidata/keys.toml). `leader ?`
-in either lists the bindings.
+Neovim uses `Space` as leader and WezTerm uses `Ctrl-Space`. Change both in
+[`home/.chezmoidata/keys.toml`](home/.chezmoidata/keys.toml). `leader ?` in
+either lists the bindings.
 
 `dots theme` switches WezTerm, Neovim, delta, and pi together through tinty.
 
 ## Make it yours
 
-Edit [`home/.chezmoidata/identity.toml`](home/.chezmoidata/identity.toml).
-Git, jj, and SSH read your name, email, and signing key from it. When the
-1Password `op` command exists, git and jj read name and email from 1Password.
+Edit [`home/.chezmoidata/identity.toml`](home/.chezmoidata/identity.toml). Git,
+jj, and SSH read your name, email, and signing key from it. When the 1Password
+`op` command exists, git and jj read name and email from 1Password.
 
 ## Credits
 
