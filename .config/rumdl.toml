@@ -12,6 +12,5 @@ disable = ["MD025", "MD036", "MD041"]
 "home/dot_claude/CLAUDE.md.tmpl" = ["MD022"]
 
 [MD013]
-tables = false
 reflow = true
 reflow-mode = "normalize"
