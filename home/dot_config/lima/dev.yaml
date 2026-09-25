@@ -35,7 +35,7 @@ mounts:
     writable: true
 
 # The dotfiles expect /home/<user>, not Lima's default /home/<user>.linux.
-#  starts user.shell, not the login shell, and the image
+# `limactl shell` starts user.shell, not the login shell, and the image
 # ships fish for it.
 user:
   home: "/home/{{.User}}"
@@ -63,5 +63,5 @@ provision:
       done
       # The Claude Code installer rewrites settings.json, so chezmoi runs
       # after it.
-      curl -fsSL https://claude.ai/install.sh | bash
+      curl -fsSL https://claude.ai/install.sh | bash -s -- latest
       chezmoi init --apply --source "$HOME/dotfiles" --promptDefaults
