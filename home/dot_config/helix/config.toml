@@ -5,7 +5,6 @@ theme = "catppuccin_mocha"
 # ── Editor ──────────────────────────────────────────
 [editor]
 line-number = "relative"
-mouse = true
 scrolloff = 8
 shell = ["fish", "-c"]
 bufferline = "multiple"
@@ -14,19 +13,16 @@ true-color = true
 
 [editor.cursor-shape]
 insert = "bar"
-normal = "block"
 select = "underline"
 
 [editor.file-picker]
 hidden = false
 
 [editor.lsp]
-display-messages = true
 display-inlay-hints = true
 
 [editor.statusline]
 left = ["mode", "spinner", "file-name", "file-modification-indicator"]
-center = []
 right = [
   "diagnostics",
   "selections",
@@ -35,7 +31,6 @@ right = [
   "file-encoding",
   "file-type",
 ]
-separator = "│"
 
 [editor.indent-guides]
 render = true
@@ -47,8 +42,6 @@ enable = true
 [editor.whitespace.render]
 tab = "all"
 nbsp = "all"
-newline = "none"
-space = "none"
 
 # ── Keybindings ─────────────────────────────────────
 # Stays close to the neovim bindings where possible.
