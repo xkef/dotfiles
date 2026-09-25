@@ -7,9 +7,8 @@ local path = require("path")
 
 local M = {}
 
--- The helpers fork, so the status line refreshes their output at these
--- intervals instead of on every redraw.
-local AGENTS_INTERVAL = 2
+-- The helper forks, so the status line refreshes its output at this
+-- interval instead of on every redraw.
 local SYSSTAT_INTERVAL = 5
 local CPU_HIGH = 80
 local TAB_GAP = "   "
@@ -81,12 +80,6 @@ local function update(window, pane)
       table.insert(right, { Foreground = { AnsiColor = "Olive" } })
       table.insert(right, { Text = "Z  " })
     end
-  end
-  -- Agent count such as "2• 1◦", empty when no agent runs.
-  local count = cached("agent_count", AGENTS_INTERVAL, { "mux-agents", "--count" })
-  if count ~= "" then
-    table.insert(right, "ResetAttributes")
-    table.insert(right, { Text = count .. "  " })
   end
   for _, item in ipairs(sysstat()) do
     table.insert(right, item)

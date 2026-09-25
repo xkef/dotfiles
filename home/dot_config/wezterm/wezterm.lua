@@ -7,7 +7,7 @@
 --   leader.lua      leader bindings for panes, tabs, and pickers
 --   picker.lua      tv pickers in a zoomed split, and their choices
 --   workspaces.lua  workspace switching
---   status.lua      tab titles and the status line, with the agent count
+--   status.lua      tab titles and the status line
 --   lima.lua        new panes and tabs that stay in the Lima VM
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()

@@ -1,6 +1,6 @@
 #!/bin/bash
-# Maps Claude Code hook events to agent states for the `mux-agents` picker
-# and the WezTerm status line. `agent-state` owns the storage and the format.
+# Maps Claude Code hook events to agent states for the `mux-agents` picker.
+# `agent-state` owns the storage and the format.
 #
 # Claude Code runs hooks as child processes, so they inherit WEZTERM_PANE
 # from the pane the agent started in, and `agent-state` finds the pane

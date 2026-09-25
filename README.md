@@ -23,7 +23,7 @@ installs the mise toolchain, and sets fish as the default shell.
 | [Fish](https://fishshell.com)                                    | Shell with tv pickers and practical defaults               |
 | [Starship](https://starship.rs)                                  | Minimal, cross-shell prompt                                |
 | [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org) | Editor with the LazyVim distro, kickstart as fallback      |
-| [WezTerm](https://wezterm.org)                                   | Terminal and multiplexer, with an agent-aware status line  |
+| [WezTerm](https://wezterm.org)                                   | Terminal and multiplexer, with an agent picker             |
 | [tinty](https://github.com/tinted-theming/tinty)                 | Color themes for the terminal, Neovim, delta, and pi       |
 | [television](https://github.com/alexpasmantier/television)       | Fuzzy finder in the shell and WezTerm pickers              |
 | [atuin](https://atuin.sh)                                        | Searchable shell history with sync                         |
@@ -39,7 +39,7 @@ Neovim uses `Space` as leader and WezTerm uses `Ctrl-Space`.
 Change both in [`home/.chezmoidata/keys.toml`](home/.chezmoidata/keys.toml). `leader ?`
 in either lists the bindings.
 
-`theme <scheme>` switches WezTerm, Neovim, delta, and pi together through tinty.
+`dots theme` switches WezTerm, Neovim, delta, and pi together through tinty.
 
 ## Make it yours
 

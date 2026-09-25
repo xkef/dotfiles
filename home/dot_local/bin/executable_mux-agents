@@ -7,8 +7,7 @@
 # those entries from a hook, pi from an extension, and the Codex launcher
 # directly.
 #
-#   mux-agents          tv picker. Enter switches to the agent's pane.
-#   mux-agents --count  status line segment ("2• 1◦"), empty when nothing runs
+#   mux-agents  tv picker. Enter switches to the agent's pane.
 #
 # It jumps by focusing the pane through `wezterm cli` and setting the
 # switch_workspace user var to the pane's workspace.
@@ -22,7 +21,7 @@ readonly PICKER_WAIT=5
 # Picker size in percent: the whole picker, and the preview inside it.
 readonly UI_SCALE=90 PREVIEW_SIZE=75
 
-# Glyph weight encodes the state, so the status line doesn't need color. A
+# Glyph weight encodes the state, so the picker doesn't need color. A
 # filled dot needs input, a ring works, a small dot idles.
 readonly ICON_WAITING='•'
 readonly ICON_BUSY='◦'
@@ -100,33 +99,6 @@ human_age() { # seconds to "12s", "6m", or "2h"
   }
   printf '%dh' $((s / 3600))
 }
-
-# ── Count mode ───────────────────────────────────────
-# Counts every agent in the picker's sort order, so a count keeps its position
-# as the states around it change. A state without agents produces nothing. With
-# no agents at all the segment stays empty, and the status line looks as it did
-# before any agent existed.
-if [[ "${1:-}" == --count ]]; then
-  waiting=0 busy=0 running=0 idle=0
-  while IFS=$'\t' read -r _ _ _ state _; do
-    case "$state" in
-    waiting) ((++waiting)) ;;
-    busy) ((++busy)) ;;
-    running) ((++running)) ;;
-    *) ((++idle)) ;;
-    esac
-  done < <(collect)
-
-  segment=""
-  append() { segment="$segment${segment:+ }$1$2"; }
-  ((waiting > 0)) && append "$waiting" "$ICON_WAITING"
-  ((busy > 0)) && append "$busy" "$ICON_BUSY"
-  ((running > 0)) && append "$running" "$ICON_RUNNING"
-  ((idle > 0)) && append "$idle" "$ICON_IDLE"
-
-  [ -n "$segment" ] && printf '%s  ' "$segment"
-  exit 0
-fi
 
 # ── Picker mode ──────────────────────────────────────
 # Each tv line is "pane<TAB>target<TAB>display". tv shows only the

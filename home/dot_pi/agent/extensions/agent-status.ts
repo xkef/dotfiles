@@ -1,5 +1,5 @@
-// Maps pi events to agent states for the `mux-agents` picker and the
-// WezTerm status line. `agent-state` owns the storage and the format.
+// Maps pi events to agent states for the `mux-agents` picker.
+// `agent-state` owns the storage and the format.
 //
 // pi inherits WEZTERM_PANE from the pane it started in, and `agent-state`
 // finds the pane through it. Without a pane the extension does nothing.
