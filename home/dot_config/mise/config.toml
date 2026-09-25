@@ -3,20 +3,8 @@ fetch_remote_versions_cache = "7d"
 # Fuzzy versions such as "3.14" resolve only to releases older than 7 days.
 # Exact pins bypass the cooldown.
 minimum_release_age = "7d"
+# Projects pin node and java in .node-version and .java-version.
+idiomatic_version_file_enable_tools = ["node", "java"]
 
-[tools]
-node = "24.16.0"
-python = "3.14"
-go = "1.26"
-rust = "1.94"
-wrangler = "4"
-java = "25"
-maven = "3"
-mvnd = "1"
-
-# LazyVim lints markdown with rumdl and formats it with dprint in every
-# buffer, not only inside this repo. Without a global version the mise shim
-# exits with "No version is set for shim", and nvim-lint feeds that plain-text
-# error to its JSON parser.
-rumdl = "0"
-dprint = "0"
+# No global tools. Brew and pacman supply what every shell needs, and each
+# project pins the rest.

@@ -44,6 +44,13 @@ brews = [
   "jjui",              # terminal UI for jj
   "onefetch",          # git repo summary in terminal
   "mise",              # dev tool version manager
+  "rustup",            # Rust toolchain manager (keg-only, PATH in env.fish)
+  "go",                # Go (go.mod pins newer toolchains)
+  "uv",                # Python package and version manager
+  "python",            # Python for scripts outside projects
+  "node",              # Node.js for npx outside projects
+  "rumdl",             # markdown linter (LazyVim in every buffer)
+  "dprint",            # markdown formatter (LazyVim in every buffer)
   "jdtls",             # Java language server
   "nono",              # capability-based sandbox for AI agents
   "ccusage",           # Claude Code usage analyzer
@@ -116,6 +123,14 @@ main = [
   "jujutsu",         # Jujutsu version control
   "jjui-bin",        # terminal UI for jj (AUR)
   "mise",            # dev tool version manager
+  "rustup",          # Rust toolchain manager
+  "go",              # Go (go.mod pins newer toolchains)
+  "uv",              # Python package and version manager
+  "python",          # Python for scripts outside projects
+  "nodejs",          # Node.js for npx outside projects
+  "npm",             # Node.js package manager
+  "rumdl",           # markdown linter (LazyVim in every buffer)
+  "dprint",          # markdown formatter (LazyVim in every buffer)
   "podman",          # rootless container engine
   "lazydocker",      # terminal UI for Docker/Podman
   "fx",              # terminal JSON viewer

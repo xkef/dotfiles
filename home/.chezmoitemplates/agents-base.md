@@ -8,7 +8,7 @@ The active nono profile also allows these paths:
 
 - {{ .sandboxPaths }}
 - The toolchain and config paths the agent needs, typically the mise, cargo,
-  npm, Maven, jj, and gh directories.
+  rustup, go, uv, npm, Maven, jj, and gh directories.
 - The OS keychain.
 
 The OS blocks paths outside the granted set.
@@ -18,6 +18,20 @@ without trying. A real denial shows up as an ordinary permission error, which
 `nono why --path <p> --op read` explains under nono. It doesn't justify
 abandoning the task. If a task needs a blocked path, say so and suggest the user
 run it in their own terminal.
+
+# Toolchains install on demand
+
+Only node and python are installed globally. Each project pins its own versions,
+and the tools below install them on first use:
+
+- Rust: `rust-toolchain.toml` through rustup.
+- Go: the `toolchain` line in `go.mod`.
+- Python: `.python-version` and `pyproject.toml` through `uv run`.
+- Node and Java: `mise.toml`, `.node-version`, or `.java-version`. Run
+  `mise install` when a project has one.
+
+Run a one-off tool with `mise x <tool>@<version> -- <cmd>`, `uvx`, or `npx`.
+Don't install tools globally.
 
 # The user's shell is fish
 

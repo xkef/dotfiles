@@ -61,6 +61,8 @@ fish_add_path -gP $GOPATH/bin
 if set -q HOMEBREW_PREFIX
     fish_add_path -gP $HOMEBREW_PREFIX/bin
     fish_add_path -gP $HOMEBREW_PREFIX/sbin
+    # Homebrew keeps rustup keg-only, so cargo and rustc need this path.
+    fish_add_path -gP $HOMEBREW_PREFIX/opt/rustup/bin
 end
 fish_add_path -gP /usr/local/bin
 

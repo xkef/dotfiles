@@ -13,8 +13,8 @@ macOS and Arch Linux dotfiles, managed with [chezmoi](https://www.chezmoi.io).
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply xkef/dotfiles
 ```
 
-This installs packages with Homebrew or pacman, writes configs into `$HOME`,
-installs the mise toolchain, and sets fish as the default shell.
+This installs packages with Homebrew or pacman, writes configs into `$HOME`, and
+sets fish as the default shell.
 
 ## Included tools
 
