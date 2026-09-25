@@ -3,6 +3,9 @@
 # ~/.ssh/conf.d/work.conf with Host entries for work servers.
 Include conf.d/*.conf
 
+# Lima writes one config per VM, with the host alias lima-<name>.
+Include ~/.lima/*/ssh.config
+
 # ── Defaults ────────────────────────────────────────────
 Host *
     AddKeysToAgent yes

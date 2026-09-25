@@ -24,3 +24,4 @@
 .local/bin/tmux-agents
 .local/bin/tmux-sesh
 .local/bin/tmux-sysstat
+.local/bin/vm
