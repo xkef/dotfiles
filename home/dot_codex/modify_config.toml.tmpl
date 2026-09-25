@@ -13,7 +13,7 @@ set -euo pipefail
 
 readonly HEADER='# Managed by chezmoi. Edit home/dot_codex/modify_config.toml.tmpl instead.'
 readonly MANAGED_KEYS='model_reasoning_effort|approval_policy|sandbox_mode|notify|service_tier|approvals_reviewer'
-readonly TUI_KEYS='status_line|status_line_use_colors'
+readonly TUI_KEYS='status_line'
 
 managed=$(
   printf '%s\n' "$HEADER"
@@ -41,7 +41,6 @@ status_line = [
   "five-hour-limit",
   "estimated-thread-cost",
 ]
-status_line_use_colors = true
 TUI_TOML
 )
 
