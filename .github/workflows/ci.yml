@@ -71,7 +71,9 @@ jobs:
       # The config names its account and checkout path, so switch as that
       # account with the repo where it expects it. Each step runs as the
       # account with a clean environment, as a fresh login would, because
-      # the runner exports XDG_* variables that point into its own home.
+      # the runner exports XDG_* variables that point into its own home. The
+      # steps start in /tmp, since the account can't read the checkout's
+      # directory, and fish then can't resolve paths.
       - name: Create the account
         run: |
           sudo useradd -m kk
@@ -82,6 +84,7 @@ jobs:
       - name: Switch with home-manager
         env:
           GITHUB_TOKEN: ${{ github.token }} # mise version lookups rate-limit without it
+        working-directory: /tmp
         run: |
           sudo -u kk env -i HOME=/home/kk USER=kk GITHUB_TOKEN="$GITHUB_TOKEN" \
             PATH=/nix/var/nix/profiles/default/bin:/usr/bin:/bin \
@@ -90,15 +93,12 @@ jobs:
       # PATH. fish comes from nixpkgs, since Ubuntu ships fish 3 and every
       # machine this config targets runs fish 4.
       - name: Verify the machine actually works
+        working-directory: /tmp
         run: |
           sudo -u kk env -i HOME=/home/kk USER=kk \
             PATH=/nix/var/nix/profiles/default/bin:/usr/bin:/bin \
             nix shell nixpkgs#fish --command fish --login -c '
             echo fish boots
-            fish --version; functions --details fish_add_path test
-            ls -ld /usr/local/bin ~/.local/bin ~/.nix-profile/bin
-            fish_add_path -v -gP /usr/local/bin ~/.local/bin
-            string join \n $PATH
             for f in ~/.config/fish/config.fish ~/.config/fish/conf.d/*.fish ~/.config/fish/functions/*.fish
               fish -n $f; or exit 1
             end
