@@ -1,11 +1,3 @@
-# ── Auto-ls on cd ────────────────────────────────────
-# Interactive only. A script that changes directory must not print a listing.
-if status is-interactive
-    function __auto_ls --on-variable PWD
-        ls
-    end
-end
-
 # ── Podman compatibility ─────────────────────────────
 if command -q podman
     if test (uname) = Darwin

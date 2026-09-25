@@ -101,7 +101,7 @@ config.use_resize_increments = true
 -- Unfocused splits dim by a tenth.
 config.inactive_pane_hsb = { saturation = 1.0, brightness = 0.9 }
 
-config.default_cursor_style = "SteadyBlock"
+config.default_cursor_style = "SteadyBar"
 config.scrollback_lines = 50000
 
 -- No system bell. Desktop notifications over OSC 9 show only

@@ -13,6 +13,7 @@ if command -q atuin
     atuin init fish --disable-up-arrow | source
 end
 
-bind \ec __tv_cd
-bind \ez __tv_zoxide
+# zoxide's PWD hook records each cd, so the Alt-Z jump ranks too.
+bind \ec 'set -l dir (tv dirs); test -n "$dir"; and cd -- $dir; commandline -f repaint'
+bind \ez 'set -l dir (tv zoxide-cd); test -n "$dir"; and cd -- $dir; commandline -f repaint'
 bind \e/ 'tv text; commandline -f repaint'

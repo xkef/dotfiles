@@ -18,22 +18,6 @@ function __mise_mark_env_dirty --on-variable PWD
     set -g __mise_env_dirty 1
 end
 
-# Warms mise's caches in the background so the apply on the next command
-# runs fast. Skips while a prewarm still runs, and triggers on PWD only,
-# never on the prompt, so it can't loop.
-function __mise_prewarm --on-variable PWD
-    if set -q __mise_prewarm_pid; and command kill -0 $__mise_prewarm_pid 2>/dev/null
-        return
-    end
-    if command -q timeout
-        command timeout 2 mise hook-env -s fish >/dev/null 2>&1 &
-    else
-        command mise hook-env -s fish >/dev/null 2>&1 &
-    end
-    set -g __mise_prewarm_pid $last_pid
-    disown $last_pid 2>/dev/null
-end
-
 function __mise_apply_env --on-event fish_preexec
     set -q __mise_env_dirty; or return
     command mise hook-env -s fish | source

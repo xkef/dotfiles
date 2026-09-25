@@ -1,0 +1,21 @@
+# Zoxide directories for the fish Alt-Z binding, which cds to the choice.
+# Upstream's zoxide channel opens a subshell on Enter, so fish can't use it.
+[metadata]
+name = "zoxide-cd"
+description = "Visited directories, printed for the shell to cd into"
+requirements = ["zoxide", "eza"]
+
+[source]
+command = "zoxide query --list"
+no_sort = true
+
+[preview]
+command = "eza -T --color=always --icons --level=2 '{}'"
+
+[keybindings]
+ctrl-d = ["actions:remove", "reload_source"]
+
+[actions.remove]
+description = "Remove the directory from zoxide"
+command = "zoxide remove '{}'"
+mode = "fork"
