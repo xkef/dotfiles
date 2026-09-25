@@ -16,11 +16,11 @@ vim.pack.add({
 })
 
 -- The fallback nvim keeps a fixed theme. The LazyVim config follows the
--- Ghostty theme.
+-- tinty scheme.
 require("catppuccin").setup({ flavour = "auto" })
 vim.cmd.colorscheme("catppuccin")
 
--- C-hjkl moves across tmux panes and nvim splits alike.
+-- C-hjkl moves across WezTerm panes and nvim splits alike.
 local smart_splits = require("smart-splits")
 for key, fn in pairs({
   ["<C-h>"] = "move_cursor_left",

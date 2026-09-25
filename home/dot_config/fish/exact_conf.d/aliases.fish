@@ -10,12 +10,6 @@ abbr -a vi nvim
 abbr -a vim nvim
 abbr -a helix hx
 
-# Tmux
-abbr -a t tmux
-abbr -a ta 'tmux attach -t'
-abbr -a tn 'tmux new -s'
-abbr -a tl 'tmux list-sessions'
-
 # Pipe -h output through bat, after folke/dot.
 abbr -a --position anywhere --set-cursor -- -h "-h 2>&1 | bat --plain --language=help"
 

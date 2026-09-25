@@ -13,3 +13,12 @@
 .config/television/config.toml
 .config/fish/functions/__tv_smart.fish
 .local/bin/agent-task
+.config/tmux
+.config/sesh
+.config/ghostty
+.config/theme.d
+.config/git/delta.gitconfig
+.config/fish/functions/_ai_run_pinned.fish
+.local/bin/tmux-agents
+.local/bin/tmux-sesh
+.local/bin/tmux-sysstat

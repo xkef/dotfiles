@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# URL picker for WezTerm. Collects the URLs in a pane's
+# last HISTORY_LINES lines, newest first, and opens the picked ones.
+#
+#   mux-urls [pane-id]
+#
+# Without a pane id it reads the pane above, the one the leader's `u` opens
+# the picker over as a bottom split.
+set -euo pipefail
+
+readonly HISTORY_LINES=2000
+readonly URL_PATTERN='(https?|ftp|file)://[^[:space:]<>"`'"'"'()]+'
+
+pane=${1:-$(wezterm cli get-pane-direction up)}
+
+# Reverses the lines, drops repeats, and trims trailing punctuation that
+# ends a sentence rather than the URL.
+urls=$(wezterm cli get-text --pane-id "$pane" --start-line "-$HISTORY_LINES" |
+  { rg -o --no-line-number "$URL_PATTERN" || true; } |
+  sed 's/[.,;:!?]*$//' |
+  awk '{ line[NR] = $0 } END { for (i = NR; i > 0; i--) if (!seen[line[i]]++) print line[i] }')
+
+if [ -z "$urls" ]; then
+  echo "No URLs in the last $HISTORY_LINES lines"
+  sleep 1
+  exit 0
+fi
+
+# The picker runs in a zoomed split that fills the tab, and the margin
+# insets it like a 60% by 40% popup.
+picked=$(printf '%s\n' "$urls" | fzf \
+  --height=100% --margin=30%,20% \
+  --multi --no-sort --reverse \
+  --gap=0 --no-separator \
+  --border-label ' Open URL ' --prompt '> ' \
+  --header 'enter open | tab mark') || exit 0
+
+case "$(uname)" in
+Darwin) opener=open ;;
+*) opener=xdg-open ;;
+esac
+while IFS= read -r url; do
+  "$opener" "$url" >/dev/null 2>&1
+done <<<"$picked"

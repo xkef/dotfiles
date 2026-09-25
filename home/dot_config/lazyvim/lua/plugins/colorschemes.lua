@@ -1,7 +1,13 @@
--- Colorschemes, all lazy-loaded. require("theme").apply() derives the
--- colorscheme name from the current Ghostty theme and activates it. A Ghostty
--- theme without a matching scheme here falls back to `default`.
+-- Colorschemes, all lazy-loaded. require("theme").apply() maps the current
+-- tinty scheme to one of these, and renders any other scheme through
+-- tinted-nvim.
 return {
+  {
+    "tinted-theming/tinted-nvim",
+    lazy = true,
+    opts = { apply_scheme_on_startup = false },
+  },
+
   {
     "catppuccin/nvim",
     name = "catppuccin",

@@ -86,9 +86,8 @@ exclude_globs = ["*.tmp.[0-9]*.[0-9]*"]
 description = "OpenAI Codex CLI"
 # Homebrew installs Codex on macOS. Arch has no package for it.
 install = "npm install -g @openai/codex"
-# The pane command of a sandboxed agent reads `nono`, so tmux-agents can't
-# spot Codex by name. Codex has no hook to report its state, so the launcher
-# records it as running. The launcher clears the entry when Codex exits.
+# Codex has no hook to report its state, so the launcher records it as
+# running. The launcher clears the entry when Codex exits.
 prelaunch = "agent-state set codex running"
 # Codex nests its own Seatbelt policy, which macOS refuses inside nono, so
 # nono alone holds the OS boundary. This relaxes only the sandbox. The
@@ -104,7 +103,7 @@ allow = ["$HOME/.codex"]
 [agents.pi]
 description = "pi.dev coding agent"
 install = "npm install -g @earendil-works/pi-coding-agent"
-# pi picks its theme by name from a file the theme.d adapter renders. A
+# pi picks its theme by name from a file the tinty pi-theme hook renders. A
 # machine that has never switched themes has no file yet, and pi falls back
 # to its built-in dark theme without reporting it. Render the current theme
 # once.

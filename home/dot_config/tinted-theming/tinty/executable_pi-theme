@@ -1,37 +1,62 @@
-# Theme adapter for pi: regenerates the palette-derived theme file. The
-# tracked pi settings select the theme by name, "dots". pi watches the
+#!/usr/bin/env fish
+# tinty hook: derives the pi theme from a WezTerm color file.
+#
+# Usage: pi-theme <wezterm-colors.toml>
+#
+# The tracked pi settings select the theme by name, "dots". pi watches the
 # active custom theme file and reloads it on change, so rewriting it
-# recolors running pi sessions. The file is machine-local and untracked,
-# like the delta adapter's include. `theme` sources this with $t_palette,
-# $t_bg, and $t_fg set. It uses the _blend_hex helper.
+# recolors running pi sessions. The file is machine-local and untracked.
+
+set -l colors_file $argv[1]
+test -f "$colors_file"; or exit 1
+
+# Blends two hex colors: _blend_hex bg fg weight, with weight from 0 to 100.
+function _blend_hex -a bg_hex fg_hex weight
+    set -l rgb1 (string sub -l 2 $bg_hex) (string sub -s 3 -l 2 $bg_hex) (string sub -s 5 -l 2 $bg_hex)
+    set -l rgb2 (string sub -l 2 $fg_hex) (string sub -s 3 -l 2 $fg_hex) (string sub -s 5 -l 2 $fg_hex)
+    for i in 1 2 3
+        printf '%02x' (math "round((0x$rgb1[$i] * (100 - $weight) + 0x$rgb2[$i] * $weight) / 100)")
+    end
+end
+
+# The color file lists background and foreground as keys, then the 8 ansi
+# and 8 bright colors as arrays, in palette order.
+set -l bg (string match -rg '^background = "#([0-9a-fA-F]{6})"' <$colors_file | string lower)
+set -l fg (string match -rg '^foreground = "#([0-9a-fA-F]{6})"' <$colors_file | string lower)
+set -l palette (string match -rg '^\s+"#([0-9a-fA-F]{6})",?$' <$colors_file | string lower)
+if test (count $palette) -lt 16; or test -z "$bg"; or test -z "$fg"
+    echo "pi-theme: no palette in $colors_file" >&2
+    exit 1
+end
+
 set -l pi_agent_dir (set -q PI_CODING_AGENT_DIR && echo $PI_CODING_AGENT_DIR || echo $HOME/.pi/agent)
 if test -d $pi_agent_dir
-    set -l pi_red $t_palette[2]
-    set -l pi_green $t_palette[3]
-    set -l pi_yellow $t_palette[4]
-    set -l pi_blue $t_palette[5]
-    set -l pi_magenta $t_palette[6]
-    set -l pi_cyan $t_palette[7]
-    set -l pi_orange $t_palette[10]
-    set -l pi_br_magenta $t_palette[14]
-    set -l pi_br_cyan $t_palette[15]
+    set -l pi_red $palette[2]
+    set -l pi_green $palette[3]
+    set -l pi_yellow $palette[4]
+    set -l pi_blue $palette[5]
+    set -l pi_magenta $palette[6]
+    set -l pi_cyan $palette[7]
+    set -l pi_orange $palette[10]
+    set -l pi_br_magenta $palette[14]
+    set -l pi_br_cyan $palette[15]
 
     # Blend the grays toward the foreground instead of taking the ANSI
     # bright-black slot, so the ramp inverts by itself under light themes.
-    set -l pi_gray (_blend_hex $t_bg $t_fg 60)
-    set -l pi_dim_gray (_blend_hex $t_bg $t_fg 45)
-    set -l pi_dark_gray (_blend_hex $t_bg $t_fg 30)
+    set -l pi_gray (_blend_hex $bg $fg 60)
+    set -l pi_dim_gray (_blend_hex $bg $fg 45)
+    set -l pi_dark_gray (_blend_hex $bg $fg 30)
 
     # Message and tool-box backgrounds: a wash of one palette color over the
     # terminal background, matching how the delta adapter tints diff hunks.
-    set -l pi_selected_bg (_blend_hex $t_bg $pi_cyan 24)
-    set -l pi_search_bg (_blend_hex $t_bg $pi_yellow 28)
-    set -l pi_user_bg (_blend_hex $t_bg $pi_blue 16)
-    set -l pi_custom_bg (_blend_hex $t_bg $pi_magenta 15)
-    set -l pi_pending_bg (_blend_hex $t_bg $pi_cyan 8)
-    set -l pi_success_bg (_blend_hex $t_bg $pi_green 12)
-    set -l pi_error_bg (_blend_hex $t_bg $pi_red 14)
-    set -l pi_info_bg (_blend_hex $t_bg $pi_yellow 18)
+    set -l pi_selected_bg (_blend_hex $bg $pi_cyan 24)
+    set -l pi_search_bg (_blend_hex $bg $pi_yellow 28)
+    set -l pi_user_bg (_blend_hex $bg $pi_blue 16)
+    set -l pi_custom_bg (_blend_hex $bg $pi_magenta 15)
+    set -l pi_pending_bg (_blend_hex $bg $pi_cyan 8)
+    set -l pi_success_bg (_blend_hex $bg $pi_green 12)
+    set -l pi_error_bg (_blend_hex $bg $pi_red 14)
+    set -l pi_info_bg (_blend_hex $bg $pi_yellow 18)
 
     # pi requires all 51 mandatory tokens in every theme. The four optional
     # ones follow so search matches and the scrollbar don't collapse into
@@ -46,16 +71,16 @@ if test -d $pi_agent_dir
         warning:$pi_yellow \
         muted:$pi_gray \
         dim:$pi_dim_gray \
-        text:$t_fg \
+        text:$fg \
         thinkingText:$pi_dim_gray \
         selectedBg:$pi_selected_bg \
         scrollbarThumb:$pi_dark_gray \
         searchMatchBg:$pi_search_bg \
-        searchMatchText:$t_fg \
+        searchMatchText:$fg \
         userMessageBg:$pi_user_bg \
-        userMessageText:$t_fg \
+        userMessageText:$fg \
         customMessageBg:$pi_custom_bg \
-        customMessageText:$t_fg \
+        customMessageText:$fg \
         customMessageLabel:$pi_magenta \
         toolPendingBg:$pi_pending_bg \
         toolSuccessBg:$pi_success_bg \
@@ -66,7 +91,7 @@ if test -d $pi_agent_dir
         mdLink:$pi_blue \
         mdLinkUrl:$pi_dim_gray \
         mdCode:$pi_cyan \
-        mdCodeBlock:$t_fg \
+        mdCodeBlock:$fg \
         mdCodeBlockBorder:$pi_dark_gray \
         mdQuote:$pi_gray \
         mdQuoteBorder:$pi_magenta \
@@ -78,11 +103,11 @@ if test -d $pi_agent_dir
         syntaxComment:$pi_dim_gray \
         syntaxKeyword:$pi_magenta \
         syntaxFunction:$pi_blue \
-        syntaxVariable:$t_fg \
+        syntaxVariable:$fg \
         syntaxString:$pi_green \
         syntaxNumber:$pi_orange \
         syntaxType:$pi_yellow \
-        syntaxOperator:$t_fg \
+        syntaxOperator:$fg \
         syntaxPunctuation:$pi_gray \
         thinkingOff:$pi_dark_gray \
         thinkingMinimal:$pi_dim_gray \
@@ -109,7 +134,7 @@ if test -d $pi_agent_dir
         string join ,\n $pi_lines
         printf '  },\n'
         printf '  "export": {\n'
-        printf '    "pageBg": "#%s",\n' $t_bg
+        printf '    "pageBg": "#%s",\n' $bg
         printf '    "cardBg": "#%s",\n' $pi_user_bg
         printf '    "infoBg": "#%s"\n' $pi_info_bg
         printf '  }\n'

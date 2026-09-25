@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Tab picker for WezTerm. Lists every tab in every workspace by its active
+# pane and previews that pane. Enter focuses the pane through `wezterm cli`,
+# sets the switch_workspace user var to its workspace, and waits. ~/.config/wezterm/picker.lua reads it, closes the
+# picker, and switches.
+#
+#   mux-tabs         fzf picker
+#   mux-tabs panes   every live pane with its workspace and tab
+set -euo pipefail
+
+# How long the picker waits to be closed after it reports a choice.
+readonly PICKER_WAIT=5
+
+# Emits "pane<TAB>workspace<TAB>workspace:tab<TAB>active<TAB>title" for every
+# live pane, with tabs numbered from 1 in each window's order. mux-agents
+# reads the targets from here too.
+panes() {
+  wezterm cli list --format json | jq -r '
+    group_by(.window_id)[]
+    | (reduce .[].tab_id as $t ([]; if index([$t]) then . else . + [$t] end)) as $tabs
+    | .[]
+    | .tab_id as $t
+    | [.pane_id, .workspace, "\(.workspace):\(($tabs | index([$t])) + 1)", .is_active, .title]
+    | @tsv'
+}
+
+if [ "${1:-}" = panes ]; then
+  panes
+  exit 0
+fi
+
+# One row per tab, by its active pane. The picker's own tab drops out,
+# since its active pane is the picker.
+rows=$(panes | awk -F'\t' -v OFS='\t' -v self="${WEZTERM_PANE:-}" '
+  $4 == "true" && $1 != self { print $1, $2, "\033[34m" $3 "\033[0m", $5 }')
+
+if [ -z "$rows" ]; then
+  echo "No other tabs"
+  sleep 1
+  exit 0
+fi
+
+# The picker runs in a zoomed split that fills the tab, and the margin
+# insets it like a 60% popup.
+selection=$(printf '%s\n' "$rows" | fzf \
+  --height=100% --margin=20%,20% \
+  --ansi --no-sort --reverse \
+  --gap=0 --no-separator \
+  --delimiter='\t' --with-nth=3.. \
+  --border-label ' tabs ' --prompt '> ' \
+  --header 'enter switch | ctrl-/ preview' \
+  --bind 'tab:down,btab:up' \
+  --bind 'ctrl-/:toggle-preview' \
+  --preview-window 'down:60%,wrap,follow' \
+  --preview 'wezterm cli get-text --escapes --pane-id {1}') || exit 0
+
+IFS=$'\t' read -r pane workspace _ <<<"$selection"
+wezterm cli activate-pane --pane-id "$pane"
+printf '\033]1337;SetUserVar=switch_workspace=%s\007' \
+  "$(printf '%s\t' "$workspace" | base64 | tr -d '\n')" >/dev/tty
+sleep "$PICKER_WAIT"

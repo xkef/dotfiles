@@ -23,9 +23,9 @@ installs the mise toolchain, and sets fish as the default shell.
 | [Fish](https://fishshell.com)                                    | Shell with fzf completions and practical defaults          |
 | [Starship](https://starship.rs)                                  | Minimal, cross-shell prompt                                |
 | [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org) | Editor with the LazyVim distro, kickstart as fallback      |
-| [tmux](https://github.com/tmux/tmux)                             | Terminal multiplexer with vim navigation                   |
-| [Ghostty](https://ghostty.org)                                   | Terminal emulator config                                   |
-| [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder in the shell and tmux                         |
+| [WezTerm](https://wezterm.org)                                   | Terminal and multiplexer, with an agent-aware status line  |
+| [tinty](https://github.com/tinted-theming/tinty)                 | Color schemes for the terminal, Neovim, delta, and pi      |
+| [fzf](https://github.com/junegunn/fzf)                           | Fuzzy finder in the shell and WezTerm pickers              |
 | [atuin](https://atuin.sh)                                        | Searchable shell history with sync                         |
 | [Claude Code](https://claude.ai/), Codex, pi                     | AI coding agents, always launched in a nono sandbox        |
 | [Jujutsu](https://github.com/jj-vcs/jj)                          | Git-compatible version control, `jj`, with a simpler model |
@@ -34,11 +34,11 @@ installs the mise toolchain, and sets fish as the default shell.
 
 ## Keys
 
-Neovim uses `Space` as leader and tmux uses `Ctrl-Space` as prefix.
+Neovim uses `Space` as leader and WezTerm uses `Ctrl-Space`.
 Change both in [`home/.chezmoidata/keys.toml`](home/.chezmoidata/keys.toml). `leader ?`
-and `prefix ?` list the bindings.
+in either lists the bindings.
 
-`theme <name>` switches Ghostty, Neovim, tmux, and delta together.
+`theme <scheme>` switches WezTerm, Neovim, delta, and pi together through tinty.
 
 ## Make it yours
 

@@ -1,0 +1,14 @@
+#!/usr/bin/env fish
+# tinty hook: tells running Neovim instances to derive their colorscheme
+# again from tinty's current_scheme. Sockets sit at
+# <base>/nvim.<user>/<random>/<appname>.<pid>.0. The flat nvim.<pid>.0 form
+# covers older layouts.
+
+for sock_dir in $XDG_RUNTIME_DIR $TMPDIR /tmp
+    test -n "$sock_dir" -a -d "$sock_dir"; or continue
+    for sock in $sock_dir/nvim.*.0 $sock_dir/nvim.*/*/*.0
+        test -S $sock; or continue
+        nvim --server $sock --remote-send \
+            "<Cmd>lua pcall(function() require('theme').apply() end)<CR>" 2>/dev/null; or true
+    end
+end

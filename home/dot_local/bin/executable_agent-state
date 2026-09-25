@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Owns the agent state the `tmux-agents` picker reads. The Claude Code hook,
+# Owns the agent state the `mux-agents` picker reads. The Claude Code hook,
 # the pi extension, the Codex launcher, and agents publishing a task summary
 # all write through this script, so the format lives in one place.
 #
@@ -8,9 +8,10 @@
 #   agent-state clear
 #   agent-state list
 #
-# Entries sit under $XDG_STATE_HOME/agents, keyed by tmux pane id. The pane
-# id gives the picker a join back to tmux, and an entry whose pane is gone
-# has nothing to join to. Outside tmux, the write commands do nothing.
+# Entries sit under $XDG_STATE_HOME/agents, keyed wezterm-<pane id>. The
+# key gives the picker a join back to WezTerm, and an entry whose pane is
+# gone has nothing to join to. Outside WezTerm, the write commands do
+# nothing.
 #
 # <pane> holds one tab-separated record: agent, state, tool, epoch, and cwd.
 # The cwd goes last so a path never shifts another field. <pane>.task holds
@@ -49,9 +50,9 @@ write() {
 
 list() {
   local file pane record task
-  for file in "$STATE_DIR"/%*; do
+  for file in "$STATE_DIR"/wezterm-*; do
     pane=${file##*/}
-    [[ "$pane" =~ ^%[0-9]+$ ]] || continue
+    [[ "$pane" =~ ^wezterm-[0-9]+$ ]] || continue
     IFS= read -r record <"$file" || continue
     task=$NONE
     if [ -f "$file.task" ]; then
@@ -71,8 +72,8 @@ list)
 *) usage ;;
 esac
 
-pane=${TMUX_PANE:-}
-[[ "$pane" =~ ^%[0-9]+$ ]] || exit 0
+pane=wezterm-${WEZTERM_PANE:-}
+[[ "$pane" =~ ^wezterm-[0-9]+$ ]] || exit 0
 entry="$STATE_DIR/$pane"
 
 case "$cmd" in

@@ -1,6 +1,10 @@
 return {
   {
     "mrjones2014/smart-splits.nvim",
+    -- Loads at startup to set the IS_NVIM user var, which WezTerm's leader
+    -- h/j/k/l reads to hand the key to Neovim. A lazy load leaves it unset
+    -- until the first move.
+    lazy = false,
     keys = (function()
       local ss = "smart-splits"
       local keys = {}

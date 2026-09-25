@@ -1,7 +1,7 @@
 {{- /* Renders one nono profile from .agents.<name>.nono. This file declares
        the toolchain surface every agent needs once: mise, jj, maven, npm,
-       cargo, rustup, gh, shared skills, keychain, and the agent state the tmux
-       picker reads. The agent adds its own state directories, extra policy
+       cargo, rustup, gh, shared skills, keychain, and the agent state the
+       agent picker reads. The agent adds its own state directories, extra policy
        groups, and anything beyond that surface through `extra`.
        Called with (dict "name" <agent> "agent" .agents.<agent>). */ -}}
 {{- $n := .agent.nono -}}
@@ -26,6 +26,7 @@
       "$XDG_STATE_HOME/mise"
       "$XDG_CONFIG_HOME/gh"
       "$XDG_CONFIG_HOME/git"
+      "$XDG_DATA_HOME/tinted-theming/tinty"
       "$XDG_CONFIG_HOME/nono/profiles"
       "$XDG_CONFIG_HOME/nono/packages" -}}
 {{- /* Commit signing runs `ssh-keygen -Y sign`, which asks the 1Password

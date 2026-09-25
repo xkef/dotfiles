@@ -175,7 +175,7 @@
     ]
   },
   "plansDirectory": ".claude-notes",
-  "preferredNotifChannel": "ghostty",
+  "preferredNotifChannel": "iterm2",
   "respectGitignore": true,
   "sandbox": {
     "credentials": {

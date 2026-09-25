@@ -1,0 +1,97 @@
+-- WezTerm is the terminal, the multiplexer, and the status line in one
+-- process. Each module owns one concern:
+--
+--   path.lua        PATH for panes and helper programs
+--   colors.lua      the palette of the tinty scheme that `theme` applied
+--   keys.lua        macOS-style key and mouse bindings
+--   leader.lua      leader bindings for panes, tabs, and pickers
+--   picker.lua      fzf pickers in a zoomed split, and their choices
+--   workspaces.lua  workspace switching
+--   status.lua      tab titles and the status line, with the agent count
+local wezterm = require("wezterm")
+local config = wezterm.config_builder()
+
+local IS_MAC = wezterm.target_triple:find("darwin") ~= nil
+
+local FONT = "JetBrainsMono Nerd Font"
+
+-- Faint text draws at half opacity.
+local FAINT_OPACITY = 0.5
+
+-- Space above and below the status line. The bottom window padding sits
+-- between the panes and the bar, and the frame's bottom border below it.
+local STATUS_GAP = "0.25cell"
+
+local colors = require("colors")
+colors.apply(config)
+require("keys").apply(config)
+require("leader").apply(config)
+require("workspaces").setup()
+require("status").setup()
+
+-- Panes live in a local mux server, so closing the window detaches instead
+-- of killing the shells. The next launch reattaches.
+config.unix_domains = { { name = "unix" } }
+config.default_gui_startup_args = { "connect", "unix" }
+config.set_environment_variables = { PATH = require("path").PATH }
+
+config.font = wezterm.font(FONT)
+
+-- WezTerm's own rules take ExtraBold for bold and Thin for faint text,
+-- which look too heavy and too thin. Bold uses Bold, and faint text uses
+-- the Regular face at half opacity: faint text in the default color blends
+-- halfway to the background, and colored faint text keeps its color.
+local faint = colors.blend(config.colors.foreground, config.colors.background, FAINT_OPACITY)
+config.font_rules = {
+  { intensity = "Bold", italic = false, font = wezterm.font(FONT, { weight = "Bold" }) },
+  { intensity = "Bold", italic = true, font = wezterm.font(FONT, { weight = "Bold", style = "Italic" }) },
+  { intensity = "Half", italic = false, font = wezterm.font(FONT, { foreground = faint }) },
+  { intensity = "Half", italic = true, font = wezterm.font(FONT, { style = "Italic", foreground = faint }) },
+}
+config.font_size = 14
+config.line_height = 1.2
+config.bold_brightens_ansi_colors = "No"
+config.adjust_window_size_when_changing_font_size = false
+
+-- macOS hides the title bar but keeps the rounded, resizable frame. Linux
+-- keeps its decorations.
+if IS_MAC then
+  config.window_decorations = "RESIZE"
+end
+config.window_padding = { left = 12, right = 12, top = 0, bottom = STATUS_GAP }
+config.window_close_confirmation = "NeverPrompt"
+config.native_macos_fullscreen_mode = true
+
+-- The status line is a plain bar at the bottom on the terminal background,
+-- styled by status.lua.
+config.use_fancy_tab_bar = false
+config.tab_bar_at_bottom = true
+config.show_new_tab_button_in_tab_bar = false
+config.tab_max_width = 34
+config.colors.tab_bar = { background = config.colors.background }
+config.window_frame = {
+  border_bottom_height = STATUS_GAP,
+  border_bottom_color = config.colors.background,
+}
+
+-- The window grows and shrinks by whole cells, so no leftover rows of
+-- pixels land above the bar and skew the gaps.
+config.use_resize_increments = true
+
+-- Unfocused splits dim by a tenth.
+config.inactive_pane_hsb = { saturation = 1.0, brightness = 0.9 }
+
+config.default_cursor_style = "SteadyBlock"
+config.scrollback_lines = 50000
+
+-- No system bell. Desktop notifications over OSC 9 show only
+-- for a pane out of view.
+config.audible_bell = "Disabled"
+config.notification_handling = "SuppressFromFocusedPane"
+
+-- Left Option sends Alt for the shell and fzf bindings. Right Option still
+-- types special characters such as @, [], and {}.
+config.send_composed_key_when_left_alt_is_pressed = false
+config.send_composed_key_when_right_alt_is_pressed = true
+
+return config
