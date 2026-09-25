@@ -50,7 +50,7 @@ local function apply_plugin(scheme)
   if entry.contrast then
     local ok, everforest = pcall(require, "everforest")
     if ok then
-      everforest.setup({ italics = true, disable_italic_comments = false, background = entry.contrast })
+      everforest.setup({ italics = true, background = entry.contrast })
     end
   end
   return pcall(vim.cmd.colorscheme, entry.name)

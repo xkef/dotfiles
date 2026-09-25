@@ -6,7 +6,6 @@ return {
       -- options.lua would be overwritten.
       diagnostics = {
         virtual_text = { current_line = true, priority = 10000 },
-        virtual_lines = false,
       },
       servers = {
         ["*"] = {
@@ -18,5 +17,14 @@ return {
         },
       },
     },
+  },
+  -- Types for the WezTerm config's `wezterm` module.
+  {
+    "folke/lazydev.nvim",
+    dependencies = { "DrKJeff16/wezterm-types" },
+    opts = function(_, opts)
+      opts.library = opts.library or {}
+      table.insert(opts.library, { path = "wezterm-types", mods = { "wezterm" } })
+    end,
   },
 }

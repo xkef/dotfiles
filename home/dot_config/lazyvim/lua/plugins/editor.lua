@@ -37,12 +37,6 @@ return {
           files = { hidden = true },
           grep = { hidden = true },
         },
-        previewers = {
-          diff = {
-            builtin = false,
-            cmd = { "git", "diff", "--no-ext-diff" },
-          },
-        },
       },
     },
     init = function()
@@ -56,10 +50,5 @@ return {
         end
       end
     end,
-  },
-
-  {
-    "ThePrimeagen/refactoring.nvim",
-    dependencies = { "lewis6991/async.nvim" },
   },
 }

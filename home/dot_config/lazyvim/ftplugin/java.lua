@@ -1,5 +1,4 @@
--- Override vim-sleuth: Java always uses 2-space indent (Google style)
-vim.b.sleuth_automatic = 0
+-- Java always uses 2-space indent (Google style)
 vim.opt_local.shiftwidth = 2
 vim.opt_local.tabstop = 2
 vim.opt_local.makeprg = "mvnd clean compile"

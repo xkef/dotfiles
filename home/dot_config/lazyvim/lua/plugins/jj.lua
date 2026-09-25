@@ -39,17 +39,7 @@ return {
     dependencies = { "algmyr/vclib.nvim" },
     cond = is_pure_jj,
     event = "BufReadPre",
-    opts = {
-      signs = {
-        text = {
-          add = "▏",
-          change = "▏",
-          delete_below = "▁",
-          delete_above = "▔",
-        },
-      },
-      diff_opts = { algorithm = "histogram" },
-    },
+    opts = {},
     keys = {
       {
         "[h",

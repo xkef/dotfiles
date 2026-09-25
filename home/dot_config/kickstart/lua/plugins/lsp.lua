@@ -31,12 +31,10 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 require("mason-lspconfig").setup({
   ensure_installed = { "lua_ls" },
-  automatic_enable = true,
 })
 
 -- Autocompletion
 require("blink.cmp").setup({
-  keymap = { preset = "default" },
   sources = { default = { "lsp", "path", "buffer" } },
   signature = { enabled = true },
 })

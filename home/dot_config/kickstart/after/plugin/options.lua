@@ -1,6 +1,5 @@
 -- Options loaded after all plugins (after/plugin/ runs last).
 
-vim.opt.wrap = true
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.list = true
@@ -25,15 +24,5 @@ vim.opt.undofile = true
 
 -- OSC 52 clipboard (works over SSH)
 if vim.env.SSH_TTY then
-  vim.g.clipboard = {
-    name = "OSC 52",
-    copy = {
-      ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-      ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-    },
-    paste = {
-      ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
-      ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
-    },
-  }
+  vim.g.clipboard = "osc52"
 end

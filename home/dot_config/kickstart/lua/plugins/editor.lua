@@ -17,8 +17,7 @@ vim.pack.add({
 
 -- The fallback nvim keeps a fixed theme. The LazyVim config follows the
 -- tinty scheme.
-require("catppuccin").setup({ flavour = "auto" })
-vim.cmd.colorscheme("catppuccin")
+vim.cmd.colorscheme("catppuccin-nvim")
 
 -- C-hjkl moves across WezTerm panes and nvim splits alike.
 local smart_splits = require("smart-splits")

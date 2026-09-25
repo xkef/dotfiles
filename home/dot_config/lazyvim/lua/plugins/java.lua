@@ -37,12 +37,18 @@ return {
     opts = { formatters_by_ft = { java = { "google-java-format" } } },
   },
 
+  -- jdtls reads this flag only as a JVM system property, not from LSP
+  -- settings. It keeps .project and .classpath out of the project root.
+  {
+    "mfussenegger/nvim-jdtls",
+    opts = function(_, opts)
+      table.insert(opts.cmd, "--jvm-arg=-Djava.import.generatesMetadataFilesAtProjectRoot=false")
+    end,
+  },
+
   {
     "mfussenegger/nvim-jdtls",
     opts = {
-      -- Keep jdtls workspace data outside the project so it can't clash with Maven or IntelliJ.
-      data_dir = vim.fn.expand("~/.cache/jdtls/workspace/"),
-
       jdtls = function(config)
         local ok, spring_boot = pcall(require, "spring_boot")
         if ok then
@@ -53,9 +59,6 @@ return {
 
       settings = {
         java = {
-          import = {
-            generatesMetadataFilesAtProjectRoot = false,
-          },
           format = { settings = { profile = "GoogleStyle" } },
           signatureHelp = { enabled = true },
           contentProvider = { preferred = "fernflower" },
@@ -89,7 +92,7 @@ return {
         vim.api.nvim_create_autocmd("BufWritePre", {
           buffer = bufnr,
           callback = function()
-            local params = vim.lsp.util.make_range_params()
+            local params = vim.lsp.util.make_range_params(0, "utf-16")
             params.context = { only = { "source.organizeImports" } }
             local result = vim.lsp.buf_request_sync(bufnr, "textDocument/codeAction", params, 3000)
             for _, res in pairs(result or {}) do
@@ -107,7 +110,7 @@ return {
           local m = function(keys, func, desc)
             vim.keymap.set("n", keys, func, { buffer = bufnr, desc = desc })
           end
-          m("<leader>cR", function()
+          m("<leader>cB", function()
             vim.cmd(
               "split | terminal cd "
                 .. vim.fn.fnameescape(root_dir)

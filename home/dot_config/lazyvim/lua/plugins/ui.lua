@@ -9,10 +9,8 @@ return {
         },
         indicator = { icon = "", style = "none" },
         separator_style = { "", "" },
-        color_icons = true,
         offsets = {
           { filetype = "neo-tree", text = "", separator = false },
-          { filetype = "snacks_layout_box" },
         },
       })
       local orig_hl = opts.highlights
@@ -55,7 +53,6 @@ return {
       fi.visible = true
       fi.hide_dotfiles = false
       fi.hide_hidden = false
-      fi.hide_gitignored = true
       fi.never_show = { ".DS_Store", ".git", ".jj", ".idea" }
       opts.filesystem.filtered_items = fi
     end,
