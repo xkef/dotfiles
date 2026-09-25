@@ -19,7 +19,6 @@ images:
     arch: aarch64
 
 vmType: vz
-cpus: 4
 memory: 8GiB
 
 mountType: virtiofs
@@ -29,12 +28,12 @@ mounts:
   - location: ~/work
     writable: true
   - location: ~/dotfiles
-  # Agent hooks in the guest report to the host's `mux-agents` picker.
+  # Agent hooks in the guest report to the host's WezTerm agent picker.
   - location: ~/.local/state/agents
     mountPoint: "{{.Home}}/.local/state/agents"
     writable: true
 
-# The dotfiles expect /home/<user>, not Lima's default /home/<user>.linux.
+# The dotfiles expect /home/<user>, not Lima's default /home/<user>.guest.
 # `limactl shell` starts user.shell, not the login shell, and the image
 # ships fish for it.
 user:
