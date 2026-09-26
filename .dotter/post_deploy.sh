@@ -14,8 +14,7 @@ else
   echo "warning: ~/.claude/skills is a directory; move it and deploy again" >&2
 fi
 
-# Dotter fills in the `work` variable from the local config.
-setup/identity/render "{{work}}"
+setup/identity/render
 
 if [[ "$(uname -s)" == Darwin ]]; then
   setup/onchange macos-defaults setup/macos-defaults -- setup/macos-defaults

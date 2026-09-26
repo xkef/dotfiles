@@ -2,8 +2,8 @@
 # Deploys the repo into $HOME with dotter. The local config and the cache
 # live in ~/.local/state/dotter, not in the repo, because a Lima VM mounts
 # the same checkout. The first run writes a local config that selects the
-# dotfiles package. Set `work = true` under [variables] there on a work
-# machine. Arguments pass through to dotter, as in `setup/deploy --dry-run`.
+# dotfiles package. Arguments pass through to dotter, as in
+# `setup/deploy --dry-run`.
 #
 # Homebrew and pacman install dotter from the package lists. The first
 # deploy runs before them, so it downloads a release binary.
@@ -15,7 +15,7 @@ state="${XDG_STATE_HOME:-$HOME/.local/state}/dotter"
 
 mkdir -p "$state"
 if [[ ! -f "$state/local.toml" ]]; then
-  printf 'packages = ["dotfiles"]\n\n[variables]\nwork = false\n' >"$state/local.toml"
+  printf 'packages = ["dotfiles"]\n' >"$state/local.toml"
 fi
 
 dotter=$(command -v dotter || true)

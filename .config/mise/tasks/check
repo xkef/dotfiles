@@ -20,10 +20,23 @@ if [ -n "$broken" ]; then
   exit 1
 fi
 
-# Without op, render writes only the public allowed_signers line.
-env PATH=/usr/bin:/bin XDG_CONFIG_HOME="$tmp/home/.config" setup/identity/render
+# Without op or an identity file, render writes nothing. With a file,
+# render writes the identity from it.
+render() {
+  env PATH=/usr/bin:/bin HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \
+    setup/identity/render
+}
+render
 test ! -e "$tmp/home/.config/git/config.personal" || {
   echo "unexpected config.personal"
+  exit 1
+}
+mkdir -p "$tmp/home/.config/identity"
+printf 'name=Ada\nemail=ada@example.com\npublic_key=ssh-ed25519 AAAA\n' \
+  >"$tmp/home/.config/identity/Personal"
+render
+grep -qxF 'email = "ada@example.com"' "$tmp/home/.config/jj/conf.d/identity.toml" || {
+  echo "identity file not rendered"
   exit 1
 }
 

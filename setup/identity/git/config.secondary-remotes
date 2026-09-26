@@ -1,5 +1,0 @@
-[includeIf "hasconfig:remote.*.url:https://github.com/{{ op://Work/git/github_login }}/**"]
-	path = ~/.config/git/config.secondary
-
-[includeIf "hasconfig:remote.*.url:git@github.com:{{ op://Work/git/github_login }}/**"]
-	path = ~/.config/git/config.secondary

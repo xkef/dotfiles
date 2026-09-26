@@ -66,17 +66,7 @@ streamline = ["simplify-parents"]
 auto-update-stale = true
 max-new-file-size = "2MiB"
 
-# Name and email from 1Password, and the work scope, come from
-# conf.d/identity.toml when `op` exists.
-[user]
-name = "xkef"
-email = "git@xkef.dev"
-
-# ── SSH commit signing, as in the git config ────────
-[signing]
-behavior = "own"
-backend = "ssh"
-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFXPTYbJpNsexhTZ+x8Ci8tVkGV/d0MvWqFrlyT3yTki"
-
+# Name, email, and SSH signing come from 1Password through
+# conf.d/identity.toml, and the work scope through conf.d/work.toml.
 [signing.backends.ssh]
 allowed-signers = "~/.config/git/allowed_signers"

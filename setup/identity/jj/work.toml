@@ -1,8 +1,0 @@
-# Work identity inside ~/work/, unsigned, as in the git config.work.
-[[--scope]]
---when.repositories = ["~/work"]
-[--scope.user]
-name = "{{ op://Work/git/name }}"
-email = "{{ op://Work/git/email }}"
-[--scope.signing]
-behavior = "drop"

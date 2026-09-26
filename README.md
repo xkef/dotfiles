@@ -20,20 +20,20 @@ sets fish as the default shell. `dots apply` deploys again after a change.
 
 ## Included tools
 
-| Tool                                                             | What it does                                               |
-| ---------------------------------------------------------------- | ---------------------------------------------------------- |
-| [Fish](https://fishshell.com)                                    | Shell with tv pickers and practical defaults               |
-| [Starship](https://starship.rs)                                  | Minimal, cross-shell prompt                                |
-| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org) | Editor with the LazyVim distro, kickstart as fallback      |
-| [WezTerm](https://wezterm.org)                                   | Terminal and multiplexer, with an agent picker             |
-| [tinty](https://github.com/tinted-theming/tinty)                 | Color themes for the terminal, Neovim, delta, and pi       |
-| [television](https://github.com/alexpasmantier/television)       | Fuzzy finder in the shell and WezTerm pickers              |
-| [atuin](https://atuin.sh)                                        | Searchable shell history with sync                         |
-| [Claude Code](https://claude.ai/), pi                            | AI coding agents, always launched in a nono sandbox        |
-| [Jujutsu](https://github.com/jj-vcs/jj)                          | Git-compatible version control, `jj`, with a simpler model |
-| [Lima](https://lima-vm.io)                                       | Linux development VM with the host's dotfiles setup        |
-| [Vale](https://vale.sh)                                          | Prose linter for markdown, Google style plus AI-tell rules |
-| eza, bat, fd, ripgrep, zoxide, yazi, mise                        | Command-line replacements and workflow tools               |
+| Tool                                                                | What it does                                               |
+| ------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [Fish](https://fishshell.com)                                       | Shell with tv pickers and practical defaults               |
+| [Starship](https://starship.rs)                                     | Minimal, cross-shell prompt                                |
+| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)    | Editor with the LazyVim distro, kickstart as fallback      |
+| [WezTerm](https://wezterm.org)                                      | Terminal and multiplexer, with an agent picker             |
+| [tinty](https://github.com/tinted-theming/tinty)                    | Color themes for the terminal, Neovim, delta, and pi       |
+| [television](https://github.com/alexpasmantier/television)          | Fuzzy finder in the shell and WezTerm pickers              |
+| [atuin](https://atuin.sh)                                           | Searchable shell history with sync                         |
+| [Claude Code](https://claude.com/claude-code), [pi](https://pi.dev) | AI coding agents, always launched in a nono sandbox        |
+| [Jujutsu](https://github.com/jj-vcs/jj)                             | Git-compatible version control, `jj`, with a simpler model |
+| [Lima](https://lima-vm.io)                                          | Linux development VM with the host's dotfiles setup        |
+| [Vale](https://vale.sh)                                             | Prose linter for markdown, Google style plus AI-tell rules |
+| eza, bat, fd, ripgrep, zoxide, yazi, mise                           | Command-line replacements and workflow tools               |
 
 ## Keys
 
@@ -44,12 +44,17 @@ either lists the bindings.
 
 ## Make it yours
 
-Replace the name, email, and signing key in
-[`home/vcs/git/config`](home/vcs/git/config),
-[`home/vcs/jj/config.toml`](home/vcs/jj/config.toml), and
-[`home/security/ssh/github.pub`](home/security/ssh/github.pub). When the
-1Password `op` command exists, [`setup/identity/render`](setup/identity/render)
-reads name and email from 1Password instead.
+Deploy writes the git, jj, and SSH identity from
+`~/.config/identity/Personal`:
+
+```sh
+name=Ada Lovelace
+email=ada@example.com
+public_key=ssh-ed25519 AAAA...
+```
+
+Without that file, it reads the same fields from the SSH Key item `git` in
+the 1Password `Personal` vault.
 
 ## Credits
 

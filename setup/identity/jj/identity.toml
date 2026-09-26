@@ -1,4 +1,0 @@
-# Same identity sources as the git config.
-[user]
-name = "{{ op://Personal/git/name }}"
-email = "{{ op://Personal/git/email }}"

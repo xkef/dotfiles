@@ -1,11 +1,6 @@
 # Personal overrides go in ~/.config/git/config.local.
 
-[user]
-	name = xkef
-	email = git@xkef.dev
-	signingkey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFXPTYbJpNsexhTZ+x8Ci8tVkGV/d0MvWqFrlyT3yTki
-
-# Name and email from 1Password, when `op` exists.
+# Name, email, and signing key from 1Password.
 [include]
 	path = ~/.config/git/config.personal
 
@@ -149,7 +144,7 @@
 [include]
 	path = ~/.config/git/config.local
 
-# ── Work identity, rendered from 1Password ───────────
+# ── Work identity, from 1Password ────────────────────
 [includeIf "gitdir:~/work/"]
 	path = ~/.config/git/config.work
 

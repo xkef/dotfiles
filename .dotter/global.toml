@@ -1,14 +1,10 @@
 # Dotter links each source under home/ to its target under $HOME. A
 # directory entry links the files inside it one by one, so apps can add
 # their own files next to them. Run setup/deploy, which keeps the local
-# config, one per machine, in ~/.local/state/dotter. It selects the package
-# and sets `work = true` on a work machine.
+# config, one per machine, in ~/.local/state/dotter. It selects the package.
 
 [settings]
 default_target_type = "symbolic"
-
-[dotfiles.variables]
-work = false
 
 [dotfiles.files]
 "home/bin" = "~/.local/bin"

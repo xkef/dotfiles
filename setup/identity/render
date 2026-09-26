@@ -1,34 +1,118 @@
 #!/usr/bin/env bash
-# Renders the git and jj identity from 1Password with `op inject`, which
-# fails on any unreadable reference instead of writing an empty value. The
-# plain git and jj configs hold the public fallback that these files
-# override. Pass `true` to render the work identity too.
+# Writes the git, jj, and SSH identity. Each identity reads its fields from
+# ~/.config/identity/<vault>, one key=value per line, or else from the
+# SSH Key item `git` in that 1Password vault:
 #
-# Usage: setup/identity/render [true|false]
+#   name=Ada Lovelace
+#   email=ada@example.com
+#   public_key=ssh-ed25519 AAAA...
+#
+# Personal is required. Work, which also holds noreply_email and
+# github_login, is optional. Without either source, nothing renders.
 set -euo pipefail
-cd "$(dirname "$0")"
 
-git_dir="${XDG_CONFIG_HOME:-$HOME/.config}/git"
-jj_dir="${XDG_CONFIG_HOME:-$HOME/.config}/jj/conf.d"
-readonly public_signer='git@xkef.dev namespaces="git" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFXPTYbJpNsexhTZ+x8Ci8tVkGV/d0MvWqFrlyT3yTki'
-mkdir -p "$git_dir" "$jj_dir"
+config="${XDG_CONFIG_HOME:-$HOME/.config}"
+git_dir="$config/git"
+jj_dir="$config/jj/conf.d"
 
-if ! command -v op >/dev/null; then
-  printf '%s\n' "$public_signer" >"$git_dir/allowed_signers"
+has() {
+  [[ -f "$config/identity/$1" ]] ||
+    { command -v op >/dev/null && op vault get "$1" >/dev/null 2>&1; }
+}
+
+field() {
+  local value
+  if [[ -f "$config/identity/$1" ]]; then
+    value=$(sed -n "s/^$2=//p" "$config/identity/$1")
+  else
+    value=$(op read "op://$1/git/${2/public_key/public key}")
+  fi
+  if [[ -z "$value" ]]; then
+    echo "identity: $1 has no $2" >&2
+    return 1
+  fi
+  printf '%s' "$value"
+}
+
+if ! has Personal; then
+  echo "identity: no Personal identity, skipping" >&2
   exit 0
 fi
 
-render() {
-  op inject --force --in-file "$1" --out-file "$2" >/dev/null
-}
+name=$(field Personal name)
+email=$(field Personal email)
+key=$(field Personal public_key)
+mkdir -p "$git_dir" "$jj_dir" "$HOME/.ssh"
 
-render git/allowed_signers "$git_dir/allowed_signers"
-render git/config.personal "$git_dir/config.personal"
-render git/config.secondary "$git_dir/config.secondary"
-render git/config.secondary-remotes "$git_dir/config.secondary-remotes"
-render jj/identity.toml "$jj_dir/identity.toml"
+printf '%s\n' "$key" >"$HOME/.ssh/github.pub"
+printf '%s namespaces="git" %s\n' "$email" "$key" >"$git_dir/allowed_signers"
 
-if [[ "${1:-}" == true ]]; then
-  render git/config.work "$git_dir/config.work"
-  render jj/work.toml "$jj_dir/work.toml"
+cat >"$git_dir/config.personal" <<CONF
+[user]
+	name = $name
+	email = $email
+	signingkey = key::$key
+CONF
+
+cat >"$jj_dir/identity.toml" <<CONF
+[user]
+name = "$name"
+email = "$email"
+
+[signing]
+behavior = "own"
+backend = "ssh"
+key = "$key"
+CONF
+
+if ! has Work; then
+  exit 0
 fi
+
+name=$(field Work name)
+email=$(field Work email)
+noreply=$(field Work noreply_email)
+login=$(field Work github_login)
+key=$(field Work public_key)
+
+printf '%s namespaces="git" %s\n' "$noreply" "$key" >>"$git_dir/allowed_signers"
+
+# The [includeIf] in the git config activates this inside ~/work/ only.
+cat >"$git_dir/config.work" <<CONF
+[user]
+	name = $name
+	email = $email
+
+[commit]
+	gpgsign = false
+
+[tag]
+	gpgsign = false
+CONF
+
+cat >"$jj_dir/work.toml" <<CONF
+[[--scope]]
+--when.repositories = ["~/work"]
+[--scope.user]
+name = "$name"
+email = "$email"
+[--scope.signing]
+behavior = "drop"
+CONF
+
+# Secondary GitHub identity for the Work account's repos, matched by
+# remote URL. The SSH agent serves its signing key.
+cat >"$git_dir/config.secondary" <<CONF
+[user]
+	name = $name
+	email = $noreply
+	signingkey = key::$key
+CONF
+
+cat >"$git_dir/config.secondary-remotes" <<CONF
+[includeIf "hasconfig:remote.*.url:https://github.com/$login/**"]
+	path = ~/.config/git/config.secondary
+
+[includeIf "hasconfig:remote.*.url:git@github.com:$login/**"]
+	path = ~/.config/git/config.secondary
+CONF
