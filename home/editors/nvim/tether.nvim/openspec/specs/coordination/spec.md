@@ -1,11 +1,11 @@
-# Spec Delta
+# coordination Specification
 
 ## Purpose
 
 Let the user and parallel agents see who works on which files, and warn about
 collisions, without requiring agents to adopt a protocol.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Implicit claims
 
@@ -88,3 +88,20 @@ The plugin SHALL map each agent to the jj workspace that contains its cwd.
 
 - **WHEN** an agent's cwd lies in workspace `feat`
 - **THEN** the plugin reports workspace `feat` for that agent
+
+### Requirement: Workspace review
+
+`:Tether review workspace <name>` SHALL show the diff from `trunk()` to the
+working copy of jj workspace `<name>`, and reject SHALL refuse in that review,
+because the files live in the other workspace.
+
+#### Scenario: Review a workspace against trunk
+
+- **WHEN** workspace `feat` changed `a.lua` and the user runs
+  `:Tether review workspace feat`
+- **THEN** the review shows the change to `a.lua`
+
+#### Scenario: Reject refuses in a workspace review
+
+- **WHEN** the user presses `x` on a hunk of that review
+- **THEN** no file changes and the user is told to reject in the other workspace

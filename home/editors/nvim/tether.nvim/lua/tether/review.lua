@@ -75,6 +75,7 @@ end
 function M.reset()
   store = nil
   R = {}
+  M.header_providers = {}
   M.comments = {}
   M.last = {}
 end
@@ -305,7 +306,8 @@ end
 
 local function compute(opts)
   opts = opts or {}
-  local scope, err = turns.scope(R.repo, R.scope_name, { turn = R.turn, snapshot = opts.snapshot ~= false })
+  local scope, err =
+    turns.scope(R.repo, R.scope_name, { turn = R.turn, workspace = R.workspace, snapshot = opts.snapshot ~= false })
   if not scope then
     return nil, err
   end
@@ -423,6 +425,10 @@ function M.accept(whole_file)
 end
 
 function M.reject(whole_file)
+  if R.scope and R.scope.readonly then
+    util.warn("this review shows another workspace; reject there")
+    return
+  end
   local lnum = vim.fn.line(".")
   local e = entry_at(lnum)
   local f = file_at(lnum)
@@ -639,10 +645,10 @@ local function setup_buffer(buf)
 end
 
 ---Opens the review buffer for a scope.
----@param opts? {turn?: tether.Turn, tab?: boolean}
+---@param opts? {turn?: tether.Turn, workspace?: string, tab?: boolean}
 function M.open(repo, scope_name, opts)
   opts = opts or {}
-  R.repo, R.scope_name, R.turn = repo, scope_name or "turn", opts.turn
+  R.repo, R.scope_name, R.turn, R.workspace = repo, scope_name or "turn", opts.turn, opts.workspace
   local ok, err = compute({ snapshot = true })
   if not ok then
     util.warn(err)

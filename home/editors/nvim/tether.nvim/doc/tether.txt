@@ -10,8 +10,9 @@ CONTENTS                                                     *tether-contents*
   5. Review buffer ........................... |tether-review|
   6. Cockpit ................................. |tether-cockpit|
   7. Configuration ........................... |tether-config|
-  8. Lua API ................................. |tether-api|
-  9. Event log ............................... |tether-events|
+  8. Coordination ............................ |tether-coord|
+  9. Lua API ................................. |tether-api|
+ 10. Event log ............................... |tether-events|
 
 ==============================================================================
 1. INTRODUCTION                                                 *tether-intro*
@@ -53,6 +54,8 @@ Anything else calls the writer directly:
     agent-trail read <agent> <path> [line]
     agent-trail stop <agent>               # the turn ends
     agent-trail show <path> [line]         # point the user at code
+    agent-trail claim <agent> <path-or-glob>
+    agent-trail release <agent> [path-or-glob]
 <
 `turn` and `stop` record a checkpoint: the jj operation ID inside a jj
 workspace, or a commit from `git stash create` in a Git work tree. Set
@@ -111,7 +114,9 @@ Sections appear only when they have rows:
 
   Agents   live agents in this repository from `agent-state list`, with
            state, tool, task, and unreviewed hunks of their last turn.
-           `<CR>` focuses the pane, `r` reviews the last turn, `s` sends.
+           `<CR>` focuses the pane, `r` reviews the last turn, `s` sends,
+           `w` adds a jj workspace, `W` reviews the agent's workspace
+           against trunk. Agents in sibling workspaces show too.
   Turn     files of the last turn with added and removed line counts.
            `<CR>` opens the review at the file.
   Trail    recent edits and reads. `<CR>` opens the file at the line.
@@ -137,6 +142,7 @@ Sections appear only when they have rows:
         submit = false,            -- press enter after pasting
       },
       cockpit = { side = "right", width = 46, interval = 2000, trail = 8 },
+      coord = { claim_ttl = 7200 }, -- seconds an explicit claim lasts
       notify_stop = true,          -- notify when a turn ends
     })
 <
@@ -145,7 +151,27 @@ Highlight groups, all linked by default: `TetherFlash`, `TetherDim`,
 `TetherComment`, `TetherClaim`, `TetherWaiting`.
 
 ==============================================================================
-8. LUA API                                                        *tether-api*
+8. COORDINATION                                                 *tether-coord*
+
+Claims come from the event log. A file an agent edits during a running turn
+is claimed until the turn stops. `agent-trail claim` reserves a path or glob
+until a `release`, until the agent's pane closes, or until `coord.claim_ttl`
+passes. Buffers of claimed files show the agent at the end of line one.
+
+tether warns, once each, when:
+- an agent edits a file another agent claims,
+- you change a buffer whose file an agent's running turn claims,
+- an agent writes a file whose buffer has unsaved changes.
+
+Each warning also fires `User TetherConflict` with `data.kind` set to
+`agents`, `user`, or `unsaved`.
+
+`:Tether review workspace {name}` reviews a jj workspace against trunk, as
+the cockpit's `W` does. That review is read-only: `x` and `X` refuse, since
+the files live in the other workspace.
+
+==============================================================================
+9. LUA API                                                        *tether-api*
 
 `require("tether")`
   `.status()`             short statusline text
@@ -165,7 +191,7 @@ Highlight groups, all linked by default: `TetherFlash`, `TetherDim`,
 User autocmds: `TetherTurnStop` with `data = { turn, files }`.
 
 ==============================================================================
-9. EVENT LOG                                                   *tether-events*
+10. EVENT LOG                                                  *tether-events*
 
 `$XDG_STATE_HOME/agents/trail.log` holds one event per line, ten
 tab-separated fields, `-` for empty:

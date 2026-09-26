@@ -32,6 +32,10 @@ M.defaults = {
     interval = 2000,
     trail = 8,
   },
+  coord = {
+    -- Seconds an explicit claim lasts without a release.
+    claim_ttl = 7200,
+  },
   -- Notify when an agent's turn in this repository ends.
   notify_stop = true,
   sdd = {

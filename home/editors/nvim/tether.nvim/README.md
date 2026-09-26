@@ -19,6 +19,10 @@ paste.
 - **Send.** Batched review comments, selections, and file references go to the
   agent's pane through `wezterm cli`.
 - **Cockpit.** One panel shows agents, the current turn, and recent edits.
+- **Coordination.** A file an agent edits during its turn counts as claimed.
+  tether warns when a second agent or you edit a claimed file, and when an agent
+  writes under your unsaved changes. The cockpit maps agents to jj workspaces
+  and adds a workspace for the next agent.
 
 It works with any agent that can run a command. It supports jj and Git, and it
 runs with or without a Neovim distribution.
@@ -69,7 +73,9 @@ agent-trail edit codex src/parser.lua 42
 agent-trail stop codex
 ```
 
-Agents can point you at code with `agent-trail show <path> [line]`.
+Agents can point you at code with `agent-trail show <path> [line]`, and reserve
+files up front with `agent-trail claim <agent> <path-or-glob>` until
+`agent-trail release <agent>`.
 
 ## Use
 
@@ -94,6 +100,10 @@ and `X` act for the whole file, `]h` and `[h` move between unreviewed hunks, `c`
 adds a comment, and `<CR>` opens a side-by-side diff. `g?` lists all keys in the
 review buffer and in the cockpit.
 
+In the cockpit, `w` adds a jj workspace for a new agent and `W` reviews an
+agent's workspace against trunk. The `claims` picker source lists who works on
+which file.
+
 `require("tether").status()` returns a short string for statuslines.
 
 ## Configure
@@ -109,6 +119,7 @@ review buffer and in the cockpit.
   review = { keep_days = 30 },
   send = { wezterm = "wezterm", submit = false },
   cockpit = { side = "right", width = 46, interval = 2000, trail = 8 },
+  coord = { claim_ttl = 7200 },
   notify_stop = true,
 }
 ```

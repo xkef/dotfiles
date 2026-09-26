@@ -194,33 +194,81 @@ function M.restore(repo, commit, rels)
   return true
 end
 
----jj workspace name for a directory inside the repository.
+---Name of the jj workspace that contains dir: the workspace whose working
+---copy is @ there.
 function M.workspace(repo, dir)
+  if repo.kind ~= "jj" or not dir or vim.fn.isdirectory(dir) == 0 then
+    return nil
+  end
+  local res = util.run(
+    {
+      "jj",
+      "--color=never",
+      "--no-pager",
+      "--ignore-working-copy",
+      "log",
+      "-r",
+      "@",
+      "--no-graph",
+      "-T",
+      "working_copies",
+    },
+    { cwd = dir }
+  )
+  if res.code ~= 0 then
+    return nil
+  end
+  return res.stdout:match("([^%s@]+)@")
+end
+
+---The jj repository store a workspace root uses. Workspaces of one
+---repository share it: the main workspace holds .jj/repo as a directory,
+---and every other workspace holds a file with the path to it.
+function M.store(root)
+  local repo_path = vim.fs.joinpath(root, ".jj", "repo")
+  local stat = vim.uv.fs_stat(repo_path)
+  if not stat then
+    return nil
+  end
+  if stat.type == "directory" then
+    return util.normalize(repo_path)
+  end
+  local target = (util.read_lines(repo_path) or {})[1]
+  if not target or target == "" then
+    return nil
+  end
+  if target:sub(1, 1) ~= "/" then
+    target = vim.fs.joinpath(root, ".jj", target)
+  end
+  return util.normalize(target)
+end
+
+---True when dir lies in a workspace of the same jj repository as repo.
+function M.same_repo(repo, dir)
+  if not dir then
+    return false
+  end
+  if util.inside(dir, repo.root) then
+    return true
+  end
   if repo.kind ~= "jj" then
-    return nil
+    return false
   end
-  local res = jj(repo, { "workspace", "root" }, { cwd = dir })
+  local other = vim.fs.root(dir, ".jj")
+  if not other then
+    return false
+  end
+  local mine = M.store(repo.root)
+  return mine ~= nil and mine == M.store(util.normalize(other))
+end
+
+---Adds a jj workspace at path named name.
+function M.workspace_add(repo, name, path)
+  local res = jj(repo, { "workspace", "add", "--name", name, path }, { snapshot = true })
   if res.code ~= 0 then
-    return nil
+    return fail(res)
   end
-  local wsroot = util.normalize(trim(res.stdout))
-  res = jj(repo, { "workspace", "list", "-T", 'name ++ "\\t" ++ target.commit_id() ++ "\\n"' })
-  if res.code ~= 0 then
-    return nil
-  end
-  if wsroot == repo.root then
-    return "default"
-  end
-  -- jj doesn't print workspace paths; a workspace added by tether is named
-  -- after its directory.
-  local base = vim.fs.basename(wsroot)
-  for _, line in ipairs(util.lines(res.stdout)) do
-    local name = line:match("^([^\t]+)")
-    if name and (base == name or base:sub(-#name - 1) == "-" .. name) then
-      return name
-    end
-  end
-  return base
+  return true
 end
 
 return M

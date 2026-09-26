@@ -302,7 +302,7 @@ M.commands = {
     M.cockpit()
   end,
   review = function(args)
-    M.review(args[1])
+    M.review(args[1], { workspace = args[2] })
   end,
   follow = function(args)
     local on = args[1] == "on" and true or args[1] == "off" and false or nil
@@ -329,7 +329,7 @@ M.commands = {
 }
 
 M.complete = {
-  review = { "turn", "change", "checkpoint", "since" },
+  review = { "turn", "change", "checkpoint", "since", "workspace" },
   follow = { "on", "off" },
   pick = function()
     local repo = M.repo()

@@ -169,6 +169,7 @@ end
 ---@field label string
 ---@field range tether.Range
 ---@field turn? tether.Turn
+---@field readonly? boolean diff of another workspace; reject would edit the wrong files
 
 ---Resolves a scope name to a diff range. snapshot lets jj record the
 ---working copy first, for explicit reviews of work in progress.
@@ -185,6 +186,18 @@ function M.scope(repo, name, opts)
       return { name = name, label = "working-copy change", range = { rev = "@" } }
     end
     return { name = name, label = "uncommitted changes", range = { from = "HEAD" } }
+  end
+
+  if name == "workspace" then
+    if not opts.workspace then
+      return nil, "no workspace given"
+    end
+    return {
+      name = name,
+      label = "workspace " .. opts.workspace .. " vs trunk",
+      range = { from = "trunk()", to = opts.workspace .. "@" },
+      readonly = true,
+    }
   end
 
   local from_ref, t

@@ -247,6 +247,8 @@ function M.reset()
     pcall(vim.api.nvim_buf_delete, C.buf, { force = true })
   end
   C = { collapsed = {}, expanded = {}, items = {}, cache = {} }
+  M.agent_fields = {}
+  M.agent_actions = {}
 end
 
 ----------------------------------------------------------------------------
@@ -276,6 +278,8 @@ end
 
 -- Fields other modules add to agent rows: fn(repo, agent) -> string?
 M.agent_fields = {}
+-- Actions other modules add to agent rows: fn(repo, agent) -> { key = fn }
+M.agent_actions = {}
 
 function M.focus_pane(a)
   if not a.pane_id then
@@ -288,12 +292,12 @@ M.register({
   name = "Agents",
   order = 10,
   summary = function(r)
-    local n = #agents.in_root(r.root)
+    local n = #agents.in_repo(r)
     return n > 0 and tostring(n) or nil
   end,
   rows = function(r)
     local rows = {}
-    for _, a in ipairs(agents.in_root(r.root)) do
+    for _, a in ipairs(agents.in_repo(r)) do
       local parts = { ICONS[a.state] or "·", ("%-7s"):format(a.agent), ("%-7s"):format(a.state) }
       if a.tool then
         table.insert(parts, a.tool)
@@ -311,28 +315,35 @@ M.register({
           table.insert(parts, extra)
         end
       end
+      local actions = {
+        ["<CR>"] = function()
+          M.focus_pane(a)
+        end,
+        r = function()
+          local t = turns.latest(r.root, a.agent)
+          if t then
+            require("tether.review").open(r, "turn", { turn = t })
+          end
+        end,
+        s = function()
+          vim.ui.input({ prompt = "Send to " .. a.agent .. ": " }, function(text)
+            if text and text ~= "" then
+              require("tether.send").deliver(a, text)
+            end
+          end)
+        end,
+      }
+      for _, fn in ipairs(M.agent_actions) do
+        local ok, extra = pcall(fn, r, a)
+        if ok and extra then
+          actions = vim.tbl_extend("force", actions, extra)
+        end
+      end
       table.insert(rows, {
         text = table.concat(parts, " "),
         hl = a.state == "waiting" and "TetherWaiting" or nil,
         agent = a,
-        actions = {
-          ["<CR>"] = function()
-            M.focus_pane(a)
-          end,
-          r = function()
-            local t = turns.latest(r.root, a.agent)
-            if t then
-              require("tether.review").open(r, "turn", { turn = t })
-            end
-          end,
-          s = function()
-            vim.ui.input({ prompt = "Send to " .. a.agent .. ": " }, function(text)
-              if text and text ~= "" then
-                require("tether.send").deliver(a, text)
-              end
-            end)
-          end,
-        },
+        actions = actions,
       })
     end
     return rows

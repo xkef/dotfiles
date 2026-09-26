@@ -66,6 +66,14 @@ function M.in_root(root, force)
   end, M.list(force))
 end
 
+---Agents in root or in another workspace of the same jj repository.
+function M.in_repo(repo, force)
+  local vcs = require("tether.vcs")
+  return vim.tbl_filter(function(a)
+    return vcs.same_repo(repo, a.cwd)
+  end, M.list(force))
+end
+
 function M.reset()
   cache = { t = 0, rows = {} }
 end
