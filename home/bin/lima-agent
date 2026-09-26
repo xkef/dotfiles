@@ -7,12 +7,15 @@
 #
 # The OAuth token comes from 1Password on every launch and reaches the
 # guest through stdin, so it never shows up in a process list. The guest
-# deletes its copy once the agent has it in its environment. WEZTERM_PANE
+# deletes its copy once the agent has it in its environment. The host's gh
+# token for GH_USER takes the same path and logs gh in the guest, where it
+# stays for plain shells and git. WEZTERM_PANE
 # goes along so the agent's hooks report to the `mux-agents` picker.
 set -euo pipefail
 
 readonly VM=dev
 readonly TOKEN_REF="op://Private/Claude Code/token"
+readonly GH_USER=xkef
 readonly SHARED_DIRS=("$HOME/code" "$HOME/work")
 
 shared=false
@@ -28,8 +31,9 @@ fi
 # which must exist first.
 mkdir -p "${XDG_STATE_HOME:-$HOME/.local/state}/agents/lima-$VM/claude-projects"
 
-# Reads the token before the VM starts, so a missing token fails fast.
+# Reads the tokens before the VM starts, so a missing token fails fast.
 token=$(op read "$TOKEN_REF")
+gh_token=$(gh auth token --user "$GH_USER")
 token_file=".cache/lima-agent/token.$$"
 
 # The guest's fish runs without a prompt, so it never reports its
@@ -39,9 +43,14 @@ if [ -t 1 ]; then
   printf '\e]7;file://lima-%s%s\e\\' "$VM" "$PWD"
 fi
 
-printf '%s' "$token" |
-  limactl shell --start --workdir / "$VM" -- \
-    sh -c 'f="$HOME/$1" && umask 077 && mkdir -p "${f%/*}" && cat >"$f"' sh "$token_file"
+# The first line holds the gh token, which gh stores in a file since the
+# guest has no keyring. Logging in again only follows a token change.
+printf '%s\n%s' "$gh_token" "$token" |
+  limactl shell --start --workdir / "$VM" -- sh -c '
+    IFS= read -r gh
+    [ "$(gh auth token 2>/dev/null)" = "$gh" ] ||
+      printf %s "$gh" | gh auth login --with-token --insecure-storage
+    f="$HOME/$1" && umask 077 && mkdir -p "${f%/*}" && cat >"$f"' sh "$token_file"
 
 exec limactl shell --workdir "$PWD" "$VM" -- \
   env WEZTERM_PANE="${WEZTERM_PANE:-}" fish -lc '
