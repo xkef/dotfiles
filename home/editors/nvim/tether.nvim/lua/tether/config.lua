@@ -39,6 +39,8 @@ M.defaults = {
   -- Notify when an agent's turn in this repository ends.
   notify_stop = true,
   sdd = {
+    -- OpenSpec CLI for diagnostics; built-in checks apply without it.
+    openspec = "openspec",
     send_template = "Work on task {id} of OpenSpec change {change}: {text}",
   },
 }

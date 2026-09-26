@@ -11,8 +11,9 @@ CONTENTS                                                     *tether-contents*
   6. Cockpit ................................. |tether-cockpit|
   7. Configuration ........................... |tether-config|
   8. Coordination ............................ |tether-coord|
-  9. Lua API ................................. |tether-api|
- 10. Event log ............................... |tether-events|
+  9. Spec-driven development ................. |tether-sdd|
+ 10. Lua API ................................. |tether-api|
+ 11. Event log ............................... |tether-events|
 
 ==============================================================================
 1. INTRODUCTION                                                 *tether-intro*
@@ -143,6 +144,10 @@ Sections appear only when they have rows:
       },
       cockpit = { side = "right", width = 46, interval = 2000, trail = 8 },
       coord = { claim_ttl = 7200 }, -- seconds an explicit claim lasts
+      sdd = {
+        openspec = "openspec",     -- CLI for spec diagnostics
+        send_template = "Work on task {id} of OpenSpec change {change}: {text}",
+      },
       notify_stop = true,          -- notify when a turn ends
     })
 <
@@ -171,7 +176,30 @@ the cockpit's `W` does. That review is read-only: `x` and `X` refuse, since
 the files live in the other workspace.
 
 ==============================================================================
-9. LUA API                                                        *tether-api*
+9. SPEC-DRIVEN DEVELOPMENT                                        *tether-sdd*
+
+Active when an `openspec/` directory exists in the working directory, one of
+its parents, or at the repository root. Without one, nothing below shows.
+
+Cockpit Tasks section: one row per change in progress with done and total
+tasks. `<Tab>` expands it to its tasks, `x` toggles a checkbox in
+`tasks.md`, `<CR>` opens the task, and `s` sends the task to the agent through
+`sdd.send_template`, where `{change}`, `{id}`, and `{text}` expand.
+
+Picker sources: `specs`, `requirements`, `changes`.
+
+Diagnostics: saving a Markdown file under `openspec/` runs
+`openspec validate <item> --strict --json` when the CLI is installed and maps
+its issues to the requirement headings. Without it, built-in checks report a
+requirement without a scenario, a scenario with three hashes, and requirement
+text without SHALL or MUST.
+
+Traceability: a turn that touches `openspec/changes/<id>/` links to that
+change. The review header names it and the tasks the turn checked off, and
+the Tasks section marks those tasks with the agent.
+
+==============================================================================
+10. LUA API                                                       *tether-api*
 
 `require("tether")`
   `.status()`             short statusline text
@@ -191,7 +219,7 @@ the files live in the other workspace.
 User autocmds: `TetherTurnStop` with `data = { turn, files }`.
 
 ==============================================================================
-10. EVENT LOG                                                  *tether-events*
+11. EVENT LOG                                                  *tether-events*
 
 `$XDG_STATE_HOME/agents/trail.log` holds one event per line, ten
 tab-separated fields, `-` for empty:

@@ -1,4 +1,4 @@
-# Spec Delta
+# sdd Specification
 
 ## Purpose
 
@@ -6,13 +6,13 @@ Support spec-driven development with OpenSpec from Neovim: parse, check, and
 navigate specs and changes, run the task list as a board, and link agent turns
 to the work they did.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Activation
 
-The SDD features SHALL activate only when an `openspec/` directory exists at or
-above the repository root, and SHALL add no sections, sources, or autocmds
-otherwise.
+The SDD features SHALL activate only when an `openspec/` directory exists in the
+working directory or one of its parents, or at the repository root, and SHALL
+show no cockpit section or picker source otherwise.
 
 #### Scenario: Project without OpenSpec
 

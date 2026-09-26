@@ -10,8 +10,8 @@ link between an agent turn and the task it worked on.
 
 ## What Changes
 
-- Detection of an `openspec/` tree at or above the repository root; every
-  feature below stays inactive without one.
+- Detection of an `openspec/` tree in the working directory, its parents, or the
+  repository root; every feature below stays inactive without one.
 - A parser for specs and changes that needs no OpenSpec CLI.
 - Diagnostics on save, from `openspec validate` when installed and from built-in
   checks otherwise.

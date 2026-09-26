@@ -23,6 +23,10 @@ paste.
   tether warns when a second agent or you edit a claimed file, and when an agent
   writes under your unsaved changes. The cockpit maps agents to jj workspaces
   and adds a workspace for the next agent.
+- **Spec-driven development.** In a project with an
+  [OpenSpec](https://github.com/Fission-AI/OpenSpec) tree, the cockpit shows
+  each change's task list as a board. Tasks go to an agent with one key, and a
+  review names the tasks the turn checked. Specs get diagnostics on save.
 
 It works with any agent that can run a command. It supports jj and Git, and it
 runs with or without a Neovim distribution.
@@ -104,6 +108,12 @@ In the cockpit, `w` adds a jj workspace for a new agent and `W` reviews an
 agent's workspace against trunk. The `claims` picker source lists who works on
 which file.
 
+With an `openspec/` directory in the working directory or its parents, the
+cockpit adds a Tasks section: `<Tab>` expands a change, `x` checks a task off,
+and `s` sends it to the agent. The picker gains `specs`, `requirements`, and
+`changes`, and saving a spec runs `openspec validate`, or built-in checks
+without that command. Projects without OpenSpec see none of this.
+
 `require("tether").status()` returns a short string for statuslines.
 
 ## Configure
@@ -120,6 +130,10 @@ which file.
   send = { wezterm = "wezterm", submit = false },
   cockpit = { side = "right", width = 46, interval = 2000, trail = 8 },
   coord = { claim_ttl = 7200 },
+  sdd = {
+    openspec = "openspec",
+    send_template = "Work on task {id} of OpenSpec change {change}: {text}",
+  },
   notify_stop = true,
 }
 ```

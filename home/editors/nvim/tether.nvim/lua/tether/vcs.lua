@@ -200,21 +200,18 @@ function M.workspace(repo, dir)
   if repo.kind ~= "jj" or not dir or vim.fn.isdirectory(dir) == 0 then
     return nil
   end
-  local res = util.run(
-    {
-      "jj",
-      "--color=never",
-      "--no-pager",
-      "--ignore-working-copy",
-      "log",
-      "-r",
-      "@",
-      "--no-graph",
-      "-T",
-      "working_copies",
-    },
-    { cwd = dir }
-  )
+  local res = util.run({
+    "jj",
+    "--color=never",
+    "--no-pager",
+    "--ignore-working-copy",
+    "log",
+    "-r",
+    "@",
+    "--no-graph",
+    "-T",
+    "working_copies",
+  }, { cwd = dir })
   if res.code ~= 0 then
     return nil
   end

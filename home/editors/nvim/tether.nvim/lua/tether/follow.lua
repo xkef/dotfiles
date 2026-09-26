@@ -165,9 +165,6 @@ end
 
 ---Notifies about a finished turn with changed files and unreviewed hunks.
 function M.on_stop(ev, repo)
-  if not config.options.notify_stop then
-    return
-  end
   local t = turns.latest(repo.root, ev.agent)
   if not t or t.stopped ~= ev.epoch then
     return
@@ -180,6 +177,10 @@ function M.on_stop(ev, repo)
   local review = require("tether.review")
   local nfiles, _, open = review.count(repo.root, files)
   review.last = { turn = t.id, unreviewed = open }
+  vim.api.nvim_exec_autocmds("User", { pattern = "TetherTurnStop", data = { turn = t, files = files } })
+  if not config.options.notify_stop then
+    return
+  end
   local prefix = config.options.prefix
   util.notify(
     ("%s finished: %d file%s changed, %d unreviewed hunk%s%s"):format(
@@ -191,7 +192,6 @@ function M.on_stop(ev, repo)
       prefix and (" · " .. prefix .. "r to review") or ""
     )
   )
-  vim.api.nvim_exec_autocmds("User", { pattern = "TetherTurnStop", data = { turn = t, files = files } })
 end
 
 ---Dispatches a live event for the current repository.
