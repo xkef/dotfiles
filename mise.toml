@@ -73,7 +73,9 @@ cp home/terminal/wezterm/*.lua "$XDG_CONFIG_HOME/wezterm"
 ! wezterm ls-fonts 2>&1 >/dev/null | grep ERROR
 """
 
+# Neovim exits 0 after a startup error, so the task fails on the error
+# message that startup left in v:errmsg instead.
 [tasks.lint-nvim]
 description = "Load LazyVim headless. Needs its plugins installed."
 env = { NVIM_APPNAME = "lazyvim" }
-run = """nvim --headless -c "lua require('lazy')" -c qa"""
+run = """nvim --headless -c "lua require('lazy')" -c 'if v:errmsg != "" | cquit | else | qall | endif'"""
