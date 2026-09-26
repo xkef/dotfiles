@@ -101,10 +101,10 @@ for i = 1, 8 do
 end
 
 -- Cmd-click, or Ctrl-click off macOS, opens a link, and a plain click only
--- selects. The press does nothing, so Neovim doesn't see it. The
--- mouse_reporting copies apply while a program holds the mouse. A double
--- click copies the word and a triple click the line, also in Neovim and
--- other programs that hold the mouse.
+-- selects. The press does nothing, so Neovim doesn't see it. The link
+-- bindings also apply while a program holds the mouse. A double click
+-- copies the word and a triple click the line, except in programs that
+-- hold the mouse, so Neovim gets those clicks to open files.
 local function mouse_bindings()
   local link_mods = IS_MAC and "SUPER" or "CTRL"
   local bindings = {
@@ -114,21 +114,19 @@ local function mouse_bindings()
       action = act.CompleteSelection("ClipboardAndPrimarySelection"),
     },
   }
+  for streak, unit in pairs({ [2] = "Word", [3] = "Line" }) do
+    table.insert(bindings, {
+      event = { Down = { streak = streak, button = "Left" } },
+      mods = "NONE",
+      action = act.SelectTextAtMouseCursor(unit),
+    })
+    table.insert(bindings, {
+      event = { Up = { streak = streak, button = "Left" } },
+      mods = "NONE",
+      action = act.CompleteSelection("ClipboardAndPrimarySelection"),
+    })
+  end
   for _, reporting in ipairs({ false, true }) do
-    for streak, unit in pairs({ [2] = "Word", [3] = "Line" }) do
-      table.insert(bindings, {
-        event = { Down = { streak = streak, button = "Left" } },
-        mods = "NONE",
-        mouse_reporting = reporting,
-        action = act.SelectTextAtMouseCursor(unit),
-      })
-      table.insert(bindings, {
-        event = { Up = { streak = streak, button = "Left" } },
-        mods = "NONE",
-        mouse_reporting = reporting,
-        action = act.CompleteSelection("ClipboardAndPrimarySelection"),
-      })
-    end
     table.insert(bindings, {
       event = { Up = { streak = 1, button = "Left" } },
       mods = link_mods,
