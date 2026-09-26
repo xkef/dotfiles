@@ -27,6 +27,10 @@ paste.
   [OpenSpec](https://github.com/Fission-AI/OpenSpec) tree, the cockpit shows
   each change's task list as a board. Tasks go to an agent with one key, and a
   review names the tasks the turn checked. Specs get diagnostics on save.
+- **Pipelines.** [Attractor](https://github.com/strongdm/attractor) and
+  [Fabro](https://github.com/fabro-sh/fabro) workflow files get lint
+  diagnostics, a node picker, and an outline. A running pipeline shows each
+  node's status on its line, and human gates get answered from Neovim.
 
 It works with any agent that can run a command. It supports jj and Git, and it
 runs with or without a Neovim distribution.
@@ -114,6 +118,13 @@ and `s` sends it to the agent. The picker gains `specs`, `requirements`, and
 `changes`, and saving a spec runs `openspec validate`, or built-in checks
 without that command. Projects without OpenSpec see none of this.
 
+In a pipeline file (`.dot`, `.gv`, or `.fabro`), `:Tether attractor` offers
+`outline`, `nodes`, and `lint`. `:Tether attractor run` attaches a run: a spec
+run directory, a spec server URL with a pipeline ID, or `fabro:<run-id>` for a
+Fabro server, found through `~/.fabro/settings.toml`. `launch` starts the
+current `.fabro` workflow, `answer` answers the pending human gate, and
+`review <run-id>` reviews what a Fabro run committed to its branch.
+
 `require("tether").status()` returns a short string for statuslines.
 
 ## Configure
@@ -130,6 +141,12 @@ without that command. Projects without OpenSpec see none of this.
   send = { wezterm = "wezterm", submit = false },
   cockpit = { side = "right", width = 46, interval = 2000, trail = 8 },
   coord = { claim_ttl = 7200 },
+  attractor = {
+    curl = "curl",
+    fabro = "fabro",
+    fabro_url = nil,
+    poll_ms = 1000,
+  },
   sdd = {
     openspec = "openspec",
     send_template = "Work on task {id} of OpenSpec change {change}: {text}",

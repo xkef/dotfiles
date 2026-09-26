@@ -18,6 +18,12 @@ M.HANDLERS = {
   ["parallel.fan_in"] = true,
   tool = true,
   ["stack.manager_loop"] = true,
+  -- Fabro handler names.
+  prompt = true,
+  wait = true,
+  agent = true,
+  command = true,
+  human = true,
 }
 
 M.FIDELITY = {

@@ -188,6 +188,18 @@ function M.scope(repo, name, opts)
     return { name = name, label = "uncommitted changes", range = { from = "HEAD" } }
   end
 
+  if name == "range" then
+    if not (opts.from and opts.to) then
+      return nil, "range needs from and to"
+    end
+    return {
+      name = name,
+      label = opts.label or (opts.from .. ".." .. opts.to),
+      range = { from = opts.from, to = opts.to },
+      readonly = true,
+    }
+  end
+
   if name == "workspace" then
     if not opts.workspace then
       return nil, "no workspace given"

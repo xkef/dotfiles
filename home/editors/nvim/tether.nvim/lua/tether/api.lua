@@ -99,6 +99,13 @@ M.ui = {
   refresh = function()
     return require("tether.ui.cockpit").render()
   end,
+  ---Opens a picker source by name in the current repository.
+  pick = function(source)
+    local repo = require("tether.core.vcs").current()
+    if repo then
+      return require("tether.ui.pick").pick(repo, source)
+    end
+  end,
 }
 
 ---Subscribes to notifications. "event" delivers every event-log record;

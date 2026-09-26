@@ -252,7 +252,7 @@ end
 local function compute(opts)
   opts = opts or {}
   local scope, err =
-    turns.scope(R.repo, R.scope_name, { turn = R.turn, workspace = R.workspace, snapshot = opts.snapshot ~= false })
+    turns.scope(R.repo, R.scope_name, vim.tbl_extend("force", R.scope_opts, { snapshot = opts.snapshot ~= false }))
   if not scope then
     return nil, err
   end
@@ -368,7 +368,7 @@ end
 
 function M.reject(whole_file)
   if R.scope and R.scope.readonly then
-    util.warn("this review shows another workspace; reject there")
+    util.warn("this review is read-only: its files live in another workspace or branch")
     return
   end
   local lnum = vim.fn.line(".")
@@ -590,7 +590,8 @@ end
 ---@param opts? {turn?: tether.Turn, workspace?: string, tab?: boolean}
 function M.open(repo, scope_name, opts)
   opts = opts or {}
-  R.repo, R.scope_name, R.turn, R.workspace = repo, scope_name or "turn", opts.turn, opts.workspace
+  R.repo, R.scope_name = repo, scope_name or "turn"
+  R.scope_opts = { turn = opts.turn, workspace = opts.workspace, from = opts.from, to = opts.to, label = opts.label }
   local ok, err = compute({ snapshot = true })
   if not ok then
     util.warn(err)

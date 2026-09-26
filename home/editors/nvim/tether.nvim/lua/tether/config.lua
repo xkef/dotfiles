@@ -38,6 +38,14 @@ M.defaults = {
   },
   -- Notify when an agent's turn in this repository ends.
   notify_stop = true,
+  attractor = {
+    curl = "curl",
+    fabro = "fabro",
+    -- Fabro server; nil reads [cli.target] from ~/.fabro/settings.toml.
+    fabro_url = nil,
+    -- Milliseconds between scans of a spec run directory.
+    poll_ms = 1000,
+  },
   sdd = {
     -- OpenSpec CLI for diagnostics; built-in checks apply without it.
     openspec = "openspec",

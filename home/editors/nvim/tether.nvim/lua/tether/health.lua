@@ -58,10 +58,16 @@ function M.check()
   else
     health.info("openspec CLI not found; built-in spec checks apply")
   end
-  if vim.fn.executable("curl") == 1 then
-    health.ok("curl for Attractor event streams")
+  local attractor = config.attractor or {}
+  if vim.fn.executable(attractor.curl or "curl") == 1 then
+    health.ok("curl for pipeline servers and Fabro")
   else
-    health.info("curl not found; Attractor runs read from directories only")
+    health.info("curl not found; pipeline runs read from directories only")
+  end
+  if vim.fn.executable(attractor.fabro or "fabro") == 1 then
+    health.ok("fabro for launch and validate")
+  else
+    health.info("fabro not found; launch and fabro validate are unavailable")
   end
 end
 

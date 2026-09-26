@@ -12,8 +12,9 @@ CONTENTS                                                     *tether-contents*
   7. Configuration ........................... |tether-config|
   8. Coordination ............................ |tether-coord|
   9. Spec-driven development ................. |tether-sdd|
- 10. Lua API ................................. |tether-api|
- 11. Event log ............................... |tether-events|
+ 10. Attractor and Fabro ..................... |tether-attractor|
+ 11. Lua API ................................. |tether-api|
+ 12. Event log ............................... |tether-events|
 
 ==============================================================================
 1. INTRODUCTION                                                 *tether-intro*
@@ -144,6 +145,12 @@ Sections appear only when they have rows:
       },
       cockpit = { side = "right", width = 46, interval = 2000, trail = 8 },
       coord = { claim_ttl = 7200 }, -- seconds an explicit claim lasts
+      attractor = {
+        curl = "curl",
+        fabro = "fabro",
+        fabro_url = nil,           -- default: ~/.fabro/settings.toml
+        poll_ms = 1000,            -- spec run directory scans
+      },
       sdd = {
         openspec = "openspec",     -- CLI for spec diagnostics
         send_template = "Work on task {id} of OpenSpec change {change}: {text}",
@@ -199,7 +206,40 @@ change. The review header names it and the tasks the turn checked off, and
 the Tasks section marks those tasks with the agent.
 
 ==============================================================================
-10. LUA API                                                       *tether-api*
+10. ATTRACTOR AND FABRO                                     *tether-attractor*
+
+Pipeline files are `.dot`, `.gv`, and `.fabro` files holding a `digraph` in
+the Attractor DOT subset, with Fabro's shapes (`tab`, `insulator`).
+
+Lint runs on read and write: one start and one exit node, reachability, no
+edges into start or out of exit, retry targets, goal gates, prompts on LLM
+stages, fidelity values, and handler types. For `.fabro` files the findings
+of `fabro validate` join them.
+
+`:Tether attractor {sub}`:
+  `outline`               nodes in breadth-first order; `<CR>` jumps
+  `nodes`                 picker source of nodes with prompt preview
+  `lint`                  run the checks now
+  `run {target}`          attach a run; target is a spec run directory,
+                        `{url} {pipeline-id}` of a spec server, or
+                        `fabro:{run-id}` (a bare run ID works too)
+  `launch`                `fabro run -d` the current `.fabro` workflow and
+                        attach the new run
+  `answer`                answer the first pending human gate
+  `stop`                  detach the run
+  `review {run-id}`       read-only review of branch `fabro/run/{run-id}`
+                        against its branch point
+
+While a run is attached, node lines show their status as virtual text and
+the cockpit shows a Pipeline section; `<CR>` on a question answers it.
+
+Fabro is reached over its HTTP API only: `attractor.fabro_url`, else `url`
+under `[cli.target]` in `~/.fabro/settings.toml`, else
+`http://127.0.0.1:32276`. The event stream resumes after a dropped
+connection.
+
+==============================================================================
+11. LUA API                                                       *tether-api*
 
 Two modules are public and stable. Everything under `tether.core` and
 `tether.ui` is internal; features under `tether.features` use only
@@ -256,7 +296,7 @@ functions; nothing loads until first use.
 
 `api.ui`                views features drive:
   `.open_file(file, lnum)`, `.review(repo, scope, opts)`, `.send(root, text)`,
-  `.copy(text)`, `.refresh()` (redraw the cockpit)
+  `.copy(text)`, `.refresh()` (redraw the cockpit), `.pick(source)`
 
 `api.turns`             read-only turn queries (do not modify results):
   `.list(root, agent?)`, `.latest(root, agent?)`, `.get(id)`, `.running(t)`,
@@ -284,7 +324,7 @@ A feature is a module with `attach(api)` and `reset()`; see
 `lua/tether/features/` for the three built-in ones.
 
 ==============================================================================
-11. EVENT LOG                                                  *tether-events*
+12. EVENT LOG                                                  *tether-events*
 
 `$XDG_STATE_HOME/agents/trail.log` holds one event per line, ten
 tab-separated fields, `-` for empty:

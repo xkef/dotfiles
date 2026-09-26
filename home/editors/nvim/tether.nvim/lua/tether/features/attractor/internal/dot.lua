@@ -16,6 +16,9 @@ M.SHAPES = {
   tripleoctagon = "parallel.fan_in",
   parallelogram = "tool",
   house = "stack.manager_loop",
+  -- Fabro extensions.
+  tab = "prompt",
+  insulator = "wait",
 }
 
 ---@class tether.dot.Token
