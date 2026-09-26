@@ -27,10 +27,11 @@ paste.
   [OpenSpec](https://github.com/Fission-AI/OpenSpec) tree, the cockpit shows
   each change's task list as a board. Tasks go to an agent with one key, and a
   review names the tasks the turn checked. Specs get diagnostics on save.
-- **Pipelines.** [Attractor](https://github.com/strongdm/attractor) and
-  [Fabro](https://github.com/fabro-sh/fabro) workflow files get lint
-  diagnostics, a node picker, and an outline. A running pipeline shows each
-  node's status on its line, and human gates get answered from Neovim.
+- **Pipelines.** tether runs [Attractor](https://github.com/strongdm/attractor)
+  pipelines itself: each stage hands its prompt to a command-line agent, a shell
+  tool, or you. A run can work in its own jj workspace with a commit per stage,
+  resumes from its checkpoint, and shows each node's status on its line. Every
+  stage counts as a tether turn, so the review buffer covers it.
 
 It works with any agent that can run a command. It supports jj and Git, and it
 runs with or without a Neovim distribution.
@@ -118,12 +119,13 @@ and `s` sends it to the agent. The picker gains `specs`, `requirements`, and
 `changes`, and saving a spec runs `openspec validate`, or built-in checks
 without that command. Projects without OpenSpec see none of this.
 
-In a pipeline file (`.dot`, `.gv`, or `.fabro`), `:Tether attractor` offers
-`outline`, `nodes`, and `lint`. `:Tether attractor run` attaches a run: a spec
-run directory, a spec server URL with a pipeline ID, or `fabro:<run-id>` for a
-Fabro server, found through `~/.fabro/settings.toml`. `launch` starts the
-current `.fabro` workflow, `answer` answers the pending human gate, and
-`review <run-id>` reviews what a Fabro run committed to its branch.
+In a pipeline file (`.dot` or `.gv`), `:Tether attractor` offers `outline`,
+`nodes`, and `lint`. `launch` runs the pipeline in the background with
+`bin/tether-run` and attaches the run. `launch --workspace` isolates it in a new
+jj workspace or a separate Git working tree. `answer` answers a pending human
+gate, `review` opens what the run changed, and `run <dir>` attaches the run
+directory of tether or another Attractor engine. Stages use the agent in
+`attractor.agent`, or the node's `agent` attribute.
 
 `require("tether").status()` returns a short string for statuslines.
 
@@ -143,8 +145,8 @@ current `.fabro` workflow, `answer` answers the pending human gate, and
   coord = { claim_ttl = 7200 },
   attractor = {
     curl = "curl",
-    fabro = "fabro",
-    fabro_url = nil,
+    agent = "claude", -- or codex, pi, or a name from agents
+    agents = {}, -- name = { "cmd", "{prompt}" }; also {model}, {stage_dir}
     poll_ms = 1000,
   },
   sdd = {

@@ -9,7 +9,6 @@ local M = {}
 
 M.backends = {
   spec = require("tether.features.attractor.internal.backend.spec"),
-  fabro = require("tether.features.attractor.internal.backend.fabro"),
 }
 
 local R
@@ -28,18 +27,12 @@ function M.current()
   return R
 end
 
-local ULID = "^%w%w%w%w%w%w%w%w%w%w%w%w%w%w%w%w%w%w%w%w%w%w%w%w%w%w$"
-
----Reads a :Tether attractor run target: a run directory, a spec server URL
----and pipeline id, `fabro:<id>`, or a bare Fabro run id.
+---Reads a :Tether attractor run target: a run directory (from tether-run
+---or any spec engine), or a spec server URL and pipeline id.
 function M.parse_target(args)
   local a, b = args[1], args[2]
   if not a then
-    return nil, "usage: :Tether attractor run <dir> | <url> <id> | fabro:<run-id>"
-  end
-  local fabro_id = a:match("^fabro:(.+)$") or (a:match(ULID) and a)
-  if fabro_id then
-    return { backend = "fabro", id = fabro_id, url = M.backends.fabro.url(), label = "fabro " .. fabro_id }
+    return nil, "usage: :Tether attractor run <run-dir> | <url> <pipeline-id>"
   end
   if a:match("^https?://") then
     if not b then
@@ -51,7 +44,7 @@ function M.parse_target(args)
   if vim.fn.isdirectory(dir) == 1 then
     return { backend = "spec", dir = dir, label = vim.fs.basename(dir) }
   end
-  return nil, "not a directory, URL, or Fabro run id: " .. a
+  return nil, "not a run directory or URL: " .. a
 end
 
 function M.is_pipeline(buf)

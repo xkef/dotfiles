@@ -26,7 +26,6 @@ dotfiles
 enums?
 ERDs?
 eza
-Fabro
 fd
 fixup
 fzf

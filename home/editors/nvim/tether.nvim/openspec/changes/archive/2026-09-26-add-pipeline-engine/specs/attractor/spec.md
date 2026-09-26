@@ -1,67 +1,6 @@
-# attractor Specification
+# Spec Delta
 
-## Purpose
-
-Support StrongDM Attractor pipelines and the Fabro engine in Neovim: parse and
-lint pipeline files, navigate stages, watch runs live, answer human gates, and
-review what a run committed.
-
-## Requirements
-
-### Requirement: Parsing
-
-The plugin SHALL parse Attractor's DOT subset in `.dot`, `.gv`, and `.fabro`
-files, including comments, graph attributes, node and edge defaults scoped by
-subgraphs, and chained edges, and SHALL record each node's definition line and
-handler type.
-
-#### Scenario: Chained edges
-
-- **WHEN** a graph contains `start -> plan -> exit [label="next"]`
-- **THEN** the parser returns two edges, both labeled `next`
-
-#### Scenario: Handler from shape
-
-- **WHEN** a node has `shape=hexagon`
-- **THEN** its handler type is `wait.human`
-
-#### Scenario: Subgraph defaults
-
-- **WHEN** a subgraph sets `node [timeout="900s"]` and defines `plan`
-- **THEN** `plan` has the timeout `900s` and nodes outside the subgraph do not
-
-### Requirement: Lint
-
-On read and write of a pipeline file, the plugin SHALL report the spec's lint
-rules as diagnostics on the relevant line, errors for structural rules and
-warnings for the rest, and SHALL add the findings of `fabro validate` when that
-command exists.
-
-#### Scenario: Missing exit
-
-- **WHEN** a graph has a start node and no `Msquare` or `exit` node
-- **THEN** the buffer gets an error diagnostic for `terminal_node`
-
-#### Scenario: Unreachable node
-
-- **WHEN** a node has no path from the start node
-- **THEN** that node's line gets an error for `reachability`
-
-#### Scenario: Valid example
-
-- **WHEN** the buffer holds the spec's branching example
-- **THEN** the buffer has no error diagnostics
-
-### Requirement: Navigation
-
-The plugin SHALL provide a `nodes` picker source that jumps to a node's
-definition and an outline buffer listing nodes in breadth-first order from the
-start node with their handler types.
-
-#### Scenario: Outline order
-
-- **WHEN** the graph is `start -> plan -> implement -> exit`
-- **THEN** the outline lists start, plan, implement, exit in that order
+## ADDED Requirements
 
 ### Requirement: Run status
 
@@ -123,3 +62,25 @@ the run changed, the attached run by default.
 - **WHEN** a `--workspace` run changed `a.txt` and the user runs
   `:Tether attractor review <run-dir>`
 - **THEN** the review shows the change to `a.txt` and reject refuses
+
+## REMOVED Requirements
+
+### Requirement: Fabro launch and review
+
+**Reason**: tether runs pipelines itself; the Fabro backend is gone.
+
+**Migration**: use `:Tether attractor launch` and
+`:Tether attractor review <run-dir>` with the built-in engine.
+
+### Requirement: Run view
+
+**Reason**: replaced by "Run status", which drops the Fabro scenarios.
+
+**Migration**: attach engine runs by their run directory.
+
+### Requirement: Human gates
+
+**Reason**: replaced by "Gate answers", which answers engine gates through
+answer files instead of the Fabro API.
+
+**Migration**: `:Tether attractor answer` works the same for engine runs.

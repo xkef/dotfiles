@@ -1,13 +1,14 @@
--- StrongDM Attractor pipelines and the Fabro engine: lint and navigate
--- pipeline files, watch runs, answer human gates, launch Fabro workflows,
--- and review what a Fabro run committed.
+-- StrongDM Attractor pipelines: lint and navigate pipeline files, run them
+-- with the built-in engine (tether-run), watch runs, answer human gates, and
+-- review what a run changed.
 
 local api = require("tether.api")
 local dot = require("tether.features.attractor.internal.dot")
-local fabro = require("tether.features.attractor.internal.backend.fabro")
+local isolate = require("tether.features.attractor.internal.engine.isolate")
 local lint = require("tether.features.attractor.internal.lint")
 local outline = require("tether.features.attractor.internal.outline")
 local run = require("tether.features.attractor.internal.run")
+local store = require("tether.features.attractor.internal.engine.store")
 
 local M = {}
 
@@ -37,7 +38,7 @@ local function to_diag(d)
   }
 end
 
----Lints a pipeline buffer; adds `fabro validate` findings for .fabro files.
+---Lints a pipeline buffer.
 function M.check(buf, done)
   local text = table.concat(vim.api.nvim_buf_get_lines(buf, 0, -1, false), "\n")
   if not text:find("digraph", 1, true) then
@@ -45,26 +46,9 @@ function M.check(buf, done)
   end
   local diags = vim.tbl_map(to_diag, lint.run(dot.parse(text)))
   vim.diagnostic.set(ns, buf, diags, { source = "attractor" })
-  local name = vim.api.nvim_buf_get_name(buf)
-  if not name:match("%.fabro$") or vim.bo[buf].modified then
-    if done then
-      done(diags)
-    end
-    return
+  if done then
+    done(diags)
   end
-  fabro.validate(name, function(findings)
-    for _, f in ipairs(findings or {}) do
-      local d = to_diag(f)
-      d.source = "fabro"
-      table.insert(diags, d)
-    end
-    if vim.api.nvim_buf_is_valid(buf) then
-      vim.diagnostic.set(ns, buf, diags, { source = "attractor" })
-    end
-    if done then
-      done(diags)
-    end
-  end)
 end
 
 ----------------------------------------------------------------------------
@@ -88,28 +72,78 @@ local function need_graph()
   return run.parse_buffer(buf), buf
 end
 
----Opens a read-only review of branch fabro/run/<id> against its branch
----point.
-function M.review_run(id)
+local function plugin_root()
+  return debug.getinfo(1, "S").source:sub(2):match("^(.*)/lua/tether/")
+end
+
+---Path of the headless runner that ships with the plugin.
+function M.runner()
+  return vim.fs.joinpath(plugin_root() or "", "bin", "tether-run")
+end
+
+---Opens a read-only review of everything a run changed: its workspace
+---commits, or the range between its start and end checkpoints.
+function M.review_run(dir)
   local repo = api.repo()
-  if not repo then
-    api.util.warn("not in a repository")
+  local manifest = dir and store.manifest({ dir = dir })
+  if not (repo and manifest and manifest.isolation) then
+    api.util.warn("no run manifest in " .. tostring(dir))
     return
   end
-  local branch = "fabro/run/" .. id
-  local from, to
-  if repo.kind == "jj" then
-    to = '"' .. branch .. '"'
-    from = "fork_point(@ | " .. to .. ")"
-  else
-    local res = api.util.run({ "git", "merge-base", "HEAD", branch }, { cwd = repo.root })
-    if res.code ~= 0 then
-      api.util.warn("no branch " .. branch)
-      return
-    end
-    from, to = vim.trim(res.stdout), branch
+  local range = isolate.range(repo, manifest.isolation)
+  if not (range and range.from) then
+    api.util.warn("the run has no reviewable range")
+    return
   end
-  return api.ui.review(repo, "range", { from = from, to = to, label = "fabro run " .. id })
+  return api.ui.review(repo, "range", {
+    from = range.from,
+    to = range.to or "@",
+    label = "pipeline run " .. (manifest.id or vim.fs.basename(dir)),
+  })
+end
+
+---Starts the pipeline in buf with tether-run in the background and attaches
+---its run directory.
+function M.launch(buf, workspace)
+  local file = vim.api.nvim_buf_get_name(buf)
+  if vim.bo[buf].modified then
+    vim.api.nvim_buf_call(buf, function()
+      vim.cmd("silent write")
+    end)
+  end
+  local id = os.date("%Y%m%d-%H%M%S") .. ("-%04x"):format(math.random(0, 0xffff))
+  local dir = api.util.state_file(vim.fs.joinpath("runs", id))
+  vim.fn.mkdir(dir, "p")
+  store.write_json(vim.fs.joinpath(dir, "config.json"), { attractor = api.config().attractor })
+  local cmd = { M.runner(), "start", file, "--logs", dir }
+  if workspace then
+    table.insert(cmd, "--workspace")
+  end
+  local log = io.open(vim.fs.joinpath(dir, "runner.log"), "w")
+  local ok, err = pcall(vim.system, cmd, {
+    cwd = vim.fs.dirname(file),
+    detach = true,
+    text = true,
+    stdout = function(_, data)
+      if data and log then
+        log:write(data)
+        log:flush()
+      end
+    end,
+    stderr = function(_, data)
+      if data and log then
+        log:write(data)
+        log:flush()
+      end
+    end,
+  })
+  if not ok then
+    api.util.warn("cannot start tether-run: " .. tostring(err))
+    return nil
+  end
+  run.attach({ backend = "spec", dir = dir, label = "run " .. id }, buf)
+  api.util.notify("launched pipeline run " .. id)
+  return dir
 end
 
 M.SUBCOMMANDS = {
@@ -139,21 +173,13 @@ M.SUBCOMMANDS = {
     run.attach(target, pipeline_buf())
     api.util.notify("attached " .. target.label)
   end,
-  launch = function()
+  launch = function(args)
     local buf = pipeline_buf()
-    local file = buf and vim.api.nvim_buf_get_name(buf)
-    if not file or not file:match("%.fabro$") then
-      api.util.warn("launch needs a .fabro workflow buffer")
+    if not buf then
+      api.util.warn("launch needs a pipeline buffer")
       return
     end
-    fabro.launch(file, function(id, err)
-      if not id then
-        api.util.warn("fabro run failed: " .. tostring(err))
-        return
-      end
-      run.attach({ backend = "fabro", id = id, url = fabro.url(), label = "fabro " .. id }, buf)
-      api.util.notify("launched fabro run " .. id)
-    end)
+    M.launch(buf, vim.tbl_contains(args, "--workspace"))
   end,
   answer = function()
     run.answer()
@@ -163,12 +189,13 @@ M.SUBCOMMANDS = {
     api.ui.refresh()
   end,
   review = function(args)
-    local id = args[1] or (run.current() and run.current().backend == "fabro" and run.current().id)
-    if not id then
-      api.util.warn("usage: :Tether attractor review <fabro-run-id>")
+    local r = run.current()
+    local dir = args[1] and vim.fn.fnamemodify(args[1], ":p"):gsub("/$", "") or (r and r.dir)
+    if not dir then
+      api.util.warn("usage: :Tether attractor review <run-dir>")
       return
     end
-    M.review_run(id)
+    M.review_run(dir)
   end,
 }
 

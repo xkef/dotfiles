@@ -40,10 +40,13 @@ M.defaults = {
   notify_stop = true,
   attractor = {
     curl = "curl",
-    fabro = "fabro",
-    -- Fabro server; nil reads [cli.target] from ~/.fabro/settings.toml.
-    fabro_url = nil,
-    -- Milliseconds between scans of a spec run directory.
+    -- Agent for pipeline stages without an `agent` attribute.
+    agent = "claude",
+    -- Extra or replaced agent templates: name = argv with {prompt},
+    -- {model}, and {stage_dir}. Built in: claude, codex, pi.
+    agents = {},
+    -- Milliseconds between scans of a run directory, and between checks
+    -- for a human gate's answer.
     poll_ms = 1000,
   },
   sdd = {

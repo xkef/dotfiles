@@ -90,7 +90,7 @@ function M.run(graph)
     if incoming[s.id] then
       add("start_no_incoming", ERROR, s.line, "start node " .. s.id .. " has incoming edges", s.id)
     end
-    local _, unreachable = dot.bfs(graph)
+    local _, unreachable = dot.bfs(graph, true)
     for _, id in ipairs(unreachable) do
       local node = graph.nodes[id]
       add("reachability", ERROR, node.line, id .. " is not reachable from " .. s.id, id)

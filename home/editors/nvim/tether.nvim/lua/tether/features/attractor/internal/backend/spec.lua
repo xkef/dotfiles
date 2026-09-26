@@ -4,6 +4,7 @@
 
 local api = require("tether.api")
 local http = require("tether.features.attractor.internal.http")
+local store = require("tether.features.attractor.internal.engine.store")
 
 local M = { name = "spec" }
 
@@ -37,9 +38,14 @@ function M.scan(dir)
       local status = read_json(vim.fs.joinpath(dir, name, "status.json"))
       if status then
         out[name] = norm_status(status.status or status.outcome)
-      elseif not out[name] then
+      elseif not out[name] and name ~= "questions" and name ~= "answers" then
         out[name] = "running"
       end
+    end
+  end
+  for _, q in ipairs(store.pending(dir)) do
+    if q.stage then
+      out[q.stage] = "waiting"
     end
   end
   return out
@@ -112,8 +118,11 @@ end
 local KINDS = { YES_NO = "yes_no", CONFIRMATION = "yes_no", MULTIPLE_CHOICE = "choice", FREEFORM = "text" }
 
 function M.questions(run, cb)
-  if not run.url then
-    return cb(nil, "a run directory has no question endpoint")
+  if run.dir then
+    local list = store.pending(run.dir)
+    return vim.schedule(function()
+      cb(list)
+    end)
   end
   http.get(run.url .. "/pipelines/" .. run.id .. "/questions", function(data, err)
     if not data then
@@ -139,6 +148,12 @@ function M.questions(run, cb)
 end
 
 function M.answer(run, q, choice, cb)
+  if run.dir then
+    store.write_answer(run.dir, q.id, choice)
+    return vim.schedule(function()
+      cb(true)
+    end)
+  end
   local body
   if choice.kind == "yes" or choice.kind == "no" then
     body = { value = choice.kind:upper() }

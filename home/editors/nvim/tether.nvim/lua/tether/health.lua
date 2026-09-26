@@ -60,14 +60,17 @@ function M.check()
   end
   local attractor = config.attractor or {}
   if vim.fn.executable(attractor.curl or "curl") == 1 then
-    health.ok("curl for pipeline servers and Fabro")
+    health.ok("curl for spec pipeline servers")
   else
     health.info("curl not found; pipeline runs read from directories only")
   end
-  if vim.fn.executable(attractor.fabro or "fabro") == 1 then
-    health.ok("fabro for launch and validate")
+  local agent = attractor.agent or "claude"
+  local template = (attractor.agents or {})[agent]
+  local bin = template and template[1] or agent
+  if vim.fn.executable(bin) == 1 then
+    health.ok("pipeline agent " .. agent .. " (" .. bin .. ")")
   else
-    health.info("fabro not found; launch and fabro validate are unavailable")
+    health.info("pipeline agent " .. agent .. " not found; set attractor.agent or attractor.agents")
   end
 end
 

@@ -1,0 +1,15 @@
+#!/bin/sh
+# Runs Attractor pipelines headless with the tether.nvim engine. See
+# `tether-run` without arguments, or :help tether-attractor.
+set -eu
+self=$0
+while [ -L "$self" ]; do
+  target=$(readlink "$self")
+  case $target in
+  /*) self=$target ;;
+  *) self=$(dirname "$self")/$target ;;
+  esac
+done
+root=$(cd "$(dirname "$self")/.." && pwd)
+exec "${TETHER_NVIM:-nvim}" --headless --clean --cmd "set rtp^=$root" \
+  -l "$root/lua/tether/features/attractor/internal/engine/cli.lua" "$@"

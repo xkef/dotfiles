@@ -12,7 +12,7 @@ CONTENTS                                                     *tether-contents*
   7. Configuration ........................... |tether-config|
   8. Coordination ............................ |tether-coord|
   9. Spec-driven development ................. |tether-sdd|
- 10. Attractor and Fabro ..................... |tether-attractor|
+ 10. Attractor pipelines ..................... |tether-attractor|
  11. Lua API ................................. |tether-api|
  12. Event log ............................... |tether-events|
 
@@ -147,8 +147,9 @@ Sections appear only when they have rows:
       coord = { claim_ttl = 7200 }, -- seconds an explicit claim lasts
       attractor = {
         curl = "curl",
-        fabro = "fabro",
-        fabro_url = nil,           -- default: ~/.fabro/settings.toml
+        agent = "claude",          -- stage agent: claude, codex, pi, ...
+        agents = {},               -- name = argv with {prompt}, {model},
+                                   -- {stage_dir}
         poll_ms = 1000,            -- spec run directory scans
       },
       sdd = {
@@ -206,37 +207,67 @@ change. The review header names it and the tasks the turn checked off, and
 the Tasks section marks those tasks with the agent.
 
 ==============================================================================
-10. ATTRACTOR AND FABRO                                     *tether-attractor*
+10. ATTRACTOR PIPELINES                                     *tether-attractor*
 
-Pipeline files are `.dot`, `.gv`, and `.fabro` files holding a `digraph` in
-the Attractor DOT subset, with Fabro's shapes (`tab`, `insulator`).
+Pipeline files are `.dot` and `.gv` files holding a `digraph` in the
+StrongDM Attractor DOT subset.
 
-Lint runs on read and write: one start and one exit node, reachability, no
-edges into start or out of exit, retry targets, goal gates, prompts on LLM
-stages, fidelity values, and handler types. For `.fabro` files the findings
-of `fabro validate` join them.
+Lint runs on read and write: one start and one exit node, reachability
+(retry targets count), no edges into start or out of exit, retry targets,
+goal gates, prompts on LLM stages, fidelity values, and handler types.
 
 `:Tether attractor {sub}`:
   `outline`               nodes in breadth-first order; `<CR>` jumps
   `nodes`                 picker source of nodes with prompt preview
   `lint`                  run the checks now
-  `run {target}`          attach a run; target is a spec run directory,
-                        `{url} {pipeline-id}` of a spec server, or
-                        `fabro:{run-id}` (a bare run ID works too)
-  `launch`                `fabro run -d` the current `.fabro` workflow and
-                        attach the new run
+  `launch [--workspace]`  run the current pipeline with `tether-run` in the
+                        background and attach it
+  `run {target}`          attach a run directory, or `{url} {pipeline-id}`
+                        of a spec server
   `answer`                answer the first pending human gate
-  `stop`                  detach the run
-  `review {run-id}`       read-only review of branch `fabro/run/{run-id}`
-                        against its branch point
+  `stop`                  detach the run (the runner keeps going)
+  `review [run-dir]`      read-only review of what the run changed
 
 While a run is attached, node lines show their status as virtual text and
 the cockpit shows a Pipeline section; `<CR>` on a question answers it.
 
-Fabro is reached over its HTTP API only: `attractor.fabro_url`, else `url`
-under `[cli.target]` in `~/.fabro/settings.toml`, else
-`http://127.0.0.1:32276`. The event stream resumes after a dropped
-connection.
+ENGINE                                                        *tether-run*
+
+`bin/tether-run` runs pipelines headless, so a run outlives the editor:
+>sh
+    tether-run start pipeline.dot [--goal G] [--logs DIR] [--workspace]
+    tether-run resume DIR
+    tether-run answer DIR QUESTION-ID KEY-OR-LABEL
+    tether-run status DIR
+<
+It follows the Attractor spec: edge selection by condition, preferred label,
+suggested ids, weight, then name; `max_retries` and failure routing through
+`outcome=fail` edges, `retry_target`, and `fallback_retry_target`; goal gates
+at the exit; a visit limit per node (`max_node_visits`, default 20).
+
+Stages by handler:
+  codergen   runs the agent template with the stage prompt: the node's
+             `prompt` with `$goal` expanded, the previous stage's response,
+             and the stage directory. The agent may write
+             `<stage>/status.json` with `status`, `preferred_label`,
+             `suggested_next_ids`, and `context_updates`; otherwise exit 0
+             is success and anything else a retryable failure.
+  tool       runs `tool_command` in the shell; sets `tool.output`.
+  wait.human writes `questions/<node>-<visit>.json` and waits for
+             `answers/<same>.json`, written by `answer` or `tether-run
+             answer`. `timeout` with `human.default_choice` picks a default.
+  parallel   runs branches one after another up to the fan-in node.
+
+The run directory (default `$XDG_STATE_HOME/tether/runs/<id>`) holds
+`manifest.json`, `checkpoint.json`, `events.jsonl`, `pipeline.dot`, and per
+stage `prompt.md`, `response.md`, and `status.json`. A `config.json` there
+configures agents; `launch` writes the editor's `attractor` options into it.
+
+With `--workspace` the run works in a new jj workspace `run-<id>` (or a Git
+worktree on branch `tether/run/<id>`) next to the repository and commits
+after every stage as `pipeline(<id>): <node> (<status>)`. Each stage also
+emits a `turn` and `stop` event with agent `pipeline`, so tether reviews it
+like any agent turn.
 
 ==============================================================================
 11. LUA API                                                       *tether-api*
@@ -273,6 +304,7 @@ EXTENSION API                                                     *tether.api*
 functions; nothing loads until first use.
 
 `api.config()`          the resolved options table
+`api.configure(opts)`   apply options without editor setup (headless tools)
 `api.repo()`            `{ root, kind }` of the working directory
 `api.on(name, fn)`      subscribe; returns an unsubscribe function. Names:
                       `event` every event-log record, `stop` a finished turn

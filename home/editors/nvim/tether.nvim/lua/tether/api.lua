@@ -23,6 +23,13 @@ function M.config()
   return require("tether.config").options
 end
 
+---Applies options without the editor setup, for headless tools such as
+---tether-run. Returns the resolved options.
+---@return tether.Config
+function M.configure(opts)
+  return require("tether.config").setup(opts)
+end
+
 ---The repository of the working directory.
 ---@return tether.Repo?
 function M.repo()

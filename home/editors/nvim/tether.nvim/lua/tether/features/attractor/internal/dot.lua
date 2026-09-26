@@ -346,8 +346,9 @@ function M.is_exit(node)
 end
 
 ---Node ids in breadth-first order from the start node, then unreachable
----ones in definition order.
-function M.bfs(graph)
+---ones in definition order. With follow_retries, retry targets count as
+---edges too, since failures route there.
+function M.bfs(graph, follow_retries)
   local start
   for _, id in ipairs(graph.order) do
     if M.is_start(graph.nodes[id]) then
@@ -360,6 +361,27 @@ function M.bfs(graph)
   for _, e in ipairs(graph.edges) do
     adj[e.from] = adj[e.from] or {}
     table.insert(adj[e.from], e.to)
+  end
+  if follow_retries then
+    local function link(from, to)
+      if to and graph.nodes[to] then
+        adj[from] = adj[from] or {}
+        table.insert(adj[from], to)
+      end
+    end
+    for _, id in ipairs(graph.order) do
+      local a = graph.nodes[id].attrs
+      link(id, a.retry_target)
+      link(id, a.fallback_retry_target)
+      if a.goal_gate == "true" then
+        -- A goal gate sends the run back from the exit node.
+        for _, xid in ipairs(graph.order) do
+          if M.is_exit(graph.nodes[xid]) then
+            link(xid, a.retry_target or graph.attrs.retry_target)
+          end
+        end
+      end
+    end
   end
   local queue = { start }
   if start then
