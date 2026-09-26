@@ -22,7 +22,26 @@ vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.undofile = true
 
--- OSC 52 clipboard (works over SSH)
+-- Over SSH, as in the Lima VM, yanks reach the host clipboard through
+-- OSC 52. WezTerm ignores OSC 52 reads, so a put returns the last yank
+-- instead of waiting 10 seconds for a reply. Cmd-V pastes from the host.
 if vim.env.SSH_TTY then
-  vim.g.clipboard = "osc52"
+  local osc52 = require("vim.ui.clipboard.osc52")
+  local last = { {}, "v" }
+  local function copy(reg)
+    local send = osc52.copy(reg)
+    return function(lines, regtype)
+      last = { lines, regtype }
+      send(lines)
+    end
+  end
+  local function paste()
+    return last
+  end
+  vim.g.clipboard = {
+    name = "OSC 52",
+    copy = { ["+"] = copy("+"), ["*"] = copy("*") },
+    paste = { ["+"] = paste, ["*"] = paste },
+  }
+  vim.opt.clipboard = "unnamedplus"
 end
