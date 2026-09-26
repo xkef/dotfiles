@@ -102,9 +102,9 @@ end
 
 -- Cmd-click, or Ctrl-click off macOS, opens a link, and a plain click only
 -- selects. The press does nothing, so Neovim doesn't see it. The
--- mouse_reporting copies apply while a program holds the mouse. A triple
--- click selects the semantic zone, such as a whole command's output, from
--- fish's OSC 133 marks.
+-- mouse_reporting copies apply while a program holds the mouse. A double
+-- click copies the word and a triple click the line, also in Neovim and
+-- other programs that hold the mouse.
 local function mouse_bindings()
   local link_mods = IS_MAC and "SUPER" or "CTRL"
   local bindings = {
@@ -113,13 +113,22 @@ local function mouse_bindings()
       mods = "NONE",
       action = act.CompleteSelection("ClipboardAndPrimarySelection"),
     },
-    {
-      event = { Down = { streak = 3, button = "Left" } },
-      mods = "NONE",
-      action = act.SelectTextAtMouseCursor("SemanticZone"),
-    },
   }
   for _, reporting in ipairs({ false, true }) do
+    for streak, unit in pairs({ [2] = "Word", [3] = "Line" }) do
+      table.insert(bindings, {
+        event = { Down = { streak = streak, button = "Left" } },
+        mods = "NONE",
+        mouse_reporting = reporting,
+        action = act.SelectTextAtMouseCursor(unit),
+      })
+      table.insert(bindings, {
+        event = { Up = { streak = streak, button = "Left" } },
+        mods = "NONE",
+        mouse_reporting = reporting,
+        action = act.CompleteSelection("ClipboardAndPrimarySelection"),
+      })
+    end
     table.insert(bindings, {
       event = { Up = { streak = 1, button = "Left" } },
       mods = link_mods,
