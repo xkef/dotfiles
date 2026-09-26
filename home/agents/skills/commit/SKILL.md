@@ -49,8 +49,7 @@ For more on Jujutsu, see the `jj` skill.
 - Body: add one only when the motivation needs explaining. Separate it from the
   subject with a blank line and wrap at 72 characters. Explain why the change
   matters. Keep it brief and don't repeat what the diff shows.
-- Footer: separate it from the body, or from the subject without a body, with a
-  blank line. Use the fields below when they apply.
+- Footer: put a blank line before it. Use the fields below when they apply.
 
 ### Footer fields
 
