@@ -45,7 +45,9 @@
       "$XDG_CONFIG_HOME/git",
       "$XDG_DATA_HOME/tinted-theming/tinty",
       "$XDG_CONFIG_HOME/nono/profiles",
-      "$XDG_CONFIG_HOME/nono/packages"
+      "$XDG_CONFIG_HOME/nono/packages",
+      "$XDG_CONFIG_HOME/fd",
+      "$HOME/.terminfo"
     ],
     "unix_socket": [
       "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
