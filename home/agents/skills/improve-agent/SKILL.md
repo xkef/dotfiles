@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Improve the agent from its past sessions
 
-Mine this repository's past sessions for **friction**, and turn each finding
+Search this repository's past sessions for **friction**, and turn each finding
 into a concrete change. Every finding needs **evidence**: a session id and
 timestamp you confirmed by reading the transcript around it.
 
@@ -41,10 +41,10 @@ permission error.
 Work through all five. Each ends with findings, or with "none" and the signals
 you checked.
 
-1. **Blocked reads:** group `denials` and `sandbox` rows by path. Sort each path
-   into: needed for the task (grant it), a harmless probe (list it as noise), or
-   a wrong approach (the agent should look elsewhere). A silent denial, such as
-   a tool skipping its config file, matters most: the tool gives wrong results
+1. **Blocked reads:** group `denials` and `sandbox` rows by path. Grant each
+   path the task needs, list a harmless probe as noise, and point a wrong
+   approach to where the agent should look instead. A silent denial, such as a
+   tool skipping its config file, matters most: the tool gives wrong results
    without a visible cause.
 2. **Wrong permissions:** for the sandbox, map each needed path to the nono
    profile (`~/.config/nono/profiles/<profile>.json`, whose source sits in the
@@ -54,11 +54,11 @@ you checked.
    other project keeps the narrower base profile. For Claude's permissions, find
    rejected tool calls (`doesn't want to proceed`), interrupts
    (`Request interrupted by user`), and hook blocks in the transcripts. Decide
-   per case whether the rule or the agent was wrong.
+   per case whether to fix the rule or the agent.
 3. **Confusing code:** look for files read or searched again and again within a
    session, searches that found nothing, reads of missing paths, failed edits
    (`String to replace not found`, `File has not been read yet`), and user
-   corrections. Rank files and directories by this friction. The fix is a doc
+   corrections. Rank files and directories by this friction. Fix each with a doc
    line, an `AGENTS.md` entry, or a rename.
 4. **Skills to derive:** find tool sequences and user instructions that recur
    across three or more sessions. Each candidate names its trigger, its steps,
