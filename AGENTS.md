@@ -13,6 +13,10 @@ belongs to the repo state.
 - When committing, use the `commit` skill and the `jj` skill if available.
 - Pass file paths to mutating jj commands so unrelated user changes stay out of
   the operation.
+- Permission rules deny `rm -rf` and `jj restore` anywhere in a Bash command.
+  That denial names the command and comes from a rule, not from the user. Create
+  a new `mktemp -d` directory instead of clearing an old one, and undo your own
+  edits with Edit.
 - Never include `.claude-notes/` or ignored local runtime and config files in a
   commit unless the user asks.
 
