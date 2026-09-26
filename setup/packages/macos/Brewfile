@@ -5,7 +5,6 @@ brew "less"                 # pager (used as $PAGER)
 brew "gh"                   # GitHub from the command line
 brew "jq"                   # JSON processor
 brew "age"                  # simple file encryption
-brew "terminal-notifier"    # macOS notifications from scripts
 brew "fish"                 # shell
 brew "starship"             # cross-shell prompt
 brew "atuin"                # shell history search/sync

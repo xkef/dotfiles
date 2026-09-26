@@ -1,6 +1,5 @@
 xclip               # X11 clipboard utility
 wl-clipboard        # Wayland clipboard utility
-libnotify           # notify-send for agent notifications
 wezterm-nightly-bin # terminal and multiplexer (AUR; the repo package is the 2024-02 release)
 neovide             # GUI client for Neovim
 1password           # password manager
