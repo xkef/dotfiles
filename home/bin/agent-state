@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# Owns the agent state the `mux-agents` picker reads. The Claude Code hook,
+# the pi extension, and agents publishing a task summary all write through
+# this script, so the format lives in one place.
+#
+#   agent-state set <agent> <state> [tool] [cwd]
+#   agent-state task <summary>
+#   agent-state clear
+#   agent-state list
+#
+# Entries sit under $XDG_STATE_HOME/agents, keyed wezterm-<pane id>. The
+# key gives the picker a join back to WezTerm, and an entry whose pane is
+# gone has nothing to join to. Outside WezTerm, the write commands do
+# nothing.
+#
+# <pane> holds one tab-separated record: agent, state, tool, epoch, and cwd.
+# The cwd goes last so a path never shifts another field. <pane>.task holds
+# the summary. It stays a separate file because the agent writes it while
+# its hooks write the record, and neither write may drop the other.
+#
+# `list` prints pane, agent, state, tool, epoch, cwd, and task per entry. An
+# empty field reads as "-", so a run of tabs never collapses under `read`.
+set -euo pipefail
+
+readonly STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
+readonly MAX_TASK_LENGTH=60
+readonly NONE=-
+
+usage() {
+  sed -n 's/^#   //p' "$0" >&2
+  exit 2
+}
+
+# Replaces tabs and line breaks, which would split or end a record.
+field() {
+  local value=${1//[$'\t\r\n']/ }
+  printf '%s' "${value:-$NONE}"
+}
+
+# Writes through a temp file so a reader never sees a half-written line. The
+# dot prefix keeps the temp file out of `list`.
+write() {
+  local target=$1 value=$2 tmp
+  umask 077
+  mkdir -p "$STATE_DIR"
+  tmp=$(mktemp "$STATE_DIR/.${target##*/}.XXXXXX")
+  printf '%s\n' "$value" >"$tmp"
+  mv -f "$tmp" "$target"
+}
+
+list() {
+  local file pane record task
+  for file in "$STATE_DIR"/wezterm-*; do
+    pane=${file##*/}
+    [[ "$pane" =~ ^wezterm-[0-9]+$ ]] || continue
+    IFS= read -r record <"$file" || continue
+    task=$NONE
+    if [ -f "$file.task" ]; then
+      IFS= read -r task <"$file.task" || task=$NONE
+    fi
+    printf '%s\t%s\t%s\n' "$pane" "$record" "$(field "$task")"
+  done
+}
+
+cmd=${1:-}
+case "$cmd" in
+set | task | clear) shift ;;
+list)
+  list
+  exit 0
+  ;;
+*) usage ;;
+esac
+
+pane=wezterm-${WEZTERM_PANE:-}
+[[ "$pane" =~ ^wezterm-[0-9]+$ ]] || exit 0
+entry="$STATE_DIR/$pane"
+
+case "$cmd" in
+set)
+  [ $# -ge 2 ] || usage
+  case "$2" in
+  idle | busy | waiting | running) ;;
+  *)
+    echo "agent-state: unknown state '$2'" >&2
+    exit 2
+    ;;
+  esac
+  printf -v record '%s\t%s\t%s\t%s\t%s' \
+    "$(field "$1")" "$2" "$(field "${3:-}")" "$(date +%s)" "$(field "${4:-$PWD}")"
+  write "$entry" "$record"
+  ;;
+task)
+  summary=$(field "$*")
+  [ "$summary" != "$NONE" ] || exit 0
+  write "$entry.task" "${summary:0:MAX_TASK_LENGTH}"
+  ;;
+clear)
+  rm -f "$entry" "$entry.task"
+  ;;
+esac

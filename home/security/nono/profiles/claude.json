@@ -1,0 +1,129 @@
+{
+  "$schema": "https://nono.dev/schemas/nono-profile.schema.json",
+  "allow_launch_services": true,
+  "diagnostics": {
+    "suppress_system_services": [
+      "forbidden-exec-sugid"
+    ]
+  },
+  "extends": "default",
+  "filesystem": {
+    "allow": [
+      "$HOME/.claude",
+      "$XDG_CONFIG_HOME/claude-code",
+      "$HOME/.local/state/claude/locks",
+      "$HOME/.cache/claude",
+      "$HOME/.config/nono/profile-drafts",
+      "/tmp/claude-$UID",
+      "$HOME/.agents",
+      "$XDG_STATE_HOME/agents",
+      "$HOME/.m2",
+      "$HOME/.npm",
+      "$XDG_CACHE_HOME/mise",
+      "$XDG_CACHE_HOME/uv",
+      "$XDG_CONFIG_HOME/jj",
+      "$XDG_DATA_HOME/cargo",
+      "$XDG_DATA_HOME/rustup",
+      "$XDG_DATA_HOME/go",
+      "$XDG_DATA_HOME/mise",
+      "$XDG_DATA_HOME/uv",
+      "$HOME/Library/Keychains"
+    ],
+    "allow_file": [
+      "$HOME/.claude.json",
+      "$HOME/.claude.json.lock",
+      "$HOME/.claude.lock"
+    ],
+    "bypass_protection": [
+      "$HOME/Library/Keychains",
+      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
+      "$HOME/.1password/agent.sock"
+    ],
+    "read": [
+      "$XDG_STATE_HOME/mise",
+      "$XDG_CONFIG_HOME/gh",
+      "$XDG_CONFIG_HOME/git",
+      "$XDG_DATA_HOME/tinted-theming/tinty",
+      "$XDG_CONFIG_HOME/nono/profiles",
+      "$XDG_CONFIG_HOME/nono/packages"
+    ],
+    "unix_socket": [
+      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
+      "$HOME/.1password/agent.sock"
+    ]
+  },
+  "groups": {
+    "include": [
+      "git_config",
+      "mise_manager",
+      "node_runtime",
+      {
+        "name": "user_caches_macos",
+        "when": "macos"
+      },
+      "unlink_protection",
+      {
+        "name": "claude_code_macos",
+        "when": "macos"
+      },
+      {
+        "name": "claude_code_linux",
+        "when": "linux"
+      },
+      {
+        "name": "claude_cache_linux",
+        "when": "linux"
+      },
+      "rust_runtime",
+      "python_runtime",
+      {
+        "name": "vscode_macos",
+        "when": "macos"
+      },
+      {
+        "name": "vscode_linux",
+        "when": "linux"
+      },
+      {
+        "name": "linux_sysfs_read",
+        "when": "linux"
+      },
+      "nix_runtime"
+    ]
+  },
+  "meta": {
+    "description": "Claude Code with mise, jj, maven, npm, cargo, shared skills, and keychain access",
+    "name": "claude",
+    "version": "1.3.1"
+  },
+  "network": {
+    "block": false
+  },
+  "open_urls": {
+    "allow_localhost": true,
+    "allow_origins": [
+      "https://claude.ai",
+      "https://claude.com",
+      "https://api.anthropic.com",
+      "https://platform.claude.com"
+    ]
+  },
+  "rollback": {
+    "exclude_globs": [
+      "*.tmp.[0-9]*.[0-9]*"
+    ],
+    "exclude_patterns": [
+      "node_modules",
+      ".next",
+      "__pycache__",
+      "target"
+    ]
+  },
+  "security": {
+    "capability_elevation": false,
+    "signal_mode": "isolated"
+  },
+  "workdir": {
+    "access": "readwrite"
+  }
+}

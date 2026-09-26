@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Deploys the repo into $HOME with dotter. The local config and the cache
+# live in ~/.local/state/dotter, not in the repo, because a Lima VM mounts
+# the same checkout. The first run writes a local config that selects the
+# dotfiles package. Set `work = true` under [variables] there on a work
+# machine. Arguments pass through to dotter, as in `setup/deploy --dry-run`.
+#
+# Homebrew and pacman install dotter from the package lists. The first
+# deploy runs before them, so it downloads a release binary.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+readonly release=https://github.com/SuperCuber/dotter/releases/latest/download
+state="${XDG_STATE_HOME:-$HOME/.local/state}/dotter"
+
+mkdir -p "$state"
+if [[ ! -f "$state/local.toml" ]]; then
+  printf 'packages = ["dotfiles"]\n\n[variables]\nwork = false\n' >"$state/local.toml"
+fi
+
+dotter=$(command -v dotter || true)
+if [[ -z "$dotter" ]]; then
+  case "$(uname -s)-$(uname -m)" in
+  Darwin-arm64) asset="dotter-macos-arm64.arm" ;;
+  Linux-x86_64) asset="dotter-linux-x64-musl" ;;
+  Linux-aarch64) asset="dotter-linux-arm64-musl" ;;
+  *)
+    echo "no dotter release for $(uname -sm)" >&2
+    exit 1
+    ;;
+  esac
+  dotter="$state/dotter"
+  curl -fsSL "$release/$asset" -o "$dotter"
+  chmod +x "$dotter"
+fi
+
+"$dotter" --local-config "$state/local.toml" \
+  --cache-file "$state/cache.toml" --cache-directory "$state/cache" \
+  "$@" deploy

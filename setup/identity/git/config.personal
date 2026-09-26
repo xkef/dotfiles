@@ -1,0 +1,3 @@
+[user]
+	name = {{ op://Personal/git/name }}
+	email = {{ op://Personal/git/email }}

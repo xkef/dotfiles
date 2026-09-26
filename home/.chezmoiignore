@@ -1,7 +1,0 @@
-# `mise run vale-sync` downloads style packages into the source tree. The
-# run script syncs them on each machine, so chezmoi applies only the
-# vocabulary.
-.config/vale/styles/*
-!.config/vale/styles/config
-.config/vale/styles/config/*
-!.config/vale/styles/config/vocabularies

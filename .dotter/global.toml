@@ -1,0 +1,66 @@
+# Dotter links each source under home/ to its target under $HOME. A
+# directory entry links the files inside it one by one, so apps can add
+# their own files next to them. Run setup/deploy, which keeps the local
+# config, one per machine, in ~/.local/state/dotter. It selects the package
+# and sets `work = true` on a work machine.
+
+[settings]
+default_target_type = "symbolic"
+
+[dotfiles.variables]
+work = false
+
+[dotfiles.files]
+"home/bin" = "~/.local/bin"
+
+"home/shell/atuin" = "~/.config/atuin"
+"home/shell/fish" = "~/.config/fish"
+"home/shell/hushlogin" = "~/.hushlogin"
+"home/shell/starship.toml" = "~/.config/starship.toml"
+"home/shell/television" = "~/.config/television"
+
+"home/terminal/wezterm" = "~/.config/wezterm"
+
+"home/editors/helix" = "~/.config/helix"
+"home/editors/nvim/kickstart" = "~/.config/kickstart"
+"home/editors/nvim/knvim" = "~/.local/bin/knvim"
+"home/editors/nvim/lazyvim" = "~/.config/lazyvim"
+"home/editors/zed" = "~/.config/zed"
+
+"home/vcs/git" = "~/.config/git"
+"home/vcs/jj" = "~/.config/jj"
+"home/vcs/lazygit" = "~/.config/lazygit"
+
+"home/tools/bat" = "~/.config/bat"
+"home/tools/fd" = "~/.config/fd"
+"home/tools/lima" = "~/.config/lima"
+# Named config.toml in the repo, mise would load this file as a project
+# config for every directory under home/tools/.
+"home/tools/mise/global.toml" = "~/.config/mise/config.toml"
+"home/tools/uv" = "~/.config/uv"
+# `vale sync` downloads style packages next to the vocabulary, so only the
+# config and the vocabulary deploy.
+"home/tools/vale/.vale.ini" = "~/.config/vale/.vale.ini"
+"home/tools/vale/styles/config/vocabularies" = "~/.config/vale/styles/config/vocabularies"
+"home/tools/yazi" = "~/.config/yazi"
+
+"home/theme/tinted-theming" = "~/.config/tinted-theming"
+
+"home/security/nono" = "~/.config/nono"
+"home/security/op" = "~/.config/1Password"
+"home/security/ssh" = "~/.ssh"
+
+"home/agents/AGENTS.md" = "~/.agents/AGENTS.md"
+"home/agents/skills" = "~/.agents/skills"
+"home/agents/claude/CLAUDE.md" = "~/.claude/CLAUDE.md"
+"home/agents/claude/hooks" = "~/.claude/hooks"
+"home/agents/claude/output-styles" = "~/.claude/output-styles"
+"home/agents/claude/plugins" = "~/.claude/plugins"
+"home/agents/pi/AGENTS.md" = "~/.pi/agent/AGENTS.md"
+"home/agents/pi/extensions" = "~/.pi/agent/extensions"
+
+# The agents write their settings at runtime, and the nono sandbox mounts
+# this repo read-only. A copy keeps those writes local. Dotter then skips
+# the file with a warning until `dotter deploy --force` resets it.
+"home/agents/claude/settings.json" = { target = "~/.claude/settings.json", type = "template" }
+"home/agents/pi/settings.json" = { target = "~/.pi/agent/settings.json", type = "template" }

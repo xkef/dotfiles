@@ -1,0 +1,67 @@
+#!/usr/bin/env fish
+# dots-keys: keybinding reference. Collects @key annotations from the
+# WezTerm and fish configs and renders them as a markdown table through
+# glow.
+
+set -l sources
+for f in ~/.config/wezterm/*.lua ~/.config/fish/conf.d/*.fish
+    test -f $f; and set -a sources $f
+end
+
+set -l output (awk '
+/^[ \t]*(#|--) @key / {
+  line = $0
+  sub(/^[ \t]*(#|--) @key /, "", line)
+  n = split(line, parts, "::")
+  if (n >= 3) {
+    section = parts[1]; gsub(/^[ \t]+|[ \t]+$/, "", section)
+    key = parts[2]; gsub(/^[ \t]+|[ \t]+$/, "", key)
+    gsub(/\|/, "\\\\|", key)
+    desc = parts[3]; gsub(/^[ \t]+|[ \t]+$/, "", desc)
+    sections[section] = sections[section] key "\t" desc "\n"
+  }
+}
+END {
+  print "# Keybinding Reference"
+  print ""
+  print "**WezTerm leader = Ctrl-Space | nvim leader = Space**"
+  print ""
+  print "## WezTerm -- Ctrl-Space +"
+  print ""
+  print "| Key        | Action                                     |"
+  print "| ---------- | ------------------------------------------ |"
+  n = split(sections["wezterm"], lines, "\n")
+  for (i = 1; i < n; i++) { split(lines[i], f, "\t"); printf "| %-10s | %-42s |\n", f[1], f[2] }
+  print ""
+  print "Copy mode: v/V/Ctrl-v select -- y yank -- Y yank-EOL -- o/i prompts -- / or ? search -- q cancel"
+  print ""
+  print "---"
+  print ""
+  print "## Neovim -- Space +"
+  print ""
+  print "Uses [LazyVim](https://www.lazyvim.org) defaults."
+  print "Press `Space` and wait for which-key to discover all bindings."
+  print ""
+  print "Full keymap reference: <https://www.lazyvim.org/keymaps>"
+  print ""
+  print "---"
+  print ""
+  print "## Shell (fish)"
+  print ""
+  print "| Key           | Action                                 |"
+  print "| ------------- | -------------------------------------- |"
+  n = split(sections["shell"], lines, "\n")
+  for (i = 1; i < n; i++) { split(lines[i], f, "\t"); printf "| %-13s | %-38s |\n", f[1], f[2] }
+  print ""
+  print "### Modern aliases"
+  print ""
+  print "`extract` / `compress` ouch | `cat` bat | `ls` eza |"
+  print "`du` dust | `df` duf | `ps` procs"
+}
+' $sources)
+
+if test "$argv[1]" = --raw
+    printf '%s\n' $output
+else
+    printf '%s\n' $output | glow -p -w (tput cols) -
+end

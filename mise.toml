@@ -1,23 +1,24 @@
 [tools]
-chezmoi = "2"
-stylua = "2"
-shfmt = "3"
-taplo = "0"
-shellcheck = "0"
-rumdl = "0"
+"github:SuperCuber/dotter" = "0.13"
 dprint = "0"
+rumdl = "0"
+shellcheck = "0"
+shfmt = "3"
+stylua = "2"
+taplo = "0"
 vale = "3"
 
-# shfmt -f skips .tmpl files, but the Codex modify script is plain bash.
 [vars]
-shell_files = "$(shfmt -f .) home/dot_codex/modify_config.toml.tmpl"
-# Fish scripts in bin have no .fish extension. dots-keys is a template.
-fish_files = "$(git ls-files '*.fish') home/dot_local/bin/executable_dots home/dot_local/bin/executable_dots-skills home/dot_local/bin/executable_theme home/dot_config/tinted-theming/tinty/executable_pi-theme home/dot_config/tinted-theming/tinty/executable_nvim-theme"
+shell_files = "$(shfmt -f .)"
+# Scripts without a .fish extension count through their shebang.
+fish_files = """\
+  $(git ls-files '*.fish') \
+  $(git grep -l '^#!/usr/bin/env fish' -- home)"""
 
 [tasks.fmt]
 description = "Format all dotfiles"
 run = [
-  "stylua home/dot_config/lazyvim/ home/dot_config/kickstart/ home/dot_config/wezterm/ home/dot_config/wezterm/keymap.lua.tmpl",
+  "stylua home/editors/nvim/ home/terminal/wezterm/",
   "shfmt -w {{vars.shell_files}}",
   "fish_indent -w {{vars.fish_files}}",
   "dprint fmt --config .config/dprint.json",
@@ -37,15 +38,19 @@ depends = [
 ]
 
 [tasks.lint-sh]
-description = "Shellcheck bash scripts"
+description = "Check bash scripts with shellcheck"
 run = "shellcheck -S warning {{vars.shell_files}}"
 
 [tasks.lint-fish]
-description = "Syntax-check fish files"
-run = 'for f in {{vars.fish_files}}; do fish --no-execute "$f" || exit 1; done'
+description = "Check fish syntax"
+run = """
+for f in {{vars.fish_files}}; do
+  fish --no-execute "$f" || exit 1
+done
+"""
 
 [tasks.lint-fmt]
-description = "Check markdown formatting"
+description = "Check markdown, JSON, and YAML formatting"
 run = "dprint check --config .config/dprint.json"
 
 [tasks.lint-md]
@@ -54,21 +59,21 @@ run = "rumdl check"
 
 [tasks.vale-sync]
 description = "Download the vale style packages"
-run = "vale --no-global --config home/dot_config/vale/dot_vale.ini sync"
+run = "vale --no-global --config home/tools/vale/.vale.ini sync"
 
-# WezTerm logs a config error and falls back to defaults with exit 0, so
-# the task fails on the logged ERROR instead.
+# WezTerm exits 0 on a config error and falls back to its defaults, so the
+# task fails on the logged ERROR instead.
 [tasks.lint-wezterm]
-description = "Load the WezTerm config headless (local only; needs wezterm)"
+description = "Load the WezTerm config headless. Needs wezterm."
 run = """
-xdg=$(mktemp -d)
-mkdir "$xdg/wezterm"
-cp home/dot_config/wezterm/*.lua "$xdg/wezterm"
-chezmoi execute-template --source . <home/dot_config/wezterm/keymap.lua.tmpl >"$xdg/wezterm/keymap.lua"
-! XDG_CONFIG_HOME="$xdg" WEZTERM_CONFIG_FILE="$xdg/wezterm/wezterm.lua" wezterm ls-fonts 2>&1 >/dev/null | grep ERROR
+export XDG_CONFIG_HOME=$(mktemp -d)
+export WEZTERM_CONFIG_FILE=$XDG_CONFIG_HOME/wezterm/wezterm.lua
+mkdir "$XDG_CONFIG_HOME/wezterm"
+cp home/terminal/wezterm/*.lua "$XDG_CONFIG_HOME/wezterm"
+! wezterm ls-fonts 2>&1 >/dev/null | grep ERROR
 """
 
 [tasks.lint-nvim]
-description = "Load LazyVim headless (local only; needs plugins)"
+description = "Load LazyVim headless. Needs its plugins installed."
 env = { NVIM_APPNAME = "lazyvim" }
-run = "nvim --headless +\"lua require('lazy')\" +qa"
+run = """nvim --headless -c "lua require('lazy')" -c qa"""

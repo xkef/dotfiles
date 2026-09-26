@@ -1,0 +1,12 @@
+# The Work/git 1Password item. The [includeIf] in ./config activates it
+# inside ~/work/ only.
+
+[user]
+	name = {{ op://Work/git/name }}
+	email = {{ op://Work/git/email }}
+
+[commit]
+	gpgsign = false
+
+[tag]
+	gpgsign = false

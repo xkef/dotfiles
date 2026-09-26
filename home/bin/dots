@@ -1,0 +1,39 @@
+#!/usr/bin/env fish
+# dots: dotfiles management command, a thin dispatcher over dotter and jj.
+#
+# Usage: dots <command> [args]
+
+switch $argv[1]
+    case update up
+        # The repo is jj-colocated, so git HEAD stays detached and a plain
+        # git pull can't work. Fetch and rebase with jj instead, then deploy.
+        jj -R $DOTFILES_DIR git fetch
+        and jj -R $DOTFILES_DIR rebase -d 'trunk()'
+        and dots apply $argv[2..-1]
+    case diff
+        # --dry-run prints each change without making it.
+        $DOTFILES_DIR/setup/deploy --dry-run $argv[2..-1]
+    case apply
+        $DOTFILES_DIR/setup/deploy $argv[2..-1]
+    case keys
+        dots-keys $argv[2..-1]
+    case skills
+        dots-skills $argv[2..-1]
+    case theme
+        theme $argv[2..-1]
+    case help -h --help ''
+        echo "Usage: dots <command>"
+        echo ""
+        echo "Commands:"
+        echo "  update    Pull the repo and deploy (jj fetch and rebase, setup/deploy)"
+        echo "  diff      Show pending changes (setup/deploy --dry-run)"
+        echo "  apply     Deploy the repo into ~ (setup/deploy)"
+        echo "  keys      Show keybinding reference"
+        echo "  skills    Refresh shared agent skills from upstream"
+        echo "  theme     Switch terminal + editor theme"
+        echo ""
+    case '*'
+        echo "Unknown command: $argv[1]"
+        echo "Run 'dots help' for usage."
+        return 1
+end

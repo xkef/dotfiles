@@ -1,0 +1,60 @@
+git             # version control
+curl            # URL data transfer
+less            # pager (used as $PAGER)
+github-cli      # GitHub from the command line
+jq              # JSON processor
+age             # simple file encryption
+fish            # shell
+starship        # cross-shell prompt
+atuin           # shell history search/sync
+fzf             # fuzzy finder
+television      # fuzzy finder with channels
+zoxide          # smarter cd with frecency
+helix           # modal text editor (Rust)
+neovim          # text editor
+tree-sitter-cli # parser generator CLI (nvim-treesitter build)
+tinty-git       # color scheme switcher (AUR; no release package)
+presenterm      # markdown-driven terminal slides
+eza             # modern ls replacement
+bat             # cat with syntax highlighting
+fd              # modern find replacement
+ripgrep         # fast recursive grep
+xh              # fast HTTP client (HTTPie-compatible)
+hurl            # HTTP request testing with plain text files
+sd              # intuitive find-and-replace (sed alt)
+scooter-bin     # interactive find-and-replace TUI (AUR)
+dust            # disk usage viewer (du alt)
+duf             # disk free viewer (df alt)
+procs           # modern ps replacement
+trash-cli       # move files to trash instead of rm
+ouch            # compress/decompress archives
+git-delta       # syntax-highlighting diff pager
+difftastic      # structural diff tool
+lazygit         # terminal UI for git
+jujutsu         # Jujutsu version control
+jjui-bin        # terminal UI for jj (AUR)
+mise            # dev tool version manager
+dotter-rs-bin   # dotfile manager (AUR)
+rustup          # Rust toolchain manager
+go              # Go (go.mod pins newer toolchains)
+uv              # Python package and version manager
+python          # Python for scripts outside projects
+nodejs          # Node.js for npx outside projects
+npm             # Node.js package manager
+rumdl           # markdown linter (LazyVim in every buffer)
+dprint          # markdown formatter (LazyVim in every buffer)
+podman          # rootless container engine
+lazydocker      # terminal UI for Docker/Podman
+fx              # terminal JSON viewer
+bubblewrap      # unprivileged sandboxing
+ccusage         # Claude Code usage analyzer (AUR)
+yazi            # terminal file manager
+glow            # terminal markdown renderer
+vale            # prose linter for markdown
+tokei           # code statistics by language
+tealdeer        # fast tldr client
+htop            # interactive process viewer
+hyperfine       # command-line benchmarking
+bandwhich       # per-process bandwidth monitor
+xdg-ninja       # audit XDG base-dir compliance
+jdtls           # Java language server (AUR)

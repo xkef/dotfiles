@@ -1,5 +1,0 @@
-{{ if eq .chezmoi.os "darwin" -}}
-{{ template "header.sh" }}
-# macos-defaults hash: {{ include "dot_local/bin/executable_macos-defaults" | sha256sum }}
-"$HOME/.local/bin/macos-defaults"
-{{ end -}}

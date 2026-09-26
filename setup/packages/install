@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# Installs the packages this repo lists: Homebrew on macOS, pacman and paru
+# on Arch. Other systems install nothing.
+set -euo pipefail
+cd "$(dirname "$0")"
+
+# Prints a package list without its comments.
+list() {
+  sed -e 's/#.*//' -e 's/[[:space:]]*$//' -e '/^$/d' "$1"
+}
+
+install_darwin() {
+  if ! command -v brew >/dev/null; then
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+      [[ -x "$brew_bin" ]] && eval "$("$brew_bin" shellenv)" && break
+    done
+  fi
+
+  # Newer Homebrew refuses formulae from untrusted third-party taps. Older
+  # brew lacks the trust subcommand, so the call may fail.
+  local tap
+  for tap in $(list macos/Brewfile | sed -n 's/^tap "\([^"]*\)".*/\1/p'); do
+    brew trust "$tap" 2>/dev/null || true
+  done
+  brew bundle --file=macos/Brewfile
+
+  # Casks fail soft. Self-updating GUI apps such as zed and 1password hit
+  # stale-receipt and quarantine issues that must not block the deploy.
+  if [[ "${CI:-}" != true ]]; then
+    brew bundle --file=macos/Brewfile.casks ||
+      echo "warning: some casks failed; fix and re-run: brew bundle --file=$PWD/macos/Brewfile.casks" >&2
+  fi
+}
+
+# Returns 0 only if paru exists and runs. A paru binary breaks when pacman
+# ships a newer libalpm than the one it linked against.
+paru_works() {
+  command -v paru >/dev/null && paru --version >/dev/null 2>&1
+}
+
+# Builds paru from source so it links the installed libalpm. The prebuilt
+# paru-bin lags behind pacman and conflicts with paru, so it goes first.
+ensure_paru() {
+  paru_works && return 0
+  local tmpdir
+  tmpdir="$(mktemp -d)"
+  sudo pacman -S --needed --noconfirm base-devel
+  if pacman -Q paru-bin >/dev/null 2>&1; then
+    sudo pacman -Rdd --noconfirm paru-bin
+  fi
+  git clone https://aur.archlinux.org/paru.git "$tmpdir/paru"
+  (cd "$tmpdir/paru" && makepkg -si --noconfirm)
+  rm -rf "$tmpdir"
+  paru_works
+}
+
+install_arch() {
+  local packages pkg
+  mapfile -t packages < <(list arch/main.txt)
+  # GUI apps and the agent sandbox only on bare metal, never in CI, VMs, or
+  # containers.
+  if [[ "${CI:-}" != true ]] && ! systemd-detect-virt -q 2>/dev/null; then
+    mapfile -t -O "${#packages[@]}" packages < <(list arch/bare-metal.txt)
+  fi
+
+  sudo -v
+  sudo pacman -Syu --noconfirm
+  if ! ensure_paru; then
+    echo "warning: paru unusable; installing repo packages via pacman, AUR skipped" >&2
+    for pkg in "${packages[@]}"; do
+      sudo pacman -S --needed --noconfirm "$pkg" ||
+        echo "warning: $pkg not in official repos (AUR?), skipped" >&2
+    done
+    return
+  fi
+
+  local paru_flags=(--needed --noconfirm)
+  systemd-detect-virt -q 2>/dev/null && paru_flags+=(--mflags="-A")
+  # One broken AUR package must not abort the whole deploy. Retry one by
+  # one and skip the failures with a warning.
+  if ! paru -S "${paru_flags[@]}" "${packages[@]}"; then
+    echo "warning: batch install failed; retrying packages individually" >&2
+    for pkg in "${packages[@]}"; do
+      paru -S "${paru_flags[@]}" "$pkg" ||
+        echo "warning: $pkg failed to install, skipped" >&2
+    done
+  fi
+}
+
+case "$(uname -s)" in
+Darwin)
+  install_darwin
+  ;;
+Linux)
+  # shellcheck source=/dev/null
+  . /etc/os-release
+  if [[ "$ID" == arch || "$ID" == archarm ]]; then
+    install_arch
+  fi
+  ;;
+esac

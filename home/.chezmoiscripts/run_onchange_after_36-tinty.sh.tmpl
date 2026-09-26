@@ -1,7 +1,0 @@
-{{ template "header.sh" }}
-# tinty config hash: {{ include "dot_config/tinted-theming/tinty/config.toml" | sha256sum }}
-# Clones the template repos the tinty config names, then applies the last
-# scheme, or the default one on a fresh machine. Applying writes the delta
-# include and the pi theme, and WezTerm and Neovim read the result.
-tinty sync
-tinty init

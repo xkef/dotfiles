@@ -1,34 +1,28 @@
 #!/usr/bin/env bash
-#MISE description="Apply the source tree into a throwaway HOME and assert results"
+#MISE description="Deploy the repo into a throwaway HOME and assert results"
 set -eu
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 mkdir -p "$tmp/home"
-flags=(--source . --destination "$tmp/home" --config "$tmp/chezmoi.toml" --persistent-state "$tmp/state.db")
+printf 'packages = ["dotfiles"]\n' >"$tmp/local.toml"
 
-# Hide the 1Password CLI so the templates render their fallbacks, as in CI.
-# Each PATH directory that holds op becomes a copy of links without it.
-# Otherwise the check needs an unlocked 1Password and reads real secrets.
-path=
-IFS=: read -ra dirs <<<"$PATH"
-for d in "${dirs[@]}"; do
-  if [ -x "$d/op" ]; then
-    shim=$(mktemp -d "$tmp/path.XXXX")
-    for f in "$d"/*; do
-      [ "${f##*/}" = op ] || ln -s "$f" "$shim/"
-    done
-    d=$shim
-  fi
-  path+="$d:"
-done
-export PATH="${path%:}"
+# Hook paths that don't exist skip the hooks, which install packages and
+# change the login shell.
+HOME="$tmp/home" dotter --local-config "$tmp/local.toml" \
+  --cache-file "$tmp/cache.toml" --cache-directory "$tmp/cache" \
+  --pre-deploy none --post-deploy none --noconfirm --quiet deploy
 
-chezmoi init "${flags[@]}" \
-  --promptBool "work machine (render 1Password git identity)=false" \
-  --exclude scripts --apply
+broken=$(find "$tmp/home" -type l ! -exec test -e {} \; -print)
+if [ -n "$broken" ]; then
+  echo "broken links:"
+  echo "$broken"
+  exit 1
+fi
 
-test ! -e "$tmp/home/.config/git/config.work" || {
-  echo "unexpected config.work"
+# Without op, render writes only the public allowed_signers line.
+env PATH=/usr/bin:/bin XDG_CONFIG_HOME="$tmp/home/.config" setup/identity/render
+test ! -e "$tmp/home/.config/git/config.personal" || {
+  echo "unexpected config.personal"
   exit 1
 }
 
@@ -37,13 +31,4 @@ if command -v fish >/dev/null; then
     fish --no-execute "$f"
   done
 fi
-
-chezmoi verify "${flags[@]}" --exclude scripts
-
-mkdir -p "$tmp/scripts"
-for f in home/.chezmoiscripts/*.tmpl; do
-  out="$tmp/scripts/$(basename "$f" .tmpl)"
-  chezmoi execute-template "${flags[@]}" <"$f" >"$out"
-  if [ -s "$out" ]; then shellcheck -S warning "$out"; fi
-done
-echo "chezmoi smoke ok"
+echo "dotter smoke ok"

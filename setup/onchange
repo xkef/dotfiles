@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Runs a command when the content of its input files changed since the
+# last successful run, and records the new hash only on success.
+#
+# Usage: setup/onchange <name> <file>... -- <command>...
+# Example: setup/onchange vale-sync home/tools/vale/.vale.ini -- vale sync
+set -euo pipefail
+
+name="$1"
+shift
+files=()
+while [[ "$1" != -- ]]; do
+  files+=("$1")
+  shift
+done
+shift
+
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+hash="$(cat "${files[@]}" | shasum -a 256 | cut -d' ' -f1)"
+if [[ "$(cat "$state_dir/$name" 2>/dev/null)" == "$hash" ]]; then
+  exit 0
+fi
+
+"$@"
+mkdir -p "$state_dir"
+printf '%s\n' "$hash" >"$state_dir/$name"

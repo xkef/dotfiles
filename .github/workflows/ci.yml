@@ -2,11 +2,11 @@ name: CI
 
 # lint runs the portable subset of `mise run lint`. The Neovim check needs
 # installed plugins and stays local. check runs `mise run check`, which
-# applies the whole chezmoi source tree into a throwaway HOME and asserts the
-# result, a fast signal on every push. e2e-macos and e2e-arch run the real
-# thing: chezmoi init --apply with run scripts, so packages install,
-# macos-defaults applies, and the resulting shell starts. The package script
-# templates skip casks and Arch GUI packages under CI.
+# deploys the repo into a throwaway HOME and asserts the result, a fast
+# signal on every push. e2e-macos and e2e-arch run the real thing:
+# setup/deploy with its hooks, so packages install, macos-defaults applies,
+# and the resulting shell starts. The package install skips casks and Arch
+# GUI packages under CI.
 on:
   pull_request:
   push:
@@ -71,22 +71,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install chezmoi
-        run: brew install chezmoi
-      - name: Full setup (files + run scripts)
+      - name: Full setup (files + hooks)
         env:
           GITHUB_TOKEN: ${{ github.token }} # mise version lookups rate-limit without it
         # A fresh Mac runs the README one-liner from a shell that predates
-        # Homebrew, so PATH has no /opt/homebrew/bin. Reproduce that. The run
-        # scripts must find the tools they install on their own.
-        run: |
-          env PATH=/usr/bin:/bin:/usr/sbin:/sbin "$(brew --prefix)/bin/chezmoi" init --source "$PWD" \
-            --promptBool "work machine (render 1Password git identity)=false" \
-            --apply
+        # Homebrew, so PATH has no /opt/homebrew/bin. Reproduce that. The
+        # hooks must find the tools they install on their own. --force
+        # replaces the files the runner image ships in their place.
+        run: env PATH=/usr/bin:/bin:/usr/sbin:/sbin setup/deploy --force --noconfirm
       - name: Verify the machine actually works
         run: |
-          chezmoi doctor
-          chezmoi verify --exclude scripts
+          setup/deploy --dry-run
           fish -c 'echo fish boots'
           for f in ~/.config/fish/config.fish ~/.config/fish/conf.d/*.fish ~/.config/fish/functions/*.fish; do fish -n "$f"; done
           ~/.local/bin/theme --current
@@ -99,7 +94,7 @@ jobs:
     steps:
       - name: Bootstrap container (sudo + builder user)
         run: |
-          pacman -Syu --noconfirm sudo git base-devel chezmoi
+          pacman -Syu --noconfirm sudo git base-devel
           useradd -m builder
           echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -110,21 +105,12 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }} # mise version lookups rate-limit without it
         run: |
           chown -R builder: "$PWD"
-          sudo -u builder env HOME=/home/builder CI=true GITHUB_TOKEN="$GITHUB_TOKEN" chezmoi init \
-            --source "$PWD" \
-            --promptBool "work machine (render 1Password git identity)=false" \
-            --apply
+          sudo -u builder env HOME=/home/builder CI=true GITHUB_TOKEN="$GITHUB_TOKEN" setup/deploy --force --noconfirm
       - name: Verify the machine actually works
-        # TMPDIR must share a mount with the checkout. doctor's hardlink
-        # check links from the source dir into TMPDIR, and /tmp sits on the
-        # container filesystem while the workspace is a Docker volume.
         run: |
-          tmp="$(dirname "$PWD")/tmp"
-          mkdir -p "$tmp" && chown builder: "$tmp"
-          sudo -u builder env HOME=/home/builder TMPDIR="$tmp" sh -c '
+          sudo -u builder env HOME=/home/builder sh -c '
             set -e
-            chezmoi doctor
-            chezmoi verify --exclude scripts
+            setup/deploy --dry-run
             fish -c "echo fish boots"
             for f in ~/.config/fish/config.fish ~/.config/fish/conf.d/*.fish ~/.config/fish/functions/*.fish; do fish -n "$f"; done
             ~/.local/bin/theme --current

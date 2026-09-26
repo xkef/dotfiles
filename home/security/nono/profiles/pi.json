@@ -1,0 +1,63 @@
+{
+  "$schema": "https://nono.dev/schemas/nono-profile.schema.json",
+  "extends": "default",
+  "filesystem": {
+    "allow": [
+      "$HOME/.pi",
+      "$XDG_CONFIG_HOME/pi",
+      "$XDG_DATA_HOME/pi",
+      "$XDG_STATE_HOME/pi",
+      "$XDG_CACHE_HOME/pi",
+      "$HOME/.agents",
+      "$XDG_STATE_HOME/agents",
+      "$HOME/.m2",
+      "$HOME/.npm",
+      "$XDG_CACHE_HOME/mise",
+      "$XDG_CACHE_HOME/uv",
+      "$XDG_CONFIG_HOME/jj",
+      "$XDG_DATA_HOME/cargo",
+      "$XDG_DATA_HOME/rustup",
+      "$XDG_DATA_HOME/go",
+      "$XDG_DATA_HOME/mise",
+      "$XDG_DATA_HOME/uv",
+      "$HOME/Library/Keychains"
+    ],
+    "bypass_protection": [
+      "$HOME/Library/Keychains",
+      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
+      "$HOME/.1password/agent.sock"
+    ],
+    "read": [
+      "$XDG_STATE_HOME/mise",
+      "$XDG_CONFIG_HOME/gh",
+      "$XDG_CONFIG_HOME/git",
+      "$XDG_DATA_HOME/tinted-theming/tinty",
+      "$XDG_CONFIG_HOME/nono/profiles",
+      "$XDG_CONFIG_HOME/nono/packages"
+    ],
+    "unix_socket": [
+      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
+      "$HOME/.1password/agent.sock"
+    ]
+  },
+  "groups": {
+    "include": [
+      "git_config",
+      "mise_manager",
+      "node_runtime",
+      {
+        "name": "user_caches_macos",
+        "when": "macos"
+      },
+      "unlink_protection"
+    ]
+  },
+  "meta": {
+    "description": "pi.dev coding agent with mise, node, jj, maven, npm, cargo, shared skills, and keychain access",
+    "name": "pi",
+    "version": "1.1.2"
+  },
+  "workdir": {
+    "access": "readwrite"
+  }
+}

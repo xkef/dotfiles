@@ -3,13 +3,8 @@
 # automatically.
 
 [global]
-include = ["**/*.md", "**/*.md.tmpl"]
+include = ["**/*.md"]
 disable = ["MD025", "MD036", "MD041"]
-
-# The template output ends with a newline, so a blank line after the action
-# would render as two.
-[per-file-ignores]
-"home/dot_claude/CLAUDE.md.tmpl" = ["MD022"]
 
 [MD013]
 reflow = true
