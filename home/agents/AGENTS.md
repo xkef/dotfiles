@@ -17,6 +17,13 @@ without trying. A real denial shows up as an ordinary permission error, which
 abandoning the task. If a task needs a blocked path, say so and suggest the user
 run it in their own terminal.
 
+`NONO_CAP_FILE` is set only under nono. The user may relaunch the session
+outside nono, so check it before you name a sandbox as the cause. Under nono,
+Claude Code's own sandbox is off, `dangerouslyDisableSandbox` has no effect, and
+`!` commands stay confined, so hand the command to the user for a separate
+terminal. Without nono, Claude Code's sandbox applies, and
+`dangerouslyDisableSandbox` lifts it.
+
 # Toolchains install on demand
 
 Only node and python are installed globally. Each project pins its own versions,

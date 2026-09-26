@@ -70,6 +70,10 @@
           {
             "command": "~/.claude/hooks/claude-no-trailer",
             "type": "command"
+          },
+          {
+            "command": "~/.claude/hooks/claude-nono-guard",
+            "type": "command"
           }
         ],
         "matcher": "Bash"
