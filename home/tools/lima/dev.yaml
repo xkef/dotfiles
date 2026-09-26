@@ -6,6 +6,9 @@
 #   ssh lima-dev                                       plain SSH
 #   limactl delete --force dev                         throw it away
 #
+# Provisioning outlasts the default 10-minute start timeout, so pass
+# --timeout=30m to `limactl start`.
+#
 # The guest sees ~/code and ~/work read-write, and this repo read-only, at
 # the host's paths, so `limactl shell` opens in the current directory.
 # Symlinks under the guest home point at them. Lima forwards the guest's
