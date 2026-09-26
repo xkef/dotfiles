@@ -44,8 +44,7 @@ either lists the bindings.
 
 ## Make it yours
 
-Deploy writes the git, jj, and SSH identity from
-`~/.config/identity/Personal`:
+Deploy writes the git, jj, and SSH identity from `~/.config/identity/Personal`:
 
 ```sh
 name=Ada Lovelace
@@ -53,8 +52,8 @@ email=ada@example.com
 public_key=ssh-ed25519 AAAA...
 ```
 
-Without that file, it reads the same fields from the SSH Key item `git` in
-the 1Password `Personal` vault.
+Without that file, it reads the same fields from the SSH Key item `git` in the
+1Password `Personal` vault.
 
 ## Credits
 
