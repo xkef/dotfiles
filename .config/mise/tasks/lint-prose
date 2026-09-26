@@ -6,8 +6,10 @@ set -eu
 # The repo lints with the vale config it installs on every machine. vale
 # fails only on errors, so any output, including a suggestion, fails here.
 # --no-global keeps a machine's own vale config out of the result.
-# The agent rules quote the phrases they ban.
-alerts=$(git ls-files -z '*.md' ':!home/agents/AGENTS.md' ':!home/agents/*/AGENTS.md' ':!home/agents/claude/CLAUDE.md' |
+# The agent rules quote the phrases they ban. OpenSpec trees follow a fixed
+# format (ADDED, SHALL, WHEN/THEN) that the style rules reject.
+alerts=$(git ls-files -z '*.md' ':!home/agents/AGENTS.md' ':!home/agents/*/AGENTS.md' ':!home/agents/claude/CLAUDE.md' \
+  ':!**/openspec/**' ':!home/editors/nvim/tether.nvim/AGENTS.md' |
   xargs -0 vale --no-global --config home/tools/vale/.vale.ini --output=line 2>&1 || true)
 if [ -n "$alerts" ]; then
   echo "$alerts"
