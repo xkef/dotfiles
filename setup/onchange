@@ -16,7 +16,16 @@ done
 shift
 
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
-hash="$(cat "${files[@]}" | shasum -a 256 | cut -d' ' -f1)"
+# Arch lacks the Perl shasum, and older macOS lacks sha256sum.
+sha256() {
+  if command -v sha256sum >/dev/null; then
+    sha256sum
+  else
+    shasum -a 256
+  fi
+}
+
+hash="$(cat "${files[@]}" | sha256 | cut -d' ' -f1)"
 if [[ "$(cat "$state_dir/$name" 2>/dev/null)" == "$hash" ]]; then
   exit 0
 fi
