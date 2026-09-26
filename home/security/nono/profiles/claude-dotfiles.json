@@ -3,7 +3,8 @@
   "extends": "claude",
   "filesystem": {
     "allow": [
-      "$XDG_STATE_HOME/lazyvim"
+      "$XDG_STATE_HOME/lazyvim",
+      "$HOME/Library/Caches/dprint"
     ],
     "read": [
       "$XDG_CONFIG_HOME/lazyvim",
