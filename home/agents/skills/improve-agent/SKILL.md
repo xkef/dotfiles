@@ -48,8 +48,11 @@ you checked.
    without a visible cause.
 2. **Wrong permissions:** for the sandbox, map each needed path to the nono
    profile (`~/.config/nono/profiles/<profile>.json`, whose source sits in the
-   dotfiles repository) and write the missing entry. For Claude's permissions,
-   find rejected tool calls (`doesn't want to proceed`), interrupts
+   dotfiles repository) and write the missing entry. A grant that only this
+   repository's work needs goes into `<profile>-<repository name>.json`, which
+   extends the base profile. `sb` picks it up inside the repository, and every
+   other project keeps the narrower base profile. For Claude's permissions, find
+   rejected tool calls (`doesn't want to proceed`), interrupts
    (`Request interrupted by user`), and hook blocks in the transcripts. Decide
    per case whether the rule or the agent was wrong.
 3. **Confusing code:** look for files read or searched again and again within a

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://nono.dev/schemas/nono-profile.schema.json",
+  "extends": "claude",
+  "filesystem": {
+    "allow": [
+      "$XDG_STATE_HOME/lazyvim"
+    ],
+    "read": [
+      "$XDG_CONFIG_HOME/lazyvim",
+      "$XDG_DATA_HOME/lazyvim"
+    ]
+  }
+}

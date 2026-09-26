@@ -24,7 +24,17 @@ function sb -d "Run a command inside a nono sandbox"
         return $status
     end
 
-    set -l nono_args --silent --log-file /dev/null --allow-cwd --read $DOTFILES_DIR --profile $cmd
+    # A repository can have its own profile, <command>-<repository name>,
+    # that extends the base one with what only its work needs. It sits with
+    # the other profiles and never in the repository, so a cloned repository
+    # can't widen its own sandbox.
+    set -l profile $cmd
+    set -l root (jj --ignore-working-copy root 2>/dev/null; or git rev-parse --show-toplevel 2>/dev/null)
+    if test -n "$root"; and test -f $HOME/.config/nono/profiles/$cmd-(path basename $root).json
+        set profile $cmd-(path basename $root)
+    end
+
+    set -l nono_args --silent --log-file /dev/null --allow-cwd --read $DOTFILES_DIR --profile $profile
     test "$SB_ALLOW_LAUNCH_SERVICES" = 1; and set -a nono_args --allow-launch-services
     set -l cmd_args
 
