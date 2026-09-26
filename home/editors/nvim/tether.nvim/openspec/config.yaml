@@ -8,13 +8,12 @@ context: |
   development and StrongDM Attractor pipelines.
 
   Runtime: Neovim 0.11 or newer, LuaJIT. No required plugin dependencies.
-  Optional integrations: snacks.nvim (picker), codediff.nvim (side-by-side
-  diff), WezTerm (`wezterm cli`) for pane targeting, the `openspec` CLI.
+  Optional integrations: snacks.nvim (picker), WezTerm (`wezterm cli`) for pane targeting, the `openspec` CLI.
   VCS: Jujutsu first, Git as fallback.
 
-  Agent side: `agent-trail` (bash) appends TSV events to
-  $XDG_STATE_HOME/agents/trail.log. `agent-state list` (bash) reports live
-  agent panes. Both ship with the dotfiles that host this plugin today.
+  Agent side: `bin/agent-trail` (bash) appends TSV events to
+  $XDG_STATE_HOME/agents/trail.log, and `extras/pi/agent-trail.ts` feeds it
+  from pi. `agent-state list` (bash, host dotfiles) reports live agent panes.
 
   Style: Lua modules under lua/tether/, 2-space indent, stylua formatting.
   UI queries to jj run with --ignore-working-copy. Tests are headless Neovim

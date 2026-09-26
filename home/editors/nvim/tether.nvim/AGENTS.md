@@ -24,7 +24,7 @@ Refactors and tooling changes without behavior changes skip specs and set
 
 - Lua modules live in `lua/tether/`; `plugin/tether.lua` only defines the
   command.
-- No required plugin dependencies. snacks.nvim, codediff.nvim, WezTerm, and the
-  OpenSpec CLI are optional and must degrade cleanly.
+- No required plugin dependencies. snacks.nvim, WezTerm, and the OpenSpec CLI
+  are optional and must degrade cleanly.
 - jj calls for UI refreshes use `--ignore-working-copy`.
 - Format with stylua (2 spaces, 120 columns).

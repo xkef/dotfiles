@@ -17,7 +17,7 @@ boundaries. The nono sandbox and the Claude Code sandbox allow writes to
   appending a line.
 - Make the agent turn the unit of review, on jj and on Git.
 - Keep the UI to three surfaces: cockpit, review buffer, picker.
-- Degrade without snacks.nvim, codediff.nvim, or WezTerm.
+- Degrade without snacks.nvim or WezTerm.
 
 **Non-Goals:**
 
@@ -93,13 +93,14 @@ cockpit polls `agent-state list` every two seconds while it is open.
 Text goes to the pane through `wezterm cli send-text --pane-id <id>`, which uses
 bracketed paste, so newlines do not submit the prompt. With `send.submit = true`
 a carriage return follows as `--no-paste`. Without WezTerm, or without a
-matching agent, text goes to the `+` register.
+matching agent, text goes to the `+` register, or to the unnamed register when
+Neovim has no clipboard provider.
 
 ### Optional integrations
 
 The picker uses snacks.nvim when it loads and `vim.ui.select` otherwise. The
-side-by-side diff uses codediff.nvim when available and a `diffthis` tab
-otherwise.
+side-by-side diff is a built-in `diffthis` tab, because Git-based diff plugins
+cannot read jj revisions.
 
 ## Risks / Trade-offs
 

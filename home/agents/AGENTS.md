@@ -211,6 +211,12 @@ As the main agent in a WezTerm pane, where `WEZTERM_PANE` has a value, run
 goal in fewer than 60 characters. Update it when the goal changes. This summary
 appears in the agent picker opened with `leader a`.
 
+# Point the user at code
+
+When a location in the code answers the user's question, name it and also run
+`agent-trail show <path> [line]`. The user's editor opens the file there. The
+command does nothing when no editor listens.
+
 # Fix bugs test-first
 
 When the prompt reports a bug, don't write the fix first. Write the test that

@@ -1,11 +1,11 @@
-# Spec Delta
+# send Specification
 
 ## Purpose
 
 Deliver review comments, selections, and task text from Neovim into the prompt
 of the agent that works on the current repository.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Target resolution
 
@@ -21,7 +21,8 @@ user, and with none it SHALL fall back to the clipboard.
 #### Scenario: No agent
 
 - **WHEN** no listed agent matches
-- **THEN** the text lands in the `+` register and the user is told so
+- **THEN** the text lands in the clipboard register (`+`, or the unnamed
+  register without a clipboard provider) and the user is told so
 
 ### Requirement: Delivery
 

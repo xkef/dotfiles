@@ -79,14 +79,13 @@ file buffer. Comments SHALL stay pending until sent or cleared.
 
 ### Requirement: Side-by-side diff
 
-`<CR>` on a file or hunk SHALL open the file against the scope's base: with
-codediff.nvim when available, otherwise in a new tab with the base in a scratch
-buffer and the working file, both in diff mode. `q` in the scratch buffer SHALL
-close the tab.
+`<CR>` on a file or hunk SHALL open the file against the scope's base in a new
+tab, with the base in a scratch buffer next to the working file, both in diff
+mode. `q` in the scratch buffer SHALL close the tab.
 
 #### Scenario: Built-in diff tab
 
-- **WHEN** codediff.nvim is absent and the user presses `<CR>` on a file
+- **WHEN** the user presses `<CR>` on a file
 - **THEN** a new tab shows two windows with 'diff' set, one of them a scratch
   buffer holding the base content
 

@@ -25,6 +25,7 @@ sets fish as the default shell. `dots apply` deploys again after a change.
 | [Fish](https://fishshell.com)                                       | Shell with tv pickers and practical defaults               |
 | [Starship](https://starship.rs)                                     | Minimal, cross-shell prompt                                |
 | [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)    | Editor with the LazyVim distro, kickstart as fallback      |
+| [tether.nvim](home/editors/nvim/tether.nvim)                        | Review and follow agent turns in Neovim, `anvim` config    |
 | [WezTerm](https://wezterm.org)                                      | Terminal and multiplexer, with an agent picker             |
 | [tinty](https://github.com/tinted-theming/tinty)                    | Color themes for the terminal, Neovim, delta, and pi       |
 | [television](https://github.com/alexpasmantier/television)          | Fuzzy finder in the shell and WezTerm pickers              |

@@ -57,6 +57,15 @@
           }
         ],
         "matcher": "Edit|Write"
+      },
+      {
+        "hooks": [
+          {
+            "command": "~/.local/bin/agent-trail hook claude",
+            "type": "command"
+          }
+        ],
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Read"
       }
     ],
     "PreToolUse": [
@@ -93,6 +102,10 @@
           {
             "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
+          },
+          {
+            "command": "~/.local/bin/agent-trail hook claude",
+            "type": "command"
           }
         ]
       }
@@ -113,6 +126,10 @@
           {
             "command": "~/.claude/hooks/claude-agent-status",
             "type": "command"
+          },
+          {
+            "command": "~/.local/bin/agent-trail hook claude",
+            "type": "command"
           }
         ]
       }
@@ -122,6 +139,10 @@
         "hooks": [
           {
             "command": "~/.claude/hooks/claude-agent-status",
+            "type": "command"
+          },
+          {
+            "command": "~/.local/bin/agent-trail hook claude",
             "type": "command"
           }
         ]
