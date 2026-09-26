@@ -185,7 +185,11 @@
     "enabled": true,
     "excludedCommands": ["gh *", "jj *"],
     "filesystem": {
-      "allowWrite": ["~/.cache/mise", "~/.local/state/agents"]
+      "allowWrite": [
+        "~/.cache/mise",
+        "~/.local/state/agents",
+        "~/Library/Caches/dprint"
+      ]
     },
     "network": {
       "allowUnixSockets": [

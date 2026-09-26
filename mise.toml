@@ -74,8 +74,10 @@ cp home/terminal/wezterm/*.lua "$XDG_CONFIG_HOME/wezterm"
 """
 
 # Neovim exits 0 after a startup error, so the task fails on the error
-# message that startup left in v:errmsg instead.
+# message that startup left in v:errmsg instead. A throwaway state
+# directory keeps the check from writing LazyVim state, which the sandbox
+# doesn't grant.
 [tasks.lint-nvim]
 description = "Load LazyVim headless. Needs its plugins installed."
 env = { NVIM_APPNAME = "lazyvim" }
-run = """nvim --headless -c "lua require('lazy')" -c 'if v:errmsg != "" | cquit | else | qall | endif'"""
+run = """XDG_STATE_HOME=$(mktemp -d) nvim --headless -c "lua require('lazy')" -c 'if v:errmsg != "" | cquit | else | qall | endif'"""
