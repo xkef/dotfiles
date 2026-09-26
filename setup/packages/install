@@ -55,6 +55,21 @@ ensure_paru() {
   paru_works
 }
 
+# Installs rustup with a stable default so it provides cargo. Otherwise
+# builds that need cargo, such as paru's, pull in rust under --noconfirm,
+# and rust conflicts with rustup. An installed rust goes first. The
+# toolchain goes where env.fish points RUSTUP_HOME, even from bash.
+ensure_rustup() {
+  export RUSTUP_HOME="${RUSTUP_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/rustup}"
+  if ! pacman -Q rustup >/dev/null 2>&1; then
+    if pacman -Q rust >/dev/null 2>&1; then
+      sudo pacman -Rdd --noconfirm rust
+    fi
+    sudo pacman -S --noconfirm rustup
+  fi
+  rustup default >/dev/null 2>&1 || rustup default stable
+}
+
 install_arch() {
   local packages pkg
   mapfile -t packages < <(list arch/main.txt)
@@ -66,6 +81,7 @@ install_arch() {
 
   sudo -v
   sudo pacman -Syu --noconfirm
+  ensure_rustup
   if ! ensure_paru; then
     echo "warning: paru unusable; installing repo packages via pacman, AUR skipped" >&2
     for pkg in "${packages[@]}"; do
