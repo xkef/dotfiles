@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #MISE description="Deploy the repo into a throwaway HOME and assert results"
 set -eu
-tmp=$(mktemp -d)
+# macOS mktemp ignores TMPDIR without a template.
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/check.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
 mkdir -p "$tmp/home"
 printf 'packages = ["dotfiles"]\n' >"$tmp/local.toml"

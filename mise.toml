@@ -66,7 +66,7 @@ run = "vale --no-global --config home/tools/vale/.vale.ini sync"
 [tasks.lint-wezterm]
 description = "Load the WezTerm config headless. Needs wezterm."
 run = """
-export XDG_CONFIG_HOME=$(mktemp -d)
+export XDG_CONFIG_HOME=$(mktemp -d "${TMPDIR:-/tmp}/wezterm.XXXXXX")
 export WEZTERM_CONFIG_FILE=$XDG_CONFIG_HOME/wezterm/wezterm.lua
 mkdir "$XDG_CONFIG_HOME/wezterm"
 cp home/terminal/wezterm/*.lua "$XDG_CONFIG_HOME/wezterm"
