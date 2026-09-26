@@ -40,4 +40,14 @@ function sb -d "Run a command inside a nono sandbox"
     # Not exec: the launchers call this function and clear the agent state
     # after the agent exits.
     nono run $nono_args -- $cmd $cmd_args $rest
+    set -l rc $status
+
+    # macOS logs the sandbox denials where only an unsandboxed process may
+    # read them, so the run's denials get cached here for `agent-trace
+    # sandbox`. It runs in the background because it scans the log.
+    if command -q agent-trace
+        agent-trace collect >/dev/null 2>&1 &
+        disown
+    end
+    return $rc
 end

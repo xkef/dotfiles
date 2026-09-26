@@ -35,6 +35,11 @@ mounts:
   - location: ~/.local/state/agents
     mountPoint: "{{.Home}}/.local/state/agents"
     writable: true
+  # Guest transcripts land on the host, where `agent-trace` reads them
+  # beside the host's own.
+  - location: ~/.local/state/agents/lima-dev/claude-projects
+    mountPoint: "{{.Home}}/.claude/projects"
+    writable: true
 
 # The dotfiles expect /home/<user>, not Lima's default /home/<user>.guest.
 # `limactl shell` starts user.shell, not the login shell, and the image

@@ -1,0 +1,273 @@
+#!/usr/bin/env bash
+# Reports the tool calls that failed in Claude Code sessions, read in place
+# from ~/.claude/projects on this machine and from every Lima VM's
+# transcripts on the host.
+#
+#   agent-trace [--all] [--since <date>] list
+#   agent-trace [--all] [--since <date>] errors [session-id]
+#   agent-trace [--all] [--since <date>] denials [session-id]
+#   agent-trace [--all] [--since <date>] sandbox
+#   agent-trace collect
+#
+# The scope is the sessions that ran inside the current repository, or
+# every session with --all. A session id picks that one session wherever
+# it ran. --since drops what happened before an ISO 8601 date, such as
+# 2026-09-26, so a restructured repository reports on its current layout. Every row names its environment: this machine's host name, or
+# lima-<vm>. The two differ in sandbox and permissions. Here nono confines
+# the agent and prompts guard its tools. In Lima the VM confines it and
+# prompts stay off.
+#
+# `list` prints id, environment, start, permission mode, error count,
+# denial count, and title per session. `errors` prints session,
+# environment, timestamp, tool, input, and the first telling output line
+# per failed tool call. `denials` keeps the failures whose
+# output reads like a permission denial. A subagent failure carries the
+# session label <id>/agent-<name>.
+#
+# `sandbox` prints nono session, profile, start, workdir, count, process,
+# operation, and path per distinct Seatbelt denial, most frequent first.
+# It covers the denials a tool never reported, such as a config file git
+# skips without a word. macOS records them in its unified log, which only
+# an unsandboxed process may read, so `sb` runs `collect` after each
+# sandboxed run and the report reads that cache.
+set -euo pipefail
+
+readonly CLAUDE_PROJECTS="$HOME/.claude/projects"
+readonly AGENTS_STATE="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
+readonly LIMA_GUEST_MARKER=/mnt/lima-cidata
+readonly DENIAL_PATTERN='operation not permitted|permission denied|read-only file system|\beperm\b|\beacces\b|sandbox[ _-]?(apply|blocked|denied)'
+readonly MAX_FIELD_LENGTH=200
+readonly NONO_STATE="${XDG_STATE_HOME:-$HOME/.local/state}/nono"
+readonly SANDBOX_CACHE="$AGENTS_STATE/sandbox"
+# Keeps file, execution, and network denials, so the many daemon denials
+# never reach jq.
+readonly SEATBELT_PREDICATE='sender == "Sandbox" AND (eventMessage CONTAINS " file-" OR eventMessage CONTAINS " process-exec" OR eventMessage CONTAINS " network-")'
+
+# Emits one JSON object per failed tool call in a transcript. It pairs each
+# error result with the tool call that caused it, and picks the first line
+# that says more than "Exit code N", preferring one that matches $denial.
+readonly FAILURES_JQ='
+  [inputs] as $lines
+  | ($lines
+    | map(.message.content[]? | select(.type == "tool_use") | {key: .id, value: .})
+    | from_entries) as $uses
+  | $lines[]
+  | .timestamp as $ts
+  | .message.content[]?
+  | select(.type == "tool_result" and .is_error == true)
+  | (.content | if type == "array" then map(.text // "") | join("\n") else tostring end) as $text
+  | ($text | split("\n") | map(select(test("\\S") and (test("^Exit code [0-9]+$") | not)))) as $telling
+  | ($telling | map(select(test($denial; "i")))) as $denied
+  | $uses[.tool_use_id] as $use
+  | {
+      session: $session,
+      env: $env,
+      ts: $ts,
+      tool: $use.name,
+      input: ($use.input.command // $use.input.file_path // $use.input.path // $use.input),
+      denial: ($denied | length > 0),
+      line: (($denied + $telling)[0] // "")
+    }
+  | select($since == "" or .ts >= $since)
+'
+
+# Groups the Seatbelt denials of one nono session. The log names only the
+# process and its PID, so a denial counts when its PID is no older than the
+# sandboxed child. A line such as "3 duplicate reports for Sandbox: ..."
+# adds its count.
+readonly SEATBELT_JQ='
+  [inputs
+    | .eventMessage // empty
+    | capture("^(?:(?<dup>[0-9]+) duplicate reports? for )?Sandbox: (?<proc>.+)\\((?<pid>[0-9]+)\\) deny\\([0-9]+\\) (?<op>[^ ]+) ?(?<path>.*)$")
+    | select((.pid | tonumber) >= $s.child_pid)
+    | select(.op | test("^(file-|process-exec|network-)"))
+    | {proc, op, path, n: ((.dup // "1") | tonumber)}]
+  | group_by([.proc, .op, .path])[]
+  | [$s.session_id, $s.profile, $s.started, $s.workdir, (map(.n) | add), .[0].proc, .[0].op, .[0].path]
+  | @tsv
+'
+
+scope=repo
+since=""
+
+usage() {
+  sed -n 's/^#   //p' "$0" >&2
+  exit 2
+}
+
+die() {
+  echo "agent-trace: $*" >&2
+  exit 1
+}
+
+repo_root() {
+  jj --ignore-working-copy root 2>/dev/null || git rev-parse --show-toplevel 2>/dev/null
+}
+
+# Prints "<environment>\t<projects directory>" per transcript source. A
+# Lima guest keeps its transcripts in a host directory that the VM mounts
+# over its ~/.claude/projects, so the host reads them as lima-<vm>. Inside
+# the guest that directory is the local source already.
+sources() {
+  local dir env
+  printf '%s\t%s\n' "$(uname -n)" "$CLAUDE_PROJECTS"
+  [ -d "$LIMA_GUEST_MARKER" ] && return
+
+  for dir in "$AGENTS_STATE"/lima-*/claude-projects; do
+    [ -d "$dir" ] || continue
+    env=${dir%/claude-projects}
+    printf '%s\t%s\n' "${env##*/}" "$dir"
+  done
+}
+
+# Prints "<environment>\t<transcript>" per session in scope. Claude names
+# each project directory after the session's cwd with every character
+# outside [A-Za-z0-9] turned into "-". Lima shares ~/code and ~/work at
+# their host paths, so a repository gets the same name in both
+# environments. A prefix match finds the sessions started in
+# subdirectories too, and the recorded cwd drops the unrelated directories
+# that share the prefix.
+transcripts() {
+  local id=${1:-} root="" prefix="" env dir transcript cwd
+
+  if [ -z "$id" ] && [ "$scope" = repo ]; then
+    root=$(repo_root) || die "not inside a repository, use --all"
+    prefix=${root//[^[:alnum:]]/-}
+  fi
+
+  sources | while IFS=$'\t' read -r env dir; do
+    for transcript in "$dir/$prefix"*/${id:-*}.jsonl; do
+      [ -f "$transcript" ] || continue
+      if [ -n "$since" ] && [[ "$(date -r "$transcript" +%F)" < "${since:0:10}" ]]; then
+        continue
+      fi
+      if [ -n "$root" ]; then
+        cwd=$(jq -rn 'first(inputs | .cwd // empty)' "$transcript")
+        if [ "$cwd" != "$root" ] && [[ "$cwd" != "$root"/* ]]; then
+          continue
+        fi
+      fi
+      printf '%s\t%s\n' "$env" "$transcript"
+    done
+  done
+}
+
+# Scans each main transcript and the subagent transcripts beside it.
+failures() {
+  local env transcript id file label
+
+  transcripts "${1:-}" | while IFS=$'\t' read -r env transcript; do
+    id=$(basename "$transcript" .jsonl)
+    for file in "$transcript" "${transcript%.jsonl}"/subagents/*.jsonl; do
+      [ -f "$file" ] || continue
+      label=$id
+      if [ "$file" != "$transcript" ]; then
+        label=$id/$(basename "$file" .jsonl)
+      fi
+      jq -cn --arg session "$label" --arg env "$env" --arg since "$since" \
+        --arg denial "$DENIAL_PATTERN" "$FAILURES_JQ" "$file"
+    done
+  done
+}
+
+print_failures() {
+  jq -r --arg filter "$1" --argjson max "$MAX_FIELD_LENGTH" '
+    def clip: tostring | gsub("[\t\r\n]+"; " ") | .[0:$max];
+    select($filter == "all" or .denial)
+    | [.session, .env, .ts, .tool, (.input | clip), (.line | clip)]
+    | @tsv
+  '
+}
+
+list() {
+  local env transcript id counts
+
+  transcripts | while IFS=$'\t' read -r env transcript; do
+    id=$(basename "$transcript" .jsonl)
+    counts=$(failures "$id" | jq -rs '[length, map(select(.denial)) | length] | @tsv')
+    jq -rn --arg id "$id" --arg env "$env" --arg counts "$counts" --arg since "$since" '
+      reduce inputs as $l ({};
+        .start //= $l.timestamp
+        | .end = ($l.timestamp // .end)
+        | .mode = ($l.permissionMode // .mode)
+        | .title = ($l.aiTitle // .title))
+      | select($since == "" or .end >= $since)
+      | [$id, $env, .start // "-", .mode // "-", $counts, .title // "-"]
+      | join("\t")
+    ' "$transcript"
+  done | sort -t $'\t' -k3
+}
+
+# Turns nono's "2026-09-26T10:46:02.73+02:00" into the local time
+# "2026-09-26 10:46:02" that `log show` takes.
+log_time() {
+  local time=${1:0:19}
+  echo "${time/T/ }"
+}
+
+# Keeps the denial rows of programs the agent can run. System daemons that
+# start during a long session pass the PID check, but they live outside
+# PATH. The Claude binary runs under its version number, such as 2.1.283.
+own_processes() {
+  local row proc
+  while IFS= read -r row; do
+    proc=$(cut -f6 <<<"$row")
+    if command -v "$proc" >/dev/null || [[ "$proc" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      echo "$row"
+    fi
+  done
+}
+
+# Caches the Seatbelt denials of every finished nono session not cached
+# yet. An empty cache file marks a session without denials, or one whose
+# window the unified log no longer holds.
+collect() {
+  local session id ended tmp
+  [ "$(uname -s)" = Darwin ] || return 0
+  mkdir -p "$SANDBOX_CACHE"
+
+  for session in "$NONO_STATE"/sessions/*.json; do
+    id=$(basename "$session" .json)
+    [ -f "$SANDBOX_CACHE/$id.tsv" ] && continue
+    ended=$(jq -r '.ended // empty' "$NONO_STATE/audit/$id/session.json" 2>/dev/null) || continue
+    [ -n "$ended" ] || continue
+
+    tmp=$(mktemp "$SANDBOX_CACHE/.$id.XXXXXX")
+    /usr/bin/log show --style ndjson --predicate "$SEATBELT_PREDICATE" \
+      --start "$(log_time "$(jq -r .started "$session")")" --end "$(log_time "$ended")" |
+      jq -rn --slurpfile s "$session" '$s[0] as $s | '"$SEATBELT_JQ" |
+      own_processes >"$tmp"
+    mv "$tmp" "$SANDBOX_CACHE/$id.tsv"
+  done
+}
+
+sandbox() {
+  local root=""
+  if [ "$scope" = repo ]; then
+    root=$(repo_root) || die "not inside a repository, use --all"
+  fi
+
+  { cat "$SANDBOX_CACHE"/*.tsv 2>/dev/null || true; } |
+    awk -F '\t' -v root="$root" -v since="$since" '
+      (root == "" || $4 == root || index($4, root "/") == 1) && $3 >= since
+    ' |
+    sort -t $'\t' -k5,5 -rn
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+  --all) scope=all ;;
+  --since) since=${2:?--since needs a date} && shift ;;
+  *) break ;;
+  esac
+  shift
+done
+
+case "${1:-}" in
+list) list ;;
+errors) failures "${2:-}" | print_failures all ;;
+denials) failures "${2:-}" | print_failures denials ;;
+sandbox) sandbox ;;
+collect) collect ;;
+*) usage ;;
+esac
