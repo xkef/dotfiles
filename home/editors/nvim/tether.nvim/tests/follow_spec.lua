@@ -69,7 +69,7 @@ return {
       local dir = H.repo("jj", { ["a.txt"] = long, ["b.txt"] = long })
       H.setup()
       require("tether").follow(true)
-      local follow = require("tether.follow")
+      local follow = require("tether.ui.follow")
       local get_mode = vim.api.nvim_get_mode
       vim.api.nvim_get_mode = function()
         return { mode = "i", blocking = false }

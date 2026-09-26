@@ -1,49 +1,23 @@
 -- One picker entry point. Sources produce items; snacks.nvim renders them
 -- when it loads, vim.ui.select otherwise.
 
-local diff = require("tether.diff")
-local turns = require("tether.turns")
-local util = require("tether.util")
+local diff = require("tether.core.diff")
+local registry = require("tether.core.registry")
+local store = require("tether.core.store")
+local turns = require("tether.core.turns")
+local util = require("tether.core.util")
 
 local M = {}
 
----@class tether.PickItem
----@field text string
----@field file? string
----@field lnum? integer
----@field preview? {lines: string[], ft?: string}
----@field action? fun(item: tether.PickItem)
-
----@class tether.Source
----@field name string
----@field desc string
----@field items fun(repo: tether.Repo): tether.PickItem[]?, string?
----@field enabled? fun(repo: tether.Repo): boolean
-
----@type table<string, tether.Source>
-M.sources = {}
-local order = {}
-
-function M.register(source)
-  if not M.sources[source.name] then
-    table.insert(order, source.name)
-  end
-  M.sources[source.name] = source
-end
-
-function M.unregister(name)
-  M.sources[name] = nil
-  order = vim.tbl_filter(function(n)
-    return n ~= name
-  end, order)
-end
-
 ---Names of sources available for a repository.
 function M.names(repo)
-  return vim.tbl_filter(function(n)
-    local s = M.sources[n]
-    return s and (not s.enabled or not repo or s.enabled(repo))
-  end, order)
+  local out = {}
+  for _, s in ipairs(registry.sources()) do
+    if not s.enabled or not repo or s.enabled(repo) then
+      table.insert(out, s.name)
+    end
+  end
+  return out
 end
 
 function M.open_file(file, lnum)
@@ -140,7 +114,7 @@ function M.pick(repo, name)
     vim.ui.select(names, {
       prompt = "tether",
       format_item = function(n)
-        return ("%-13s %s"):format(n, M.sources[n].desc)
+        return ("%-13s %s"):format(n, registry.get_source(n).desc)
       end,
     }, function(choice)
       if choice then
@@ -149,7 +123,7 @@ function M.pick(repo, name)
     end)
     return
   end
-  local source = M.sources[name]
+  local source = registry.get_source(name)
   if not source then
     util.warn("unknown source " .. name)
     return
@@ -188,100 +162,102 @@ local function latest_files(repo)
   return files, err
 end
 
-M.register({
-  name = "changed",
-  desc = "Files of the latest turn",
-  items = function(repo)
-    local files, err = latest_files(repo)
-    if not files then
-      return nil, err
-    end
-    local items = {}
-    for _, f in ipairs(files) do
-      table.insert(items, {
-        text = ("%s %s  +%d -%d"):format(f.status, f.path, f.added, f.removed),
-        file = vim.fs.joinpath(repo.root, f.path),
-        lnum = f.hunks[1] and diff.first_change(f.hunks[1]) or nil,
-        preview = { lines = file_diff_lines(f), ft = "diff" },
-      })
-    end
-    return items
-  end,
-})
+---Registers the built-in sources. setup() calls it after a registry reset.
+function M.builtin()
+  registry.source({
+    name = "changed",
+    desc = "Files of the latest turn",
+    items = function(repo)
+      local files, err = latest_files(repo)
+      if not files then
+        return nil, err
+      end
+      local items = {}
+      for _, f in ipairs(files) do
+        table.insert(items, {
+          text = ("%s %s  +%d -%d"):format(f.status, f.path, f.added, f.removed),
+          file = vim.fs.joinpath(repo.root, f.path),
+          lnum = f.hunks[1] and diff.first_change(f.hunks[1]) or nil,
+          preview = { lines = file_diff_lines(f), ft = "diff" },
+        })
+      end
+      return items
+    end,
+  })
 
-M.register({
-  name = "trail",
-  desc = "Recent agent edits and reads",
-  items = function(repo)
-    local items = {}
-    for _, ev in ipairs(turns.trail(repo.root, 200)) do
-      local rel = util.relative(ev.path, repo.root)
-      table.insert(items, {
-        text = ("%-4s %-7s %s%s  %s"):format(
-          ev.kind,
-          ev.agent or "?",
-          rel,
-          ev.line and (":" .. ev.line) or "",
-          util.age(ev.epoch)
-        ),
-        file = ev.path,
-        lnum = ev.line,
-      })
-    end
-    return items
-  end,
-})
+  registry.source({
+    name = "trail",
+    desc = "Recent agent edits and reads",
+    items = function(repo)
+      local items = {}
+      for _, ev in ipairs(turns.trail(repo.root, 200)) do
+        local rel = util.relative(ev.path, repo.root)
+        table.insert(items, {
+          text = ("%-4s %-7s %s%s  %s"):format(
+            ev.kind,
+            ev.agent or "?",
+            rel,
+            ev.line and (":" .. ev.line) or "",
+            util.age(ev.epoch)
+          ),
+          file = ev.path,
+          lnum = ev.line,
+        })
+      end
+      return items
+    end,
+  })
 
-M.register({
-  name = "turns",
-  desc = "Agent turns",
-  items = function(repo)
-    local items = {}
-    for _, t in ipairs(turns.list(repo.root)) do
-      table.insert(items, {
-        text = ("#%d %-7s %s%s  %s"):format(
-          t.id,
-          t.agent,
-          t.summary or "",
-          turns.running(t) and " (running)" or "",
-          util.age(t.started)
-        ),
-        action = function()
-          require("tether.review").open(repo, "turn", { turn = t })
-        end,
-      })
-    end
-    return items
-  end,
-})
+  registry.source({
+    name = "turns",
+    desc = "Agent turns",
+    items = function(repo)
+      local items = {}
+      for _, t in ipairs(turns.list(repo.root)) do
+        table.insert(items, {
+          text = ("#%d %-7s %s%s  %s"):format(
+            t.id,
+            t.agent,
+            t.summary or "",
+            turns.running(t) and " (running)" or "",
+            util.age(t.started)
+          ),
+          action = function()
+            require("tether.ui.review").open(repo, "turn", { turn = t })
+          end,
+        })
+      end
+      return items
+    end,
+  })
 
-M.register({
-  name = "hunks",
-  desc = "Unreviewed hunks of the latest turn",
-  items = function(repo)
-    local files, err = latest_files(repo)
-    if not files then
-      return nil, err
-    end
-    local review = require("tether.review")
-    local items = {}
-    for _, f in ipairs(files) do
-      for _, h in ipairs(f.hunks) do
-        if not review.status_of(repo.root, h.hash) then
-          local lnum, text = diff.first_change(h)
-          local lines = { h.header }
-          vim.list_extend(lines, h.lines)
-          table.insert(items, {
-            text = ("%s:%d %s"):format(f.path, lnum, vim.trim(text)),
-            file = vim.fs.joinpath(repo.root, f.path),
-            lnum = lnum,
-            preview = { lines = lines, ft = "diff" },
-          })
+  registry.source({
+    name = "hunks",
+    desc = "Unreviewed hunks of the latest turn",
+    items = function(repo)
+      local files, err = latest_files(repo)
+      if not files then
+        return nil, err
+      end
+      local items = {}
+      for _, f in ipairs(files) do
+        for _, h in ipairs(f.hunks) do
+          if not store.status_of(repo.root, h.hash) then
+            local lnum, text = diff.first_change(h)
+            local lines = { h.header }
+            vim.list_extend(lines, h.lines)
+            table.insert(items, {
+              text = ("%s:%d %s"):format(f.path, lnum, vim.trim(text)),
+              file = vim.fs.joinpath(repo.root, f.path),
+              lnum = lnum,
+              preview = { lines = lines, ft = "diff" },
+            })
+          end
         end
       end
-    end
-    return items
-  end,
-})
+      return items
+    end,
+  })
+end
 
 return M

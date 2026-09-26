@@ -1,9 +1,9 @@
 -- Delivers text to the agent working on the current repository.
 
-local agents = require("tether.agents")
+local agents = require("tether.core.agents")
 local config = require("tether.config")
-local review = require("tether.review")
-local util = require("tether.util")
+local review = require("tether.ui.review")
+local util = require("tether.core.util")
 
 local M = {}
 

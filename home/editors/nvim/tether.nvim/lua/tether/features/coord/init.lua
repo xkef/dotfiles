@@ -2,111 +2,27 @@
 -- log, conflict warnings, and the jj workspace map. Nothing here needs the
 -- agents' cooperation beyond the events they already emit.
 
-local agents = require("tether.agents")
-local config = require("tether.config")
-local turns = require("tether.turns")
-local util = require("tether.util")
-local vcs = require("tether.vcs")
+local api = require("tether.api")
+local claims = require("tether.features.coord.internal.claims")
 
 local M = {}
-
-M.CLAIM_TTL = 2 * 3600
 
 local ns = vim.api.nvim_create_namespace("tether.claims")
 
 local C
 
 function M.reset()
-  C = { explicit = {}, warned = {}, workspaces = {}, unsubscribe = nil }
+  C = { warned = {}, workspaces = {} }
+  claims.reset()
 end
 M.reset()
 
-local function key(ev)
-  return (ev.agent or "?") .. "\0" .. (ev.session or "")
-end
-
----@class tether.Claim
----@field key string agent and session
----@field agent string
----@field pattern string absolute path or glob
----@field kind "edit"|"claim"
----@field epoch integer
----@field pane? string
-
-local function glob_match(pattern, path)
-  if pattern == path then
-    return true
-  end
-  if not pattern:find("[*?%[{]") then
-    return false
-  end
-  local ok, lpeg = pcall(vim.glob.to_lpeg, pattern)
-  return ok and lpeg:match(path) ~= nil
-end
-
-local function alive_panes()
-  if vim.fn.executable(config.options.agent_state) == 0 then
-    return nil
-  end
-  local set = {}
-  for _, a in ipairs(agents.list()) do
-    if a.pane_id then
-      set[a.pane_id] = true
-    end
-  end
-  return set
-end
-
----All claims: files edited in running turns, and explicit claims that are
----neither released, expired, nor held by a closed pane.
----@return tether.Claim[]
-function M.claims()
-  local out = {}
-  for k, t in pairs(turns.open()) do
-    for path, info in pairs(t.files) do
-      table.insert(out, { key = k, agent = t.agent, pattern = path, kind = "edit", epoch = info.epoch, pane = t.pane })
-    end
-  end
-  local now = os.time()
-  local panes
-  local ttl = (config.options.coord or {}).claim_ttl or M.CLAIM_TTL
-  C.explicit = vim.tbl_filter(function(c)
-    if now - c.epoch > ttl then
-      return false
-    end
-    if c.pane then
-      panes = panes or alive_panes() or false
-      if panes and not panes[c.pane] then
-        return false
-      end
-    end
-    return true
-  end, C.explicit)
-  vim.list_extend(out, C.explicit)
-  return out
-end
+M.claims = claims.all
 
 ---Claims that cover path, optionally excluding one agent and session.
-function M.claimed(path, except_key)
-  local out = {}
-  for _, c in ipairs(M.claims()) do
-    if c.key ~= except_key and glob_match(c.pattern, path) then
-      table.insert(out, c)
-    end
-  end
-  return out
-end
+M.claimed = claims.covering
 
-local function agents_of(claims)
-  local names, seen = {}, {}
-  for _, c in ipairs(claims) do
-    if not seen[c.agent] then
-      seen[c.agent] = true
-      table.insert(names, c.agent)
-    end
-  end
-  return names
-end
+local agents_of = claims.agents_of
 
 local function conflict(kind, data, msg)
   local id = kind .. "\0" .. data.id
@@ -114,9 +30,9 @@ local function conflict(kind, data, msg)
     return false
   end
   C.warned[id] = true
-  util.warn(msg)
+  api.util.warn(msg)
   data.kind = kind
-  vim.api.nvim_exec_autocmds("User", { pattern = "TetherConflict", data = data })
+  api.emit("conflict", data)
   return true
 end
 
@@ -132,7 +48,7 @@ function M.mark_buffer(buf)
   if name == "" then
     return
   end
-  local by = agents_of(M.claimed(util.normalize(name)))
+  local by = agents_of(M.claimed(api.util.normalize(name)))
   if #by > 0 and vim.api.nvim_buf_line_count(buf) > 0 then
     vim.api.nvim_buf_set_extmark(buf, ns, 0, 0, {
       virt_text = { { " ⚑ " .. table.concat(by, ", "), "TetherClaim" } },
@@ -148,32 +64,23 @@ function M.mark_all()
   end
 end
 
-local mark_later = util.debounce(100, M.mark_all)
+local mark_later = api.util.debounce(100, M.mark_all)
 
 ----------------------------------------------------------------------------
 -- Events
 
 ---@param ev tether.Event
 function M.on_event(ev)
-  local k = key(ev)
-  if ev.kind == "claim" and ev.path then
-    table.insert(
-      C.explicit,
-      { key = k, agent = ev.agent or "?", pattern = ev.path, kind = "claim", epoch = ev.epoch, pane = ev.pane }
-    )
-  elseif ev.kind == "release" then
-    C.explicit = vim.tbl_filter(function(c)
-      return not (c.key == k and (not ev.path or c.pattern == ev.path))
-    end, C.explicit)
-  end
+  local k = claims.key(ev)
+  claims.on_event(ev)
   if ev.replay then
     return
   end
   if ev.kind == "edit" and ev.path then
     local others = M.claimed(ev.path, k)
     if #others > 0 then
-      local repo = require("tether").repo()
-      local rel = repo and util.relative(ev.path, repo.root) or ev.path
+      local repo = api.repo()
+      local rel = repo and api.util.relative(ev.path, repo.root) or ev.path
       local holders = agents_of(others)
       conflict(
         "agents",
@@ -218,8 +125,8 @@ function M.on_user_change(buf)
   if name == "" then
     return
   end
-  local path = util.normalize(name)
-  local open = turns.open()
+  local path = api.util.normalize(name)
+  local open = api.turns.open()
   for _, c in ipairs(M.claimed(path)) do
     local t = open[c.key]
     if t then
@@ -242,7 +149,7 @@ function M.workspace_of(repo, a)
     return nil
   end
   if C.workspaces[a.cwd] == nil then
-    C.workspaces[a.cwd] = vcs.workspace(repo, a.cwd) or false
+    C.workspaces[a.cwd] = api.vcs.workspace(repo, a.cwd) or false
   end
   return C.workspaces[a.cwd] or nil
 end
@@ -254,13 +161,13 @@ function M.add_workspace(repo, name)
       return
     end
     local path = vim.fs.joinpath(vim.fs.dirname(repo.root), vim.fs.basename(repo.root) .. "-" .. n)
-    local ok, err = vcs.workspace_add(repo, n, path)
+    local ok, err = api.vcs.workspace_add(repo, n, path)
     if not ok then
-      util.warn(err)
+      api.util.warn(err)
       return
     end
-    local reg = require("tether.send").copy(path)
-    util.notify(("workspace %s at %s (path in the %s register); start an agent there"):format(n, path, reg))
+    local reg = api.ui.copy(path)
+    api.util.notify(("workspace %s at %s (path in the %s register); start an agent there"):format(n, path, reg))
     return path
   end
   if name then
@@ -272,11 +179,11 @@ end
 ----------------------------------------------------------------------------
 -- Integration
 
-function M.attach()
-  local events = require("tether.events")
-  C.unsubscribe = events.subscribe(M.on_event)
+---@param tether_api table tether.api
+function M.attach(tether_api)
+  C.unsubscribe = tether_api.on("event", M.on_event)
 
-  local group = vim.api.nvim_create_augroup("tether.coord", { clear = true })
+  local group = vim.api.nvim_create_augroup("tether.features.coord", { clear = true })
   vim.api.nvim_create_autocmd({ "BufReadPost", "BufEnter" }, {
     group = group,
     callback = function(args)
@@ -290,8 +197,7 @@ function M.attach()
     end,
   })
 
-  local cockpit = require("tether.cockpit")
-  table.insert(cockpit.agent_fields, function(repo, a)
+  tether_api.register.agent_field(function(repo, a)
     local parts = {}
     local ws = M.workspace_of(repo, a)
     if ws and ws ~= "default" then
@@ -308,7 +214,7 @@ function M.attach()
     end
     return #parts > 0 and table.concat(parts, " ") or nil
   end)
-  table.insert(cockpit.agent_actions, function(repo, a)
+  tether_api.register.agent_action(function(repo, a)
     local actions = {
       w = function()
         M.add_workspace(repo)
@@ -317,9 +223,9 @@ function M.attach()
     local ws = M.workspace_of(repo, a)
     if ws then
       actions.W = function()
-        require("tether.review").open(repo, "workspace", { workspace = ws })
+        api.ui.review(repo, "workspace", { workspace = ws })
       end
-      if not util.inside(a.cwd, repo.root) then
+      if not api.util.inside(a.cwd, repo.root) then
         -- The agent's turns live in its own workspace; its review is the
         -- workspace against trunk.
         actions.r = actions.W
@@ -328,20 +234,20 @@ function M.attach()
     return actions
   end)
 
-  require("tether.pick").register({
+  tether_api.register.source({
     name = "claims",
     desc = "Files agents are working on",
     items = function(repo)
       local items = {}
       for _, c in ipairs(M.claims()) do
-        if vcs.same_repo(repo, vim.fs.dirname(c.pattern)) or util.inside(c.pattern, repo.root) then
-          local glob = c.pattern:find("[*?%[{]") ~= nil
+        if api.vcs.same_repo(repo, vim.fs.dirname(c.pattern)) or api.util.inside(c.pattern, repo.root) then
+          local glob = claims.is_glob(c.pattern)
           table.insert(items, {
             text = ("%-7s %s  (%s, %s)"):format(
               c.agent,
-              util.relative(c.pattern, repo.root),
+              api.util.relative(c.pattern, repo.root),
               c.kind,
-              util.age(c.epoch)
+              api.util.age(c.epoch)
             ),
             file = not glob and c.pattern or nil,
           })
@@ -356,7 +262,7 @@ function M.detach()
   if C.unsubscribe then
     C.unsubscribe()
   end
-  pcall(vim.api.nvim_del_augroup_by_name, "tether.coord")
+  pcall(vim.api.nvim_del_augroup_by_name, "tether.features.coord")
 end
 
 return M

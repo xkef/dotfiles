@@ -1,14 +1,16 @@
 -- The review buffer: one diff of a scope, grouped by file, with accept,
 -- reject, and comments per hunk.
 
-local diff = require("tether.diff")
-local turns = require("tether.turns")
-local util = require("tether.util")
-local vcs = require("tether.vcs")
+local diff = require("tether.core.diff")
+local registry = require("tether.core.registry")
+local store = require("tether.core.store")
+local turns = require("tether.core.turns")
+local util = require("tether.core.util")
+local vcs = require("tether.core.vcs")
 
 local M = {}
 
-local ns = vim.api.nvim_create_namespace("tether.review")
+local ns = vim.api.nvim_create_namespace("tether.ui.review")
 local ns_comments = vim.api.nvim_create_namespace("tether.comments")
 
 M.KEYS = {
@@ -32,66 +34,9 @@ local R = {}
 -- Pending comments: { root, path, line, text, snippet }.
 M.comments = {}
 
--- Unreviewed hunks of the latest computed turn, for the statusline.
-M.last = {}
-
-----------------------------------------------------------------------------
--- Reviewed store: root -> hash -> { s = "a"|"r", t = epoch }
-
-local store
-
-local function store_path()
-  return util.state_file("reviewed.json")
-end
-
-local function load_store()
-  if store then
-    return store
-  end
-  store = util.read_json(store_path()) or {}
-  local cutoff = os.time() - require("tether.config").options.review.keep_days * 86400
-  for _, hashes in pairs(store) do
-    for h, v in pairs(hashes) do
-      if type(v) ~= "table" or (v.t or 0) < cutoff then
-        hashes[h] = nil
-      end
-    end
-  end
-  return store
-end
-
-function M.status_of(root, hash)
-  local s = load_store()[root]
-  return s and s[hash] and s[hash].s or nil
-end
-
-function M.mark(root, hash, status)
-  local s = load_store()
-  s[root] = s[root] or {}
-  s[root][hash] = status and { s = status, t = os.time() } or nil
-  util.write_json(store_path(), s)
-end
-
 function M.reset()
-  store = nil
   R = {}
-  M.header_providers = {}
   M.comments = {}
-  M.last = {}
-end
-
----Counts files, hunks, and unreviewed hunks.
-function M.count(root, files)
-  local hunks, open = 0, 0
-  for _, f in ipairs(files) do
-    for _, h in ipairs(f.hunks) do
-      hunks = hunks + 1
-      if not M.status_of(root, h.hash) then
-        open = open + 1
-      end
-    end
-  end
-  return #files, hunks, open
 end
 
 ----------------------------------------------------------------------------
@@ -228,9 +173,9 @@ local function render()
   if t then
     title = title .. " · " .. t.agent .. (t.summary and (" · " .. t.summary) or "")
   end
-  local nfiles, nhunks, open = M.count(root, files)
+  local nfiles, nhunks, open = store.count(root, files)
   if t then
-    M.last = { turn = t.id, unreviewed = open }
+    store.last = { turn = t.id, unreviewed = open }
   end
   table.insert(lines, title)
   local range = scope.range
@@ -289,7 +234,7 @@ local function render()
     })
   end
   for _, e in ipairs(hunks) do
-    local s = M.status_of(root, e.hunk.hash)
+    local s = store.status_of(root, e.hunk.hash)
     if s then
       vim.api.nvim_buf_set_extmark(buf, ns, e.first - 1, 0, {
         virt_text = {
@@ -318,7 +263,7 @@ local function compute(opts)
   end
   R.scope, R.files = scope, files
   R.header = {}
-  for _, fn in ipairs(M.header_providers) do
+  for _, fn in ipairs(registry.review_headers()) do
     local ok, extra = pcall(fn, R.repo, scope, files)
     if ok and extra then
       vim.list_extend(R.header, type(extra) == "table" and extra or { extra })
@@ -326,9 +271,6 @@ local function compute(opts)
   end
   return true
 end
-
--- Functions (repo, scope, files) -> string|string[] adding header lines.
-M.header_providers = {}
 
 function M.refresh(opts)
   if not R.buf then
@@ -363,7 +305,7 @@ end
 local function goto_hunk(dir, from)
   local list = {}
   for _, e in ipairs(R.hunks or {}) do
-    if not M.status_of(R.repo.root, e.hunk.hash) then
+    if not store.status_of(R.repo.root, e.hunk.hash) then
       table.insert(list, e)
     end
   end
@@ -405,7 +347,7 @@ end
 
 local function set_status(hunks, status)
   for _, h in ipairs(hunks) do
-    M.mark(R.repo.root, h.hash, status)
+    store.mark(R.repo.root, h.hash, status)
   end
 end
 
@@ -565,7 +507,7 @@ function M.qf_items(root, files)
   local items = {}
   for _, f in ipairs(files) do
     for _, h in ipairs(f.hunks) do
-      if not M.status_of(root, h.hash) then
+      if not store.status_of(root, h.hash) then
         local lnum, text = diff.first_change(h)
         table.insert(items, { filename = vim.fs.joinpath(root, f.path), lnum = lnum, text = text })
       end
@@ -662,7 +604,7 @@ function M.open(repo, scope_name, opts)
     pcall(vim.api.nvim_buf_set_name, R.buf, "tether://review")
     setup_buffer(R.buf)
     vim.wo.foldmethod = "expr"
-    vim.wo.foldexpr = "v:lua.require'tether.review'.foldexpr(v:lnum)"
+    vim.wo.foldexpr = "v:lua.require'tether.ui.review'.foldexpr(v:lnum)"
     vim.wo.foldlevel = 99
     vim.wo.number = false
     vim.wo.relativenumber = false

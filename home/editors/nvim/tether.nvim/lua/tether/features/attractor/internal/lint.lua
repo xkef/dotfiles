@@ -2,7 +2,7 @@
 -- their endpoints as nodes, as in Graphviz, so every edge target exists by
 -- construction; the rules check the structure around them.
 
-local dot = require("tether.attractor.dot")
+local dot = require("tether.features.attractor.internal.dot")
 
 local M = {}
 

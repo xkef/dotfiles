@@ -3,7 +3,7 @@
 -- A record is one line of ten tab-separated fields, "-" for empty:
 -- epoch kind agent session pane cwd path line ref text
 
-local util = require("tether.util")
+local util = require("tether.core.util")
 
 local M = {}
 

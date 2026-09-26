@@ -1,7 +1,7 @@
 -- Line-based parser for OpenSpec 1.x trees: specs, changes, tasks, and
 -- delta specs. It needs no OpenSpec CLI.
 
-local util = require("tether.util")
+local api = require("tether.api")
 
 local M = {}
 
@@ -17,7 +17,7 @@ local function cached(path, fn)
   if hit and hit.key == key then
     return hit.value
   end
-  local value = fn(util.read_lines(path) or {})
+  local value = fn(api.util.read_lines(path) or {})
   cache[path] = { key = key, value = value }
   return value
 end

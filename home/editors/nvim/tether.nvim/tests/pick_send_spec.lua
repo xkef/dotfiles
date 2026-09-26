@@ -24,9 +24,9 @@ return {
     function()
       H.repo("jj", {})
       H.setup()
-      local pick = require("tether.pick")
+      local tether = require("tether")
       local picked
-      pick.register({
+      tether.register.source({
         name = "demo",
         desc = "Demo",
         items = function()
@@ -40,13 +40,12 @@ return {
           }
         end,
       })
-      H.contains(pick.names(require("tether").repo()), "demo")
+      H.contains(require("tether.ui.pick").names(tether.repo()), "demo")
       H.select(function(it)
         return it.text == "one"
       end)
       require("tether").pick("demo")
       H.eq("one", picked)
-      pick.unregister("demo")
     end,
   },
   {
@@ -56,7 +55,7 @@ return {
       H.trail({ "edit", "claude", "a.lua" }, { cwd = dir })
       H.trail({ "edit", "claude", "b.lua" }, { cwd = dir })
       H.setup()
-      local items = require("tether.pick").sources.trail.items(require("tether").repo())
+      local items = require("tether.core.registry").get_source("trail").items(require("tether").repo())
       H.contains(items[1].text, "b.lua")
       H.contains(items[2].text, "a.lua")
     end,
@@ -131,7 +130,7 @@ return {
         agent_state = H.agents({ { "wezterm-4", "claude", "idle", "-", "1", dir, "-" } }),
         send = { wezterm = wez },
       })
-      require("tether.send").text(dir, "hello")
+      require("tether.ui.send").text(dir, "hello")
       local c = calls(log)
       H.eq(1, #c)
       H.eq(nil, c[1].args:find("--no-paste", 1, true))
@@ -147,7 +146,7 @@ return {
         agent_state = H.agents({ { "wezterm-4", "claude", "idle", "-", "1", dir, "-" } }),
         send = { wezterm = wez },
       })
-      local review = require("tether.review")
+      local review = require("tether.ui.review")
       review.add_comment(dir, dir .. "/a.lua", 2, "b", "rename this")
       review.add_comment(dir, dir .. "/a.lua", 1, "a", "add a test")
       require("tether").send()

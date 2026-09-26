@@ -1,4 +1,9 @@
 -- tether.nvim: review, follow, and coordinate CLI agents from Neovim.
+--
+-- This module is the public facade: setup, the user actions behind
+-- :Tether and the keys, status(), turns(), and the extension entry points
+-- on() and register, which forward to tether.api. Everything under
+-- tether.core and tether.ui is internal.
 
 local config = require("tether.config")
 
@@ -6,22 +11,32 @@ local M = {}
 
 M.did_setup = false
 
-local repo_cache = {}
+---The extension API (tether.api).
+M.api = require("tether.api")
+M.on = M.api.on
+M.register = M.api.register
 
 ---The repository of the current working directory.
 ---@return tether.Repo?
 function M.repo()
-  local cwd = vim.fn.getcwd()
-  if repo_cache.cwd ~= cwd then
-    repo_cache = { cwd = cwd, repo = require("tether.vcs").detect(cwd) }
+  return require("tether.core.vcs").current()
+end
+
+---Snapshots of the turns in the current repository, newest first. The
+---tables are copies; changing them changes nothing.
+---@return tether.Turn[]
+function M.turns()
+  local repo = M.repo()
+  if not repo then
+    return {}
   end
-  return repo_cache.repo
+  return vim.deepcopy(require("tether.core.turns").list(repo.root))
 end
 
 local function need_repo()
   local repo = M.repo()
   if not repo then
-    require("tether.util").warn("not in a jj or Git repository")
+    require("tether.core.util").warn("not in a jj or Git repository")
   end
   return repo
 end
@@ -42,25 +57,37 @@ local function highlights()
   end
 end
 
--- Modules loaded after the core; each may register sources, sections, and
--- event handlers through an `attach()` function.
-M.extensions = { "tether.coord", "tether.sdd", "tether.attractor" }
+-- Features attach after the core. Each exports attach(api) and reset(), and
+-- reaches the core only through the api it receives.
+M.features = { "tether.features.coord", "tether.features.sdd", "tether.features.attractor" }
+
+local INTERNAL = {
+  "tether.core.events",
+  "tether.core.bus",
+  "tether.core.registry",
+  "tether.core.store",
+  "tether.core.turns",
+  "tether.core.agents",
+  "tether.core.vcs",
+  "tether.ui.review",
+  "tether.ui.follow",
+  "tether.ui.cockpit",
+}
 
 ---Resets all state. Used by tests.
 function M._reset()
-  for _, name in ipairs({ "events", "turns", "review", "follow", "cockpit", "agents" }) do
-    local ok, mod = pcall(require, "tether." .. name)
+  for _, name in ipairs(INTERNAL) do
+    local ok, mod = pcall(require, name)
     if ok and mod.reset then
       mod.reset()
     end
   end
-  for _, name in ipairs(M.extensions) do
+  for _, name in ipairs(M.features) do
     local mod = package.loaded[name]
     if mod and mod.reset then
       mod.reset()
     end
   end
-  repo_cache = {}
   M.did_setup = false
 end
 
@@ -101,18 +128,22 @@ function M.setup(opts)
   M.did_setup = true
   highlights()
 
-  local events = require("tether.events")
-  local turns = require("tether.turns")
+  local events = require("tether.core.events")
+  local turns = require("tether.core.turns")
   events.subscribe(turns.on_event)
   events.subscribe(function(ev)
-    require("tether.follow").on_event(ev, M.repo())
+    require("tether.ui.follow").on_event(ev, M.repo())
   end)
-  events.subscribe(require("tether.cockpit").on_event)
+  events.subscribe(require("tether.ui.cockpit").on_event)
 
-  for _, name in ipairs(M.extensions) do
+  require("tether.ui.pick").builtin()
+  require("tether.ui.cockpit").builtin()
+  for _, name in ipairs(M.features) do
     local ok, mod = pcall(require, name)
-    if ok and mod.attach then
-      mod.attach()
+    if not ok then
+      require("tether.core.util").warn("feature " .. name .. " failed to load: " .. tostring(mod))
+    elseif mod.attach then
+      mod.attach(M.api)
     end
   end
 
@@ -122,14 +153,14 @@ function M.setup(opts)
     group = group,
     pattern = "*:n",
     callback = function()
-      require("tether.follow").flush()
+      require("tether.ui.follow").flush()
     end,
   })
   vim.api.nvim_create_autocmd("DirChanged", {
     group = group,
     callback = function()
-      repo_cache = {}
-      require("tether.cockpit").refresh()
+      require("tether.core.vcs").reset()
+      require("tether.ui.cockpit").refresh()
     end,
   })
 
@@ -137,7 +168,7 @@ function M.setup(opts)
     keys(config.options.prefix)
   end
   if config.options.follow.enabled then
-    require("tether.follow").toggle(true)
+    require("tether.ui.follow").toggle(true)
   end
 
   events.start(config.options.log_file)
@@ -155,7 +186,7 @@ end
 
 function M.cockpit()
   M.ensure()
-  return require("tether.cockpit").toggle()
+  return require("tether.ui.cockpit").toggle()
 end
 
 ---@param scope? string turn|change|checkpoint|since
@@ -163,21 +194,21 @@ function M.review(scope, opts)
   M.ensure()
   local repo = need_repo()
   if repo then
-    return require("tether.review").open(repo, scope, opts)
+    return require("tether.ui.review").open(repo, scope, opts)
   end
 end
 
 ---@param on? boolean
 function M.follow(on)
   M.ensure()
-  return require("tether.follow").toggle(on)
+  return require("tether.ui.follow").toggle(on)
 end
 
 function M.pick(source)
   M.ensure()
   local repo = need_repo()
   if repo then
-    return require("tether.pick").pick(repo, source)
+    return require("tether.ui.pick").pick(repo, source)
   end
 end
 
@@ -185,7 +216,7 @@ function M.send(range)
   M.ensure()
   local repo = need_repo()
   if repo then
-    return require("tether.send").send(repo, range)
+    return require("tether.ui.send").send(repo, range)
   end
 end
 
@@ -195,8 +226,8 @@ function M.checkpoint()
   if not repo then
     return
   end
-  local ref, err = require("tether.turns").mark(repo)
-  local util = require("tether.util")
+  local ref, err = require("tether.core.turns").mark(repo)
+  local util = require("tether.core.util")
   if ref then
     util.notify("checkpoint " .. ref:sub(1, 16))
   else
@@ -211,8 +242,8 @@ function M.undo(turn)
   if not repo then
     return
   end
-  local turns = require("tether.turns")
-  local util = require("tether.util")
+  local turns = require("tether.core.turns")
+  local util = require("tether.core.util")
   turn = turn or turns.latest(repo.root)
   if not turn then
     util.warn("no agent turn to undo")
@@ -240,7 +271,7 @@ function M.comment(text)
   M.ensure()
   local repo = need_repo()
   if repo then
-    require("tether.review").comment_here(repo, text)
+    require("tether.ui.review").comment_here(repo, text)
   end
 end
 
@@ -250,14 +281,14 @@ function M.hunks()
   if not repo then
     return
   end
-  local turns = require("tether.turns")
+  local turns = require("tether.core.turns")
   local scope, err = turns.scope(repo, "turn", { snapshot = true })
   local files = scope and turns.files(repo, scope)
   if not files then
-    require("tether.util").warn(err or "no diff")
+    require("tether.core.util").warn(err or "no diff")
     return
   end
-  local items = require("tether.review").quickfix(repo, files)
+  local items = require("tether.ui.review").quickfix(repo, files)
   if #items > 0 then
     vim.cmd("copen")
   end
@@ -273,7 +304,7 @@ function M.status()
   local repo = M.repo()
   if repo then
     local busy = 0
-    for _, a in ipairs(require("tether.agents").in_root(repo.root)) do
+    for _, a in ipairs(require("tether.core.agents").in_root(repo.root)) do
       if a.state == "busy" or a.state == "running" then
         busy = busy + 1
       elseif a.state == "waiting" then
@@ -283,12 +314,12 @@ function M.status()
     if busy > 0 then
       table.insert(parts, busy .. " busy")
     end
-    local last = require("tether.review").last
+    local last = require("tether.core.store").last
     if last.unreviewed and last.unreviewed > 0 then
       table.insert(parts, "Δ" .. last.unreviewed)
     end
   end
-  if require("tether.follow").enabled() then
+  if require("tether.ui.follow").enabled() then
     table.insert(parts, "follow")
   end
   return table.concat(parts, " ")
@@ -297,7 +328,7 @@ end
 ----------------------------------------------------------------------------
 -- :Tether
 
-M.commands = {
+local commands = {
   cockpit = function()
     M.cockpit()
   end,
@@ -328,21 +359,27 @@ M.commands = {
   end,
 }
 
-M.complete = {
+local complete = {
   review = { "turn", "change", "checkpoint", "since", "workspace" },
   follow = { "on", "off" },
   pick = function()
     local repo = M.repo()
-    return require("tether.pick").names(repo)
+    return require("tether.ui.pick").names(repo)
   end,
 }
 
+---Runs `:Tether {cmd.args}`: a built-in subcommand or one a feature
+---registered.
 function M.command(cmd)
   local args = vim.split(vim.trim(cmd.args), "%s+", { trimempty = true })
   local name = table.remove(args, 1) or "cockpit"
-  local fn = M.commands[name]
+  local fn = commands[name]
   if not fn then
-    require("tether.util").warn("unknown subcommand " .. name)
+    local spec = require("tether.core.registry").commands()[name]
+    fn = spec and spec.run
+  end
+  if not fn then
+    require("tether.core.util").warn("unknown subcommand " .. name)
     return
   end
   fn(args, cmd)
@@ -353,11 +390,12 @@ function M.completion(arglead, cmdline)
   local words = vim.split(cmdline, "%s+", { trimempty = true })
   local n = #words - (cmdline:match("%s$") and 0 or 1)
   local candidates
+  local registered = require("tether.core.registry").commands()
   if n <= 1 then
-    candidates = vim.tbl_keys(M.commands)
+    candidates = vim.list_extend(vim.tbl_keys(commands), vim.tbl_keys(registered))
   else
-    local c = M.complete[words[2]]
-    candidates = type(c) == "function" and c() or c or {}
+    local c = complete[words[2]] or (registered[words[2]] or {}).complete
+    candidates = type(c) == "function" and c(vim.list_slice(words, 3)) or c or {}
   end
   table.sort(candidates)
   return vim.tbl_filter(function(c)

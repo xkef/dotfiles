@@ -148,6 +148,14 @@ diffs a turn between its two checkpoints. jj queries for the UI run with
 `--ignore-working-copy`, so tether doesn't add operations to the log. Reviewed
 hunks persist by content hash in `stdpath("state")/tether/reviewed.json`.
 
+## Extend
+
+Extensions build on `require("tether.api")`: they register picker sources,
+cockpit sections, review header lines, agent row fields, and subcommands, and
+subscribe to finished turns with `api.on("stop", fn)`. The built-in
+coordination, spec-driven development, and Attractor features use nothing else.
+`:help tether-api` lists every function.
+
 ## Develop
 
 The plugin grows spec-first with

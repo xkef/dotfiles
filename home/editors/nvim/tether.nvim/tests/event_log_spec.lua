@@ -83,7 +83,7 @@ return {
     function()
       H.setup()
       local got = {}
-      require("tether.events").subscribe(function(ev)
+      require("tether.core.events").subscribe(function(ev)
         table.insert(got, ev)
       end)
       H.trail({ "edit", "pi", "a.lua", "3" })
@@ -100,7 +100,7 @@ return {
     function()
       H.setup()
       local got = {}
-      require("tether.events").subscribe(function(ev)
+      require("tether.core.events").subscribe(function(ev)
         table.insert(got, ev.kind .. ":" .. (ev.agent or ""))
       end)
       H.trail({ "edit", "a", "x.lua" })
@@ -123,9 +123,9 @@ return {
       H.trail({ "turn", "claude", "work" }, { cwd = dir })
       H.trail({ "stop", "claude" }, { cwd = dir })
       H.setup()
-      local list = require("tether.turns").list(dir)
+      local list = require("tether.core.turns").list(dir)
       H.eq(1, #list)
-      H.eq(false, require("tether.turns").running(list[1]))
+      H.eq(false, require("tether.core.turns").running(list[1]))
     end,
   },
 }

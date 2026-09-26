@@ -2,10 +2,12 @@
 -- window to each edit.
 
 local config = require("tether.config")
-local diff = require("tether.diff")
-local turns = require("tether.turns")
-local util = require("tether.util")
-local vcs = require("tether.vcs")
+local diff = require("tether.core.diff")
+local bus = require("tether.core.bus")
+local store = require("tether.core.store")
+local turns = require("tether.core.turns")
+local util = require("tether.core.util")
+local vcs = require("tether.core.vcs")
 
 local M = {}
 
@@ -174,10 +176,9 @@ function M.on_stop(ev, repo)
   if not files then
     return
   end
-  local review = require("tether.review")
-  local nfiles, _, open = review.count(repo.root, files)
-  review.last = { turn = t.id, unreviewed = open }
-  vim.api.nvim_exec_autocmds("User", { pattern = "TetherTurnStop", data = { turn = t, files = files } })
+  local nfiles, _, open = store.count(repo.root, files)
+  store.last = { turn = t.id, unreviewed = open }
+  bus.emit("stop", { turn = t, files = files })
   if not config.options.notify_stop then
     return
   end

@@ -85,7 +85,7 @@ return {
       vim.api.nvim_win_set_cursor(0, { find(H.buf_lines(buf), "@@"), 0 })
       press("a")
       press("q")
-      require("tether.review").reset()
+      require("tether.ui.review").reset()
       buf = tether.review()
       H.contains(H.buf_lines(buf)[2], "1 unreviewed")
       H.contains(H.virt_text(buf), "accepted")
@@ -136,7 +136,7 @@ return {
       vim.api.nvim_win_set_cursor(0, { find(H.buf_lines(buf), "+changed"), 0 })
       H.input("why this?")
       press("c")
-      local c = require("tether.review").comments[1]
+      local c = require("tether.ui.review").comments[1]
       H.eq({ dir .. "/a.txt", 12, "why this?" }, { c.path, c.line, c.text })
     end,
   },

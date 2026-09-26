@@ -54,7 +54,7 @@ local function openspec_repo(extra)
 end
 
 local function cockpit_lines()
-  require("tether.cockpit").render()
+  require("tether.ui.cockpit").render()
   for _, w in ipairs(vim.api.nvim_list_wins()) do
     local b = vim.api.nvim_win_get_buf(w)
     if vim.bo[b].filetype == "tether-cockpit" then
@@ -82,7 +82,7 @@ return {
       require("tether").cockpit()
       local lines = cockpit_lines()
       H.eq(nil, table.concat(lines, "\n"):find("Tasks", 1, true))
-      local names = require("tether.pick").names(require("tether").repo())
+      local names = require("tether.ui.pick").names(require("tether").repo())
       H.eq(false, vim.tbl_contains(names, "specs"))
       H.eq(false, vim.tbl_contains(names, "changes"))
     end,
@@ -90,7 +90,7 @@ return {
   {
     "Requirement with scenarios",
     function()
-      local spec = require("tether.sdd.parse").spec_lines(SPEC)
+      local spec = require("tether.features.sdd.internal.parse").spec_lines(SPEC)
       H.eq(1, #spec.requirements)
       H.eq("Greets", spec.requirements[1].name)
       H.eq(9, spec.requirements[1].line)
@@ -101,11 +101,11 @@ return {
   {
     "Task list",
     function()
-      local tasks = require("tether.sdd.parse").tasks_lines({ "- [x] 1.1 A", "- [ ] 1.2 B" })
+      local tasks = require("tether.features.sdd.internal.parse").tasks_lines({ "- [x] 1.1 A", "- [ ] 1.2 B" })
       H.eq(2, #tasks)
       H.eq({ "1.1", "A", true, 1 }, { tasks[1].id, tasks[1].text, tasks[1].done, tasks[1].line })
       H.eq({ "1.2", false }, { tasks[2].id, tasks[2].done })
-      local wrapped = require("tether.sdd.parse").tasks_lines(TASKS)
+      local wrapped = require("tether.features.sdd.internal.parse").tasks_lines(TASKS)
       H.eq("C that wraps onto a second line", wrapped[3].text)
     end,
   },
@@ -126,7 +126,7 @@ return {
   {
     "Scenario with three hashes",
     function()
-      local diags = require("tether.sdd").check({
+      local diags = require("tether.features.sdd").check({
         "## Requirements",
         "### Requirement: X",
         "The plugin does x.",
@@ -160,7 +160,7 @@ return {
       H.setup({ sdd = { openspec = cli } })
       vim.cmd("edit " .. dir .. "/openspec/specs/demo/spec.md")
       local got
-      require("tether.sdd").diagnose(0, function(d)
+      require("tether.features.sdd").diagnose(0, function(d)
         got = d
       end)
       H.ok(H.wait(function()
@@ -199,7 +199,7 @@ return {
       local dir = openspec_repo()
       H.setup()
       require("tether").cockpit()
-      local cockpit = require("tether.cockpit")
+      local cockpit = require("tether.ui.cockpit")
       local lines, win = cockpit_lines()
       cursor_to(win, lines, "  add-x  ")
       cockpit.act("<Tab>")
@@ -220,7 +220,7 @@ return {
         send = { wezterm = wez },
       })
       require("tether").cockpit()
-      local cockpit = require("tether.cockpit")
+      local cockpit = require("tether.ui.cockpit")
       local lines, win = cockpit_lines()
       cursor_to(win, lines, "  add-x  ")
       cockpit.act("<Tab>")
@@ -245,7 +245,7 @@ return {
       H.contains(H.buf_lines(buf), "Change: add-x · checked 1.2")
       vim.cmd("tabclose")
       require("tether").cockpit()
-      local cockpit = require("tether.cockpit")
+      local cockpit = require("tether.ui.cockpit")
       local lines, win = cockpit_lines()
       cursor_to(win, lines, "  add-x  ")
       cockpit.act("<Tab>")

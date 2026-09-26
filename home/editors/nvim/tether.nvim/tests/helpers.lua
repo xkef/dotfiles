@@ -111,13 +111,13 @@ function H.setup(opts)
     follow = { flash_ms = 0 },
   }
   require("tether").setup(vim.tbl_deep_extend("force", defaults, opts or {}))
-  require("tether.pick").backend = "select"
+  require("tether.ui.pick").backend = "select"
   return require("tether")
 end
 
 ---Reads new events synchronously.
 function H.poll()
-  require("tether.events").read()
+  require("tether.core.events").read()
 end
 
 function H.eq(expected, actual, msg)

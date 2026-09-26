@@ -1,9 +1,9 @@
 -- Turns: agent activity between a `turn` and a `stop` event, bounded by the
 -- VCS checkpoints those events carry.
 
-local diff = require("tether.diff")
-local util = require("tether.util")
-local vcs = require("tether.vcs")
+local diff = require("tether.core.diff")
+local util = require("tether.core.util")
+local vcs = require("tether.core.vcs")
 
 local M = {}
 

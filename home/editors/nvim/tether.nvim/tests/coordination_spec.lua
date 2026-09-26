@@ -2,7 +2,7 @@ local H = require("helpers")
 
 local function claimed_by(path)
   local names = {}
-  for _, c in ipairs(require("tether.coord").claimed(path)) do
+  for _, c in ipairs(require("tether.features.coord").claimed(path)) do
     names[c.agent] = true
   end
   return vim.tbl_keys(names)
@@ -97,7 +97,7 @@ return {
       H.trail({ "turn", "claude" }, { cwd = dir })
       H.trail({ "edit", "claude", "a.lua" }, { cwd = dir })
       H.poll()
-      require("tether.coord").mark_all()
+      require("tether.features.coord").mark_all()
       H.contains(H.virt_text(0), "claude")
     end,
   },
@@ -165,9 +165,9 @@ return {
       H.sh({ "jj", "workspace", "add", "--name", "feat", ws }, { cwd = dir })
       H.setup()
       local repo = require("tether").repo()
-      H.eq("feat", require("tether.coord").workspace_of(repo, { cwd = ws }))
-      H.eq("default", require("tether.coord").workspace_of(repo, { cwd = dir }))
-      H.eq(true, require("tether.vcs").same_repo(repo, ws))
+      H.eq("feat", require("tether.features.coord").workspace_of(repo, { cwd = ws }))
+      H.eq("default", require("tether.features.coord").workspace_of(repo, { cwd = dir }))
+      H.eq(true, require("tether.core.vcs").same_repo(repo, ws))
     end,
   },
   {
@@ -178,7 +178,7 @@ return {
       H.sh({ "jj", "workspace", "add", "--name", "feat", ws }, { cwd = dir })
       H.setup({ agent_state = H.agents({ { "wezterm-5", "pi", "busy", "-", "1", ws, "-" } }) })
       require("tether").cockpit()
-      require("tether.cockpit").render()
+      require("tether.ui.cockpit").render()
       local lines
       for _, w in ipairs(vim.api.nvim_list_wins()) do
         local b = vim.api.nvim_win_get_buf(w)
@@ -231,7 +231,7 @@ return {
     function()
       local dir = H.repo("jj", { ["a.lua"] = { "a" } })
       H.setup()
-      local path = require("tether.coord").add_workspace(require("tether").repo(), "agent2")
+      local path = require("tether.features.coord").add_workspace(require("tether").repo(), "agent2")
       H.eq(dir .. "-agent2", path)
       H.eq(1, vim.fn.isdirectory(path .. "/.jj"))
     end,

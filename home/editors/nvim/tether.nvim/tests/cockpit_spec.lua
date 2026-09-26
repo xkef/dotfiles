@@ -1,7 +1,7 @@
 local H = require("helpers")
 
 local function cockpit_lines()
-  local cockpit = require("tether.cockpit")
+  local cockpit = require("tether.ui.cockpit")
   cockpit.render()
   for _, w in ipairs(vim.api.nvim_list_wins()) do
     local b = vim.api.nvim_win_get_buf(w)
@@ -84,7 +84,7 @@ return {
           vim.api.nvim_win_set_cursor(win, { i, 0 })
         end
       end
-      require("tether.cockpit").act("<CR>")
+      require("tether.ui.cockpit").act("<CR>")
       H.eq(main, vim.api.nvim_get_current_win())
       H.eq(dir .. "/b.lua", vim.api.nvim_buf_get_name(0))
       H.eq(9, vim.fn.line("."))

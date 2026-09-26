@@ -35,7 +35,7 @@ return {
       H.trail({ "turn", "pi", "two" }, { cwd = dir })
       H.trail({ "edit", "pi", "b.txt" }, { cwd = dir })
       H.setup()
-      local turns = require("tether.turns")
+      local turns = require("tether.core.turns")
       local list = turns.list(dir)
       H.eq(2, #list)
       H.eq("two", list[1].summary)
@@ -52,7 +52,7 @@ return {
       local other = H.tmpdir("other")
       H.trail({ "turn", "pi" }, { cwd = other })
       H.setup()
-      H.eq(0, #require("tether.turns").list(dir))
+      H.eq(0, #require("tether.core.turns").list(dir))
     end,
   },
   {
@@ -65,7 +65,7 @@ return {
       H.write(dir .. "/a.txt", { "a", "B", "C" })
       H.setup()
       local repo = require("tether").repo()
-      local turns = require("tether.turns")
+      local turns = require("tether.core.turns")
       local scope = assert(turns.scope(repo, "turn", { snapshot = true }))
       local files = assert(turns.files(repo, scope))
       H.eq(1, #files)

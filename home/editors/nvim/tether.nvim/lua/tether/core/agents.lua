@@ -2,7 +2,7 @@
 -- cwd, and task per line, "-" for empty.
 
 local config = require("tether.config")
-local util = require("tether.util")
+local util = require("tether.core.util")
 
 local M = {}
 
@@ -68,7 +68,7 @@ end
 
 ---Agents in root or in another workspace of the same jj repository.
 function M.in_repo(repo, force)
-  local vcs = require("tether.vcs")
+  local vcs = require("tether.core.vcs")
   return vim.tbl_filter(function(a)
     return vcs.same_repo(repo, a.cwd)
   end, M.list(force))

@@ -1,13 +1,16 @@
 -- The cockpit: one sidebar with sections from registered providers.
 
-local agents = require("tether.agents")
+local agents = require("tether.core.agents")
+local registry = require("tether.core.registry")
+local store = require("tether.core.store")
 local config = require("tether.config")
-local turns = require("tether.turns")
-local util = require("tether.util")
+local turns = require("tether.core.turns")
+local vcs = require("tether.core.vcs")
+local util = require("tether.core.util")
 
 local M = {}
 
-local ns = vim.api.nvim_create_namespace("tether.cockpit")
+local ns = vim.api.nvim_create_namespace("tether.ui.cockpit")
 
 M.KEYS = {
   { "<CR>", "open: focus agent, review file, open trail entry" },
@@ -22,46 +25,14 @@ M.KEYS = {
   { "g?", "this help" },
 }
 
----@class tether.CockpitRow
----@field text string
----@field hl? string
----@field id? string key for expansion state
----@field children? tether.CockpitRow[]
----@field actions? table<string, fun()>
-
----@class tether.Section
----@field name string
----@field order integer
----@field rows fun(repo: tether.Repo): tether.CockpitRow[]
----@field summary? fun(repo: tether.Repo): string?
-
----@type tether.Section[]
-M.sections = {}
-
 local C = { collapsed = {}, expanded = {}, items = {}, cache = {} }
-
-function M.register(section)
-  M.sections = vim.tbl_filter(function(s)
-    return s.name ~= section.name
-  end, M.sections)
-  table.insert(M.sections, section)
-  table.sort(M.sections, function(a, b)
-    return a.order < b.order
-  end)
-end
-
-function M.unregister(name)
-  M.sections = vim.tbl_filter(function(s)
-    return s.name ~= name
-  end, M.sections)
-end
 
 function M.is_open()
   return C.win ~= nil and vim.api.nvim_win_is_valid(C.win)
 end
 
 local function repo()
-  return require("tether").repo()
+  return vcs.current()
 end
 
 function M.render()
@@ -74,7 +45,7 @@ function M.render()
   if not r then
     lines = { "Not in a jj or Git repository." }
   else
-    for _, section in ipairs(M.sections) do
+    for _, section in ipairs(registry.sections()) do
       local ok, rows = pcall(section.rows, r)
       if not ok then
         rows = { { text = "error: " .. tostring(rows), hl = "DiagnosticError" } }
@@ -247,8 +218,6 @@ function M.reset()
     pcall(vim.api.nvim_buf_delete, C.buf, { force = true })
   end
   C = { collapsed = {}, expanded = {}, items = {}, cache = {} }
-  M.agent_fields = {}
-  M.agent_actions = {}
 end
 
 ----------------------------------------------------------------------------
@@ -272,14 +241,9 @@ function M.unreviewed(r, agent)
   if not t or turns.running(t) then
     return nil
   end
-  local _, _, open = require("tether.review").count(r.root, turn_files(r, t))
+  local _, _, open = store.count(r.root, turn_files(r, t))
   return open
 end
-
--- Fields other modules add to agent rows: fn(repo, agent) -> string?
-M.agent_fields = {}
--- Actions other modules add to agent rows: fn(repo, agent) -> { key = fn }
-M.agent_actions = {}
 
 function M.focus_pane(a)
   if not a.pane_id then
@@ -288,139 +252,142 @@ function M.focus_pane(a)
   util.run({ config.options.send.wezterm, "cli", "activate-pane", "--pane-id", a.pane_id })
 end
 
-M.register({
-  name = "Agents",
-  order = 10,
-  summary = function(r)
-    local n = #agents.in_repo(r)
-    return n > 0 and tostring(n) or nil
-  end,
-  rows = function(r)
-    local rows = {}
-    for _, a in ipairs(agents.in_repo(r)) do
-      local parts = { ICONS[a.state] or "·", ("%-7s"):format(a.agent), ("%-7s"):format(a.state) }
-      if a.tool then
-        table.insert(parts, a.tool)
-      end
-      if a.task then
-        table.insert(parts, a.task)
-      end
-      local open = M.unreviewed(r, a.agent)
-      if open and open > 0 then
-        table.insert(parts, "Δ" .. open)
-      end
-      for _, fn in ipairs(M.agent_fields) do
-        local ok, extra = pcall(fn, r, a)
-        if ok and extra then
-          table.insert(parts, extra)
+---Registers the built-in sections. setup() calls it after a registry reset.
+function M.builtin()
+  registry.section({
+    name = "Agents",
+    order = 10,
+    summary = function(r)
+      local n = #agents.in_repo(r)
+      return n > 0 and tostring(n) or nil
+    end,
+    rows = function(r)
+      local rows = {}
+      for _, a in ipairs(agents.in_repo(r)) do
+        local parts = { ICONS[a.state] or "·", ("%-7s"):format(a.agent), ("%-7s"):format(a.state) }
+        if a.tool then
+          table.insert(parts, a.tool)
         end
-      end
-      local actions = {
-        ["<CR>"] = function()
-          M.focus_pane(a)
-        end,
-        r = function()
-          local t = turns.latest(r.root, a.agent)
-          if t then
-            require("tether.review").open(r, "turn", { turn = t })
+        if a.task then
+          table.insert(parts, a.task)
+        end
+        local open = M.unreviewed(r, a.agent)
+        if open and open > 0 then
+          table.insert(parts, "Δ" .. open)
+        end
+        for _, fn in ipairs(registry.agent_fields()) do
+          local ok, extra = pcall(fn, r, a)
+          if ok and extra then
+            table.insert(parts, extra)
           end
-        end,
-        s = function()
-          vim.ui.input({ prompt = "Send to " .. a.agent .. ": " }, function(text)
-            if text and text ~= "" then
-              require("tether.send").deliver(a, text)
-            end
-          end)
-        end,
-      }
-      for _, fn in ipairs(M.agent_actions) do
-        local ok, extra = pcall(fn, r, a)
-        if ok and extra then
-          actions = vim.tbl_extend("force", actions, extra)
         end
+        local actions = {
+          ["<CR>"] = function()
+            M.focus_pane(a)
+          end,
+          r = function()
+            local t = turns.latest(r.root, a.agent)
+            if t then
+              require("tether.ui.review").open(r, "turn", { turn = t })
+            end
+          end,
+          s = function()
+            vim.ui.input({ prompt = "Send to " .. a.agent .. ": " }, function(text)
+              if text and text ~= "" then
+                require("tether.ui.send").deliver(a, text)
+              end
+            end)
+          end,
+        }
+        for _, fn in ipairs(registry.agent_actions()) do
+          local ok, extra = pcall(fn, r, a)
+          if ok and extra then
+            actions = vim.tbl_extend("force", actions, extra)
+          end
+        end
+        table.insert(rows, {
+          text = table.concat(parts, " "),
+          hl = a.state == "waiting" and "TetherWaiting" or nil,
+          agent = a,
+          actions = actions,
+        })
       end
-      table.insert(rows, {
-        text = table.concat(parts, " "),
-        hl = a.state == "waiting" and "TetherWaiting" or nil,
-        agent = a,
-        actions = actions,
-      })
-    end
-    return rows
-  end,
-})
+      return rows
+    end,
+  })
 
-M.register({
-  name = "Turn",
-  order = 20,
-  summary = function(r)
-    local t = turns.latest(r.root)
-    if not t then
-      return nil
-    end
-    return ("#%d %s%s%s"):format(
-      t.id,
-      t.agent,
-      t.summary and (" · " .. t.summary) or "",
-      turns.running(t) and " (running)" or ""
-    )
-  end,
-  rows = function(r)
-    local t = turns.latest(r.root)
-    if not t then
-      return {}
-    end
-    local stamp = 0
-    for _, info in pairs(t.files) do
-      stamp = math.max(stamp, info.epoch)
-    end
-    local key = "stats:" .. t.id .. ":" .. (t.end_ref or stamp)
-    if not C.cache[key] then
-      C.cache[key] = turns.stats(r, t)
-    end
-    local rows = {}
-    for _, s in ipairs(C.cache[key]) do
-      local rel = util.relative(s.path, r.root)
-      table.insert(rows, {
-        text = ("%s  +%d -%d"):format(rel, s.added, s.removed),
-        actions = {
-          ["<CR>"] = function()
-            vim.cmd("wincmd p")
-            require("tether.review").open(r, "turn", { turn = t })
-            require("tether.review").goto_file(rel)
-          end,
-        },
-      })
-    end
-    return rows
-  end,
-})
+  registry.section({
+    name = "Turn",
+    order = 20,
+    summary = function(r)
+      local t = turns.latest(r.root)
+      if not t then
+        return nil
+      end
+      return ("#%d %s%s%s"):format(
+        t.id,
+        t.agent,
+        t.summary and (" · " .. t.summary) or "",
+        turns.running(t) and " (running)" or ""
+      )
+    end,
+    rows = function(r)
+      local t = turns.latest(r.root)
+      if not t then
+        return {}
+      end
+      local stamp = 0
+      for _, info in pairs(t.files) do
+        stamp = math.max(stamp, info.epoch)
+      end
+      local key = "stats:" .. t.id .. ":" .. (t.end_ref or stamp)
+      if not C.cache[key] then
+        C.cache[key] = turns.stats(r, t)
+      end
+      local rows = {}
+      for _, s in ipairs(C.cache[key]) do
+        local rel = util.relative(s.path, r.root)
+        table.insert(rows, {
+          text = ("%s  +%d -%d"):format(rel, s.added, s.removed),
+          actions = {
+            ["<CR>"] = function()
+              vim.cmd("wincmd p")
+              require("tether.ui.review").open(r, "turn", { turn = t })
+              require("tether.ui.review").goto_file(rel)
+            end,
+          },
+        })
+      end
+      return rows
+    end,
+  })
 
-M.register({
-  name = "Trail",
-  order = 40,
-  rows = function(r)
-    local rows = {}
-    for _, ev in ipairs(turns.trail(r.root, config.options.cockpit.trail)) do
-      local rel = util.relative(ev.path, r.root)
-      table.insert(rows, {
-        text = ("%-4s %-7s %s%s %s"):format(
-          ev.kind,
-          ev.agent or "?",
-          rel,
-          ev.line and (":" .. ev.line) or "",
-          util.age(ev.epoch)
-        ),
-        hl = ev.kind == "read" and "TetherMuted" or nil,
-        actions = {
-          ["<CR>"] = function()
-            require("tether.pick").open_file(ev.path, ev.line)
-          end,
-        },
-      })
-    end
-    return rows
-  end,
-})
+  registry.section({
+    name = "Trail",
+    order = 40,
+    rows = function(r)
+      local rows = {}
+      for _, ev in ipairs(turns.trail(r.root, config.options.cockpit.trail)) do
+        local rel = util.relative(ev.path, r.root)
+        table.insert(rows, {
+          text = ("%-4s %-7s %s%s %s"):format(
+            ev.kind,
+            ev.agent or "?",
+            rel,
+            ev.line and (":" .. ev.line) or "",
+            util.age(ev.epoch)
+          ),
+          hl = ev.kind == "read" and "TetherMuted" or nil,
+          actions = {
+            ["<CR>"] = function()
+              require("tether.ui.pick").open_file(ev.path, ev.line)
+            end,
+          },
+        })
+      end
+      return rows
+    end,
+  })
+end
 
 return M

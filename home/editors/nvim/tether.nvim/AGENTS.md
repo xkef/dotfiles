@@ -22,8 +22,17 @@ Refactors and tooling changes without behavior changes skip specs and set
 
 ## Code
 
-- Lua modules live in `lua/tether/`; `plugin/tether.lua` only defines the
-  command.
+- Tiers, enforced by `tests/layering_spec.lua`:
+  - `tether` (facade) and `tether.api` (extension API) are public. Every public
+    function appears in `doc/tether.txt`.
+  - `tether.core.*` holds state and services and requires only core and
+    `tether.config`.
+  - `tether.ui.*` holds views and requires only core, ui, and config.
+  - `tether.features.<name>` exports `attach(api)` and `reset()`, requires only
+    `tether.api` and its own modules, and keeps helpers in `internal/`.
+- A new capability for features goes into `tether.api` first, as a whitelisted
+  forward, never as a direct require of core.
+- `plugin/tether.lua` only defines the command.
 - No required plugin dependencies. snacks.nvim, WezTerm, and the OpenSpec CLI
   are optional and must degrade cleanly.
 - jj calls for UI refreshes use `--ignore-working-copy`.

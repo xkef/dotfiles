@@ -201,22 +201,87 @@ the Tasks section marks those tasks with the agent.
 ==============================================================================
 10. LUA API                                                       *tether-api*
 
+Two modules are public and stable. Everything under `tether.core` and
+`tether.ui` is internal; features under `tether.features` use only
+`tether.api` (a test enforces this).
+
+FACADE                                                         *tether-facade*
+
 `require("tether")`
+  `.setup(opts)`          configure; see |tether-config|
   `.status()`             short statusline text
-  `.review(scope)`        open the review buffer
-  `.follow(on)`           set or toggle follow mode
-  `.send(range)`          context-aware send
-  `.repo()`               `{ root, kind }` of the working directory
+  `.repo()`               `{ root, kind }` of the working directory, or nil
+  `.turns()`              copies of the repository's turns, newest first:
+                        `{ id, agent, session, cwd, summary, started,`
+                        `stopped, start_ref, end_ref, files, reads }`
+  `.cockpit()`            toggle the cockpit
+  `.review(scope, opts)`  open the review buffer; `opts.turn`, `opts.workspace`
+  `.follow(on)`           set follow mode; nil toggles
+  `.pick(source)`         open a picker source; nil lists sources
+  `.send(range)`          context-aware send; `range = { l1, l2 }`
+  `.undo(turn)`           restore the files a turn changed
+  `.checkpoint()`         record a base for the `checkpoint` scope
+  `.comment(text)`        comment on the cursor line
+  `.hunks()`              unreviewed hunks to the quickfix list
+  `.on(name, fn)`         same as `api.on`
+  `.register`             same as `api.register`
+  `.api`                  the extension API below
 
-`require("tether.pick").register(source)` adds a picker source:
-`{ name, desc, items = function(repo) return items end }`, where an item has
-`text` and optionally `file`, `lnum`, `preview = { lines, ft }`, `action`.
+EXTENSION API                                                     *tether.api*
 
-`require("tether.cockpit").register(section)` adds a cockpit section:
-`{ name, order, rows = function(repo) return rows end }`, where a row has
-`text` and optionally `hl`, `actions = { ["<CR>"] = fn, ... }`, `children`.
+`local api = require("tether.api")`. Each group forwards a fixed list of
+functions; nothing loads until first use.
 
-User autocmds: `TetherTurnStop` with `data = { turn, files }`.
+`api.config()`          the resolved options table
+`api.repo()`            `{ root, kind }` of the working directory
+`api.on(name, fn)`      subscribe; returns an unsubscribe function. Names:
+                      `event` every event-log record, `stop` a finished turn
+                      as `{ turn, files }`, `conflict` a coordination
+                      warning as `{ kind, path, agent, holders }`
+`api.emit(name, data)`  notify `api.on` subscribers and the User autocmd
+                      (`TetherTurnStop`, `TetherConflict`)
+
+`api.register`          contribute to the UI:
+  `.source(source)`       picker source `{ name, desc, items(repo), enabled? }`;
+                        an item has `text` and optionally `file`, `lnum`,
+                        `preview = { lines, ft }`, `action`
+  `.section(section)`     cockpit section `{ name, order, rows(repo),`
+                        `summary? }`; a row has `text` and optionally `hl`,
+                        `id`, `children`, `actions = { [key] = fn }`
+  `.review_header(fn)`    `fn(repo, scope, files)` returns extra header lines
+  `.agent_field(fn)`      `fn(repo, agent)` returns text for an agent row
+  `.agent_action(fn)`     `fn(repo, agent)` returns `{ [key] = fn }` for a row
+  `.command(name, spec)`  `:Tether {name}`; `spec = { run(args, cmd),`
+                        `complete? }`
+
+`api.ui`                views features drive:
+  `.open_file(file, lnum)`, `.review(repo, scope, opts)`, `.send(root, text)`,
+  `.copy(text)`, `.refresh()` (redraw the cockpit)
+
+`api.turns`             read-only turn queries (do not modify results):
+  `.list(root, agent?)`, `.latest(root, agent?)`, `.get(id)`, `.running(t)`,
+  `.open()`, `.open_turn(ev)`, `.trail(root, limit?)`,
+  `.scope(repo, name, opts)`, `.files(repo, scope)`, `.stats(repo, t)`
+
+`api.agents`            `.list()`, `.in_root(root)`, `.in_repo(repo)`
+`api.review_state`      `.status_of(root, hash)`, `.count(root, files)`
+`api.vcs`               `.detect(dir)`, `.checkpoint(repo)`,
+                      `.resolve(repo, ref, cwd)`, `.head(repo, snapshot)`,
+                      `.diff(repo, range)`, `.base(repo, range)`,
+                      `.show(repo, commit, rel)`, `.workspace(repo, dir)`,
+                      `.same_repo(repo, dir)`, `.workspace_add(repo, name, path)`
+`api.diff`              `.parse(text)`, `.side(hunk, new)`,
+                      `.first_change(hunk)`, `.compare(old, new)`,
+                      `.hash(path, lines)`
+`api.util`              `.run(cmd, opts, cb)`, `.normalize(path)`,
+                      `.inside(path, dir)`, `.relative(path, root)`,
+                      `.lines(text)`, `.read_lines(path)`, `.content(path)`,
+                      `.notify(msg)`, `.warn(msg)`, `.age(epoch)`,
+                      `.debounce(ms, fn)`, `.state_file(name)`,
+                      `.read_json(path)`, `.write_json(path, data)`
+
+A feature is a module with `attach(api)` and `reset()`; see
+`lua/tether/features/` for the three built-in ones.
 
 ==============================================================================
 11. EVENT LOG                                                  *tether-events*
