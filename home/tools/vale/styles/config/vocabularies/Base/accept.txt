@@ -58,6 +58,7 @@ perf
 proselint
 PRs?
 pushable
+quickfix
 rebase
 repos?
 Revset
@@ -65,6 +66,7 @@ revsets?
 ripgrep
 seatbelt
 starship
+statuslines?
 subcommands?
 taplo
 tinty
@@ -75,6 +77,7 @@ TUI
 tv
 unescaped
 unmanaged
+[Uu]nreviewed
 unpushed
 unspaced
 untracked

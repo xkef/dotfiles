@@ -1,0 +1,369 @@
+*tether.txt*  Review, follow, and steer CLI coding agents
+
+==============================================================================
+CONTENTS                                                     *tether-contents*
+
+  1. Introduction ............................ |tether-intro|
+  2. Setup ................................... |tether-setup|
+  3. Agents .................................. |tether-agents|
+  4. Commands and keys ....................... |tether-commands|
+  5. Review buffer ........................... |tether-review|
+  6. Cockpit ................................. |tether-cockpit|
+  7. Configuration ........................... |tether-config|
+  8. Coordination ............................ |tether-coord|
+  9. Spec-driven development ................. |tether-sdd|
+ 10. Attractor pipelines ..................... |tether-attractor|
+ 11. Lua API ................................. |tether-api|
+ 12. Event log ............................... |tether-events|
+
+==============================================================================
+1. INTRODUCTION                                                 *tether-intro*
+
+tether connects Neovim to command-line coding agents (Claude Code, pi, Codex,
+or any other) that run in their own terminal panes. Agents report activity
+through `agent-trail`; tether tails that log and turns it into:
+
+- turns: what one agent prompt changed, between two VCS checkpoints,
+- a review buffer with per-hunk accept, reject, and comments,
+- follow mode, which moves a window to each edit,
+- send, which pastes comments and selections into the agent's pane,
+- the cockpit, one panel with agents, the current turn, and recent edits.
+
+==============================================================================
+2. SETUP                                                        *tether-setup*
+
+>lua
+    require("tether").setup({})
+<
+lazy.nvim: `{ "xkef/tether.nvim", event = "VeryLazy", opts = {} }`.
+`:Tether` works before setup and runs it with defaults.
+
+Put `bin/agent-trail` on `PATH`. Run `:checkhealth tether` to verify.
+
+==============================================================================
+3. AGENTS                                                      *tether-agents*
+
+Claude Code: register `agent-trail hook claude` as a command hook for
+`PostToolUse` (matcher `Edit|Write|MultiEdit|NotebookEdit|Read`),
+`UserPromptSubmit`, `Stop`, and `SessionEnd`.
+
+pi: link `extras/pi/agent-trail.ts` into `~/.pi/agent/extensions/`.
+
+Anything else calls the writer directly:
+>sh
+    agent-trail turn <agent> [summary]     # a prompt starts a turn
+    agent-trail edit <agent> <path> [line] # after writing a file
+    agent-trail read <agent> <path> [line]
+    agent-trail stop <agent>               # the turn ends
+    agent-trail show <path> [line]         # point the user at code
+    agent-trail claim <agent> <path-or-glob>
+    agent-trail release <agent> [path-or-glob]
+<
+`turn` and `stop` record a checkpoint: the jj operation ID inside a jj
+workspace, or a commit from `git stash create` in a Git work tree. Set
+`AGENT_TRAIL_SESSION` to keep turns of parallel instances of one agent apart.
+
+==============================================================================
+4. COMMANDS AND KEYS                                         *tether-commands*
+
+                                                                     *:Tether*
+:Tether cockpit              Toggle the cockpit.            `<leader>aa`
+:Tether review [scope]       Open the review buffer.        `<leader>ar`
+                             Scopes: `turn` (default, the last turn),
+                             `change` (the working-copy change),
+                             `checkpoint`, `since` (from the last turn's
+                             start to now).
+:Tether follow [on|off]      Toggle follow mode.            `<leader>af`
+:Tether pick [source]        Open a picker source.          `<leader>ap`
+                             Sources: `changed`, `trail`, `turns`, `hunks`,
+                             plus those of extensions.
+:[range]Tether send          Send pending comments, else    `<leader>as`
+                             the selection, else the file.
+:Tether undo                 Restore the files the last     `<leader>au`
+                             turn changed, after confirming.
+:Tether checkpoint           Record a base for the `checkpoint` scope.
+:Tether comment [text]       Comment on the cursor line.
+:Tether hunks                Unreviewed hunks of the last turn to the
+                             quickfix list.
+
+The prefix comes from `prefix` in |tether-config|.
+
+==============================================================================
+5. REVIEW BUFFER                                               *tether-review*
+
+The first line names the scope, agent, and prompt summary; the second counts
+files, hunks, and unreviewed hunks. Keys:
+
+  `a`      accept the hunk under the cursor
+  `A`      accept every hunk of the file
+  `x`      reject the hunk: write its old lines back into the working file
+  `X`      reject the file: remove an added file, revert every hunk otherwise
+  `]h` `[h`  next and previous unreviewed hunk, across files
+  `c`      comment on the line; comments go out with |:Tether| send
+  `<CR>`   side-by-side diff in a new tab (`q` in the base buffer closes it)
+  `gq`     unreviewed hunks to the quickfix list
+  `R`      refresh
+  `q`      close
+  `g?`     list the keys
+
+Accepted and rejected hunks are remembered by content hash for
+`review.keep_days` days, so they stay reviewed across restarts.
+
+==============================================================================
+6. COCKPIT                                                    *tether-cockpit*
+
+Sections appear only when they have rows:
+
+  Agents   live agents in this repository from `agent-state list`, with
+           state, tool, task, and unreviewed hunks of their last turn.
+           `<CR>` focuses the pane, `r` reviews the last turn, `s` sends,
+           `w` adds a jj workspace, `W` reviews the agent's workspace
+           against trunk. Agents in sibling workspaces show too.
+  Turn     files of the last turn with added and removed line counts.
+           `<CR>` opens the review at the file.
+  Trail    recent edits and reads. `<CR>` opens the file at the line.
+
+`<Tab>` collapses a section, `R` refreshes, `q` closes, `g?` lists keys.
+
+==============================================================================
+7. CONFIGURATION                                               *tether-config*
+
+>lua
+    require("tether").setup({
+      log_file = nil,              -- $XDG_STATE_HOME/agents/trail.log
+      agent_state = "agent-state", -- lists live agents
+      prefix = "<leader>a",        -- false: no keys
+      follow = {
+        enabled = false,
+        flash_ms = 800,            -- highlight of changed lines
+        reads = false,             -- follow reads too
+      },
+      review = { keep_days = 30 },
+      send = {
+        wezterm = "wezterm",
+        submit = false,            -- press enter after pasting
+      },
+      cockpit = { side = "right", width = 46, interval = 2000, trail = 8 },
+      coord = { claim_ttl = 7200 }, -- seconds an explicit claim lasts
+      attractor = {
+        curl = "curl",
+        agent = "claude",          -- stage agent: claude, codex, pi, ...
+        agents = {},               -- name = argv with {prompt}, {model},
+                                   -- {stage_dir}
+        poll_ms = 1000,            -- spec run directory scans
+      },
+      sdd = {
+        openspec = "openspec",     -- CLI for spec diagnostics
+        send_template = "Work on task {id} of OpenSpec change {change}: {text}",
+      },
+      notify_stop = true,          -- notify when a turn ends
+    })
+<
+Highlight groups, all linked by default: `TetherFlash`, `TetherDim`,
+`TetherMuted`, `TetherHeader`, `TetherReviewed`, `TetherRejected`,
+`TetherComment`, `TetherClaim`, `TetherWaiting`.
+
+==============================================================================
+8. COORDINATION                                                 *tether-coord*
+
+Claims come from the event log. A file an agent edits during a running turn
+is claimed until the turn stops. `agent-trail claim` reserves a path or glob
+until a `release`, until the agent's pane closes, or until `coord.claim_ttl`
+passes. Buffers of claimed files show the agent at the end of line one.
+
+tether warns, once each, when:
+- an agent edits a file another agent claims,
+- you change a buffer whose file an agent's running turn claims,
+- an agent writes a file whose buffer has unsaved changes.
+
+Each warning also fires `User TetherConflict` with `data.kind` set to
+`agents`, `user`, or `unsaved`.
+
+`:Tether review workspace {name}` reviews a jj workspace against trunk, as
+the cockpit's `W` does. That review is read-only: `x` and `X` refuse, since
+the files live in the other workspace.
+
+==============================================================================
+9. SPEC-DRIVEN DEVELOPMENT                                        *tether-sdd*
+
+Active when an `openspec/` directory exists in the working directory, one of
+its parents, or at the repository root. Without one, nothing below shows.
+
+Cockpit Tasks section: one row per change in progress with done and total
+tasks. `<Tab>` expands it to its tasks, `x` toggles a checkbox in
+`tasks.md`, `<CR>` opens the task, and `s` sends the task to the agent through
+`sdd.send_template`, where `{change}`, `{id}`, and `{text}` expand.
+
+Picker sources: `specs`, `requirements`, `changes`.
+
+Diagnostics: saving a Markdown file under `openspec/` runs
+`openspec validate <item> --strict --json` when the CLI is installed and maps
+its issues to the requirement headings. Without it, built-in checks report a
+requirement without a scenario, a scenario with three hashes, and requirement
+text without SHALL or MUST.
+
+Traceability: a turn that touches `openspec/changes/<id>/` links to that
+change. The review header names it and the tasks the turn checked off, and
+the Tasks section marks those tasks with the agent.
+
+==============================================================================
+10. ATTRACTOR PIPELINES                                     *tether-attractor*
+
+Pipeline files are `.dot` and `.gv` files holding a `digraph` in the
+StrongDM Attractor DOT subset.
+
+Lint runs on read and write: one start and one exit node, reachability
+(retry targets count), no edges into start or out of exit, retry targets,
+goal gates, prompts on LLM stages, fidelity values, and handler types.
+
+`:Tether attractor {sub}`:
+  `outline`               nodes in breadth-first order; `<CR>` jumps
+  `nodes`                 picker source of nodes with prompt preview
+  `lint`                  run the checks now
+  `launch [--workspace]`  run the current pipeline with `tether-run` in the
+                        background and attach it
+  `run {target}`          attach a run directory, or `{url} {pipeline-id}`
+                        of a spec server
+  `answer`                answer the first pending human gate
+  `stop`                  detach the run (the runner keeps going)
+  `review [run-dir]`      read-only review of what the run changed
+
+While a run is attached, node lines show their status as virtual text and
+the cockpit shows a Pipeline section; `<CR>` on a question answers it.
+
+ENGINE                                                        *tether-run*
+
+`bin/tether-run` runs pipelines headless, so a run outlives the editor:
+>sh
+    tether-run start pipeline.dot [--goal G] [--logs DIR] [--workspace]
+    tether-run resume DIR
+    tether-run answer DIR QUESTION-ID KEY-OR-LABEL
+    tether-run status DIR
+<
+It follows the Attractor spec: edge selection by condition, preferred label,
+suggested ids, weight, then name; `max_retries` and failure routing through
+`outcome=fail` edges, `retry_target`, and `fallback_retry_target`; goal gates
+at the exit; a visit limit per node (`max_node_visits`, default 20).
+
+Stages by handler:
+  codergen   runs the agent template with the stage prompt: the node's
+             `prompt` with `$goal` expanded, the previous stage's response,
+             and the stage directory. The agent may write
+             `<stage>/status.json` with `status`, `preferred_label`,
+             `suggested_next_ids`, and `context_updates`; otherwise exit 0
+             is success and anything else a retryable failure.
+  tool       runs `tool_command` in the shell; sets `tool.output`.
+  wait.human writes `questions/<node>-<visit>.json` and waits for
+             `answers/<same>.json`, written by `answer` or `tether-run
+             answer`. `timeout` with `human.default_choice` picks a default.
+  parallel   runs branches one after another up to the fan-in node.
+
+The run directory (default `$XDG_STATE_HOME/tether/runs/<id>`) holds
+`manifest.json`, `checkpoint.json`, `events.jsonl`, `pipeline.dot`, and per
+stage `prompt.md`, `response.md`, and `status.json`. A `config.json` there
+configures agents; `launch` writes the editor's `attractor` options into it.
+
+With `--workspace` the run works in a new jj workspace `run-<id>` (or a Git
+worktree on branch `tether/run/<id>`) next to the repository and commits
+after every stage as `pipeline(<id>): <node> (<status>)`. Each stage also
+emits a `turn` and `stop` event with agent `pipeline`, so tether reviews it
+like any agent turn.
+
+==============================================================================
+11. LUA API                                                       *tether-api*
+
+Two modules are public and stable. Everything under `tether.core` and
+`tether.ui` is internal; features under `tether.features` use only
+`tether.api` (a test enforces this).
+
+FACADE                                                         *tether-facade*
+
+`require("tether")`
+  `.setup(opts)`          configure; see |tether-config|
+  `.status()`             short statusline text
+  `.repo()`               `{ root, kind }` of the working directory, or nil
+  `.turns()`              copies of the repository's turns, newest first:
+                        `{ id, agent, session, cwd, summary, started,`
+                        `stopped, start_ref, end_ref, files, reads }`
+  `.cockpit()`            toggle the cockpit
+  `.review(scope, opts)`  open the review buffer; `opts.turn`, `opts.workspace`
+  `.follow(on)`           set follow mode; nil toggles
+  `.pick(source)`         open a picker source; nil lists sources
+  `.send(range)`          context-aware send; `range = { l1, l2 }`
+  `.undo(turn)`           restore the files a turn changed
+  `.checkpoint()`         record a base for the `checkpoint` scope
+  `.comment(text)`        comment on the cursor line
+  `.hunks()`              unreviewed hunks to the quickfix list
+  `.on(name, fn)`         same as `api.on`
+  `.register`             same as `api.register`
+  `.api`                  the extension API below
+
+EXTENSION API                                                     *tether.api*
+
+`local api = require("tether.api")`. Each group forwards a fixed list of
+functions; nothing loads until first use.
+
+`api.config()`          the resolved options table
+`api.configure(opts)`   apply options without editor setup (headless tools)
+`api.repo()`            `{ root, kind }` of the working directory
+`api.on(name, fn)`      subscribe; returns an unsubscribe function. Names:
+                      `event` every event-log record, `stop` a finished turn
+                      as `{ turn, files }`, `conflict` a coordination
+                      warning as `{ kind, path, agent, holders }`
+`api.emit(name, data)`  notify `api.on` subscribers and the User autocmd
+                      (`TetherTurnStop`, `TetherConflict`)
+
+`api.register`          contribute to the UI:
+  `.source(source)`       picker source `{ name, desc, items(repo), enabled? }`;
+                        an item has `text` and optionally `file`, `lnum`,
+                        `preview = { lines, ft }`, `action`
+  `.section(section)`     cockpit section `{ name, order, rows(repo),`
+                        `summary? }`; a row has `text` and optionally `hl`,
+                        `id`, `children`, `actions = { [key] = fn }`
+  `.review_header(fn)`    `fn(repo, scope, files)` returns extra header lines
+  `.agent_field(fn)`      `fn(repo, agent)` returns text for an agent row
+  `.agent_action(fn)`     `fn(repo, agent)` returns `{ [key] = fn }` for a row
+  `.command(name, spec)`  `:Tether {name}`; `spec = { run(args, cmd),`
+                        `complete? }`
+
+`api.ui`                views features drive:
+  `.open_file(file, lnum)`, `.review(repo, scope, opts)`, `.send(root, text)`,
+  `.copy(text)`, `.refresh()` (redraw the cockpit), `.pick(source)`
+
+`api.turns`             read-only turn queries (do not modify results):
+  `.list(root, agent?)`, `.latest(root, agent?)`, `.get(id)`, `.running(t)`,
+  `.open()`, `.open_turn(ev)`, `.trail(root, limit?)`,
+  `.scope(repo, name, opts)`, `.files(repo, scope)`, `.stats(repo, t)`
+
+`api.agents`            `.list()`, `.in_root(root)`, `.in_repo(repo)`
+`api.review_state`      `.status_of(root, hash)`, `.count(root, files)`
+`api.vcs`               `.detect(dir)`, `.checkpoint(repo)`,
+                      `.resolve(repo, ref, cwd)`, `.head(repo, snapshot)`,
+                      `.diff(repo, range)`, `.base(repo, range)`,
+                      `.show(repo, commit, rel)`, `.workspace(repo, dir)`,
+                      `.same_repo(repo, dir)`, `.workspace_add(repo, name, path)`
+`api.diff`              `.parse(text)`, `.side(hunk, new)`,
+                      `.first_change(hunk)`, `.compare(old, new)`,
+                      `.hash(path, lines)`
+`api.util`              `.run(cmd, opts, cb)`, `.normalize(path)`,
+                      `.inside(path, dir)`, `.relative(path, root)`,
+                      `.lines(text)`, `.read_lines(path)`, `.content(path)`,
+                      `.notify(msg)`, `.warn(msg)`, `.age(epoch)`,
+                      `.debounce(ms, fn)`, `.state_file(name)`,
+                      `.read_json(path)`, `.write_json(path, data)`
+
+A feature is a module with `attach(api)` and `reset()`; see
+`lua/tether/features/` for the three built-in ones.
+
+==============================================================================
+12. EVENT LOG                                                  *tether-events*
+
+`$XDG_STATE_HOME/agents/trail.log` holds one event per line, ten
+tab-separated fields, `-` for empty:
+>
+    epoch  kind  agent  session  pane  cwd  path  line  ref  text
+<
+The writer rotates the file to `trail.log.1` past 256 KiB. tether replays
+both files on start and then follows appends.
+
+ vim:tw=78:ts=8:ft=help:norl:

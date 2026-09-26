@@ -20,6 +20,15 @@ default_target_type = "symbolic"
 "home/editors/helix" = "~/.config/helix"
 "home/editors/nvim/kickstart" = "~/.config/kickstart"
 "home/editors/nvim/knvim" = "~/.local/bin/knvim"
+# tether.nvim, the agent plugin both configs load. It keeps its writer and
+# pi extension, so it moves out as its own repo unchanged.
+"home/editors/nvim/tether.nvim" = "~/.local/share/tether.nvim"
+"home/editors/nvim/tether.nvim/bin/agent-trail" = "~/.local/bin/agent-trail"
+"home/editors/nvim/tether.nvim/bin/tether-run" = "~/.local/bin/tether-run"
+"home/editors/nvim/tether.nvim/extras/pi/agent-trail.ts" = "~/.pi/agent/extensions/agent-trail.ts"
+"home/editors/nvim/agentic" = "~/.config/agentic"
+"home/editors/nvim/lazyvim/lua/theme.lua" = "~/.config/agentic/lua/theme.lua"
+"home/editors/nvim/anvim" = "~/.local/bin/anvim"
 "home/editors/nvim/lazyvim" = "~/.config/lazyvim"
 "home/editors/zed" = "~/.config/zed"
 

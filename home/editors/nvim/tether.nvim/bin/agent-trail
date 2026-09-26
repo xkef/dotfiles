@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+# Appends agent activity to the event log that tether.nvim tails. Claude
+# Code hooks, the pi extension, and agents pointing the user at code all
+# write through this script, so the format lives in one place.
+#
+#   agent-trail turn <agent> [summary...]
+#   agent-trail stop <agent>
+#   agent-trail edit <agent> <path> [line]
+#   agent-trail read <agent> <path> [line]
+#   agent-trail show <path> [line]
+#   agent-trail claim <agent> <path-or-glob>
+#   agent-trail release <agent> [path-or-glob]
+#   agent-trail hook claude    (reads a Claude Code hook payload on stdin)
+#   agent-trail path
+#
+# One record per line, ten tab-separated fields, "-" for empty:
+#
+#   epoch kind agent session pane cwd path line ref text
+#
+# pane comes from WEZTERM_PANE and session from AGENT_TRAIL_SESSION or the
+# hook payload. turn and stop record a VCS checkpoint in ref, jj:<op id> or
+# git:<commit>, so a turn's diff is the range between two checkpoints.
+#
+# The log rotates to trail.log.1 past MAX_BYTES. Short appends are atomic,
+# so concurrent agents need no lock. The script exits 0 on runtime
+# failures: a lost event is never worth blocking an agent over.
+set -uo pipefail
+
+readonly LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
+readonly LOG="$LOG_DIR/trail.log"
+readonly MAX_BYTES=262144
+readonly MAX_TEXT=60
+readonly NONE=-
+
+usage() {
+  sed -n 's/^#   //p' "$0" >&2
+  exit 2
+}
+
+# Replaces tabs and line breaks, which would split or end a record.
+field() {
+  local value=${1//[$'\t\r\n']/ }
+  printf '%s' "${value:-$NONE}"
+}
+
+absolute() {
+  case $1 in
+  /*) printf '%s' "$1" ;;
+  *) printf '%s/%s' "${2:-$PWD}" "${1#./}" ;;
+  esac
+}
+
+# Prints jj:<op id> in a jj workspace, git:<commit> in a Git work tree, and
+# "-" elsewhere. `jj op log` snapshots the working copy first, and `git
+# stash create` records the tree without touching it, so both include
+# edits the agent made through shell commands.
+checkpoint() {
+  local dir=$1 id
+  [ -d "$dir" ] || {
+    printf '%s' "$NONE"
+    return
+  }
+  if id=$(cd "$dir" && jj --color=never op log -n1 --no-graph -T id 2>/dev/null) && [ -n "$id" ]; then
+    printf 'jj:%s' "$id"
+    return
+  fi
+  if (cd "$dir" && git rev-parse --is-inside-work-tree >/dev/null 2>&1); then
+    id=$(cd "$dir" && git stash create 2>/dev/null)
+    [ -n "$id" ] || id=$(cd "$dir" && git rev-parse HEAD 2>/dev/null)
+    if [ -n "$id" ]; then
+      printf 'git:%s' "$id"
+      return
+    fi
+  fi
+  printf '%s' "$NONE"
+}
+
+# emit <kind> <agent> <session> <cwd> <path> <line> <ref> <text>
+emit() {
+  local size record
+  mkdir -p "$LOG_DIR" 2>/dev/null || return 0
+  if [ -f "$LOG" ]; then
+    size=$(wc -c <"$LOG" 2>/dev/null || echo 0)
+    if [ "${size// /}" -gt "$MAX_BYTES" ]; then
+      mv -f "$LOG" "$LOG.1" 2>/dev/null
+    fi
+  fi
+  printf -v record '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' \
+    "$(date +%s)" "$1" "$(field "$2")" "$(field "$3")" "$(field "${WEZTERM_PANE:-}")" \
+    "$(field "$4")" "$(field "$5")" "$(field "$6")" "$(field "$7")" "$(field "${8:0:MAX_TEXT}")"
+  printf '%s\n' "$record" >>"$LOG" 2>/dev/null
+  return 0
+}
+
+hook_claude() {
+  local input event tool session cwd path line prompt
+  command -v jq >/dev/null || return 0
+  input=$(cat)
+  IFS=$'\t' read -r event tool session cwd path line < <(
+    jq -r '[
+      (.hook_event_name // "-"), (.tool_name // "-"), (.session_id // "-"), (.cwd // "-"),
+      (.tool_input.file_path // .tool_input.notebook_path // "-"),
+      ((.tool_input.offset // "-") | tostring)
+    ] | @tsv' <<<"$input" 2>/dev/null
+  ) || return 0
+  [ "$cwd" != "$NONE" ] || cwd=$PWD
+  case $event in
+  UserPromptSubmit)
+    prompt=$(jq -r '.prompt // ""' <<<"$input" 2>/dev/null)
+    emit turn claude "$session" "$cwd" "" "" "$(checkpoint "$cwd")" "$prompt"
+    ;;
+  Stop | SessionEnd)
+    emit stop claude "$session" "$cwd" "" "" "$(checkpoint "$cwd")" ""
+    ;;
+  PostToolUse)
+    [ "$path" != "$NONE" ] || return 0
+    path=$(absolute "$path" "$cwd")
+    case $tool in
+    Edit | Write | MultiEdit | NotebookEdit) emit edit claude "$session" "$cwd" "$path" "" "" "" ;;
+    Read) emit read claude "$session" "$cwd" "$path" "${line/#$NONE/}" "" "" ;;
+    esac
+    ;;
+  esac
+}
+
+session=${AGENT_TRAIL_SESSION:-}
+cmd=${1:-}
+[ $# -gt 0 ] && shift
+
+case $cmd in
+turn)
+  [ $# -ge 1 ] || usage
+  agent=$1
+  shift
+  emit turn "$agent" "$session" "$PWD" "" "" "$(checkpoint "$PWD")" "$*"
+  ;;
+stop)
+  [ $# -ge 1 ] || usage
+  emit stop "$1" "$session" "$PWD" "" "" "$(checkpoint "$PWD")" ""
+  ;;
+edit | read)
+  [ $# -ge 2 ] || usage
+  emit "$cmd" "$1" "$session" "$PWD" "$(absolute "$2")" "${3:-}" "" ""
+  ;;
+show)
+  [ $# -ge 1 ] || usage
+  emit show "" "$session" "$PWD" "$(absolute "$1")" "${2:-}" "" ""
+  ;;
+claim)
+  [ $# -ge 2 ] || usage
+  emit claim "$1" "$session" "$PWD" "$(absolute "$2")" "" "" ""
+  ;;
+release)
+  [ $# -ge 1 ] || usage
+  path=""
+  [ $# -ge 2 ] && path=$(absolute "$2")
+  emit release "$1" "$session" "$PWD" "$path" "" "" ""
+  ;;
+hook)
+  [ "${1:-}" = claude ] || usage
+  hook_claude
+  ;;
+path) printf '%s\n' "$LOG" ;;
+*) usage ;;
+esac
+exit 0

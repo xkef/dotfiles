@@ -1,0 +1,31 @@
+schema: spec-driven
+
+context: |
+  tether.nvim is a Neovim plugin for working next to CLI coding agents
+  (Claude Code, pi, Codex) that run in their own terminal panes.
+  It reviews what an agent changed per turn, follows its edits, sends review
+  comments back, coordinates parallel agents, and supports spec-driven
+  development and StrongDM Attractor pipelines.
+
+  Runtime: Neovim 0.11 or newer, LuaJIT. No required plugin dependencies.
+  Optional integrations: snacks.nvim (picker), WezTerm (`wezterm cli`) for pane targeting, the `openspec` CLI.
+  VCS: Jujutsu first, Git as fallback.
+
+  Agent side: `bin/agent-trail` (bash) appends TSV events to
+  $XDG_STATE_HOME/agents/trail.log, and `extras/pi/agent-trail.ts` feeds it
+  from pi. `agent-state list` (bash, host dotfiles) reports live agent panes.
+
+  Style: Lua modules under lua/tether/, 2-space indent, stylua formatting.
+  UI queries to jj run with --ignore-working-copy. Tests are headless Neovim
+  scripts under tests/, one test per spec scenario, named after it.
+
+rules:
+  proposal:
+    - Name the user-facing keys and commands the change adds.
+  specs:
+    - Write one scenario per observable behavior, testable headless.
+    - Describe behavior without optional plugins first, then the integration.
+  design:
+    - Record which state is derived and which is stored, and where.
+  tasks:
+    - End every task group with the tests that cover it.

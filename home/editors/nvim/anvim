@@ -1,0 +1,4 @@
+#!/bin/sh
+# Launches the agentic nvim config from ~/.config/agentic, built around
+# tether.nvim, with its own data, state, and cache. See :help NVIM_APPNAME
+NVIM_APPNAME=agentic exec nvim "$@"
