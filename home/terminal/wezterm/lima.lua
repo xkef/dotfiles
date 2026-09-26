@@ -44,7 +44,7 @@ function M.info_in_vm(info)
   return ok and vm_path(cwd) ~= nil
 end
 
--- Splits toward direction, "Right" or "Bottom", in the VM for a VM pane
+-- Splits toward direction, "Right" or "Down", in the VM for a VM pane
 -- and with action for any other pane.
 function M.split(action, direction)
   return wezterm.action_callback(function(window, pane)

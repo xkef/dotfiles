@@ -63,7 +63,7 @@ local MAC = {
   {
     key = "d",
     mods = "SUPER|SHIFT",
-    action = lima.split(act.SplitVertical({ domain = "CurrentPaneDomain" }), "Bottom"),
+    action = lima.split(act.SplitVertical({ domain = "CurrentPaneDomain" }), "Down"),
   },
   { key = "Enter", mods = "SUPER|SHIFT", action = act.TogglePaneZoomState },
   { key = "[", mods = "SUPER", action = act.ActivatePaneDirection("Prev") },

@@ -131,7 +131,7 @@ function M.apply(config)
 
     -- @key wezterm :: | / - :: Split right / down
     { key = "|", mods = "LEADER", action = lima.split(act.SplitHorizontal({ domain = "CurrentPaneDomain" }), "Right") },
-    { key = "-", mods = "LEADER", action = lima.split(act.SplitVertical({ domain = "CurrentPaneDomain" }), "Bottom") },
+    { key = "-", mods = "LEADER", action = lima.split(act.SplitVertical({ domain = "CurrentPaneDomain" }), "Down") },
     -- @key wezterm :: z :: Toggle pane zoom
     { key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
     -- @key wezterm :: x :: Close pane
