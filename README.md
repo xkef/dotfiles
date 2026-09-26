@@ -87,6 +87,10 @@ public_key=ssh-ed25519 AAAA...
 Without that file, it reads the same fields from the SSH Key item `git` in the
 1Password `Personal` vault.
 
+A `Work` vault or `~/.config/identity/Work` adds a work identity. An empty
+`~/.config/identity/no-work` turns it off, and the next deploy removes its
+files.
+
 ## Credits
 
 Inspired by [wincent/wincent](https://github.com/wincent/wincent), with

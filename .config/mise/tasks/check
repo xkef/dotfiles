@@ -41,6 +41,27 @@ grep -qxF 'email = "ada@example.com"' "$tmp/home/.config/jj/conf.d/identity.toml
   exit 1
 }
 
+# The no-work marker skips the Work identity and removes its files.
+printf 'name=Ada\nemail=ada@work.example\nnoreply_email=1+ada@users.noreply.github.com\ngithub_login=ada\npublic_key=ssh-ed25519 BBBB\n' \
+  >"$tmp/home/.config/identity/Work"
+render
+test -e "$tmp/home/.config/git/config.work" || {
+  echo "work identity not rendered"
+  exit 1
+}
+touch "$tmp/home/.config/identity/no-work"
+render
+for f in git/config.work git/config.secondary git/config.secondary-remotes jj/conf.d/work.toml; do
+  test ! -e "$tmp/home/.config/$f" || {
+    echo "no-work left $f"
+    exit 1
+  }
+done
+! grep -q BBBB "$tmp/home/.config/git/allowed_signers" || {
+  echo "no-work left the work signer"
+  exit 1
+}
+
 if command -v fish >/dev/null; then
   for f in "$tmp"/home/.config/fish/conf.d/*.fish "$tmp"/home/.config/fish/functions/*.fish; do
     fish --no-execute "$f"

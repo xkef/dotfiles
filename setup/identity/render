@@ -9,6 +9,7 @@
 #
 # Personal is required. Work, which also holds noreply_email and
 # github_login, is optional. Without either source, nothing renders.
+# An empty ~/.config/identity/no-work turns Work off.
 set -euo pipefail
 
 config="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -64,6 +65,14 @@ behavior = "own"
 backend = "ssh"
 key = "$key"
 CONF
+
+# no-work wins over a Work vault that 1Password still shows, and removes
+# the files an earlier render wrote.
+if [[ -f "$config/identity/no-work" ]]; then
+  rm -f "$git_dir/config.work" "$git_dir/config.secondary" \
+    "$git_dir/config.secondary-remotes" "$jj_dir/work.toml"
+  exit 0
+fi
 
 if ! has Work; then
   exit 0
