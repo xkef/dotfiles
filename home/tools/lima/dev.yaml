@@ -31,6 +31,8 @@ mounts:
   - location: ~/work
     writable: true
   - location: ~/dotfiles
+  # Images that Cmd-V pastes into VM panes as paths.
+  - location: ~/.cache/lima-clipboard
   # Agent hooks in the guest report to the host's `mux-agents` picker.
   - location: ~/.local/state/agents
     mountPoint: "{{.Home}}/.local/state/agents"

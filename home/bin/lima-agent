@@ -30,6 +30,7 @@ fi
 # The VM mounts the agent state directory and its transcript directory,
 # which must exist first.
 mkdir -p "${XDG_STATE_HOME:-$HOME/.local/state}/agents/lima-$VM/claude-projects"
+mkdir -p "$HOME/.cache/lima-clipboard"
 
 # Reads the tokens before the VM starts, so a missing token fails fast.
 token=$(op read "$TOKEN_REF")

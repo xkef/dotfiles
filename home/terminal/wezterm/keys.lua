@@ -33,7 +33,7 @@ local SHARED = {
 -- macOS Cmd bindings.
 local MAC = {
   { key = "c", mods = "SUPER", action = act.CopyTo("Clipboard") },
-  { key = "v", mods = "SUPER", action = act.PasteFrom("Clipboard") },
+  { key = "v", mods = "SUPER", action = lima.paste(act.PasteFrom("Clipboard")) },
   { key = "v", mods = "SUPER|SHIFT", action = act.PasteFrom("PrimarySelection") },
   { key = "=", mods = "SUPER", action = act.IncreaseFontSize },
   { key = "+", mods = "SUPER", action = act.IncreaseFontSize },
