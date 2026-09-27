@@ -14,6 +14,10 @@ else
   echo "warning: ~/.claude/skills is a directory; move it and deploy again" >&2
 fi
 
+# pi rewrites settings.json at runtime and has no settings layer, so the
+# keys the repo owns merge into it.
+setup/merge-settings pi home/agents/pi/settings.json ~/.pi/agent/settings.json
+
 setup/identity/render
 
 if [[ "$(uname -s)" == Darwin ]]; then

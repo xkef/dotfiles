@@ -68,7 +68,8 @@ exec limactl shell --workdir "$PWD" "$VM" -- \
         jq --arg dir $PWD ".hasCompletedOnboarding = true | .projects[\$dir].hasTrustDialogAccepted = true" $cfg >$tmp
         and mv $tmp $cfg
     end
-    command claude --dangerously-skip-permissions $argv[2..]
+    command claude --dangerously-skip-permissions \
+        --settings ~/.claude/settings.dotfiles.json $argv[2..]
     set -l rc $status
     agent-state clear
     exit $rc' "$token_file" "$@"

@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Merges the settings keys this repo owns into a settings file an app
+# rewrites at runtime. The repo owns each top-level key its file names and
+# replaces that key whole. The app owns every other key. A key the repo
+# stopped naming since the last merge leaves the target too.
+#
+# Usage: setup/merge-settings <name> <repo file> <target>
+# Example: setup/merge-settings pi home/agents/pi/settings.json ~/.pi/agent/settings.json
+set -euo pipefail
+
+name=$1 repo=$2 target=$3
+owned_dir="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/owned"
+owned="$owned_dir/$name.json"
+
+previous='[]'
+if [[ -f "$owned" ]]; then
+  previous=$(cat "$owned")
+fi
+current='{}'
+if [[ -f "$target" ]]; then
+  current=$(cat "$target")
+fi
+
+mkdir -p "$(dirname "$target")" "$owned_dir"
+tmp=$(mktemp "$target.XXXXXX")
+jq --argjson previous "$previous" --slurpfile repo "$repo" \
+  '($repo[0] | keys) as $keys
+    | delpaths([$previous[] | select(IN($keys[]) | not) | [.]])
+    + $repo[0]' <<<"$current" >"$tmp"
+mv -f "$tmp" "$target"
+jq 'keys' "$repo" >"$owned"

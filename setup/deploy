@@ -18,6 +18,15 @@ if [[ ! -f "$state/local.toml" ]]; then
   printf 'packages = ["dotfiles"]\n' >"$state/local.toml"
 fi
 
+# Dotter no longer manages the agent settings files but keeps their old
+# templates in its cache, and fails every deploy trying to delete the files
+# the agents changed. The files stay, owned by the agents.
+if [[ -f "$state/cache.toml" ]]; then
+  grep -vE '^"home/agents/(claude|pi)/settings\.json" = ".*/settings\.json"$' \
+    "$state/cache.toml" >"$state/cache.toml.new" || true
+  mv -f "$state/cache.toml.new" "$state/cache.toml"
+fi
+
 dotter=$(command -v dotter || true)
 if [[ -z "$dotter" ]]; then
   case "$(uname -s)-$(uname -m)" in

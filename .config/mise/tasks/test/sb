@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#MISE description="Check the profile and settings sb passes to nono"
+set -eu
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-sb.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+
+fail() {
+  echo "$1" >&2
+  exit 1
+}
+
+# A stub nono records its arguments.
+mkdir -p "$tmp/bin" "$tmp/home/.claude"
+cat >"$tmp/bin/nono" <<'EOF'
+#!/bin/sh
+printf '%s\n' "$@" >"$NONO_LOG"
+EOF
+chmod +x "$tmp/bin/nono"
+cp home/agents/claude/settings.json "$tmp/home/.claude/settings.dotfiles.json"
+# PATH holds only the stub and the tools the test needs, so sb skips the
+# real dots-skills and agent-trace.
+PATH="$tmp/bin:$(dirname "$(command -v fish)"):$(dirname "$(command -v jq)"):/usr/bin:/bin"
+export PATH HOME="$tmp/home" NONO_LOG="$tmp/nono.log"
+
+sb() {
+  fish --no-config -c "source home/shell/fish/functions/sb.fish; sb $*" 2>/dev/null
+}
+
+# The repo settings reach Claude Code with its own sandbox off.
+sb claude
+grep -qx claude "$NONO_LOG" || fail "wrong profile: $(cat "$NONO_LOG")"
+settings=$(grep -A1 -x -- --settings "$NONO_LOG" | tail -1)
+[ "$(jq -c .sandbox.enabled <<<"$settings")" = false ] || fail "sandbox not off"
+[ "$(jq -c .hooks.Stop <<<"$settings")" != null ] || fail "repo settings missing"
+echo "sb ok"

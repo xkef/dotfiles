@@ -30,11 +30,13 @@ function sb -d "Run a command inside a nono sandbox"
 
     switch $cmd
         case claude
-            # nono is the OS-level sandbox, and macOS can't nest Seatbelt, so
-            # Claude Code's own bash sandbox stays off. With it on, every Bash
-            # command fails with "sandbox_apply: Operation not permitted".
+            # The repo settings override the keys they name in the settings
+            # file Claude Code rewrites. nono is the OS-level sandbox, and
+            # macOS can't nest Seatbelt, so Claude Code's own bash sandbox
+            # stays off. With it on, every Bash command fails with
+            # "sandbox_apply: Operation not permitted".
             touch $HOME/.claude.json.lock
-            set -a cmd_args '--settings' '{"sandbox":{"enabled":false}}'
+            set -a cmd_args --settings (jq -c '.sandbox.enabled = false' $HOME/.claude/settings.dotfiles.json)
     end
 
     # Not exec: the launchers call this function and clear the agent state

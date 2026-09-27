@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#MISE description="Check that setup/merge-settings keeps the keys the app owns"
+set -eu
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-merge.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+export XDG_STATE_HOME="$tmp/state"
+repo="$tmp/repo.json" target="$tmp/home/settings.json"
+
+fail() {
+  echo "$1" >&2
+  exit 1
+}
+
+expect() {
+  [ "$(jq -cS . "$target")" = "$1" ] || fail "$2: got $(jq -cS . "$target")"
+}
+
+# A missing target gets the repo keys.
+echo '{"theme":"dots","model":"a"}' >"$repo"
+setup/merge-settings pi "$repo" "$target"
+expect '{"model":"a","theme":"dots"}' "first deploy"
+
+# The app writes its own key and changes an owned one. The repo wins the
+# owned key and keeps the app's key.
+echo '{"theme":"dots","model":"b","lastChangelog":"1.0"}' >"$target"
+setup/merge-settings pi "$repo" "$target"
+expect '{"lastChangelog":"1.0","model":"a","theme":"dots"}' "app key"
+
+# A key the repo drops leaves the target too.
+echo '{"theme":"dots"}' >"$repo"
+setup/merge-settings pi "$repo" "$target"
+expect '{"lastChangelog":"1.0","theme":"dots"}' "dropped key"
+echo "merge-settings ok"

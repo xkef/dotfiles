@@ -55,8 +55,8 @@ default_target_type = "symbolic"
 "home/agents/pi/AGENTS.md" = "~/.pi/agent/AGENTS.md"
 "home/agents/pi/extensions" = "~/.pi/agent/extensions"
 
-# The agents write their settings at runtime, and the nono sandbox mounts
-# this repo read-only. A copy keeps those writes local. Dotter then skips
-# the file with a warning until `dotter deploy --force` resets it.
-"home/agents/claude/settings.json" = { target = "~/.claude/settings.json", type = "template" }
-"home/agents/pi/settings.json" = { target = "~/.pi/agent/settings.json", type = "template" }
+# The agents rewrite their own settings files at runtime, so the repo
+# settings go in beside them. The launchers pass the Claude file with
+# --settings, which overrides the keys it names. pi has no such layer, so
+# setup/merge-settings writes the keys the repo owns into pi's file.
+"home/agents/claude/settings.json" = "~/.claude/settings.dotfiles.json"

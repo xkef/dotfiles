@@ -69,7 +69,5 @@ provision:
         case "$mount" in "$HOME"/*) continue ;; esac
         ln -sfn "$mount" "$HOME/$(basename "$mount")"
       done
-      # The Claude Code installer rewrites settings.json, so the deploy runs
-      # after it and replaces the file.
       curl -fsSL https://claude.ai/install.sh | bash -s -- latest
       "$HOME/dotfiles/setup/deploy" --force --noconfirm
