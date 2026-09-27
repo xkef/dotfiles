@@ -1,12 +1,13 @@
 name: CI
 
-# lint runs the portable subset of `mise run lint`. The Neovim check needs
-# installed plugins and stays local. check runs `mise run check`, which
-# deploys the repo into a throwaway HOME and asserts the result, a fast
-# signal on every push. e2e-macos and e2e-arch run the real thing:
-# setup/deploy with its hooks, so packages install, macos-defaults applies,
-# and the resulting shell starts. The package install skips casks and Arch
-# GUI packages under CI.
+# lint runs the portable subset of `mise run lint`. check runs `mise run
+# check`, which deploys the repo into a throwaway HOME and asserts the
+# result, and `mise run test`, the behavior tests, a fast signal on every
+# push. e2e-macos and e2e-arch run the real thing: setup/deploy with its
+# hooks, so packages install, macos-defaults applies, and the resulting
+# interactive shell starts. The package install skips casks and Arch GUI
+# packages under CI, so e2e-macos installs WezTerm itself to load the
+# WezTerm and Neovim configs.
 on:
   pull_request:
   push:
@@ -43,6 +44,8 @@ jobs:
         run: mise run lint-md
       - name: Prose lint
         run: mise run lint-prose
+      - name: Pi extension types
+        run: mise run lint-pi
 
   check:
     strategy:
@@ -63,6 +66,8 @@ jobs:
         run: if [ "$RUNNER_OS" = Linux ]; then sudo apt-get update && sudo apt-get install -y fish; else brew install fish; fi
       - name: Apply into throwaway HOME
         run: mise run check
+      - name: Behavior tests
+        run: mise x jj@0.45.1 -- mise run test
 
   e2e-macos:
     runs-on: macos-latest
@@ -82,10 +87,23 @@ jobs:
       - name: Verify the machine actually works
         run: |
           setup/deploy --dry-run
-          fish -c 'echo fish boots'
+          # -i runs the conf.d files that return early without a prompt.
+          # Any output besides the echo, such as a failing init, fails.
+          out=$(cd / && fish -i -c 'echo fish boots' 2>&1 </dev/null)
+          echo "$out"
+          [ "$out" = "fish boots" ]
           for f in ~/.config/fish/config.fish ~/.config/fish/conf.d/*.fish ~/.config/fish/functions/*.fish; do fish -n "$f"; done
           ~/.local/bin/theme --current
           ~/.local/bin/dots-keys --raw | tail -3
+      - name: Load the Neovim and WezTerm configs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          brew install --cask wezterm@nightly
+          NVIM_APPNAME=lazyvim nvim --headless '+Lazy! restore' +qa
+          mise trust
+          mise run lint-nvim
+          mise run lint-wezterm
 
   e2e-arch:
     runs-on: ubuntu-latest
@@ -111,7 +129,9 @@ jobs:
           sudo -u builder env HOME=/home/builder sh -c '
             set -e
             setup/deploy --dry-run
-            fish -c "echo fish boots"
+            out=$(cd / && fish -i -c "echo fish boots" 2>&1 </dev/null)
+            echo "$out"
+            [ "$out" = "fish boots" ]
             for f in ~/.config/fish/config.fish ~/.config/fish/conf.d/*.fish ~/.config/fish/functions/*.fish; do fish -n "$f"; done
             ~/.local/bin/theme --current
             ~/.local/bin/dots-keys --raw | tail -3
