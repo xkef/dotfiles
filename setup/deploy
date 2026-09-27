@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Deploys the repo into $HOME with dotter. The dotter config and hooks live
-# in .config/dotter, so a plain `dotter deploy` doesn't find them. The local
+# in setup/dotter, so a plain `dotter deploy` doesn't find them. The local
 # config and the cache live in ~/.local/state/dotter, not in the repo,
 # because a Lima VM mounts the same checkout. The first run writes a local
 # config that selects every package, or core and agents inside a VM. Edit
@@ -60,8 +60,8 @@ if [[ -z "$dotter" ]]; then
   chmod +x "$dotter"
 fi
 
-"$dotter" --global-config .config/dotter/global.toml \
-  --pre-deploy .config/dotter/pre_deploy.sh --post-deploy .config/dotter/post_deploy.sh \
+"$dotter" --global-config setup/dotter/global.toml \
+  --pre-deploy setup/dotter/pre_deploy.sh --post-deploy setup/dotter/post_deploy.sh \
   --local-config "$state/local.toml" \
   --cache-file "$state/cache.toml" --cache-directory "$state/cache" \
   "$@" deploy
