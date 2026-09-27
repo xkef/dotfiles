@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
-# CPU and memory for the WezTerm status line, with few forks. Prints
-# "<cpu%>\t<used>/<total>G", and status.lua colors it.
+# CPU and memory for the WezTerm and tmux status lines, with few forks.
+#
+#   mux-sysstat         "<cpu%>\t<used>/<total>G", which status.lua colors
+#   mux-sysstat --tmux  the same, colored with tmux style tags
 set -euo pipefail
+
+# CPU at or above this percentage turns red, as in status.lua.
+readonly CPU_HIGH=80
 
 readonly SMOOTH="${TMPDIR:-/tmp}/mux-sysstat-smooth"
 OS=$(uname)
@@ -45,4 +50,10 @@ used_g=$(awk "BEGIN {printf \"%.1f\", $used / 1073741824}")
 total_g=$(awk "BEGIN {printf \"%.0f\", $total / 1073741824}")
 
 # ── Output ────────────────────────────────────────────
-printf '%d\t%s/%sG\n' "$cpu" "$used_g" "$total_g"
+if [[ "${1:-}" == --tmux ]]; then
+  color=colour8
+  ((cpu >= CPU_HIGH)) && color=colour1
+  printf '#[fg=%s]%d%%  #[fg=colour8]%s/%sG' "$color" "$cpu" "$used_g" "$total_g"
+else
+  printf '%d\t%s/%sG\n' "$cpu" "$used_g" "$total_g"
+fi

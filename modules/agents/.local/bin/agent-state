@@ -8,10 +8,12 @@
 #   agent-state clear
 #   agent-state list
 #
-# Entries sit under $XDG_STATE_HOME/agents, keyed wezterm-<pane id>. The
-# key gives the picker a join back to WezTerm, and an entry whose pane is
-# gone has nothing to join to. Outside WezTerm, the write commands do
-# nothing.
+# Entries sit under $XDG_STATE_HOME/agents, keyed by the pane the agent
+# runs in: wezterm-<pane id>, or tmux-<host>-<pane id> in tmux. The key
+# gives the picker a join back to its multiplexer, and an entry whose pane
+# is gone has nothing to join to. The host keeps tmux panes apart in the
+# directory the Lima VM shares with the host, since every tmux server
+# numbers its panes from 0. Outside both, the write commands do nothing.
 #
 # <pane> holds one tab-separated record: agent, state, tool, epoch, and cwd.
 # The cwd goes last so a path never shifts another field. <pane>.task holds
@@ -25,6 +27,7 @@ set -euo pipefail
 readonly STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
 readonly MAX_TASK_LENGTH=60
 readonly NONE=-
+readonly PANE_KEY='^(wezterm-[0-9]+|tmux-[A-Za-z0-9.-]+-[0-9]+)$'
 
 usage() {
   sed -n 's/^#   //p' "$0" >&2
@@ -50,9 +53,9 @@ write() {
 
 list() {
   local file pane record task
-  for file in "$STATE_DIR"/wezterm-*; do
+  for file in "$STATE_DIR"/wezterm-* "$STATE_DIR"/tmux-*; do
     pane=${file##*/}
-    [[ "$pane" =~ ^wezterm-[0-9]+$ ]] || continue
+    [[ "$pane" =~ $PANE_KEY ]] || continue
     IFS= read -r record <"$file" || continue
     task=$NONE
     if [ -f "$file.task" ]; then
@@ -72,8 +75,13 @@ list)
 *) usage ;;
 esac
 
-pane=wezterm-${WEZTERM_PANE:-}
-[[ "$pane" =~ ^wezterm-[0-9]+$ ]] || exit 0
+# tmux is checked first: it can run inside WezTerm, but not the reverse.
+if [ -n "${TMUX_PANE:-}" ]; then
+  pane=tmux-${HOSTNAME%%.*}-${TMUX_PANE#%}
+else
+  pane=wezterm-${WEZTERM_PANE:-}
+fi
+[[ "$pane" =~ $PANE_KEY ]] || exit 0
 entry="$STATE_DIR/$pane"
 
 case "$cmd" in

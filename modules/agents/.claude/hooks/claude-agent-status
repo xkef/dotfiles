@@ -3,10 +3,10 @@
 # `agent-state` owns the storage and the format.
 #
 # Claude Code runs hooks as child processes, so they inherit WEZTERM_PANE
-# from the pane the agent started in, and `agent-state` finds the pane
-# through it.
+# or TMUX_PANE from the pane the agent started in, and `agent-state` finds
+# the pane through it.
 
-[ -n "$WEZTERM_PANE" ] || exit 0
+[ -n "$WEZTERM_PANE$TMUX_PANE" ] || exit 0
 
 AGENT_STATE="$HOME/.local/bin/agent-state"
 

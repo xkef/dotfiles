@@ -213,10 +213,10 @@ attribution or agent session metadata.
 
 # Agent task summaries
 
-As the main agent in a WezTerm pane, where `WEZTERM_PANE` has a value, run
-`agent-state task "short task summary"` when you start work. Describe the user's
-goal in fewer than 60 characters. Update it when the goal changes. This summary
-appears in the agent picker opened with `leader a`.
+As the main agent in a WezTerm or tmux pane, where `WEZTERM_PANE` or `TMUX_PANE`
+has a value, run `agent-state task "short task summary"` when you start work.
+Describe the user's goal in fewer than 60 characters. Update it when the goal
+changes. This summary appears in the agent picker opened with `leader a`.
 
 # Fix bugs test-first
 

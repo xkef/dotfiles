@@ -45,6 +45,12 @@ export WEZTERM_PANE=7
 
 "$state" set claude sleeping 2>/dev/null && fail "unknown state accepted"
 
+# In tmux the key names the host and the tmux pane, even inside WezTerm.
+TMUX_PANE=%3 HOSTNAME=box.local "$state" set pi busy
+[ "$("$state" list | awk -F '\t' '$1 == "tmux-box-3" { print $3 }')" = busy ] ||
+  fail "tmux pane not keyed by host and pane"
+TMUX_PANE=%3 HOSTNAME=box.local "$state" clear
+
 # clear removes the record and the task.
 "$state" clear
 [ -z "$("$state" list)" ] || fail "clear left an entry"

@@ -11,6 +11,8 @@ brew "atuin"                # shell history search/sync
 brew "fzf"                  # fuzzy finder
 brew "television"           # fuzzy finder with channels
 brew "zoxide"               # smarter cd with frecency
+brew "tmux"                 # terminal multiplexer, where WezTerm isn't
+brew "sesh"                 # tmux session manager
 brew "helix"                # modal text editor (Rust)
 brew "neovim"               # text editor
 brew "tree-sitter-cli"      # parser generator CLI (nvim-treesitter build)

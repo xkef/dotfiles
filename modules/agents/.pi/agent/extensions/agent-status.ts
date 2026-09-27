@@ -1,8 +1,9 @@
 // Maps pi events to agent states for the `mux-agents` picker.
 // `agent-state` owns the storage and the format.
 //
-// pi inherits WEZTERM_PANE from the pane it started in, and `agent-state`
-// finds the pane through it. Without a pane the extension does nothing.
+// pi inherits WEZTERM_PANE or TMUX_PANE from the pane it started in, and
+// `agent-state` finds the pane through it. Without a pane the extension does
+// nothing.
 //
 // pi documents agent_settled and ui_prompt_start/end for status integrations
 // like this one. agent_settled marks the point where pi stops on its own, and
@@ -34,7 +35,7 @@ function publish(state: State, tool: string, cwd: string): void {
 }
 
 export default function (pi: ExtensionAPI) {
-  if (!process.env.WEZTERM_PANE) {
+  if (!process.env.WEZTERM_PANE && !process.env.TMUX_PANE) {
     return;
   }
 

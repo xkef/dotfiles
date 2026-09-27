@@ -64,6 +64,7 @@ Revset
 revsets?
 ripgrep
 seatbelt
+sesh
 starship
 subcommands?
 taplo

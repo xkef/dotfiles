@@ -1,14 +1,18 @@
 #!/usr/bin/env fish
 # dots-keys: keybinding reference. Collects @key annotations from the
-# WezTerm and fish configs and renders them as a markdown table through
-# glow.
+# WezTerm, tmux, and fish configs and renders them as a markdown table
+# through glow. Inside tmux it lists the tmux bindings, elsewhere the
+# WezTerm ones, or tmux's on a machine without WezTerm.
 
 set -l sources
-for f in ~/.config/wezterm/*.lua ~/.config/fish/conf.d/*.fish
+for f in ~/.config/wezterm/*.lua ~/.config/tmux/conf.d/*.conf ~/.config/fish/conf.d/*.fish
     test -f $f; and set -a sources $f
 end
 
-set -l output (awk '
+set -l mux wezterm
+set -q TMUX; and set mux tmux
+
+set -l output (awk -v mux=$mux '
 /^[ \t]*(#|--) @key / {
   line = $0
   sub(/^[ \t]*(#|--) @key /, "", line)
@@ -22,15 +26,17 @@ set -l output (awk '
   }
 }
 END {
+  if (sections[mux] == "") mux = "tmux"
+  title = mux == "tmux" ? "tmux prefix" : "WezTerm leader"
   print "# Keybinding Reference"
   print ""
-  print "**WezTerm leader = Ctrl-Space | nvim leader = Space**"
+  print "**" title " = Ctrl-Space | nvim leader = Space**"
   print ""
-  print "## WezTerm -- Ctrl-Space +"
+  print "## " (mux == "tmux" ? "tmux" : "WezTerm") " -- Ctrl-Space +"
   print ""
   print "| Key        | Action                                     |"
   print "| ---------- | ------------------------------------------ |"
-  n = split(sections["wezterm"], lines, "\n")
+  n = split(sections[mux], lines, "\n")
   for (i = 1; i < n; i++) { split(lines[i], f, "\t"); printf "| %-10s | %-42s |\n", f[1], f[2] }
   print ""
   print "Copy mode: v/V/Ctrl-v select -- y yank -- Y yank-EOL -- o/i prompts -- / or ? search -- q cancel"

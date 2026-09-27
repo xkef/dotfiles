@@ -30,25 +30,26 @@ earlier step installed and has since gone missing.
 
 ## Included tools
 
-| Tool                                                                | What it does                                               |
-| ------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [Fish](https://fishshell.com)                                       | Shell with tv pickers and practical defaults               |
-| [Starship](https://starship.rs)                                     | Minimal, cross-shell prompt                                |
-| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)    | Editor with the LazyVim distro, kickstart as fallback      |
-| [WezTerm](https://wezterm.org)                                      | Terminal and multiplexer, with an agent picker             |
-| [tinty](https://github.com/tinted-theming/tinty)                    | Color themes for the terminal, Neovim, delta, and pi       |
-| [television](https://github.com/alexpasmantier/television)          | Fuzzy finder in the shell and WezTerm pickers              |
-| [atuin](https://atuin.sh)                                           | Searchable shell history with sync                         |
-| [Claude Code](https://claude.com/claude-code), [pi](https://pi.dev) | AI coding agents, always launched in a nono sandbox        |
-| [Jujutsu](https://github.com/jj-vcs/jj)                             | Git-compatible version control, `jj`, with a simpler model |
-| [Lima](https://lima-vm.io)                                          | Linux development VM with the host's dotfiles setup        |
-| [Vale](https://vale.sh)                                             | Prose linter for markdown, Google style plus AI-tell rules |
-| eza, bat, fd, ripgrep, zoxide, yazi, mise                           | Command-line replacements and workflow tools               |
+| Tool                                                                               | What it does                                               |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [Fish](https://fishshell.com)                                                      | Shell with tv pickers and practical defaults               |
+| [Starship](https://starship.rs)                                                    | Minimal, cross-shell prompt                                |
+| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)                   | Editor with the LazyVim distro, kickstart as fallback      |
+| [WezTerm](https://wezterm.org)                                                     | Terminal and multiplexer, with an agent picker             |
+| [tmux](https://github.com/tmux/tmux) + [sesh](https://github.com/joshmedeski/sesh) | Multiplexer outside WezTerm, on the same keys              |
+| [tinty](https://github.com/tinted-theming/tinty)                                   | Color themes for the terminal, Neovim, delta, and pi       |
+| [television](https://github.com/alexpasmantier/television)                         | Fuzzy finder in the shell and WezTerm pickers              |
+| [atuin](https://atuin.sh)                                                          | Searchable shell history with sync                         |
+| [Claude Code](https://claude.com/claude-code), [pi](https://pi.dev)                | AI coding agents, always launched in a nono sandbox        |
+| [Jujutsu](https://github.com/jj-vcs/jj)                                            | Git-compatible version control, `jj`, with a simpler model |
+| [Lima](https://lima-vm.io)                                                         | Linux development VM with the host's dotfiles setup        |
+| [Vale](https://vale.sh)                                                            | Prose linter for markdown, Google style plus AI-tell rules |
+| eza, bat, fd, ripgrep, zoxide, yazi, mise                                          | Command-line replacements and workflow tools               |
 
 ## Keys
 
-Neovim uses `Space` as leader and WezTerm uses `Ctrl-Space`. `leader ?` in
-either lists the bindings.
+Neovim uses `Space` as leader, and WezTerm and tmux use `Ctrl-Space`. `leader ?`
+in any of them lists the bindings.
 
 `dots theme` switches WezTerm, Neovim, delta, and pi together through tinty.
 
