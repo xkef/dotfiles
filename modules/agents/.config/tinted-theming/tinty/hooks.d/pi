@@ -1,14 +1,18 @@
 #!/usr/bin/env fish
-# tinty hook: derives the pi theme from a WezTerm color file.
-#
-# Usage: pi-theme <wezterm-colors.toml>
+# tinty hook: derives the pi theme from the tinted-terminal WezTerm color
+# file for tinty's current_scheme.
 #
 # The tracked pi settings select the theme by name, "dots". pi watches the
 # active custom theme file and reloads it on change, so rewriting it
 # recolors running pi sessions. The file is machine-local and untracked.
 
-set -l colors_file $argv[1]
-test -f "$colors_file"; or exit 1
+set -l data_home ~/.local/share
+set -q XDG_DATA_HOME; and set data_home $XDG_DATA_HOME
+set -l tinty $data_home/tinted-theming/tinty
+
+read -l scheme <$tinty/current_scheme; or exit 0
+set -l colors_file $tinty/repos/tinted-terminal/themes/wezterm/$scheme.toml
+test -f $colors_file; or exit 0
 
 # Blends two hex colors: _blend_hex bg fg weight, with weight from 0 to 100.
 function _blend_hex -a bg_hex fg_hex weight

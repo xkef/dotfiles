@@ -32,7 +32,7 @@ function pi --wraps pi --description "pi.dev coding agent in a nono sandbox"
         npm install -g @earendil-works/pi-coding-agent@$pi_version; or return
     end
 
-    # pi picks its theme by name from a file the tinty pi-theme hook renders.
+    # pi picks its theme by name from a file the tinty pi hook renders.
     # A machine that has never switched themes has no file yet, and pi falls
     # back to its built-in dark theme without reporting it. Render the
     # current theme once.

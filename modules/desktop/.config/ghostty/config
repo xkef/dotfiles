@@ -16,7 +16,7 @@ macos-option-as-alt = left
 
 # ── Theme ─────────────────────────────────────────────
 # Tracked default only. `theme` switches schemes through tinty, whose
-# ghostty-theme hook links the tinted-terminal file for the current scheme
+# ghostty hook links the tinted-terminal file for the current scheme
 # to the untracked ./theme and reloads Ghostty. The optional include loads
 # after this file, so it wins. The path is absolute because this file is a
 # link into the dotfiles repo.

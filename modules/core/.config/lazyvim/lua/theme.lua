@@ -1,7 +1,7 @@
 -- Follows the scheme that `theme` (tinty) applied. A scheme in COLORSCHEMES
 -- uses its theme's own plugin, which colors far more than a Base16 or
 -- Base24 palette can. Every other scheme renders through tinted-nvim.
--- Reloads on FocusGained, and tinty's nvim-theme hook reloads running
+-- Reloads on FocusGained, and the tinty nvim hook reloads running
 -- instances on a switch.
 
 local M = {}
