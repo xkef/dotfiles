@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Check that setup/deploy migrates an old dotter cache"
+#MISE description="Check that setup/deploy migrates an old local config and cache"
 set -eu
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-deploy.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
@@ -10,12 +10,15 @@ fail() {
   exit 1
 }
 
-# A stub dotter keeps the deploy from touching the real HOME.
+# A stub dotter keeps the deploy from touching the real HOME, and a stub
+# systemd-detect-virt reports bare metal.
 mkdir -p "$tmp/bin" "$state"
 printf '#!/bin/sh\nexit 0\n' >"$tmp/bin/dotter"
+printf '#!/bin/sh\nexit 1\n' >"$tmp/bin/systemd-detect-virt"
 chmod +x "$tmp/bin"/*
 export PATH="$tmp/bin:$PATH" XDG_STATE_HOME="$tmp/state"
 
+printf 'packages = ["dotfiles"]\n' >"$state/local.toml"
 cat >"$state/cache.toml" <<'EOF'
 [symlinks]
 "home/agents/claude/settings.json" = "/h/.claude/settings.dotfiles.json"
@@ -26,6 +29,8 @@ cat >"$state/cache.toml" <<'EOF'
 EOF
 setup/deploy
 
+grep -qxF 'packages = ["core", "desktop", "agents"]' "$state/local.toml" ||
+  fail "old package not migrated: $(cat "$state/local.toml")"
 ! grep -q '/settings\.json"$' "$state/cache.toml" || fail "old templates left in the cache"
 grep -q 'settings\.dotfiles\.json' "$state/cache.toml" || fail "migration dropped the new link"
 echo "deploy ok"

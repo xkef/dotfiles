@@ -4,23 +4,29 @@
 set -euo pipefail
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
+# The selected dotter packages. The quotes keep the Handlebars valid bash.
+agents="{{#if dotter.packages.agents}}true{{/if}}"
+desktop="{{#if dotter.packages.desktop}}true{{/if}}"
+
 chmod 700 ~/.ssh
 
-# Claude Code reads the shared skills through ~/.claude/skills. Dotter
-# links files, not directories, so the directory link lives here.
-if [[ -L ~/.claude/skills || ! -e ~/.claude/skills ]]; then
-  ln -sfn ~/.agents/skills ~/.claude/skills
-else
-  echo "warning: ~/.claude/skills is a directory; move it and deploy again" >&2
-fi
+if [[ "$agents" == true ]]; then
+  # Claude Code reads the shared skills through ~/.claude/skills. Dotter
+  # links files, not directories, so the directory link lives here.
+  if [[ -L ~/.claude/skills || ! -e ~/.claude/skills ]]; then
+    ln -sfn ~/.agents/skills ~/.claude/skills
+  else
+    echo "warning: ~/.claude/skills is a directory; move it and deploy again" >&2
+  fi
 
-# pi rewrites settings.json at runtime and has no settings layer, so the
-# keys the repo owns merge into it.
-setup/merge-settings pi home/agents/pi/settings.json ~/.pi/agent/settings.json
+  # pi rewrites settings.json at runtime and has no settings layer, so the
+  # keys the repo owns merge into it.
+  setup/merge-settings pi home/agents/pi/settings.json ~/.pi/agent/settings.json
+fi
 
 setup/identity/render
 
-if [[ "$(uname -s)" == Darwin ]]; then
+if [[ "$desktop" == true && "$(uname -s)" == Darwin ]]; then
   setup/onchange macos-defaults setup/macos-defaults -- setup/macos-defaults
 fi
 

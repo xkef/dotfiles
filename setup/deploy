@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Deploys the repo into $HOME with dotter. The local config and the cache
 # live in ~/.local/state/dotter, not in the repo, because a Lima VM mounts
-# the same checkout. The first run writes a local config that selects the
-# dotfiles package. Arguments pass through to dotter, as in
-# `setup/deploy --dry-run`.
+# the same checkout. The first run writes a local config that selects every
+# package, or core and agents inside a VM. Edit the packages list in
+# ~/.local/state/dotter/local.toml to change the selection. Arguments pass
+# through to dotter, as in `setup/deploy --dry-run`.
 #
 # Homebrew and pacman install dotter from the package lists. The first
 # deploy runs before them, so it downloads a release binary.
@@ -14,13 +15,21 @@ readonly release=https://github.com/SuperCuber/dotter/releases/latest/download
 state="${XDG_STATE_HOME:-$HOME/.local/state}/dotter"
 
 mkdir -p "$state"
+packages='"core", "desktop", "agents"'
+if systemd-detect-virt -q 2>/dev/null; then
+  packages='"core", "agents"'
+fi
 if [[ ! -f "$state/local.toml" ]]; then
-  printf 'packages = ["dotfiles"]\n' >"$state/local.toml"
+  printf 'packages = [%s]\n' "$packages" >"$state/local.toml"
 fi
 
-# Dotter no longer manages the agent settings files but keeps their old
-# templates in its cache, and fails every deploy trying to delete the files
-# the agents changed. The files stay, owned by the agents.
+# Migrates a machine from before the split into packages, and from before
+# the agent settings left dotter. Dotter keeps the old settings templates
+# in its cache and fails every deploy trying to delete the files the
+# agents changed. The files stay, owned by the agents.
+if grep -qxF 'packages = ["dotfiles"]' "$state/local.toml"; then
+  printf 'packages = [%s]\n' "$packages" >"$state/local.toml"
+fi
 if [[ -f "$state/cache.toml" ]]; then
   grep -vE '^"home/agents/(claude|pi)/settings\.json" = ".*/settings\.json"$' \
     "$state/cache.toml" >"$state/cache.toml.new" || true

@@ -5,7 +5,7 @@ set -eu
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/check.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
 mkdir -p "$tmp/home"
-printf 'packages = ["dotfiles"]\n' >"$tmp/local.toml"
+printf 'packages = ["core", "desktop", "agents"]\n' >"$tmp/local.toml"
 
 # Hook paths that don't exist skip the hooks, which install packages and
 # change the login shell.

@@ -21,7 +21,7 @@ echo "$*" >>"$BREW_LOG"
 case "$*" in *Brewfile.casks*) exit 1 ;; esac
 EOF
 chmod +x "$tmp/bin"/*
-export PATH="$tmp/bin:$PATH" BREW_LOG="$tmp/brew.log" CI=false
+export PATH="$tmp/bin:$PATH" BREW_LOG="$tmp/brew.log" CI=false DOTFILES_DESKTOP=true
 export XDG_STATE_HOME="$tmp/state"
 
 status=0

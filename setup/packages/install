@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Installs the packages this repo lists: Homebrew on macOS, pacman and paru
-# on Arch. Other systems install nothing.
+# on Arch. Other systems install nothing. GUI apps install only when
+# DOTFILES_DESKTOP is true, which the deploy sets when it selects the desktop
+# package, and never in CI.
 #
 # An optional package that fails to install doesn't stop the others. The
 # script then exits with EX_TEMPFAIL, so setup/onchange records no stamp
@@ -11,6 +13,10 @@ cd "$(dirname "$0")"
 # sysexits.h EX_TEMPFAIL.
 readonly EX_TEMPFAIL=75
 partial=false
+desktop=false
+if [[ "${DOTFILES_DESKTOP:-}" == true && "${CI:-}" != true ]]; then
+  desktop=true
+fi
 
 # Prints a package list without its comments.
 list() {
@@ -35,7 +41,7 @@ install_darwin() {
 
   # Casks fail soft. Self-updating GUI apps such as zed and 1password hit
   # stale-receipt and quarantine issues that must not block the deploy.
-  if [[ "${CI:-}" != true ]]; then
+  if [[ "$desktop" == true ]]; then
     if ! brew bundle --file=macos/Brewfile.casks; then
       echo "warning: some casks failed; the next deploy retries them" >&2
       partial=true
@@ -83,9 +89,8 @@ ensure_rustup() {
 install_arch() {
   local packages pkg
   mapfile -t packages < <(list arch/main.txt)
-  # GUI apps and the agent sandbox only on bare metal, never in CI, VMs, or
-  # containers.
-  if [[ "${CI:-}" != true ]] && ! systemd-detect-virt -q 2>/dev/null; then
+  # GUI apps and the agent sandbox.
+  if [[ "$desktop" == true ]]; then
     mapfile -t -O "${#packages[@]}" packages < <(list arch/bare-metal.txt)
   fi
 
