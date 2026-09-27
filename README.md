@@ -15,18 +15,12 @@ git clone https://github.com/xkef/dotfiles ~/dotfiles
 ~/dotfiles/setup/deploy
 ```
 
-This installs packages with Homebrew or pacman, links configs into `$HOME`, and
-sets fish as the default shell. `dots apply` deploys again after a change.
+Deploy installs packages with Homebrew or pacman and links the configs into
+`$HOME`. `dots apply` deploys again after a change.
 
-Deploy selects three packages: `core`, `desktop` for GUI apps, and `agents` for
-Claude Code, pi, and the Lima VM that runs them. Each package has a directory
-under `modules/`, laid out like `$HOME`. Inside a VM it selects `core` and
-`agents`. The `packages` list in `~/.local/state/dotter/local.toml` changes the
-selection.
-
-A package that fails to install doesn't stop the deploy, and the next deploy
-retries it. `dots repair` reruns every setup step, which restores what an
-earlier step installed and has since gone missing.
+The configs live in three packages under `modules/`: `core`, `desktop`, and
+`agents`. A VM gets `core` and `agents`. The `packages` list in
+`~/.local/state/dotter/local.toml` overrides the selection.
 
 ## Included tools
 
@@ -55,29 +49,19 @@ in any of them lists the bindings.
 
 ## Agent sandbox
 
-`claude` and `pi` run in a [nono](https://nono.dev) sandbox with the profile of
-the same name. The agent can:
+`claude` and `pi` always start in a [nono](https://nono.dev) sandbox. The
+default profile limits writes to the working directory, the agent's own state,
+and toolchain directories, and keeps the credentials needed to commit and push.
+`sb --strict claude` drops those credentials for untrusted repositories. The
+profiles live in `modules/agents/.config/nono/profiles/`.
 
-- Read and write the current directory, its own config and state, and the
-  toolchain directories.
-- Read this repo, the git and jj config, and the gh config with its GitHub
-  token.
-- Use the macOS keychain and the 1Password SSH agent, so it can sign and push.
-- Reach any host on the network.
-
-`sb --strict claude` runs the `claude-strict` profile for an unfamiliar
-repository. It drops the gh config, the SSH agent, `GH_TOKEN`, and
-`GITHUB_TOKEN`. It keeps the keychain, which holds the Claude Code login, and
-the network.
-
-`lima-agent` runs Claude Code in the Lima VM with permission prompts off. The VM
-mounts `~/code` and `~/work` read-write and this repo read-only. It also gets
-the host's SSH agent and a gh token, so the agent there can change and push any
-repository under `~/code` or `~/work`.
+`lima-agent` runs Claude Code in a Lima VM, with `~/code` and `~/work` mounted
+from the host.
 
 ## Make it yours
 
-Deploy writes the git, jj, and SSH identity from `~/.config/identity/Personal`:
+Deploy writes the git, jj, and SSH identity from `~/.config/identity/Personal`,
+or from the `git` SSH key item in 1Password:
 
 ```sh
 name=Ada Lovelace
@@ -85,12 +69,7 @@ email=ada@example.com
 public_key=ssh-ed25519 AAAA...
 ```
 
-Without that file, it reads the same fields from the SSH Key item `git` in the
-1Password `Personal` vault.
-
-A `Work` vault or `~/.config/identity/Work` adds a work identity. An empty
-`~/.config/identity/no-work` turns it off, and the next deploy removes its
-files.
+`~/.config/identity/Work` adds a work identity.
 
 ## Credits
 
