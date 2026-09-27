@@ -1,13 +1,13 @@
 #!/usr/bin/env fish
-# dots-skills: installs shared agent skills from upstream packs.
+# agent-skills: installs shared agent skills from upstream packs.
 #
 # Holds the install sentinel and the upstream source list. Tracked skills,
 # which dotter links into ~/.agents/skills/, stay untouched.
 #
 # Usage:
-#   dots-skills ensure [agent]    install once, no-op while the sentinel exists
-#   dots-skills refresh [agent]   drop the sentinel and reinstall from upstream
-#   dots-skills                   same as refresh
+#   agent-skills ensure [agent]    install once, no-op while the sentinel exists
+#   agent-skills refresh [agent]   drop the sentinel and reinstall from upstream
+#   agent-skills                   same as refresh
 
 # Upstream skill packs as '<repo> <skill>'. '*' installs every skill.
 set -l upstreams \
@@ -45,7 +45,7 @@ switch "$verb"
     case ''
         set verb refresh
     case '*'
-        echo "usage: dots-skills [ensure|refresh] [agent]" >&2
+        echo "usage: agent-skills [ensure|refresh] [agent]" >&2
         exit 2
 end
 

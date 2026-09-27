@@ -27,7 +27,7 @@ function sb -d "Run a command inside a nono sandbox"
 
     switch $cmd
         case claude pi
-            command -q dots-skills; and dots-skills ensure $cmd
+            command -q agent-skills; and agent-skills ensure $cmd
     end
 
     if not command -q nono

@@ -19,7 +19,7 @@ EOF
 chmod +x "$tmp/bin/nono"
 cp modules/agents/.claude/settings.dotfiles.json "$tmp/home/.claude/settings.dotfiles.json"
 # PATH holds only the stub and the tools the test needs, so sb skips the
-# real dots-skills and agent-trace.
+# real agent-skills and agent-trace.
 PATH="$tmp/bin:$(dirname "$(command -v fish)"):$(dirname "$(command -v jq)"):/usr/bin:/bin"
 export PATH HOME="$tmp/home" NONO_LOG="$tmp/nono.log" GH_TOKEN=secret
 

@@ -1,0 +1,26 @@
+#!/usr/bin/env fish
+# agents: coding agent tools, a thin dispatcher over the agent-* scripts
+# and lima-agent. `dots` manages the dotfiles and knows nothing of these.
+#
+# Usage: agents <command> [args]
+
+switch $argv[1]
+    case skills
+        agent-skills $argv[2..-1]
+    case trace
+        agent-trace $argv[2..-1]
+    case vm
+        lima-agent $argv[2..-1]
+    case help -h --help ''
+        echo "Usage: agents <command>"
+        echo ""
+        echo "Commands:"
+        echo "  skills    Refresh shared agent skills from upstream"
+        echo "  trace     Report failed tool calls in Claude Code sessions"
+        echo "  vm        Run Claude Code in the Lima VM"
+        echo ""
+    case '*'
+        echo "Unknown command: $argv[1]"
+        echo "Run 'agents help' for usage."
+        return 1
+end

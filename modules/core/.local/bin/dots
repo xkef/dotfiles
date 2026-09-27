@@ -30,8 +30,6 @@ switch $argv[1]
         dots apply $argv[2..-1]
     case keys
         dots-keys $argv[2..-1]
-    case skills
-        dots-skills $argv[2..-1]
     case theme
         theme $argv[2..-1]
     case help -h --help ''
@@ -43,7 +41,6 @@ switch $argv[1]
         echo "  apply     Deploy the repo into ~ (setup/deploy)"
         echo "  repair    Rerun every setup step, then deploy"
         echo "  keys      Show keybinding reference"
-        echo "  skills    Refresh shared agent skills from upstream"
         echo "  theme     Switch terminal + editor theme"
         echo ""
     case '*'
