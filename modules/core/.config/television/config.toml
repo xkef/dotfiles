@@ -8,3 +8,72 @@ theme = "default"
 [keybindings]
 ctrl-d = "scroll_preview_half_page_down"
 ctrl-u = "scroll_preview_half_page_up"
+
+# Ctrl-T picks the channel whose command matches the command line. This table
+# replaces tv's defaults, and a trigger for a missing channel makes tv exit,
+# so ./cable ships each channel named here that tv doesn't build in.
+#
+# tv matches a trigger when its words appear in order and tries the triggers
+# in no fixed order, so no two triggers may match the same command line.
+# `jj restore` would also match `jj op restore`, so the fish Ctrl-T binding
+# sends `jj op` to jj-op-log itself.
+[shell_integration.channel_triggers]
+"dirs" = ["cd", "ls", "rmdir", "z", "eza"]
+"files" = [
+  "cat",
+  "less",
+  "head",
+  "tail",
+  "hx",
+  "nvim",
+  "bat",
+  "cp",
+  "mv",
+  "rm",
+  "trash",
+  "touch",
+  "chmod",
+  "chown",
+  "ln",
+  "tar",
+  "ouch",
+]
+"git-diff" = ["git add", "git restore"]
+"git-branch" = [
+  "git checkout",
+  "git switch",
+  "git branch",
+  "git merge",
+  "git rebase",
+  "git pull",
+  "git push",
+]
+"git-log" = ["git log", "git show", "git cherry-pick", "git revert"]
+"jj-log" = [
+  "jj edit",
+  "jj new",
+  "jj show",
+  "jj describe",
+  "jj rebase",
+  "jj abandon",
+  "jj duplicate",
+  "jj evolog",
+]
+"jj-bookmark" = ["jj bookmark"]
+"jj-diff" = [
+  "jj diff",
+  "jj restore",
+  "jj squash",
+  "jj split",
+  "jj absorb",
+  "jj commit",
+]
+"gh-prs" = ["gh pr"]
+"gh-issues" = ["gh issue"]
+"procs" = ["kill"]
+"man-pages" = ["man"]
+"tldr" = ["tldr"]
+"ssh-hosts" = ["ssh"]
+"brew-packages" = ["brew info", "brew upgrade", "brew uninstall"]
+"podman-containers" = ["podman exec", "podman logs", "podman start", "podman stop"]
+"podman-images" = ["podman run"]
