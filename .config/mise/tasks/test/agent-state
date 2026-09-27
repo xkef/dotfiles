@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#MISE description="Check the agent-state transitions, list format, and cleanup"
+set -eu
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-agent-state.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+export XDG_STATE_HOME="$tmp"
+state=home/bin/agent-state
+
+fail() {
+  echo "$1" >&2
+  exit 1
+}
+
+# Prints one field of the pane's list line: 1 pane, 2 agent, 3 state,
+# 4 tool, 5 epoch, 6 cwd, 7 task.
+field() {
+  "$state" list | awk -F '\t' -v pane="wezterm-$1" -v n="$2" '$1 == pane { print $n }'
+}
+
+# Outside WezTerm the write commands do nothing.
+env -u WEZTERM_PANE "$state" set claude busy
+[ -z "$("$state" list)" ] || fail "wrote without a pane"
+
+export WEZTERM_PANE=7
+"$state" set claude busy Bash /work/repo
+[ "$(field 7 3)" = busy ] || fail "state not busy"
+[ "$(field 7 4)" = Bash ] || fail "tool not recorded"
+[ "$(field 7 6)" = /work/repo ] || fail "cwd not recorded"
+[ "$(field 7 7)" = - ] || fail "empty task not shown as -"
+
+# A later state replaces the record, and an empty tool reads as "-".
+"$state" set claude waiting
+[ "$(field 7 3)" = waiting ] || fail "state not replaced"
+[ "$(field 7 4)" = - ] || fail "empty tool not shown as -"
+
+# A tab or newline in a value can't split the record.
+"$state" set claude idle $'a\tb' $'/x\ny'
+[ "$(field 7 4)" = "a b" ] || fail "tab not replaced"
+[ "$(field 7 6)" = "/x y" ] || fail "newline not replaced"
+
+# The task survives state writes and is cut to 60 characters.
+"$state" task "$(printf 'x%.0s' {1..80})"
+"$state" set claude running
+[ "$(field 7 7 | wc -c | tr -d ' ')" = 61 ] || fail "task not cut to 60"
+
+"$state" set claude sleeping 2>/dev/null && fail "unknown state accepted"
+
+# clear removes the record and the task.
+"$state" clear
+[ -z "$("$state" list)" ] || fail "clear left an entry"
+[ -z "$(ls "$tmp/agents")" ] || fail "clear left files: $(ls "$tmp/agents")"
+echo "agent-state ok"
