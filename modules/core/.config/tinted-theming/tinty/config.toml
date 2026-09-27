@@ -4,9 +4,13 @@
 # See https://github.com/tinted-theming/tinty/blob/main/USAGE.md
 default-scheme = "base24-catppuccin-frappe"
 
-# Neovim reads current_scheme on focus. This recolors running instances
-# right away.
-hooks = ["~/.config/tinted-theming/tinty/nvim-theme"]
+# Neovim reads current_scheme on focus. nvim-theme recolors running
+# instances right away. ghostty-theme links the Ghostty file for the scheme
+# from tinted-terminal, which the item below clones, and reloads Ghostty.
+hooks = [
+  "~/.config/tinted-theming/tinty/nvim-theme",
+  "~/.config/tinted-theming/tinty/ghostty-theme",
+]
 
 # WezTerm loads repos/tinted-terminal/themes/wezterm/<scheme>.toml for a
 # scheme without a built-in match, and reloads when the current scheme

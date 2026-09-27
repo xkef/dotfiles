@@ -1,4 +1,5 @@
 cask "wezterm@nightly"               # terminal and multiplexer (no stable release since 2024-02)
+cask "ghostty"                       # terminal, for tmux sessions
 cask "zed"                           # GPU-accelerated code editor
 cask "neovide-app"                   # GUI client for Neovim
 cask "claude"                        # Claude desktop app

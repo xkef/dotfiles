@@ -1,6 +1,7 @@
 xclip               # X11 clipboard utility
 wl-clipboard        # Wayland clipboard utility
 wezterm-nightly-bin # terminal and multiplexer (AUR; the repo package is the 2024-02 release)
+ghostty             # terminal, for tmux sessions
 neovide             # GUI client for Neovim
 1password           # password manager
 1password-cli       # 1Password CLI (op)

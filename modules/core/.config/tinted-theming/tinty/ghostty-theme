@@ -1,0 +1,19 @@
+#!/usr/bin/env fish
+# tinty hook: links the tinted-terminal Ghostty file for tinty's
+# current_scheme to ~/.config/ghostty/theme, which the Ghostty config
+# includes, then reloads running Ghostty instances. Ghostty reloads its
+# config on SIGUSR2. Without a Ghostty config the hook does nothing.
+
+set -l config_dir ~/.config/ghostty
+test -f $config_dir/config; or exit 0
+
+set -l data_home ~/.local/share
+set -q XDG_DATA_HOME; and set data_home $XDG_DATA_HOME
+set -l tinty $data_home/tinted-theming/tinty
+
+read -l scheme <$tinty/current_scheme; or exit 0
+set -l theme_file $tinty/repos/tinted-terminal/themes/ghostty/$scheme
+test -f $theme_file; or exit 0
+
+ln -sf $theme_file $config_dir/theme
+pkill -USR2 -x ghostty; or true
