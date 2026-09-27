@@ -49,6 +49,21 @@ test -e "$tmp/home/.config/git/config.work" || {
   echo "work identity not rendered"
   exit 1
 }
+test -e "$tmp/home/.config/git/config.secondary-remotes" || {
+  echo "github_login rendered no secondary identity"
+  exit 1
+}
+
+# Without github_login, Work renders the same fields as Personal and no
+# secondary identity.
+printf 'name=Ada\nemail=ada@work.example\npublic_key=ssh-ed25519 BBBB\n' \
+  >"$tmp/home/.config/identity/Work"
+render
+test -e "$tmp/home/.config/git/config.work" &&
+  test ! -e "$tmp/home/.config/git/config.secondary-remotes" || {
+  echo "work without github_login rendered wrong"
+  exit 1
+}
 touch "$tmp/home/.config/identity/no-work"
 render
 for f in git/config.work git/config.secondary git/config.secondary-remotes jj/conf.d/work.toml; do

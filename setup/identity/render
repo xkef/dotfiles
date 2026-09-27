@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
-# Writes the git, jj, and SSH identity. Each identity reads its fields from
-# ~/.config/identity/<vault>, one key=value per line, or else from the
-# SSH Key item `git` in that 1Password vault:
+# Writes the git, jj, and SSH identity. Personal and Work take the same
+# fields, from ~/.config/identity/<name>, one key=value per line, or else
+# from the SSH Key item `git` in the 1Password vault of that name:
 #
 #   name=Ada Lovelace
 #   email=ada@example.com
 #   public_key=ssh-ed25519 AAAA...
+#   github_login=ada                              optional
+#   noreply_email=1+ada@users.noreply.github.com  optional
 #
-# Personal is required. Work, which also holds noreply_email and
-# github_login, is optional. Without either source, nothing renders.
-# An empty ~/.config/identity/no-work turns Work off.
+# Personal is the default everywhere, and without it nothing renders. Work
+# is optional and applies inside ~/work. With a github_login, Work also
+# signs commits to that account's GitHub repos, as noreply_email or else
+# email. Personal ignores the two optional fields. An empty
+# ~/.config/identity/no-work turns Work off.
 set -euo pipefail
 
 config="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -21,13 +25,18 @@ has() {
     { command -v op >/dev/null && op vault get "$1" >/dev/null 2>&1; }
 }
 
+# Prints a field, or nothing when it's missing.
+optional() {
+  if [[ -f "$config/identity/$1" ]]; then
+    sed -n "s/^$2=//p" "$config/identity/$1"
+  else
+    op read "op://$1/git/${2/public_key/public key}" 2>/dev/null || true
+  fi
+}
+
 field() {
   local value
-  if [[ -f "$config/identity/$1" ]]; then
-    value=$(sed -n "s/^$2=//p" "$config/identity/$1")
-  else
-    value=$(op read "op://$1/git/${2/public_key/public key}")
-  fi
+  value=$(optional "$1" "$2")
   if [[ -z "$value" ]]; then
     echo "identity: $1 has no $2" >&2
     return 1
@@ -80,11 +89,10 @@ fi
 
 name=$(field Work name)
 email=$(field Work email)
-noreply=$(field Work noreply_email)
-login=$(field Work github_login)
 key=$(field Work public_key)
-
-printf '%s namespaces="git" %s\n' "$noreply" "$key" >>"$git_dir/allowed_signers"
+login=$(optional Work github_login)
+noreply=$(optional Work noreply_email)
+noreply=${noreply:-$email}
 
 # The [includeIf] in the git config activates this inside ~/work/ only.
 cat >"$git_dir/config.work" <<CONF
@@ -111,6 +119,13 @@ CONF
 
 # Secondary GitHub identity for the Work account's repos, matched by
 # remote URL. The SSH agent serves its signing key.
+if [[ -z "$login" ]]; then
+  rm -f "$git_dir/config.secondary" "$git_dir/config.secondary-remotes"
+  exit 0
+fi
+
+printf '%s namespaces="git" %s\n' "$noreply" "$key" >>"$git_dir/allowed_signers"
+
 cat >"$git_dir/config.secondary" <<CONF
 [user]
 	name = $name

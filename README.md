@@ -60,16 +60,21 @@ from the host.
 
 ## Make it yours
 
-Deploy writes the git, jj, and SSH identity from `~/.config/identity/Personal`,
-or from the `git` SSH key item in 1Password:
+Deploy writes the git, jj, and SSH identity. Each identity reads its fields from
+`~/.config/identity/<name>`, or else from the SSH Key item `git` in the
+1Password vault of the same name:
 
 ```sh
 name=Ada Lovelace
 email=ada@example.com
 public_key=ssh-ed25519 AAAA...
+github_login=ada
+noreply_email=1+ada@users.noreply.github.com
 ```
 
-`~/.config/identity/Work` adds a work identity.
+Deploy needs a `Personal` identity, used everywhere. An optional `Work` identity
+takes over inside `~/work`. Given `github_login`, Work also signs commits to
+that GitHub account's repositories, as `noreply_email` when set.
 
 ## Credits
 
