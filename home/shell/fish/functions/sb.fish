@@ -1,15 +1,29 @@
 function sb -d "Run a command inside a nono sandbox"
     # The agent launchers in conf.d/agents.fish route through here, so every
     # interactive launch runs sandboxed. Use `command <tool>` to skip it.
+    # --strict picks the <command>-strict profile and drops the tokens and
+    # the SSH agent from the environment, for an unfamiliar repository.
+    set -l strict false
+    if test "$argv[1]" = --strict
+        set strict true
+        set -e argv[1]
+    end
+
     if test (count $argv) -eq 0
-        echo "Usage: sb <command> [args...]" >&2
+        echo "Usage: sb [--strict] <command> [args...]" >&2
         echo "Runs <command> in a nono sandbox using a matching profile." >&2
-        echo "Known profiles: claude, pi" >&2
+        echo "Known profiles: claude, claude-strict, pi" >&2
         return 1
     end
 
     set -l cmd $argv[1]
     set -l rest $argv[2..-1]
+    set -l profile $cmd
+    set -l env_args
+    if test $strict = true
+        set profile $cmd-strict
+        set env_args -u GH_TOKEN -u GITHUB_TOKEN -u SSH_AUTH_SOCK
+    end
 
     switch $cmd
         case claude pi
@@ -24,7 +38,7 @@ function sb -d "Run a command inside a nono sandbox"
         return $status
     end
 
-    set -l nono_args --silent --log-file /dev/null --allow-cwd --read $DOTFILES_DIR --profile $cmd
+    set -l nono_args --silent --log-file /dev/null --allow-cwd --read $DOTFILES_DIR --profile $profile
     test "$SB_ALLOW_LAUNCH_SERVICES" = 1; and set -a nono_args --allow-launch-services
     set -l cmd_args
 
@@ -41,7 +55,7 @@ function sb -d "Run a command inside a nono sandbox"
 
     # Not exec: the launchers call this function and clear the agent state
     # after the agent exits.
-    nono run $nono_args -- $cmd $cmd_args $rest
+    env $env_args nono run $nono_args -- $cmd $cmd_args $rest
     set -l rc $status
 
     # macOS logs the sandbox denials where only an unsandboxed process may

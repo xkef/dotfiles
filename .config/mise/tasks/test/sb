@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Check the profile and settings sb passes to nono"
+#MISE description="Check the profile, settings, and environment sb passes to nono"
 set -eu
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-sb.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
@@ -9,18 +9,19 @@ fail() {
   exit 1
 }
 
-# A stub nono records its arguments.
+# A stub nono records its arguments and the tokens it received.
 mkdir -p "$tmp/bin" "$tmp/home/.claude"
 cat >"$tmp/bin/nono" <<'EOF'
 #!/bin/sh
 printf '%s\n' "$@" >"$NONO_LOG"
+echo "GH_TOKEN=${GH_TOKEN:-}" >>"$NONO_LOG"
 EOF
 chmod +x "$tmp/bin/nono"
 cp home/agents/claude/settings.json "$tmp/home/.claude/settings.dotfiles.json"
 # PATH holds only the stub and the tools the test needs, so sb skips the
 # real dots-skills and agent-trace.
 PATH="$tmp/bin:$(dirname "$(command -v fish)"):$(dirname "$(command -v jq)"):/usr/bin:/bin"
-export PATH HOME="$tmp/home" NONO_LOG="$tmp/nono.log"
+export PATH HOME="$tmp/home" NONO_LOG="$tmp/nono.log" GH_TOKEN=secret
 
 sb() {
   fish --no-config -c "source home/shell/fish/functions/sb.fish; sb $*" 2>/dev/null
@@ -32,4 +33,9 @@ grep -qx claude "$NONO_LOG" || fail "wrong profile: $(cat "$NONO_LOG")"
 settings=$(grep -A1 -x -- --settings "$NONO_LOG" | tail -1)
 [ "$(jq -c .sandbox.enabled <<<"$settings")" = false ] || fail "sandbox not off"
 [ "$(jq -c .hooks.Stop <<<"$settings")" != null ] || fail "repo settings missing"
+grep -qx GH_TOKEN=secret "$NONO_LOG" || fail "default launch dropped GH_TOKEN"
+
+sb --strict claude
+grep -qx claude-strict "$NONO_LOG" || fail "strict used profile: $(cat "$NONO_LOG")"
+grep -qx GH_TOKEN= "$NONO_LOG" || fail "strict launch kept GH_TOKEN"
 echo "sb ok"

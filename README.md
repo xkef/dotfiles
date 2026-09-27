@@ -51,6 +51,28 @@ either lists the bindings.
 
 `dots theme` switches WezTerm, Neovim, delta, and pi together through tinty.
 
+## Agent sandbox
+
+`claude` and `pi` run in a [nono](https://nono.dev) sandbox with the profile of
+the same name. The agent can:
+
+- Read and write the current directory, its own config and state, and the
+  toolchain directories.
+- Read this repo, the git and jj config, and the gh config with its GitHub
+  token.
+- Use the macOS keychain and the 1Password SSH agent, so it can sign and push.
+- Reach any host on the network.
+
+`sb --strict claude` runs the `claude-strict` profile for an unfamiliar
+repository. It drops the gh config, the SSH agent, `GH_TOKEN`, and
+`GITHUB_TOKEN`. It keeps the keychain, which holds the Claude Code login, and
+the network.
+
+`lima-agent` runs Claude Code in the Lima VM with permission prompts off. The VM
+mounts `~/code` and `~/work` read-write and this repo read-only. It also gets
+the host's SSH agent and a gh token, so the agent there can change and push any
+repository under `~/code` or `~/work`.
+
 ## Make it yours
 
 Deploy writes the git, jj, and SSH identity from `~/.config/identity/Personal`:
