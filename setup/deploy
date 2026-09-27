@@ -38,6 +38,12 @@ if [[ -f "$state/cache.toml" ]]; then
   mv -f "$state/cache.toml.new" "$state/cache.toml"
 fi
 
+# Dotter skips a link whose target already exists. A ~/.npmrc that holds
+# only the cooldown makes way for the linked one.
+if [[ -f ~/.npmrc && ! -L ~/.npmrc && "$(cat ~/.npmrc)" == "min-release-age=7" ]]; then
+  rm ~/.npmrc
+fi
+
 dotter=$(command -v dotter || true)
 if [[ -z "$dotter" ]]; then
   case "$(uname -s)-$(uname -m)" in

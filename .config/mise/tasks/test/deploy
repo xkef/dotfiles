@@ -16,7 +16,11 @@ mkdir -p "$tmp/bin" "$state"
 printf '#!/bin/sh\nexit 0\n' >"$tmp/bin/dotter"
 printf '#!/bin/sh\nexit 1\n' >"$tmp/bin/systemd-detect-virt"
 chmod +x "$tmp/bin"/*
-export PATH="$tmp/bin:$PATH" XDG_STATE_HOME="$tmp/state"
+export PATH="$tmp/bin:$PATH" XDG_STATE_HOME="$tmp/state" HOME="$tmp/home"
+
+# A ~/.npmrc with only the cooldown stands where dotter links the file.
+mkdir -p "$HOME"
+printf 'min-release-age=7\n' >"$HOME/.npmrc"
 
 printf 'packages = ["dotfiles"]\n' >"$state/local.toml"
 cat >"$state/cache.toml" <<'EOF'
@@ -33,4 +37,5 @@ grep -qxF 'packages = ["core", "desktop", "agents"]' "$state/local.toml" ||
   fail "old package not migrated: $(cat "$state/local.toml")"
 ! grep -q '/settings\.json"$' "$state/cache.toml" || fail "old templates left in the cache"
 grep -q 'settings\.dotfiles\.json' "$state/cache.toml" || fail "migration dropped the new link"
+[ ! -e "$HOME/.npmrc" ] || fail "the generated ~/.npmrc blocks the link"
 echo "deploy ok"
