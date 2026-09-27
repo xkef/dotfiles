@@ -37,6 +37,10 @@ depends = [
   "lint-wezterm",
 ]
 
+[tasks.test]
+description = "Run the behavior tests. Needs fish, jq, and jj."
+depends = ["test:*"]
+
 [tasks.lint-sh]
 description = "Check bash scripts with shellcheck"
 run = "shellcheck -S warning {{vars.shell_files}}"

@@ -1,8 +1,16 @@
 #!/usr/bin/env bash
 # Installs the packages this repo lists: Homebrew on macOS, pacman and paru
 # on Arch. Other systems install nothing.
+#
+# An optional package that fails to install doesn't stop the others. The
+# script then exits with EX_TEMPFAIL, so setup/onchange records no stamp
+# and the next deploy retries.
 set -euo pipefail
 cd "$(dirname "$0")"
+
+# sysexits.h EX_TEMPFAIL.
+readonly EX_TEMPFAIL=75
+partial=false
 
 # Prints a package list without its comments.
 list() {
@@ -28,8 +36,10 @@ install_darwin() {
   # Casks fail soft. Self-updating GUI apps such as zed and 1password hit
   # stale-receipt and quarantine issues that must not block the deploy.
   if [[ "${CI:-}" != true ]]; then
-    brew bundle --file=macos/Brewfile.casks ||
-      echo "warning: some casks failed; fix and re-run: brew bundle --file=$PWD/macos/Brewfile.casks" >&2
+    if ! brew bundle --file=macos/Brewfile.casks; then
+      echo "warning: some casks failed; the next deploy retries them" >&2
+      partial=true
+    fi
   fi
 }
 
@@ -84,6 +94,7 @@ install_arch() {
   ensure_rustup
   if ! ensure_paru; then
     echo "warning: paru unusable; installing repo packages via pacman, AUR skipped" >&2
+    partial=true
     for pkg in "${packages[@]}"; do
       sudo pacman -S --needed --noconfirm "$pkg" ||
         echo "warning: $pkg not in official repos (AUR?), skipped" >&2
@@ -98,8 +109,10 @@ install_arch() {
   if ! paru -S "${paru_flags[@]}" "${packages[@]}"; then
     echo "warning: batch install failed; retrying packages individually" >&2
     for pkg in "${packages[@]}"; do
-      paru -S "${paru_flags[@]}" "$pkg" ||
+      if ! paru -S "${paru_flags[@]}" "$pkg"; then
         echo "warning: $pkg failed to install, skipped" >&2
+        partial=true
+      fi
     done
   fi
 }
@@ -116,3 +129,7 @@ Linux)
   fi
   ;;
 esac
+
+if [[ "$partial" == true ]]; then
+  exit "$EX_TEMPFAIL"
+fi
