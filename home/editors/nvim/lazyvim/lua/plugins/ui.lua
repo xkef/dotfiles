@@ -48,7 +48,9 @@ return {
     "nvim-neo-tree/neo-tree.nvim",
     opts = function(_, opts)
       opts.filesystem = opts.filesystem or {}
-      opts.filesystem.group_empty_dirs = true
+      -- group_empty_dirs crashes nui when a second single-child chain
+      -- expands: https://github.com/nvim-neo-tree/neo-tree.nvim/issues/2099
+      opts.filesystem.group_empty_dirs = false
       local fi = opts.filesystem.filtered_items or {}
       fi.visible = true
       fi.hide_dotfiles = false
