@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "paths": {
+      "@earendil-works/*": ["./node_modules/@earendil-works/*"]
+    },
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es2023",
+    "types": ["node"]
+  },
+  "include": ["../../modules/agents/.pi/agent/extensions/*.ts"]
+}

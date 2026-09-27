@@ -1,0 +1,24 @@
+# Each directory under modules/ is one package, laid out like $HOME. Dotter
+# links every file in it to the same path under $HOME, one by one, so apps
+# can add their own files next to them. setup/deploy keeps the package
+# selection, one per machine, in ~/.local/state/dotter/local.toml.
+#
+#   core     shell, editors, version control, and CLI tools
+#   desktop  GUI apps and the WezTerm pickers on the host
+#   agents   Claude Code, pi, their nono sandbox, the agent state, and
+#            the Lima VM that runs Claude Code
+
+[settings]
+default_target_type = "symbolic"
+
+[core.files]
+"modules/core" = "~"
+# Named config.toml in the repo, mise would load the file as a project
+# config for every directory under modules/core.
+"modules/core/.config/mise/global.toml" = "~/.config/mise/config.toml"
+
+[desktop.files]
+"modules/desktop" = "~"
+
+[agents.files]
+"modules/agents" = "~"

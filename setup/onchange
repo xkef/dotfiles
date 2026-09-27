@@ -3,7 +3,7 @@
 # last successful run, and records the new hash only on success.
 #
 # Usage: setup/onchange <name> <file>... -- <command>...
-# Example: setup/onchange vale-sync home/tools/vale/.vale.ini -- vale sync
+# Example: setup/onchange vale-sync modules/core/.config/vale/.vale.ini -- vale sync
 set -euo pipefail
 
 name="$1"

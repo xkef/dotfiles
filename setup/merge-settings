@@ -5,7 +5,7 @@
 # stopped naming since the last merge leaves the target too.
 #
 # Usage: setup/merge-settings <name> <repo file> <target>
-# Example: setup/merge-settings pi home/agents/pi/settings.json ~/.pi/agent/settings.json
+# Example: setup/merge-settings pi ~/.pi/agent/settings.dotfiles.json ~/.pi/agent/settings.json
 set -euo pipefail
 
 name=$1 repo=$2 target=$3

@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# Deploys the repo into $HOME with dotter. The local config and the cache
-# live in ~/.local/state/dotter, not in the repo, because a Lima VM mounts
-# the same checkout. The first run writes a local config that selects every
-# package, or core and agents inside a VM. Edit the packages list in
-# ~/.local/state/dotter/local.toml to change the selection. Arguments pass
-# through to dotter, as in `setup/deploy --dry-run`.
+# Deploys the repo into $HOME with dotter. The dotter config and hooks live
+# in .config/dotter, so a plain `dotter deploy` doesn't find them. The local
+# config and the cache live in ~/.local/state/dotter, not in the repo,
+# because a Lima VM mounts the same checkout. The first run writes a local
+# config that selects every package, or core and agents inside a VM. Edit
+# the packages list in ~/.local/state/dotter/local.toml to change the
+# selection. Arguments pass through to dotter, as in
+# `setup/deploy --dry-run`.
 #
 # Homebrew and pacman install dotter from the package lists. The first
 # deploy runs before them, so it downloads a pinned release.
@@ -52,6 +54,8 @@ if [[ -z "$dotter" ]]; then
   chmod +x "$dotter"
 fi
 
-"$dotter" --local-config "$state/local.toml" \
+"$dotter" --global-config .config/dotter/global.toml \
+  --pre-deploy .config/dotter/pre_deploy.sh --post-deploy .config/dotter/post_deploy.sh \
+  --local-config "$state/local.toml" \
   --cache-file "$state/cache.toml" --cache-directory "$state/cache" \
   "$@" deploy

@@ -4,7 +4,7 @@ set -eu
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-agent-state.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
 export XDG_STATE_HOME="$tmp"
-state=home/bin/agent-state
+state=modules/agents/.local/bin/agent-state
 
 fail() {
   echo "$1" >&2

@@ -9,11 +9,11 @@ Thumbs.db
 # Build artifacts
 /.rumdl_cache/
 
-# vale sync downloads style packages next to the tracked vocabulary
-/home/tools/vale/styles/*
-!/home/tools/vale/styles/config/
-/home/tools/vale/styles/config/*
-!/home/tools/vale/styles/config/vocabularies/
+# `mise run vale-sync` downloads style packages next to the vocabulary link
+/.config/vale/styles/*
+!/.config/vale/styles/config/
+/.config/vale/styles/config/*
+!/.config/vale/styles/config/vocabularies
 
 # Type-check dependencies for the pi extensions
-/home/agents/pi/node_modules/
+/.config/pi/node_modules/

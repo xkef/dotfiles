@@ -19,9 +19,10 @@ This installs packages with Homebrew or pacman, links configs into `$HOME`, and
 sets fish as the default shell. `dots apply` deploys again after a change.
 
 Deploy selects three packages: `core`, `desktop` for GUI apps, and `agents` for
-Claude Code, pi, and the Lima VM that runs them. Inside a VM it selects `core`
-and `agents`. The `packages` list in `~/.local/state/dotter/local.toml` changes
-the selection.
+Claude Code, pi, and the Lima VM that runs them. Each package has a directory
+under `modules/`, laid out like `$HOME`. Inside a VM it selects `core` and
+`agents`. The `packages` list in `~/.local/state/dotter/local.toml` changes the
+selection.
 
 A package that fails to install doesn't stop the deploy, and the next deploy
 retries it. `dots repair` reruns every setup step, which restores what an

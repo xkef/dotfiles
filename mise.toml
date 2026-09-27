@@ -13,12 +13,12 @@ shell_files = "$(shfmt -f .)"
 # Scripts without a .fish extension count through their shebang.
 fish_files = """\
   $(git ls-files '*.fish') \
-  $(git grep -l '^#!/usr/bin/env fish' -- home)"""
+  $(git grep -l '^#!/usr/bin/env fish' -- modules)"""
 
 [tasks.fmt]
 description = "Format all dotfiles"
 run = [
-  "stylua home/editors/nvim/ home/terminal/wezterm/",
+  "stylua modules/",
   "shfmt -w {{vars.shell_files}}",
   "fish_indent -w {{vars.fish_files}}",
   "dprint fmt --config .config/dprint.json",
@@ -60,7 +60,7 @@ run = "dprint check --config .config/dprint.json"
 
 [tasks.lint-pi]
 description = "Type-check the pi extensions. Needs node."
-dir = "home/agents/pi"
+dir = ".config/pi"
 run = "npm ci --no-audit --no-fund && npx tsc"
 
 [tasks.lint-md]
@@ -69,7 +69,7 @@ run = "rumdl check"
 
 [tasks.vale-sync]
 description = "Download the vale style packages"
-run = "vale --no-global --config home/tools/vale/.vale.ini sync"
+run = "vale --no-global --config .config/vale/.vale.ini sync"
 
 # WezTerm exits 0 on a config error and falls back to its defaults, so the
 # task fails on the logged ERROR instead.
@@ -79,7 +79,7 @@ run = """
 export XDG_CONFIG_HOME=$(mktemp -d "${TMPDIR:-/tmp}/wezterm.XXXXXX")
 export WEZTERM_CONFIG_FILE=$XDG_CONFIG_HOME/wezterm/wezterm.lua
 mkdir "$XDG_CONFIG_HOME/wezterm"
-cp home/terminal/wezterm/*.lua "$XDG_CONFIG_HOME/wezterm"
+cp modules/desktop/.config/wezterm/*.lua "$XDG_CONFIG_HOME/wezterm"
 ! wezterm ls-fonts 2>&1 >/dev/null | grep ERROR
 """
 
