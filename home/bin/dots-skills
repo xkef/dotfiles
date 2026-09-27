@@ -17,10 +17,13 @@ set -l upstreams \
     'Cocoon-AI/architecture-diagram-generator architecture-diagram' \
     'blader/humanizer humanizer'
 
-# The sentinel name carries a digest of the list above, so editing the list
-# reinstalls on the next launch without a manual version bump.
+# The skills CLI version the install was tested with.
+set -l skills_version 1.7.0
+
+# The sentinel name carries a digest of the list and the version above, so
+# editing either reinstalls on the next launch.
 set -l sentinel_dir "$HOME/.cache/dotfiles"
-set -l digest (string join \n $upstreams | shasum -a 256 | string sub -l 12)
+set -l digest (string join \n $skills_version $upstreams | shasum -a 256 | string sub -l 12)
 set -l sentinel "$sentinel_dir/skills.shared.$digest.installed"
 
 # The skills CLI installs into ~/.agents/skills through its claude-code
@@ -56,7 +59,7 @@ command -q npx; or exit 0
 printf '\033[33m(installing shared skills for %s...)\033[0m\n' $agent >&2
 for entry in $upstreams
     set -l parts (string split ' ' -- $entry)
-    npx --yes skills@latest add $parts[1] \
+    npx --yes skills@$skills_version add $parts[1] \
         --global --agent $install_target --skill $parts[2] -y
     or exit $status
 end

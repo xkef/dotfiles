@@ -15,10 +15,10 @@
 # ports to localhost and the host's SSH agent into the guest.
 minimumLimaVersion: 2.0.0
 
-# Weekly build from https://github.com/xkef/archlinux-lima. Lima caches it
-# by URL, so `limactl prune` fetches a newer one.
+# Weekly build from https://github.com/xkef/archlinux-lima, pinned to the
+# release the setup was last tested with. Bump the tag to update.
 images:
-  - location: https://github.com/xkef/archlinux-lima/releases/latest/download/archlinux-aarch64.qcow2
+  - location: https://github.com/xkef/archlinux-lima/releases/download/v20260925-2/archlinux-aarch64.qcow2
     arch: aarch64
 
 vmType: vz

@@ -7,11 +7,11 @@
 # through to dotter, as in `setup/deploy --dry-run`.
 #
 # Homebrew and pacman install dotter from the package lists. The first
-# deploy runs before them, so it downloads a release binary.
+# deploy runs before them, so it downloads a pinned release.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-readonly release=https://github.com/SuperCuber/dotter/releases/latest/download
+readonly release=https://github.com/SuperCuber/dotter/releases/download/v0.13.5
 state="${XDG_STATE_HOME:-$HOME/.local/state}/dotter"
 
 mkdir -p "$state"
