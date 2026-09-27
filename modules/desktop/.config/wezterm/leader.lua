@@ -8,6 +8,9 @@ local lima = require("lima")
 local picker = require("picker")
 local workspaces = require("workspaces")
 
+-- The agents package adds its bindings through agents.lua, when deployed.
+local agents = package.searchpath("agents", package.path) and require("agents")
+
 local M = {}
 
 -- Repeatable bindings stay active for this long after each press without
@@ -74,7 +77,6 @@ end
 local PICKERS = {
   workspaces = picker.open({ "mux-workspaces" }),
   tabs = picker.open({ "mux-tabs" }),
-  agents = picker.open({ "mux-agents" }),
   urls = picker.open({ "mux-urls" }),
 }
 
@@ -87,18 +89,13 @@ local TOOLS = {
   keys = overlay({ "dots-keys" }),
 }
 
-local LIMA_AGENT = act.SpawnCommandInNewTab({ args = { "lima-agent" } })
-
 -- Command palette entries for the pickers and tools, so Cmd-Shift-P finds
 -- them by name.
 local PALETTE = {
   { brief = "Workspaces", icon = "cod_window", action = PICKERS.workspaces },
   { brief = "Tabs in every workspace", icon = "cod_list_flat", action = PICKERS.tabs },
-  { brief = "Agents", icon = "cod_hubot", action = PICKERS.agents },
   { brief = "Open URL from scrollback", icon = "cod_link_external", action = PICKERS.urls },
   { brief = "Swap pane", icon = "cod_arrow_swap", action = act.PaneSelect({ mode = "SwapWithActive" }) },
-  { brief = "Lima VM shell in a new tab", icon = "cod_vm", action = lima.shell_tab },
-  { brief = "Claude Code in the Lima VM", icon = "cod_hubot", action = LIMA_AGENT },
   { brief = "Files (yazi)", icon = "cod_files", action = TOOLS.yazi },
   { brief = "Lazygit", icon = "cod_source_control", action = TOOLS.lazygit },
   { brief = "jj UI (jjui)", icon = "cod_source_control", action = TOOLS.jjui },
@@ -143,8 +140,6 @@ function M.apply(config)
 
     -- @key wezterm :: c :: New tab
     { key = "c", mods = "LEADER", action = lima.tab(act.SpawnTab("CurrentPaneDomain")) },
-    -- @key wezterm :: v :: New tab in the Lima VM
-    { key = "v", mods = "LEADER", action = lima.shell_tab },
     -- @key wezterm :: n / p :: Next / previous tab (repeatable)
     repeatable("n", act.ActivateTabRelative(1)),
     repeatable("p", act.ActivateTabRelative(-1)),
@@ -179,10 +174,6 @@ function M.apply(config)
     { key = "s", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
     -- @key wezterm :: w :: Switch tab, all workspaces
     { key = "w", mods = "LEADER", action = PICKERS.tabs },
-    -- @key wezterm :: a :: Agent picker (all workspaces)
-    { key = "a", mods = "LEADER", action = PICKERS.agents },
-    -- @key wezterm :: A :: Claude Code in the Lima VM, new tab
-    { key = "A", mods = "LEADER", action = LIMA_AGENT },
 
     -- @key wezterm :: Enter :: Copy mode
     { key = "Enter", mods = "LEADER", action = act.ActivateCopyMode },
@@ -196,6 +187,15 @@ function M.apply(config)
     -- @key wezterm :: u :: Open URL from scrollback (tv)
     { key = "u", mods = "LEADER", action = PICKERS.urls },
   }
+
+  if agents then
+    for _, binding in ipairs(agents.keys) do
+      table.insert(keys, binding)
+    end
+    for _, entry in ipairs(agents.palette) do
+      table.insert(PALETTE, entry)
+    end
+  end
 
   config.keys = config.keys or {}
   for _, binding in ipairs(keys) do

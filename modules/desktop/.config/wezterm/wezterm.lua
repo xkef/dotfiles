@@ -10,6 +10,7 @@
 --   workspaces.lua  workspace switching
 --   status.lua      tab titles and the status line
 --   lima.lua        new panes and tabs that stay in the Lima VM
+--   agents.lua      agent bindings, from the agents package if deployed
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 
