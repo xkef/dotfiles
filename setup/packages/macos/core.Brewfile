@@ -46,14 +46,11 @@ brew "node"                 # Node.js for npx outside projects
 brew "rumdl"                # markdown linter (LazyVim in every buffer)
 brew "dprint"               # markdown formatter (LazyVim in every buffer)
 brew "jdtls"                # Java language server
-brew "nono"                 # capability-based sandbox for AI agents
-brew "ccusage"              # Claude Code usage analyzer
 brew "devcontainer"         # dev container CLI
 brew "podman"               # rootless container engine
 brew "lazydocker"           # terminal UI for Docker/Podman
 brew "fx"                   # terminal JSON viewer
 brew "scooter"              # interactive find-and-replace TUI
-brew "lima"                 # Linux dev VMs (~/.config/lima/dev.yaml)
 brew "yazi"                 # terminal file manager
 brew "glow"                 # terminal markdown renderer
 brew "vale"                 # prose linter for markdown

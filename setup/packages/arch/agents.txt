@@ -1,0 +1,3 @@
+bubblewrap      # unprivileged sandboxing
+ccusage         # Claude Code usage analyzer (AUR)
+nono-ai-bin     # capability-based sandbox (AUR; plain "nono" is a puzzle game)

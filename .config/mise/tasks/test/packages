@@ -18,15 +18,17 @@ printf '#!/bin/sh\necho Darwin\n' >"$tmp/bin/uname"
 cat >"$tmp/bin/brew" <<'EOF'
 #!/bin/sh
 echo "$*" >>"$BREW_LOG"
-case "$*" in *Brewfile.casks*) exit 1 ;; esac
+case "$*" in *desktop.Brewfile*) exit 1 ;; esac
 EOF
 chmod +x "$tmp/bin"/*
-export PATH="$tmp/bin:$PATH" BREW_LOG="$tmp/brew.log" CI=false DOTFILES_DESKTOP=true
+export PATH="$tmp/bin:$PATH" BREW_LOG="$tmp/brew.log" CI=false DOTFILES_PACKAGES="core desktop"
 export XDG_STATE_HOME="$tmp/state"
 
 status=0
 setup/packages/install 2>/dev/null || status=$?
 [ "$status" = "$EX_TEMPFAIL" ] || fail "cask failure exited $status, not $EX_TEMPFAIL"
+grep -q core.Brewfile "$BREW_LOG" || fail "selected core list skipped"
+! grep -q agents.Brewfile "$BREW_LOG" || fail "unselected agents list installed"
 
 # onchange passes the status through and records no stamp, so the next
 # run installs again.
@@ -37,7 +39,7 @@ setup/onchange packages setup/packages/install -- setup/packages/install 2>/dev/
 
 : >"$BREW_LOG"
 setup/onchange packages setup/packages/install -- setup/packages/install 2>/dev/null || true
-grep -q 'Brewfile.casks' "$BREW_LOG" || fail "second run skipped the retry"
+grep -q 'desktop.Brewfile' "$BREW_LOG" || fail "second run skipped the retry"
 
 # A complete install records the stamp, and the next run skips.
 setup/onchange ok setup/packages/install -- true

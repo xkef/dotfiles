@@ -48,8 +48,6 @@ dprint          # markdown formatter (LazyVim in every buffer)
 podman          # rootless container engine
 lazydocker      # terminal UI for Docker/Podman
 fx              # terminal JSON viewer
-bubblewrap      # unprivileged sandboxing
-ccusage         # Claude Code usage analyzer (AUR)
 yazi            # terminal file manager
 glow            # terminal markdown renderer
 vale            # prose linter for markdown

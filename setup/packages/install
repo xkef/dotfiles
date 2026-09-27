@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Installs the packages this repo lists: Homebrew on macOS, pacman and paru
-# on Arch. Other systems install nothing. GUI apps install only when
-# DOTFILES_DESKTOP is true, which the deploy sets when it selects the desktop
-# package, and never in CI.
+# on Arch. Other systems install nothing. Each dotter package has its own
+# list, such as macos/agents.Brewfile or arch/agents.txt, and only the
+# packages in DOTFILES_PACKAGES install. The deploy sets it to the selected
+# ones, such as "agents core". CI skips desktop, the GUI apps.
 #
 # An optional package that fails to install doesn't stop the others. The
 # script then exits with EX_TEMPFAIL, so setup/onchange records no stamp
@@ -13,10 +14,13 @@ cd "$(dirname "$0")"
 # sysexits.h EX_TEMPFAIL.
 readonly EX_TEMPFAIL=75
 partial=false
-desktop=false
-if [[ "${DOTFILES_DESKTOP:-}" == true && "${CI:-}" != true ]]; then
-  desktop=true
-fi
+modules=()
+for module in ${DOTFILES_PACKAGES:-core}; do
+  if [[ "$module" == desktop && "${CI:-}" == true ]]; then
+    continue
+  fi
+  modules+=("$module")
+done
 
 # Prints a package list without its comments.
 list() {
@@ -31,22 +35,28 @@ install_darwin() {
     done
   fi
 
-  # Newer Homebrew refuses formulae from untrusted third-party taps. Older
-  # brew lacks the trust subcommand, so the call may fail.
-  local tap
-  for tap in $(list macos/Brewfile | sed -n 's/^tap "\([^"]*\)".*/\1/p'); do
-    brew trust "$tap" 2>/dev/null || true
-  done
-  brew bundle --file=macos/Brewfile
+  local module brewfile tap
+  for module in "${modules[@]}"; do
+    brewfile=macos/$module.Brewfile
+    if [[ ! -f "$brewfile" ]]; then
+      continue
+    fi
 
-  # Casks fail soft. Self-updating GUI apps such as zed and 1password hit
-  # stale-receipt and quarantine issues that must not block the deploy.
-  if [[ "$desktop" == true ]]; then
-    if ! brew bundle --file=macos/Brewfile.casks; then
+    # Newer Homebrew refuses formulae from untrusted third-party taps. Older
+    # brew lacks the trust subcommand, so the call may fail.
+    for tap in $(list "$brewfile" | sed -n 's/^tap "\([^"]*\)".*/\1/p'); do
+      brew trust "$tap" 2>/dev/null || true
+    done
+
+    # Casks fail soft. Self-updating GUI apps such as zed and 1password hit
+    # stale-receipt and quarantine issues that must not block the deploy.
+    if ! grep -q '^cask ' "$brewfile"; then
+      brew bundle --file="$brewfile"
+    elif ! brew bundle --file="$brewfile"; then
       echo "warning: some casks failed; the next deploy retries them" >&2
       partial=true
     fi
-  fi
+  done
 }
 
 # Returns 0 only if paru exists and runs. A paru binary breaks when pacman
@@ -87,12 +97,12 @@ ensure_rustup() {
 }
 
 install_arch() {
-  local packages pkg
-  mapfile -t packages < <(list arch/main.txt)
-  # GUI apps and the agent sandbox.
-  if [[ "$desktop" == true ]]; then
-    mapfile -t -O "${#packages[@]}" packages < <(list arch/bare-metal.txt)
-  fi
+  local packages=() module pkg
+  for module in "${modules[@]}"; do
+    if [[ -f arch/$module.txt ]]; then
+      mapfile -t -O "${#packages[@]}" packages < <(list "arch/$module.txt")
+    fi
+  done
 
   sudo -v
   sudo pacman -Syu --noconfirm
