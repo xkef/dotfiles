@@ -66,8 +66,12 @@ jobs:
         run: if [ "$RUNNER_OS" = Linux ]; then sudo apt-get update && sudo apt-get install -y fish; else brew install fish; fi
       - name: Apply into throwaway HOME
         run: mise run check
+      # The dots test runs jj in a scratch repo outside this checkout, where
+      # the mise shim finds a jj version only in the global config.
       - name: Behavior tests
-        run: mise x jj@0.45.1 -- mise run test
+        run: |
+          mise use -g jj@0.45.1
+          mise run test
 
   e2e-macos:
     runs-on: macos-latest
