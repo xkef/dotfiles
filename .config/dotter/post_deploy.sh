@@ -27,10 +27,13 @@ fi
 setup/identity/render
 
 # The repo runs jj colocated with git, but a fresh clone is plain git. jj
-# takes it over once the package install has put jj in place. A read-only
-# checkout, such as the one the Lima VM mounts, stays as it is.
+# takes it over once the package install has put jj in place, and tracks
+# main as `dots update` does. A checkout without main@origin, as in CI,
+# skips the tracking. A read-only checkout, such as the one the Lima VM
+# mounts, stays as it is.
 if [[ ! -d .jj && -w . ]] && command -v jj >/dev/null; then
   jj git init --colocate
+  jj bookmark track main@origin 2>/dev/null || true
 fi
 
 if [[ "$desktop" == true && "$(uname -s)" == Darwin ]]; then
