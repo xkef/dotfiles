@@ -38,7 +38,7 @@ jobs:
         run: mise run lint-sh
       - name: Fish syntax
         run: mise run lint-fish
-      - name: Markdown format
+      - name: Format
         run: mise run lint-fmt
       - name: Markdown lint
         run: mise run lint-md

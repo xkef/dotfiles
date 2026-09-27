@@ -55,8 +55,11 @@ done
 """
 
 [tasks.lint-fmt]
-description = "Check markdown, JSON, and YAML formatting"
-run = "dprint check --config .config/dprint.json"
+description = "Check Lua, markdown, JSON, and YAML formatting"
+run = [
+  "stylua --check modules/",
+  "dprint check --config .config/dprint.json",
+]
 
 [tasks.lint-pi]
 description = "Type-check the pi extensions. Needs node."
