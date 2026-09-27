@@ -14,3 +14,6 @@ Thumbs.db
 !/home/tools/vale/styles/config/
 /home/tools/vale/styles/config/*
 !/home/tools/vale/styles/config/vocabularies/
+
+# Type-check dependencies for the pi extensions
+/home/agents/pi/node_modules/

@@ -27,7 +27,9 @@ end
 function pi --wraps pi --description "pi.dev coding agent in a nono sandbox"
     if not command -q pi
         printf '  Installing pi...\n'
-        npm install -g @earendil-works/pi-coding-agent; or return
+        # The version the extensions type-check against.
+        set -l pi_version (jq -r '.devDependencies["@earendil-works/pi-coding-agent"]' $DOTFILES_DIR/home/agents/pi/package.json)
+        npm install -g @earendil-works/pi-coding-agent@$pi_version; or return
     end
 
     # pi picks its theme by name from a file the tinty pi-theme hook renders.

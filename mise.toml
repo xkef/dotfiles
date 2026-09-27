@@ -35,6 +35,7 @@ depends = [
   "lint-prose",
   "lint-nvim",
   "lint-wezterm",
+  "lint-pi",
 ]
 
 [tasks.test]
@@ -56,6 +57,11 @@ done
 [tasks.lint-fmt]
 description = "Check markdown, JSON, and YAML formatting"
 run = "dprint check --config .config/dprint.json"
+
+[tasks.lint-pi]
+description = "Type-check the pi extensions. Needs node."
+dir = "home/agents/pi"
+run = "npm ci --no-audit --no-fund && npx tsc"
 
 [tasks.lint-md]
 description = "Lint markdown"

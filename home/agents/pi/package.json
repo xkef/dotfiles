@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "description": "Type-checks the pi extensions against the pi release the agent launcher installs",
+  "devDependencies": {
+    "@earendil-works/pi-ai": "0.85.1",
+    "@earendil-works/pi-coding-agent": "0.85.1",
+    "@earendil-works/pi-tui": "0.85.1",
+    "@types/node": "22.20.4",
+    "typescript": "7.0.2"
+  }
+}
