@@ -26,6 +26,13 @@ fi
 
 setup/identity/render
 
+# The repo runs jj colocated with git, but a fresh clone is plain git. jj
+# takes it over once the package install has put jj in place. A read-only
+# checkout, such as the one the Lima VM mounts, stays as it is.
+if [[ ! -d .jj && -w . ]] && command -v jj >/dev/null; then
+  jj git init --colocate
+fi
+
 if [[ "$desktop" == true && "$(uname -s)" == Darwin ]]; then
   setup/onchange macos-defaults setup/macos-defaults -- setup/macos-defaults
 fi
