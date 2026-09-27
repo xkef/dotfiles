@@ -7,6 +7,13 @@ switch $argv[1]
     case update up
         # The repo is jj-colocated, so git HEAD stays detached and a plain
         # git pull can't work. Fetch and rebase with jj instead, then deploy.
+        # The README installs with a plain git clone, so the first update
+        # colocates jj.
+        if not test -d $DOTFILES_DIR/.jj
+            jj git init --colocate $DOTFILES_DIR
+            and jj -R $DOTFILES_DIR bookmark track main@origin
+            or return
+        end
         jj -R $DOTFILES_DIR git fetch
         and jj -R $DOTFILES_DIR rebase -d 'trunk()'
         and dots apply $argv[2..-1]
@@ -15,6 +22,12 @@ switch $argv[1]
         $DOTFILES_DIR/setup/deploy --dry-run $argv[2..-1]
     case apply
         $DOTFILES_DIR/setup/deploy $argv[2..-1]
+    case repair
+        # setup/onchange skips a step whose inputs match its last success,
+        # even when its result is gone. Dropping the stamps runs every step
+        # again, and each one installs only what is missing.
+        rm -rf (set -q XDG_STATE_HOME; and echo $XDG_STATE_HOME; or echo ~/.local/state)/dotfiles
+        dots apply $argv[2..-1]
     case keys
         dots-keys $argv[2..-1]
     case skills
@@ -28,6 +41,7 @@ switch $argv[1]
         echo "  update    Pull the repo and deploy (jj fetch and rebase, setup/deploy)"
         echo "  diff      Show pending changes (setup/deploy --dry-run)"
         echo "  apply     Deploy the repo into ~ (setup/deploy)"
+        echo "  repair    Rerun every setup step, then deploy"
         echo "  keys      Show keybinding reference"
         echo "  skills    Refresh shared agent skills from upstream"
         echo "  theme     Switch terminal + editor theme"

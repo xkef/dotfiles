@@ -18,6 +18,10 @@ git clone https://github.com/xkef/dotfiles ~/dotfiles
 This installs packages with Homebrew or pacman, links configs into `$HOME`, and
 sets fish as the default shell. `dots apply` deploys again after a change.
 
+A package that fails to install doesn't stop the deploy, and the next deploy
+retries it. `dots repair` reruns every setup step, which restores what an
+earlier step installed and has since gone missing.
+
 ## Included tools
 
 | Tool                                                                | What it does                                               |

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#MISE description="Check dots update on a plain git clone and dots repair"
+set -eu
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-dots.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+dots="$PWD/home/bin/dots"
+
+fail() {
+  echo "$1" >&2
+  exit 1
+}
+
+# A stub dots on PATH records the deploy that update and repair start.
+mkdir "$tmp/bin"
+printf '#!/bin/sh\necho "$*" >>"$DOTS_LOG"\n' >"$tmp/bin/dots"
+chmod +x "$tmp/bin/dots"
+printf '[user]\nname = "Test"\nemail = "test@example.com"\n' >"$tmp/jj.toml"
+export PATH="$tmp/bin:$PATH" DOTS_LOG="$tmp/dots.log" JJ_CONFIG="$tmp/jj.toml"
+export XDG_STATE_HOME="$tmp/state"
+
+# The README installs with a plain git clone, which has no .jj directory.
+git init -q -b main "$tmp/origin"
+git -C "$tmp/origin" -c user.name=t -c user.email=t@t commit -q --allow-empty -m init
+git clone -q "$tmp/origin" "$tmp/clone"
+DOTFILES_DIR="$tmp/clone" fish --no-config "$dots" update || fail "update failed on a git clone"
+grep -qx apply "$DOTS_LOG" || fail "update did not deploy"
+
+# repair drops the onchange stamps, so every setup step runs again.
+: >"$DOTS_LOG"
+mkdir -p "$XDG_STATE_HOME/dotfiles"
+touch "$XDG_STATE_HOME/dotfiles/packages"
+DOTFILES_DIR="$tmp/clone" fish --no-config "$dots" repair || fail "repair failed"
+[ ! -e "$XDG_STATE_HOME/dotfiles/packages" ] || fail "repair kept a stamp"
+grep -qx apply "$DOTS_LOG" || fail "repair did not deploy"
+echo "dots ok"
