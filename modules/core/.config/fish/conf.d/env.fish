@@ -87,12 +87,14 @@ if not set -q SSH_CONNECTION
 end
 
 # ── GitHub token for mise rate limits ────────────────
-# Not exported as GITHUB_TOKEN. That would pin gh and its git credential
-# helper to one account for the shell's lifetime and break per-repo
-# credential.username routing. gh reads the keyring, and mise gets its own
-# variable. The keyring lookup costs about 100ms, so only an interactive
-# shell pays for it. Scripts and `mise install` inherit the value.
+# A fine-grained token with public read-only access and no permissions,
+# from a file. Every process the shell starts inherits this variable,
+# including build scripts and the sandboxed agents, so it must not be the
+# gh login token, which can write to every repository. Create it once:
+#   op read "op://Private/GitHub mise/token" >~/.config/mise/github-token
+#   chmod 600 ~/.config/mise/github-token
 status is-interactive; or return
-if test -z "$MISE_GITHUB_TOKEN"; and command -q gh
-    set -gx MISE_GITHUB_TOKEN (gh auth token 2>/dev/null)
+set -l _mise_token_file $XDG_CONFIG_HOME/mise/github-token
+if test -z "$MISE_GITHUB_TOKEN"; and test -r $_mise_token_file
+    set -gx MISE_GITHUB_TOKEN (string trim <$_mise_token_file)
 end

@@ -55,6 +55,23 @@ and toolchain directories, and keeps the credentials needed to commit and push.
 `sb --strict claude` drops those credentials for untrusted repositories. The
 profiles live in `modules/agents/.config/nono/profiles/`.
 
+The agents never get the `gh auth login` token, which can write to every
+repository the account reaches. `sb` and `lima-agent` read a fine-grained
+personal access token from the 1Password item
+`op://Private/GitHub agents/token` and pass it as `GH_TOKEN`. Give it Contents,
+Pull requests, and Issues read-write, Actions and Commit statuses read-only, and
+an expiry. Leave out Workflows and Administration. A repository another account
+holds names its own item in `mise.local.toml`:
+
+```toml
+[env]
+SB_GH_TOKEN_REF = "op://Work/GitHub agents/token"
+```
+
+mise reads its GitHub rate-limit token from `~/.config/mise/github-token`. Use a
+fine-grained token with public repositories read-only and no permissions, since
+every process the shell starts inherits it.
+
 `lima-agent` runs Claude Code in a Lima VM, with `~/code` and `~/work` mounted
 from the host.
 

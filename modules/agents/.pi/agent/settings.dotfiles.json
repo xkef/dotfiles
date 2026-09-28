@@ -6,5 +6,5 @@
   "showHardwareCursor": true,
   "editorPaddingX": 1,
   "autocompleteMaxVisible": 8,
-  "packages": ["npm:@ifi/pi-plan", "npm:@tintinweb/pi-subagents"]
+  "packages": ["npm:@ifi/pi-plan@0.5.1", "npm:@tintinweb/pi-subagents@0.19.0"]
 }
