@@ -56,10 +56,11 @@ credentials, keychain, and open network for untrusted repositories.
 
 Setup needs two fine-grained GitHub tokens:
 
-- `op://Private/GitHub agents/token`, which agents get as `GH_TOKEN`: Contents,
-  Pull requests, Issues read-write; Actions, Commit statuses read-only. Override
-  per repo with `SB_GH_TOKEN_REF` in `mise.local.toml`.
-- `~/.config/mise/github-token`: public repositories read-only, for mise rate
+- `op://Private/GitHub agents/token`, passed to agents as `GH_TOKEN`. Grant
+  Contents, Pull requests, and Issues read-write, and Actions and Commit
+  statuses read-only. Override it per repo with `SB_GH_TOKEN_REF` in
+  `mise.local.toml`.
+- `~/.config/mise/github-token`, public repositories read-only, for mise rate
   limits.
 
 `lima-agent` runs Claude Code in a Lima VM, with `~/code` and `~/work` mounted
