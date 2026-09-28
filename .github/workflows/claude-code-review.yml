@@ -3,7 +3,12 @@ name: Claude Code Review
 # Reviews the owner's PRs with the dotfiles-review skill. Others' PRs and
 # drafts don't run. The action restores .claude/ from the base branch, so
 # a PR can't rewrite the skill that reviews it. New pushes don't
-# re-review. Comment "@claude review" for that.
+# re-review. Rerun the job for that.
+#
+# The review runs shell commands to test what it finds. It gets the job
+# token, which can only comment on PRs, instead of the Claude app token,
+# which can push. The scrub keeps the Claude token out of the commands
+# it runs.
 on:
   pull_request:
     types: [opened, ready_for_review, reopened]
@@ -24,19 +29,28 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-      pull-requests: read
-      issues: read
-      id-token: write # exchange for the Claude GitHub App token
+      pull-requests: write # post the review
     steps:
       - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0 # git log -S finds when a name went away
           persist-credentials: false
+      # The same tools as the CI check job, so the review can run the
+      # deploy check and the behavior tests.
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+      - name: Install fish and jj
+        run: |
+          sudo apt-get update && sudo apt-get install -y fish
+          mise use -g jj@0.45.1
       - uses: anthropics/claude-code-action@8ce9314fa9a404564fa7e954cd84f25bcba2b829 # v1.0.236
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}
           prompt: /dotfiles-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
           claude_args: >-
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*)"
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash,Write"
+        env:
+          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: 1
