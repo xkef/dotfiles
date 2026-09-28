@@ -3,7 +3,8 @@
 Thumbs.db
 
 # AI tooling
-/.claude/
+/.claude/*
+!/.claude/skills/
 /.claude-notes/
 
 # Build artifacts
