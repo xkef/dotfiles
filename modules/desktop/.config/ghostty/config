@@ -10,7 +10,7 @@ bold-is-bright = false
 minimum-contrast = 1.1
 
 # ── Input ─────────────────────────────────────────────
-# Left Option sends Alt for the shell and fzf bindings. Right Option still
+# Left Option sends Alt for the shell and tv bindings. Right Option still
 # types special characters such as @, [], and {}.
 macos-option-as-alt = left
 

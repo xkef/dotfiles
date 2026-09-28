@@ -8,7 +8,7 @@
 # selection. Arguments pass through to dotter, as in
 # `setup/deploy --dry-run`.
 #
-# Homebrew and pacman install dotter from the package lists. The first
+# Homebrew and paru install dotter from the package lists. The first
 # deploy runs before them, so it downloads a pinned release.
 set -euo pipefail
 cd "$(dirname "$0")/.."

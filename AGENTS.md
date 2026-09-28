@@ -22,12 +22,11 @@ belongs to the repo state.
 
 ## GitHub accounts
 
-More than one gh login exists. The primary account, `xkef`, holds this repo and
-sits keyring-active in gh. git and jj pushes route through
-`gh auth git-credential`, which picks the active account. To run one command as
-another account without touching global state, set `GH_TOKEN` inline. The
-credential helper follows it, so this routes `gh`, `git`, and `jj git push`
-alike:
+More than one gh login exists. The primary account holds this repo and sits
+keyring-active in gh. git and jj pushes route through `gh auth git-credential`,
+which picks the active account. To run one command as another account without
+touching global state, set `GH_TOKEN` inline. The credential helper follows it,
+so this routes `gh`, `git`, and `jj git push` alike:
 
     GH_TOKEN=$(gh auth token --user <account>) <cmd...>
 

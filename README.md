@@ -30,6 +30,7 @@ The configs live in three packages under `modules/`: `core`, `desktop`, and
 | [Starship](https://starship.rs)                                                    | Minimal, cross-shell prompt                                |
 | [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)                   | Editor with the LazyVim distro, kickstart as fallback      |
 | [WezTerm](https://wezterm.org)                                                     | Terminal and multiplexer, with an agent picker             |
+| [Ghostty](https://ghostty.org)                                                     | Terminal for tmux sessions, themed with the rest           |
 | [tmux](https://github.com/tmux/tmux) + [sesh](https://github.com/joshmedeski/sesh) | Multiplexer outside WezTerm, on the same keys              |
 | [tinty](https://github.com/tinted-theming/tinty)                                   | Color themes for the terminal, Neovim, delta, and pi       |
 | [television](https://github.com/alexpasmantier/television)                         | Fuzzy finder in the shell and WezTerm pickers              |
@@ -45,7 +46,8 @@ The configs live in three packages under `modules/`: `core`, `desktop`, and
 Neovim uses `Space` as leader, and WezTerm and tmux use `Ctrl-Space`. `leader ?`
 in any of them lists the bindings.
 
-`dots theme` switches WezTerm, Neovim, delta, and pi together through tinty.
+`dots theme` switches WezTerm, Ghostty, Neovim, delta, and pi together through
+tinty.
 
 ## Agent sandbox
 
@@ -55,8 +57,9 @@ and toolchain directories, and keeps the credentials needed to commit and push.
 `sb --strict claude` drops those credentials for untrusted repositories. The
 profiles live in `modules/agents/.config/nono/profiles/`.
 
-`lima-agent` runs Claude Code in a Lima VM, with `~/code` and `~/work` mounted
-from the host.
+`agents vm`, or `lima-agent`, runs Claude Code in a Lima VM, with `~/code` and
+`~/work` mounted from the host. `agents skills` refreshes the shared agent
+skills, and `agents trace` reports failed tool calls in Claude Code sessions.
 
 ## Make it yours
 

@@ -41,7 +41,7 @@ grep -qxF 'email = "ada@example.com"' "$tmp/home/.config/jj/conf.d/identity.toml
   exit 1
 }
 
-# The no-work marker skips the Work identity and removes its files.
+# With a github_login, Work also renders a secondary identity.
 printf 'name=Ada\nemail=ada@work.example\nnoreply_email=1+ada@users.noreply.github.com\ngithub_login=ada\npublic_key=ssh-ed25519 BBBB\n' \
   >"$tmp/home/.config/identity/Work"
 render
@@ -64,6 +64,7 @@ test -e "$tmp/home/.config/git/config.work" &&
   echo "work without github_login rendered wrong"
   exit 1
 }
+# The no-work marker skips the Work identity and removes its files.
 touch "$tmp/home/.config/identity/no-work"
 render
 for f in git/config.work git/config.secondary git/config.secondary-remotes jj/conf.d/work.toml; do
