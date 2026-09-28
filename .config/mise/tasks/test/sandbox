@@ -145,7 +145,7 @@ e:SSH_AUTH_SOCK                      yes no  yes
 "
 if [ "${SANDBOX_TEST_NETWORK:-}" = 1 ]; then
   expected="$expected
-n:https://api.github.com/zen         yes yes yes
+n:https://github.com                 yes yes yes
 n:https://example.com                yes no  yes
 "
 fi
