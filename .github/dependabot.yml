@@ -4,6 +4,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # Wait a week after a release, which leaves time to catch a compromised one.
+    cooldown:
+      default-days: 7
     groups:
       actions:
         patterns: ["*"]

@@ -4,6 +4,7 @@
 local wezterm = require("wezterm")
 local act = wezterm.action
 local lima = require("lima")
+local status = require("status")
 
 local M = {}
 
@@ -100,6 +101,19 @@ for i = 1, 8 do
   table.insert(MAC, { key = tostring(i), mods = "SUPER", action = act.ActivateTab(i - 1) })
 end
 
+-- Copies the finished mouse selection and names its size in the status
+-- line, since the copy gives no other sign. A click without a drag
+-- selects nothing and shows nothing.
+local COPY_SELECTION = act.Multiple({
+  act.CompleteSelection("ClipboardAndPrimarySelection"),
+  wezterm.action_callback(function(window, pane)
+    local text = window:get_selection_text_for_pane(pane)
+    if text ~= "" then
+      status.notify(window, pane, "Copied " .. utf8.len(text) .. " chars")
+    end
+  end),
+})
+
 -- Cmd-click, or Ctrl-click off macOS, opens a link, and a plain click only
 -- selects. The press does nothing, so Neovim doesn't see it. The link
 -- bindings also apply while a program holds the mouse. A double click
@@ -111,7 +125,7 @@ local function mouse_bindings()
     {
       event = { Up = { streak = 1, button = "Left" } },
       mods = "NONE",
-      action = act.CompleteSelection("ClipboardAndPrimarySelection"),
+      action = COPY_SELECTION,
     },
   }
   for streak, unit in pairs({ [2] = "Word", [3] = "Line" }) do
@@ -123,7 +137,7 @@ local function mouse_bindings()
     table.insert(bindings, {
       event = { Up = { streak = streak, button = "Left" } },
       mods = "NONE",
-      action = act.CompleteSelection("ClipboardAndPrimarySelection"),
+      action = COPY_SELECTION,
     })
   end
   for _, reporting in ipairs({ false, true }) do

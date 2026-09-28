@@ -13,6 +13,12 @@ local SYSSTAT_INTERVAL = 5
 local CPU_HIGH = 80
 local TAB_GAP = "   "
 
+-- How long a notice stays in the status line, in seconds.
+local NOTICE_SECONDS = 2
+
+-- The notice each window shows, by window id.
+local notices = {}
+
 local function basename(path)
   return (path or ""):match("([^/]+)$") or ""
 end
@@ -70,6 +76,11 @@ local function update(window, pane)
   }))
 
   local right = {}
+  local notice = notices[window:window_id()]
+  if notice then
+    table.insert(right, { Foreground = { AnsiColor = "Green" } })
+    table.insert(right, { Text = notice.text .. "  " })
+  end
   local key_table = window:active_key_table()
   if key_table and key_table ~= "repeat" then
     table.insert(right, { Foreground = { AnsiColor = "Green" } })
@@ -128,6 +139,22 @@ local function tab_title(tab, background)
     { Foreground = { AnsiColor = unseen and "Olive" or sandbox and "Maroon" or "Grey" } },
     { Text = text },
   }
+end
+
+-- Shows text in the status line of window for NOTICE_SECONDS. A newer
+-- notice replaces an older one and outlives its timer.
+function M.notify(window, pane, text)
+  local id = window:window_id()
+  local notice = { text = text }
+  notices[id] = notice
+  update(window, pane)
+  wezterm.time.call_after(NOTICE_SECONDS, function()
+    if notices[id] ~= notice then
+      return
+    end
+    notices[id] = nil
+    update(window, window:active_pane())
+  end)
 end
 
 function M.setup()
