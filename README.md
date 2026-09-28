@@ -52,8 +52,12 @@ in any of them lists the bindings.
 `claude` and `pi` always start in a [nono](https://nono.dev) sandbox. The
 default profile limits writes to the working directory, the agent's own state,
 and toolchain directories, and keeps the credentials needed to commit and push.
-`sb --strict claude` drops those credentials for untrusted repositories. The
-profiles live in `modules/agents/.config/nono/profiles/`.
+`sb --strict claude` drops those credentials and the keychain, and limits
+outbound traffic to nono's `claude-code` allowlist, for untrusted repositories.
+The profiles live in `modules/agents/.config/nono/profiles/`.
+`mise run test:sandbox` launches each profile through `sb` and the real nono
+with a probe in place of the agent, and checks what it can read, write, see in
+its environment, and reach. CI runs it on Linux and macOS.
 
 The agents never get the `gh auth login` token, which can write to every
 repository the account reaches. `sb` and `lima-agent` read a fine-grained

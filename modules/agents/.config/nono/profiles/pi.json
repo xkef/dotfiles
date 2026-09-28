@@ -8,19 +8,20 @@
       "$XDG_DATA_HOME/pi",
       "$XDG_STATE_HOME/pi",
       "$XDG_CACHE_HOME/pi",
-      "$HOME/.agents",
       "$XDG_STATE_HOME/agents",
-      "$HOME/.m2",
+      "$HOME/.m2/repository",
       "$HOME/.npm",
       "$XDG_CACHE_HOME/mise",
       "$XDG_CACHE_HOME/uv",
-      "$XDG_CONFIG_HOME/jj",
-      "$XDG_DATA_HOME/cargo",
-      "$XDG_DATA_HOME/rustup",
-      "$XDG_DATA_HOME/go",
-      "$XDG_DATA_HOME/mise",
-      "$XDG_DATA_HOME/uv",
+      "$XDG_DATA_HOME/cargo/registry",
+      "$XDG_DATA_HOME/cargo/git",
+      "$XDG_DATA_HOME/go/pkg/mod",
       "$HOME/Library/Keychains"
+    ],
+    "allow_file": [
+      "$XDG_DATA_HOME/cargo/.package-cache",
+      "$XDG_DATA_HOME/cargo/.package-cache-mutate",
+      "$XDG_DATA_HOME/cargo/.global-cache"
     ],
     "bypass_protection": [
       "$HOME/Library/Keychains",
@@ -28,8 +29,15 @@
       "$HOME/.1password/agent.sock"
     ],
     "read": [
+      "$HOME/.agents",
+      "$HOME/.m2",
+      "$XDG_CONFIG_HOME/jj",
+      "$XDG_DATA_HOME/cargo",
+      "$XDG_DATA_HOME/rustup",
+      "$XDG_DATA_HOME/go",
+      "$XDG_DATA_HOME/mise",
+      "$XDG_DATA_HOME/uv",
       "$XDG_STATE_HOME/mise",
-      "$XDG_CONFIG_HOME/gh",
       "$XDG_CONFIG_HOME/git",
       "$XDG_DATA_HOME/tinted-theming/tinty",
       "$XDG_CONFIG_HOME/nono/profiles",
@@ -53,9 +61,9 @@
     ]
   },
   "meta": {
-    "description": "pi.dev coding agent with mise, node, jj, maven, npm, cargo, shared skills, and keychain access",
+    "description": "pi.dev coding agent with mise, node, jj, maven, npm, cargo, shared skills, keychain access, and the GitHub token sb injects",
     "name": "pi",
-    "version": "1.1.2"
+    "version": "2.0.0"
   },
   "workdir": {
     "access": "readwrite"

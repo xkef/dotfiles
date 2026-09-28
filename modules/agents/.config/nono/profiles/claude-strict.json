@@ -15,29 +15,32 @@
       "$HOME/.cache/claude",
       "$HOME/.config/nono/profile-drafts",
       "/tmp/claude-$UID",
-      "$HOME/.agents",
       "$XDG_STATE_HOME/agents",
-      "$HOME/.m2",
+      "$HOME/.m2/repository",
       "$HOME/.npm",
       "$XDG_CACHE_HOME/mise",
       "$XDG_CACHE_HOME/uv",
+      "$XDG_DATA_HOME/cargo/registry",
+      "$XDG_DATA_HOME/cargo/git",
+      "$XDG_DATA_HOME/go/pkg/mod"
+    ],
+    "allow_file": [
+      "$HOME/.claude.json",
+      "$HOME/.claude.json.lock",
+      "$HOME/.claude.lock",
+      "$XDG_DATA_HOME/cargo/.package-cache",
+      "$XDG_DATA_HOME/cargo/.package-cache-mutate",
+      "$XDG_DATA_HOME/cargo/.global-cache"
+    ],
+    "read": [
+      "$HOME/.agents",
+      "$HOME/.m2",
       "$XDG_CONFIG_HOME/jj",
       "$XDG_DATA_HOME/cargo",
       "$XDG_DATA_HOME/rustup",
       "$XDG_DATA_HOME/go",
       "$XDG_DATA_HOME/mise",
       "$XDG_DATA_HOME/uv",
-      "$HOME/Library/Keychains"
-    ],
-    "allow_file": [
-      "$HOME/.claude.json",
-      "$HOME/.claude.json.lock",
-      "$HOME/.claude.lock"
-    ],
-    "bypass_protection": [
-      "$HOME/Library/Keychains"
-    ],
-    "read": [
       "$XDG_STATE_HOME/mise",
       "$XDG_CONFIG_HOME/git",
       "$XDG_DATA_HOME/tinted-theming/tinty",
@@ -46,7 +49,15 @@
       "$XDG_CONFIG_HOME/fd",
       "$HOME/.terminfo",
       "$XDG_CONFIG_HOME/lazyvim",
-      "$XDG_DATA_HOME/lazyvim"
+      "$XDG_DATA_HOME/lazyvim",
+      {
+        "path": "$HOME/.local/share/claude",
+        "when": "macos"
+      },
+      {
+        "path": "$HOME/Applications/Claude Code URL Handler.app",
+        "when": "macos"
+      }
     ]
   },
   "groups": {
@@ -59,10 +70,6 @@
         "when": "macos"
       },
       "unlink_protection",
-      {
-        "name": "claude_code_macos",
-        "when": "macos"
-      },
       {
         "name": "claude_code_linux",
         "when": "linux"
@@ -89,12 +96,13 @@
     ]
   },
   "meta": {
-    "description": "Claude Code for an unfamiliar repository: the claude profile without the gh config or the 1Password SSH agent",
+    "description": "Claude Code for an unfamiliar repository: no GitHub token, SSH agent, or keychain, and outbound traffic limited to the claude-code allowlist",
     "name": "claude-strict",
-    "version": "1.0.0"
+    "version": "2.0.0"
   },
   "network": {
-    "block": false
+    "block": false,
+    "network_profile": "claude-code"
   },
   "open_urls": {
     "allow_localhost": true,

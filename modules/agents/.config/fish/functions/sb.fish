@@ -1,11 +1,14 @@
 function sb -d "Run a command inside a nono sandbox"
     # The agent launchers in conf.d/agents.fish route through here, so every
     # interactive launch runs sandboxed. Use `command <tool>` to skip it.
-    # The host's GitHub tokens never reach the agent. A default launch gets
-    # the fine-grained agent token from 1Password as GH_TOKEN instead, the
-    # item $SB_GH_TOKEN_REF names. --strict picks the <command>-strict
-    # profile, drops every variable that looks like a secret and the SSH
-    # agent, and passes no GitHub token, for an unfamiliar repository.
+    # No variable that looks like a secret reaches the agent, except the
+    # public read-only MISE_GITHUB_TOKEN. The credentials the profile needs
+    # come from 1Password: a default launch gets the fine-grained agent
+    # token $SB_GH_TOKEN_REF names as GH_TOKEN. --strict picks the
+    # <command>-strict profile, for an unfamiliar repository. It also drops
+    # MISE_GITHUB_TOKEN and the SSH agent, and passes no GitHub token. That
+    # profile has no keychain, so Claude Code logs in with the long-lived
+    # token $SB_CLAUDE_TOKEN_REF names, the one lima-agent uses.
     set -l strict false
     if test "$argv[1]" = --strict
         set strict true
@@ -22,22 +25,31 @@ function sb -d "Run a command inside a nono sandbox"
     set -l cmd $argv[1]
     set -l rest $argv[2..-1]
     set -l profile $cmd
-    set -l env_args -u GH_TOKEN -u GITHUB_TOKEN
     set -l cred_args
     set -l gh_ref "op://Private/GitHub agents/token"
     set -q SB_GH_TOKEN_REF; and set gh_ref $SB_GH_TOKEN_REF
+    set -l claude_ref "op://Private/Claude Code/token"
+    set -q SB_CLAUDE_TOKEN_REF; and set claude_ref $SB_CLAUDE_TOKEN_REF
+    # Public repositories only, and no permissions.
+    set -l keep MISE_GITHUB_TOKEN
+    set -l env_args
 
     if test $strict = true
         set profile $cmd-strict
-        for var in (set --export --names)
-            string match -qir 'token|secret|passw|credential|api_?key|private_?key' -- $var
-            and set -a env_args -u $var
-        end
+        set keep
         set -a env_args -u SSH_AUTH_SOCK
-    else if command -q op
-        set cred_args --env-credential-map $gh_ref GH_TOKEN
+        test $cmd = claude; and set cred_args --env-credential-map $claude_ref CLAUDE_CODE_OAUTH_TOKEN
     else
-        printf '\033[33mNo 1Password CLI: the agent runs without a GitHub token\033[0m\n' >&2
+        set cred_args --env-credential-map $gh_ref GH_TOKEN
+    end
+    for var in (set --export --names)
+        contains -- $var $keep; and continue
+        string match -qir 'token|secret|passw|credential|api_?key|private_?key' -- $var
+        and set -a env_args -u $var
+    end
+    if test -n "$cred_args"; and not command -q op
+        printf '\033[33mNo 1Password CLI: the agent runs without %s\033[0m\n' $cred_args[3] >&2
+        set cred_args
     end
 
     switch $cmd
