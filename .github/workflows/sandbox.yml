@@ -1,10 +1,6 @@
 name: Sandbox
 
-# Runs `mise run test:sandbox` against the real nono: the agents launch
-# through sb with a probe in place of the agent binary, and the probe checks
-# which files, variables, and hosts each profile reaches. Linux enforces the
-# profiles with Landlock, macOS with Seatbelt. Pushes to any branch that
-# touch the sandbox run it, so a branch gets the result before a PR exists.
+# Probes the nono profiles with the real sandbox on Linux and macOS.
 on:
   pull_request:
   push:
@@ -38,8 +34,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # The AUR package the Arch setup installs has no Ubuntu build, so the
-      # Linux job builds the same release from crates.io.
       - name: Install nono and fish
         run: |
           if [ "$RUNNER_OS" = Linux ]; then

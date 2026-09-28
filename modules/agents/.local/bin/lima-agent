@@ -9,10 +9,8 @@
 # guest through stdin, so it never shows up in a process list. The guest
 # deletes its copy once the agent has it in its environment. The
 # fine-grained GitHub agent token takes the same path and logs gh in the
-# guest, where it stays for plain shells and git. It is not the host's gh
-# login, which can write to every repository the account reaches.
-# WEZTERM_PANE goes along so the agent's hooks report to the `mux-agents`
-# picker.
+# guest. WEZTERM_PANE goes along so the agent's hooks report to the
+# `mux-agents` picker.
 set -euo pipefail
 
 readonly VM=dev

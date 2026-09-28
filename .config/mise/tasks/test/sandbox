@@ -1,18 +1,9 @@
 #!/usr/bin/env bash
 #MISE description="Probe what each nono profile lets an agent read, write, see, and reach"
-# Launches the agents through the real sb and nono, with a probe in place of
-# the agent binary, in a throwaway HOME that holds decoy credentials,
-# toolchains, and configs. The probe tries every check in the table below from
-# inside the sandbox, and the test compares the outcome with the expected one
-# for each profile. Needs nono, fish, and jq; skips without nono.
-#
-# The fixture must sit outside every path the profiles grant, which rules out
-# /tmp and $TMPDIR. CI sets RUNNER_TEMP, and SANDBOX_TEST_ROOT overrides it.
-# SANDBOX_TEST_NETWORK=1 adds the network checks.
-#
-# The working directory's .git/config stays writable, a known gap: git runs
-# what it names, such as core.fsmonitor, outside the sandbox. nono can't make
-# a path read-only inside a writable one.
+# Runs a probe as the agent through sb and nono in a decoy HOME. Skips
+# without nono. The fixture must be outside /tmp and $TMPDIR
+# (SANDBOX_TEST_ROOT). SANDBOX_TEST_NETWORK=1 adds network checks.
+# Known gap: .git/config in the workdir stays writable.
 set -eu
 
 if ! command -v nono >/dev/null; then
@@ -31,7 +22,7 @@ export XDG_STATE_HOME=$HOME/.local/state XDG_CACHE_HOME=$HOME/.cache
 export DOTFILES_DIR=$root/dotfiles
 H=$HOME C=$XDG_CONFIG_HOME D=$XDG_DATA_HOME P=$root/project O=$root/outside
 
-# Decoys and the directories the profiles name. Each file holds one line.
+# Decoy files and granted directories.
 files=(
   "$P/file" "$P/.git/config" "$DOTFILES_DIR/README.md" "$O/canary"
   "$H/.ssh/id_ed25519" "$H/.aws/credentials" "$C/gh/hosts.yml" "$C/op/config"
@@ -54,8 +45,7 @@ mkdir -p "${dirs[@]}"
 cp "$repo"/modules/agents/.config/nono/profiles/*.json "$C/nono/profiles/"
 cp "$repo/modules/agents/.claude/settings.dotfiles.json" "$H/.claude/"
 
-# The probe stands in for claude and pi. sb puts its own arguments first, so
-# the checks start after --probe. Each check prints "<check> yes|no".
+# Stands in for claude and pi; checks follow --probe.
 cat >"$H/.local/bin/claude" <<'EOF'
 #!/bin/sh
 while [ $# -gt 0 ] && [ "$1" != --probe ]; do shift; done
@@ -77,7 +67,7 @@ EOF
 chmod +x "$H/.local/bin/claude"
 cp "$H/.local/bin/claude" "$H/.local/bin/pi"
 
-# A stub op answers nono's `op read -- <ref>` with fake tokens.
+# Stub op returns fake tokens.
 mkdir -p "$root/bin"
 cat >"$root/bin/op" <<'EOF'
 #!/bin/sh
@@ -94,13 +84,12 @@ for t in nono fish jq curl; do
   tool_dirs=$tool_dirs:$(dirname "$(command -v "$t")")
 done
 export PATH="$root/bin:$H/.local/bin$tool_dirs:/usr/bin:/bin:/usr/sbin:/sbin"
-# The host environment the agent must not inherit, and what it may keep.
+# Host environment.
 export GH_TOKEN=host-gh-token GITHUB_TOKEN=host-gh-token MISE_GITHUB_TOKEN=public
 export AWS_SECRET_ACCESS_KEY=decoy SSH_AUTH_SOCK=$root/agent.sock
 export CLAUDE_CODE_OAUTH_TOKEN=host-claude-token
 
-# Expected outcome per profile: claude, claude-strict, pi. "-" skips the
-# check for that profile. A "mac:" or "linux:" prefix limits a row to one OS.
+# Columns: claude, claude-strict, pi. "-" skips; "mac:"/"linux:" limits OS.
 expected="
 r:$P/file                            yes yes yes
 w:$P/file                            yes yes yes

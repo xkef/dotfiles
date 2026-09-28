@@ -87,12 +87,7 @@ if not set -q SSH_CONNECTION
 end
 
 # ── GitHub token for mise rate limits ────────────────
-# A fine-grained token with public read-only access and no permissions,
-# from a file. Every process the shell starts inherits this variable,
-# including build scripts and the sandboxed agents, so it must not be the
-# gh login token, which can write to every repository. Create it once:
-#   op read "op://Private/GitHub mise/token" >~/.config/mise/github-token
-#   chmod 600 ~/.config/mise/github-token
+# Public read-only token; every child process inherits it.
 status is-interactive; or return
 set -l _mise_token_file $XDG_CONFIG_HOME/mise/github-token
 if test -z "$MISE_GITHUB_TOKEN"; and test -r $_mise_token_file

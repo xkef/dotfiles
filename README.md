@@ -49,32 +49,18 @@ in any of them lists the bindings.
 
 ## Agent sandbox
 
-`claude` and `pi` always start in a [nono](https://nono.dev) sandbox. The
-default profile limits writes to the working directory, the agent's own state,
-and toolchain directories, and keeps the credentials needed to commit and push.
-`sb --strict claude` drops those credentials and the keychain, and limits
-outbound traffic to nono's `claude-code` allowlist, for untrusted repositories.
-The profiles live in `modules/agents/.config/nono/profiles/`.
-`mise run test:sandbox` launches each profile through `sb` and the real nono
-with a probe in place of the agent, and checks what it can read, write, see in
-its environment, and reach. CI runs it on Linux and macOS.
+`claude` and `pi` always start in a [nono](https://nono.dev) sandbox, with
+profiles in `modules/agents/.config/nono/profiles/`. `sb --strict claude` drops
+credentials, keychain, and open network for untrusted repositories.
+`mise run test:sandbox` checks what each profile can reach.
 
-The agents never get the `gh auth login` token, which can write to every
-repository the account reaches. `sb` and `lima-agent` read a fine-grained
-personal access token from the 1Password item
-`op://Private/GitHub agents/token` and pass it as `GH_TOKEN`. Give it Contents,
-Pull requests, and Issues read-write, Actions and Commit statuses read-only, and
-an expiry. Leave out Workflows and Administration. A repository another account
-holds names its own item in `mise.local.toml`:
+Setup needs two fine-grained GitHub tokens:
 
-```toml
-[env]
-SB_GH_TOKEN_REF = "op://Work/GitHub agents/token"
-```
-
-mise reads its GitHub rate-limit token from `~/.config/mise/github-token`. Use a
-fine-grained token with public repositories read-only and no permissions, since
-every process the shell starts inherits it.
+- `op://Private/GitHub agents/token`, which agents get as `GH_TOKEN`: Contents,
+  Pull requests, Issues read-write; Actions, Commit statuses read-only.
+  Override per repo with `SB_GH_TOKEN_REF` in `mise.local.toml`.
+- `~/.config/mise/github-token`: public repositories read-only, for mise rate
+  limits.
 
 `lima-agent` runs Claude Code in a Lima VM, with `~/code` and `~/work` mounted
 from the host.

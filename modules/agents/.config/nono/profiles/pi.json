@@ -61,7 +61,7 @@
     ]
   },
   "meta": {
-    "description": "pi.dev coding agent with mise, node, jj, maven, npm, cargo, shared skills, keychain access, and the GitHub token sb injects",
+    "description": "pi coding agent",
     "name": "pi",
     "version": "2.0.0"
   },

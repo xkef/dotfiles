@@ -16,7 +16,7 @@
     ]
   },
   "meta": {
-    "description": "Claude Code with mise, jj, maven, npm, cargo, shared skills, keychain access, the 1Password SSH agent, and the GitHub token sb injects",
+    "description": "Claude Code",
     "name": "claude",
     "version": "2.0.0"
   },

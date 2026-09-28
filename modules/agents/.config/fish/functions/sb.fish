@@ -1,14 +1,8 @@
 function sb -d "Run a command inside a nono sandbox"
     # The agent launchers in conf.d/agents.fish route through here, so every
     # interactive launch runs sandboxed. Use `command <tool>` to skip it.
-    # No variable that looks like a secret reaches the agent, except the
-    # public read-only MISE_GITHUB_TOKEN. The credentials the profile needs
-    # come from 1Password: a default launch gets the fine-grained agent
-    # token $SB_GH_TOKEN_REF names as GH_TOKEN. --strict picks the
-    # <command>-strict profile, for an unfamiliar repository. It also drops
-    # MISE_GITHUB_TOKEN and the SSH agent, and passes no GitHub token. That
-    # profile has no keychain, so Claude Code logs in with the long-lived
-    # token $SB_CLAUDE_TOKEN_REF names, the one lima-agent uses.
+    # Secrets are stripped; credentials come from 1Password. --strict adds
+    # no GitHub token, SSH agent, or keychain.
     set -l strict false
     if test "$argv[1]" = --strict
         set strict true
@@ -30,7 +24,6 @@ function sb -d "Run a command inside a nono sandbox"
     set -q SB_GH_TOKEN_REF; and set gh_ref $SB_GH_TOKEN_REF
     set -l claude_ref "op://Private/Claude Code/token"
     set -q SB_CLAUDE_TOKEN_REF; and set claude_ref $SB_CLAUDE_TOKEN_REF
-    # Public repositories only, and no permissions.
     set -l keep MISE_GITHUB_TOKEN
     set -l env_args
 

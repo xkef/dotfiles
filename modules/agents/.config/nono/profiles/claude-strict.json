@@ -96,7 +96,7 @@
     ]
   },
   "meta": {
-    "description": "Claude Code for an unfamiliar repository: no GitHub token, SSH agent, or keychain, and outbound traffic limited to the claude-code allowlist",
+    "description": "Claude Code for untrusted repositories",
     "name": "claude-strict",
     "version": "2.0.0"
   },
