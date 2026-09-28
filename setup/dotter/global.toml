@@ -4,7 +4,7 @@
 # selection, one per machine, in ~/.local/state/dotter/local.toml.
 #
 #   core     shell, editors, version control, and CLI tools
-#   desktop  GUI apps and the WezTerm pickers on the host
+#   desktop  GUI apps, the 1Password SSH agent, and WezTerm on the host
 #   agents   Claude Code, pi, their nono sandbox, the agent state, and
 #            the Lima VM that runs Claude Code
 

@@ -133,7 +133,7 @@
 [include]
 	path = ~/.local/share/tinted-theming/tinty/tinted-delta-configs-file.gitconfig
 
-# ── SSH signing through the 1Password agent ──────────
+# ── SSH signing through the SSH agent ────────────────
 [gpg]
 	format = ssh
 

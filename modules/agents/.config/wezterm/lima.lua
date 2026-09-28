@@ -2,7 +2,8 @@
 -- in the VM when its shell reports the lima-dev host through OSC 7. Splits
 -- and new tabs of that pane run `limactl shell dev` in the same directory,
 -- which exists in the guest because the shares mount at their host paths.
--- Every pane stays in the local mux.
+-- Every pane stays in the local mux. The desktop package reaches this
+-- file through vm.lua.
 local wezterm = require("wezterm")
 local act = wezterm.action
 
