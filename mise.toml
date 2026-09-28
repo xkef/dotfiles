@@ -7,6 +7,7 @@ shfmt = "3"
 stylua = "2"
 taplo = "0"
 vale = "3"
+zizmor = "1"
 
 [vars]
 shell_files = "$(shfmt -f .)"
@@ -36,6 +37,7 @@ depends = [
   "lint-nvim",
   "lint-wezterm",
   "lint-pi",
+  "lint-actions",
 ]
 
 [tasks.test]
@@ -62,6 +64,12 @@ run = ["stylua --check modules/", "dprint check --config .config/dprint.json"]
 description = "Type-check the pi extensions. Needs node."
 dir = ".config/pi"
 run = "npm ci --no-audit --no-fund && npx tsc"
+
+[tasks.lint-actions]
+description = "Audit the workflows and Dependabot config with zizmor"
+# zizmor rejects an empty token, which agent sandboxes set. Without a
+# token it skips the audits that query GitHub.
+run = '[ -n "${GITHUB_TOKEN:-}" ] || unset GITHUB_TOKEN; zizmor .'
 
 [tasks.lint-md]
 description = "Lint markdown"
