@@ -5,7 +5,8 @@
 #
 #   lima-agent [claude args...]
 #
-# The OAuth token comes from 1Password on every launch and reaches the
+# The OAuth token comes from 1Password on every launch, from the item that
+# LIMA_AGENT_TOKEN_REF names or else the default below, and reaches the
 # guest through stdin, so it never shows up in a process list. The guest
 # deletes its copy once the agent has it in its environment. The token of
 # the host's active gh account takes the same path and logs gh in the
@@ -14,7 +15,7 @@
 set -euo pipefail
 
 readonly VM=dev
-readonly TOKEN_REF="op://Private/Claude Code/token"
+readonly TOKEN_REF="${LIMA_AGENT_TOKEN_REF:-op://Private/Claude Code/token}"
 readonly SHARED_DIRS=("$HOME/code" "$HOME/work")
 
 shared=false
