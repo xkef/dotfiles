@@ -49,11 +49,19 @@ in any of them lists the bindings.
 
 ## Agent sandbox
 
-`claude` and `pi` always start in a [nono](https://nono.dev) sandbox. The
-default profile limits writes to the working directory, the agent's own state,
-and toolchain directories, and keeps the credentials needed to commit and push.
-`sb --strict claude` drops those credentials for untrusted repositories. The
-profiles live in `modules/agents/.config/nono/profiles/`.
+`claude` and `pi` always start in a [nono](https://nono.dev) sandbox, with
+profiles in `modules/agents/.config/nono/profiles/`. `sb --strict claude` drops
+credentials, keychain, and open network for untrusted repositories.
+`mise run test:sandbox` checks what each profile can reach.
+
+Setup needs two fine-grained GitHub tokens:
+
+- `op://Private/GitHub agents/token`, passed to agents as `GH_TOKEN`. Grant
+  Contents, Pull requests, and Issues read-write, and Actions and Commit
+  statuses read-only. Override it per repo with `SB_GH_TOKEN_REF` in
+  `mise.local.toml`.
+- `op://Private/GitHub mise/token`, public repositories read-only, for mise rate
+  limits. The deploy copies it to `~/.config/mise/github-token`.
 
 `lima-agent` runs Claude Code in a Lima VM, with `~/code` and `~/work` mounted
 from the host.

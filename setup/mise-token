@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Writes the public read-only GitHub token that mise uses for rate limits,
+# from 1Password, when the file is missing. env.fish reads the file, so a
+# shell never waits on op. A machine without op, such as the Lima VM or
+# CI, skips it. Delete the file and deploy again to rotate the token.
+set -euo pipefail
+
+readonly TOKEN_REF="op://Private/GitHub mise/token"
+file="${XDG_CONFIG_HOME:-$HOME/.config}/mise/github-token"
+
+if [[ -s "$file" ]] || ! command -v op >/dev/null; then
+  exit 0
+fi
+if ! token=$(op read "$TOKEN_REF" 2>/dev/null); then
+  echo "warning: can't read $TOKEN_REF; mise runs unauthenticated" >&2
+  exit 0
+fi
+
+mkdir -p "$(dirname "$file")"
+(
+  umask 077
+  printf '%s\n' "$token" >"$file"
+)

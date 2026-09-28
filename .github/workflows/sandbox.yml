@@ -1,0 +1,49 @@
+name: Sandbox
+
+# Probes the nono profiles with the real sandbox on Linux and macOS.
+on:
+  pull_request:
+  push:
+    paths:
+      - ".github/workflows/sandbox.yml"
+      - ".config/mise/tasks/test/sandbox"
+      - "modules/agents/.config/nono/**"
+      - "modules/agents/.config/fish/functions/sb.fish"
+      - "modules/agents/.claude/settings.dotfiles.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sandbox-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        if: runner.os == 'Linux'
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install nono and fish
+        run: |
+          if [ "$RUNNER_OS" = Linux ]; then
+            sudo apt-get update && sudo apt-get install -y fish jq
+            cargo install nono-cli --version 0.78.0 --locked
+          else
+            brew install fish nono
+          fi
+          nono --version
+      - name: Probe the profiles
+        env:
+          SANDBOX_TEST_NETWORK: "1"
+        run: .config/mise/tasks/test/sandbox

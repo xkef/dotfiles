@@ -7,15 +7,15 @@
 #
 # The OAuth token comes from 1Password on every launch and reaches the
 # guest through stdin, so it never shows up in a process list. The guest
-# deletes its copy once the agent has it in its environment. The host's gh
-# token for GH_USER takes the same path and logs gh in the guest, where it
-# stays for plain shells and git. WEZTERM_PANE
-# goes along so the agent's hooks report to the `mux-agents` picker.
+# deletes its copy once the agent has it in its environment. The
+# fine-grained GitHub agent token takes the same path and logs gh in the
+# guest. WEZTERM_PANE goes along so the agent's hooks report to the
+# `mux-agents` picker.
 set -euo pipefail
 
 readonly VM=dev
 readonly TOKEN_REF="op://Private/Claude Code/token"
-readonly GH_USER=xkef
+readonly GH_TOKEN_REF="${SB_GH_TOKEN_REF:-op://Private/GitHub agents/token}"
 readonly SHARED_DIRS=("$HOME/code" "$HOME/work")
 
 shared=false
@@ -34,7 +34,7 @@ mkdir -p "$HOME/.cache/lima-clipboard"
 
 # Reads the tokens before the VM starts, so a missing token fails fast.
 token=$(op read "$TOKEN_REF")
-gh_token=$(gh auth token --user "$GH_USER")
+gh_token=$(op read "$GH_TOKEN_REF")
 token_file=".cache/lima-agent/token.$$"
 
 # The guest's fish runs without a prompt, so it never reports its

@@ -2,12 +2,13 @@
   "$schema": "https://nono.dev/schemas/nono-profile.schema.json",
   "extends": "claude-strict",
   "filesystem": {
+    "allow": [
+      "$HOME/Library/Keychains"
+    ],
     "bypass_protection": [
+      "$HOME/Library/Keychains",
       "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
       "$HOME/.1password/agent.sock"
-    ],
-    "read": [
-      "$XDG_CONFIG_HOME/gh"
     ],
     "unix_socket": [
       "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
@@ -15,8 +16,11 @@
     ]
   },
   "meta": {
-    "description": "Claude Code with mise, jj, maven, npm, cargo, shared skills, and keychain access",
+    "description": "Claude Code",
     "name": "claude",
-    "version": "1.4.0"
+    "version": "2.0.0"
+  },
+  "network": {
+    "network_profile": null
   }
 }

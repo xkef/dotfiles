@@ -1,8 +1,8 @@
 function sb -d "Run a command inside a nono sandbox"
     # The agent launchers in conf.d/agents.fish route through here, so every
     # interactive launch runs sandboxed. Use `command <tool>` to skip it.
-    # --strict picks the <command>-strict profile and drops the tokens and
-    # the SSH agent from the environment, for an unfamiliar repository.
+    # Secrets are stripped; credentials come from 1Password. --strict adds
+    # no GitHub token, SSH agent, or keychain.
     set -l strict false
     if test "$argv[1]" = --strict
         set strict true
@@ -19,10 +19,30 @@ function sb -d "Run a command inside a nono sandbox"
     set -l cmd $argv[1]
     set -l rest $argv[2..-1]
     set -l profile $cmd
+    set -l cred_args
+    set -l gh_ref "op://Private/GitHub agents/token"
+    set -q SB_GH_TOKEN_REF; and set gh_ref $SB_GH_TOKEN_REF
+    set -l claude_ref "op://Private/Claude Code/token"
+    set -q SB_CLAUDE_TOKEN_REF; and set claude_ref $SB_CLAUDE_TOKEN_REF
+    set -l keep MISE_GITHUB_TOKEN
     set -l env_args
+
     if test $strict = true
         set profile $cmd-strict
-        set env_args -u GH_TOKEN -u GITHUB_TOKEN -u SSH_AUTH_SOCK
+        set keep
+        set -a env_args -u SSH_AUTH_SOCK
+        test $cmd = claude; and set cred_args --env-credential-map $claude_ref CLAUDE_CODE_OAUTH_TOKEN
+    else
+        set cred_args --env-credential-map $gh_ref GH_TOKEN
+    end
+    for var in (set --export --names)
+        contains -- $var $keep; and continue
+        string match -qir 'token|secret|passw|credential|api_?key|private_?key' -- $var
+        and set -a env_args -u $var
+    end
+    if test -n "$cred_args"; and not command -q op
+        printf '\033[33mNo 1Password CLI: the agent runs without %s\033[0m\n' $cred_args[3] >&2
+        set cred_args
     end
 
     switch $cmd
@@ -38,7 +58,7 @@ function sb -d "Run a command inside a nono sandbox"
         return $status
     end
 
-    set -l nono_args --silent --log-file /dev/null --allow-cwd --read $DOTFILES_DIR --profile $profile
+    set -l nono_args --silent --log-file /dev/null --allow-cwd --read $DOTFILES_DIR --profile $profile $cred_args
     test "$SB_ALLOW_LAUNCH_SERVICES" = 1; and set -a nono_args --allow-launch-services
     set -l cmd_args
 

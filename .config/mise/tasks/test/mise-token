@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#MISE description="Check that setup/mise-token writes the mise GitHub token once"
+set -eu
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-mise-token.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+export XDG_CONFIG_HOME="$tmp/config"
+file="$XDG_CONFIG_HOME/mise/github-token"
+
+fail() {
+  echo "$1" >&2
+  exit 1
+}
+
+# Without op the deploy goes on and writes nothing.
+PATH="$tmp/bin:/usr/bin:/bin" setup/mise-token
+[ ! -e "$file" ] || fail "wrote a token without op"
+
+# A stub op answers only the expected reference.
+mkdir -p "$tmp/bin"
+cat >"$tmp/bin/op" <<'EOF'
+#!/bin/sh
+[ "$1 $2" = "read op://Private/GitHub mise/token" ] || exit 1
+echo token-from-op
+EOF
+chmod +x "$tmp/bin/op"
+PATH="$tmp/bin:/usr/bin:/bin" setup/mise-token
+[ "$(cat "$file")" = token-from-op ] || fail "wrong token: $(cat "$file")"
+[ "$(ls -l "$file" | cut -c1-10)" = -rw------- ] || fail "token readable by others"
+
+# An existing file stays, so a deploy doesn't ask 1Password again.
+echo kept >"$file"
+PATH="$tmp/bin:/usr/bin:/bin" setup/mise-token
+[ "$(cat "$file")" = kept ] || fail "overwrote the existing token"
+echo "mise-token ok"

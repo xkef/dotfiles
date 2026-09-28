@@ -9,19 +9,25 @@ fail() {
   exit 1
 }
 
-# A stub nono records its arguments and the tokens it received.
+# A stub nono records its arguments and the tokens it received. A stub op
+# only has to exist.
 mkdir -p "$tmp/bin" "$tmp/home/.claude"
 cat >"$tmp/bin/nono" <<'EOF'
 #!/bin/sh
 printf '%s\n' "$@" >"$NONO_LOG"
 echo "GH_TOKEN=${GH_TOKEN:-}" >>"$NONO_LOG"
+echo "MISE_GITHUB_TOKEN=${MISE_GITHUB_TOKEN:-}" >>"$NONO_LOG"
+echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}" >>"$NONO_LOG"
+echo "SSH_AUTH_SOCK=${SSH_AUTH_SOCK:-}" >>"$NONO_LOG"
 EOF
-chmod +x "$tmp/bin/nono"
+printf '#!/bin/sh\n' >"$tmp/bin/op"
+chmod +x "$tmp/bin/nono" "$tmp/bin/op"
 cp modules/agents/.claude/settings.dotfiles.json "$tmp/home/.claude/settings.dotfiles.json"
 # PATH holds only the stub and the tools the test needs, so sb skips the
 # real agent-skills and agent-trace.
 PATH="$tmp/bin:$(dirname "$(command -v fish)"):$(dirname "$(command -v jq)"):/usr/bin:/bin"
-export PATH HOME="$tmp/home" NONO_LOG="$tmp/nono.log" GH_TOKEN=secret
+export PATH HOME="$tmp/home" NONO_LOG="$tmp/nono.log" GH_TOKEN=secret MISE_GITHUB_TOKEN=public \
+  AWS_SECRET_ACCESS_KEY=secret SSH_AUTH_SOCK=/agent.sock
 
 sb() {
   fish --no-config -c "source modules/agents/.config/fish/functions/sb.fish; sb $*" 2>/dev/null
@@ -33,9 +39,23 @@ grep -qx claude "$NONO_LOG" || fail "wrong profile: $(cat "$NONO_LOG")"
 settings=$(grep -A1 -x -- --settings "$NONO_LOG" | tail -1)
 [ "$(jq -c .sandbox.enabled <<<"$settings")" = false ] || fail "sandbox not off"
 [ "$(jq -c .hooks.Stop <<<"$settings")" != null ] || fail "repo settings missing"
-grep -qx GH_TOKEN=secret "$NONO_LOG" || fail "default launch dropped GH_TOKEN"
+# The host's token gives way to the agent token from 1Password.
+grep -qx GH_TOKEN= "$NONO_LOG" || fail "default launch kept the host GH_TOKEN"
+grep -A2 -x -- --env-credential-map "$NONO_LOG" | grep -qx GH_TOKEN ||
+  fail "default launch injected no agent token"
+grep -qx "op://Private/GitHub agents/token" "$NONO_LOG" || fail "wrong agent token ref"
+# Other secrets stay out, the public mise token and the SSH agent stay in.
+grep -qx AWS_SECRET_ACCESS_KEY= "$NONO_LOG" || fail "default launch kept a secret"
+grep -qx MISE_GITHUB_TOKEN=public "$NONO_LOG" || fail "default launch dropped MISE_GITHUB_TOKEN"
+grep -qx SSH_AUTH_SOCK=/agent.sock "$NONO_LOG" || fail "default launch dropped the SSH agent"
 
 sb --strict claude
 grep -qx claude-strict "$NONO_LOG" || fail "strict used profile: $(cat "$NONO_LOG")"
 grep -qx GH_TOKEN= "$NONO_LOG" || fail "strict launch kept GH_TOKEN"
+grep -qx MISE_GITHUB_TOKEN= "$NONO_LOG" || fail "strict launch kept MISE_GITHUB_TOKEN"
+grep -qx SSH_AUTH_SOCK= "$NONO_LOG" || fail "strict launch kept the SSH agent"
+# The Claude Code token replaces the keychain, and no GitHub token follows.
+grep -A2 -x -- --env-credential-map "$NONO_LOG" | grep -qx CLAUDE_CODE_OAUTH_TOKEN ||
+  fail "strict launch injected no Claude Code token"
+! grep -qx GH_TOKEN "$NONO_LOG" || fail "strict launch injected a GitHub token"
 echo "sb ok"
