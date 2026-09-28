@@ -2,7 +2,7 @@
 -- color names an ANSI slot, so a tinty switch recolors the bar with the
 -- terminal.
 local wezterm = require("wezterm")
-local lima = require("lima")
+local vm = require("vm")
 local path = require("path")
 
 local M = {}
@@ -99,8 +99,8 @@ local function update(window, pane)
   table.insert(right, { Text = wezterm.strftime("%H:%M") .. "  " })
   -- The host the active pane runs on, marked while it's the Lima VM.
   local host, color = wezterm.hostname(), "Teal"
-  if lima.in_vm(pane) then
-    host, color = lima.MARK .. " " .. lima.HOST, "Maroon"
+  if vm.in_vm(pane) then
+    host, color = vm.MARK .. " " .. vm.HOST, "Maroon"
   end
   table.insert(right, { Foreground = { AnsiColor = color } })
   table.insert(right, { Attribute = { Intensity = "Bold" } })
@@ -114,8 +114,8 @@ end
 -- shield and takes maroon for blue.
 local function tab_title(tab, background)
   local pane = tab.active_pane
-  local sandbox = lima.info_in_vm(pane)
-  local mark = sandbox and lima.MARK .. " " or ""
+  local sandbox = vm.info_in_vm(pane)
+  local mark = sandbox and vm.MARK .. " " or ""
   local text = " " .. tab.tab_index + 1 .. ":" .. mark .. program(pane) .. " "
   local gap = { { Background = { Color = background } }, { Text = TAB_GAP } }
 

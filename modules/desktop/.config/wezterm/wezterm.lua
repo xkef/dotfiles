@@ -9,8 +9,12 @@
 --   picker.lua      tv pickers in a zoomed split, and their choices
 --   workspaces.lua  workspace switching
 --   status.lua      tab titles and the status line
---   lima.lua        new panes and tabs that stay in the Lima VM
---   agents.lua      agent bindings, from the agents package if deployed
+--   vm.lua          new panes and tabs that stay in the Lima VM
+--
+-- The agents package adds two more when deployed:
+--
+--   lima.lua        the Lima VM behind vm.lua
+--   agents.lua      agent bindings
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 
