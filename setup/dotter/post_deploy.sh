@@ -25,6 +25,7 @@ if [[ "$agents" == true ]]; then
 fi
 
 setup/identity/render
+setup/mise-token
 
 # The repo runs jj colocated with git, but a fresh clone is plain git. jj
 # takes it over once the package install has put jj in place, and tracks

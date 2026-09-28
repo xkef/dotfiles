@@ -60,8 +60,8 @@ Setup needs two fine-grained GitHub tokens:
   Contents, Pull requests, and Issues read-write, and Actions and Commit
   statuses read-only. Override it per repo with `SB_GH_TOKEN_REF` in
   `mise.local.toml`.
-- `~/.config/mise/github-token`, public repositories read-only, for mise rate
-  limits.
+- `op://Private/GitHub mise/token`, public repositories read-only, for mise rate
+  limits. The deploy copies it to `~/.config/mise/github-token`.
 
 `lima-agent` runs Claude Code in a Lima VM, with `~/code` and `~/work` mounted
 from the host.
