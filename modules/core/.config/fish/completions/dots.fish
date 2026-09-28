@@ -2,6 +2,7 @@ complete -c dots -f
 complete -c dots -n __fish_use_subcommand -xa update -d 'Pull the repo and apply changes'
 complete -c dots -n __fish_use_subcommand -xa diff -d 'Show pending changes'
 complete -c dots -n __fish_use_subcommand -xa apply -d 'Deploy the repo into $HOME'
+complete -c dots -n __fish_use_subcommand -xa repair -d 'Rerun every setup step, then deploy'
 complete -c dots -n __fish_use_subcommand -xa keys -d 'Show keybinding reference'
 complete -c dots -n __fish_use_subcommand -xa theme -d 'Switch terminal + editor theme'
 complete -c dots -n '__fish_seen_subcommand_from keys' -xa --raw

@@ -29,7 +29,7 @@ set -l bg (string match -rg '^background = "#([0-9a-fA-F]{6})"' <$colors_file | 
 set -l fg (string match -rg '^foreground = "#([0-9a-fA-F]{6})"' <$colors_file | string lower)
 set -l palette (string match -rg '^\s+"#([0-9a-fA-F]{6})",?$' <$colors_file | string lower)
 if test (count $palette) -lt 16; or test -z "$bg"; or test -z "$fg"
-    echo "pi-theme: no palette in $colors_file" >&2
+    echo "tinty pi hook: no palette in $colors_file" >&2
     exit 1
 end
 

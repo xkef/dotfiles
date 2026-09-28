@@ -13,7 +13,9 @@ its reproduction.
 
    ```sh
    mise run lint-sh ::: lint-fish ::: lint-fmt ::: lint-md ::: lint-prose ::: lint-actions
+   mise run lint-pi
    mise run check
+   mise run test
    ```
 
 2. Move `main` to the newest commit with a description:

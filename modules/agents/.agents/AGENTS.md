@@ -26,8 +26,9 @@ terminal. Without nono, Claude Code's sandbox applies, and
 
 # Toolchains install on demand
 
-Only node and python are installed globally. Each project pins its own versions,
-and the tools below install them on first use:
+The global node, python, and go serve only as defaults, next to rustup and uv.
+Each project pins its own versions, and the tools below install them on first
+use:
 
 - Rust: `rust-toolchain.toml` through rustup.
 - Go: the `toolchain` line in `go.mod`.
