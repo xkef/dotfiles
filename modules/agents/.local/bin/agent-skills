@@ -23,7 +23,10 @@ set -l skills_version 1.7.0
 # The sentinel name carries a digest of the list and the version above, so
 # editing either reinstalls on the next launch.
 set -l sentinel_dir "$HOME/.cache/dotfiles"
-set -l digest (string join \n $skills_version $upstreams | shasum -a 256 | string sub -l 12)
+# Arch lacks the Perl shasum, and older macOS lacks sha256sum.
+set -l sha256 sha256sum
+command -q sha256sum; or set sha256 shasum -a 256
+set -l digest (string join \n $skills_version $upstreams | $sha256 | string sub -l 12)
 set -l sentinel "$sentinel_dir/skills.shared.$digest.installed"
 
 # The skills CLI installs into ~/.agents/skills through its claude-code

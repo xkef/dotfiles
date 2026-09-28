@@ -25,8 +25,11 @@ switch $argv[1]
     case repair
         # setup/onchange skips a step whose inputs match its last success,
         # even when its result is gone. Dropping the stamps runs every step
-        # again, and each one installs only what is missing.
-        rm -rf (set -q XDG_STATE_HOME; and echo $XDG_STATE_HOME; or echo ~/.local/state)/dotfiles
+        # again, and each one installs only what is missing. The stamps are
+        # the plain files. owned/ records the settings keys the repo owns and
+        # stays.
+        set -l state (set -q XDG_STATE_HOME; and echo $XDG_STATE_HOME; or echo ~/.local/state)/dotfiles
+        test -d $state; and find $state -maxdepth 1 -type f -delete
         dots apply $argv[2..-1]
     case keys
         dots-keys $argv[2..-1]

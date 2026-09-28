@@ -27,9 +27,10 @@ grep -qx apply "$DOTS_LOG" || fail "update did not deploy"
 
 # repair drops the onchange stamps, so every setup step runs again.
 : >"$DOTS_LOG"
-mkdir -p "$XDG_STATE_HOME/dotfiles"
-touch "$XDG_STATE_HOME/dotfiles/packages"
+mkdir -p "$XDG_STATE_HOME/dotfiles/owned"
+touch "$XDG_STATE_HOME/dotfiles/packages-core-" "$XDG_STATE_HOME/dotfiles/owned/pi.json"
 DOTFILES_DIR="$tmp/clone" fish --no-config "$dots" repair || fail "repair failed"
-[ ! -e "$XDG_STATE_HOME/dotfiles/packages" ] || fail "repair kept a stamp"
+[ ! -e "$XDG_STATE_HOME/dotfiles/packages-core-" ] || fail "repair kept a stamp"
+[ -e "$XDG_STATE_HOME/dotfiles/owned/pi.json" ] || fail "repair dropped the owned keys"
 grep -qx apply "$DOTS_LOG" || fail "repair did not deploy"
 echo "dots ok"
