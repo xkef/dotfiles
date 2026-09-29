@@ -9,10 +9,11 @@
 # Provisioning outlasts the default 10-minute start timeout, so pass
 # --timeout=30m to `limactl start`.
 #
-# The guest sees ~/code and ~/work read-write, and this repo read-only, at
-# the host's paths, so `limactl shell` opens in the current directory.
-# Symlinks under the guest home point at them. Lima forwards the guest's
-# ports to localhost and the host's SSH agent into the guest.
+# The guest sees this repo read-only, at the host's path, and holds no
+# host credentials. `lima-agent` copies other repositories in through git,
+# to their host paths, so `limactl shell` opens in the current directory.
+# Symlinks under the guest home point at the mounts. Lima forwards the
+# guest's ports to localhost.
 minimumLimaVersion: 2.0.0
 
 # Weekly build from https://github.com/xkef/archlinux-lima, pinned to the
@@ -26,10 +27,6 @@ memory: 8GiB
 
 mountType: virtiofs
 mounts:
-  - location: ~/code
-    writable: true
-  - location: ~/work
-    writable: true
   - location: ~/dotfiles
   # Images that Cmd-V pastes into VM panes as paths.
   - location: ~/.cache/lima-clipboard
@@ -49,9 +46,6 @@ mounts:
 user:
   home: "/home/{{.User}}"
   shell: /usr/bin/fish
-
-ssh:
-  forwardAgent: true
 
 # setup/deploy installs the packages and sets fish as the login shell.
 # `lima-agent` runs Claude Code in here.

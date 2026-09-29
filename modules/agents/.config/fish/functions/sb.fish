@@ -30,18 +30,7 @@ function sb -d "Run a command inside a nono sandbox"
             command -q agent-skills; and agent-skills ensure $cmd
     end
 
-    if not command -q nono
-        printf '\033[33mNo sandbox available (install nono)\033[0m\n' >&2
-        read -P "Continue without sandbox? [y/N] " reply
-        string match -qi y -- $reply; or return 1
-        command $cmd $rest
-        return $status
-    end
-
-    set -l nono_args --silent --log-file /dev/null --allow-cwd --read $DOTFILES_DIR --profile $profile
-    test "$SB_ALLOW_LAUNCH_SERVICES" = 1; and set -a nono_args --allow-launch-services
     set -l cmd_args
-
     switch $cmd
         case claude
             # The repo settings override the keys they name in the settings
@@ -52,6 +41,25 @@ function sb -d "Run a command inside a nono sandbox"
             touch $HOME/.claude.json.lock
             set -a cmd_args --settings (jq -c '.sandbox.enabled = false' $HOME/.claude/settings.dotfiles.json)
     end
+
+    # The Lima VM is the sandbox, so the agent runs there without nono, and
+    # Claude Code without permission prompts.
+    if __sb_in_vm
+        test $cmd = claude; and set -p cmd_args --dangerously-skip-permissions
+        command $cmd $cmd_args $rest
+        return $status
+    end
+
+    if not command -q nono
+        printf '\033[33mNo sandbox available (install nono)\033[0m\n' >&2
+        read -P "Continue without sandbox? [y/N] " reply
+        string match -qi y -- $reply; or return 1
+        command $cmd $rest
+        return $status
+    end
+
+    set -l nono_args --silent --log-file /dev/null --allow-cwd --read $DOTFILES_DIR --profile $profile
+    test "$SB_ALLOW_LAUNCH_SERVICES" = 1; and set -a nono_args --allow-launch-services
 
     # Not exec: the launchers call this function and clear the agent state
     # after the agent exits.
@@ -66,4 +74,9 @@ function sb -d "Run a command inside a nono sandbox"
         disown
     end
     return $rc
+end
+
+# Lima creates this file on every boot of a guest.
+function __sb_in_vm
+    test -e /run/lima-boot-done
 end

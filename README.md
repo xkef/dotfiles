@@ -57,9 +57,10 @@ and toolchain directories, and keeps the credentials needed to commit and push.
 `sb --strict claude` drops those credentials for untrusted repositories. The
 profiles live in `modules/agents/.config/nono/profiles/`.
 
-`agents vm`, or `lima-agent`, runs Claude Code in a Lima VM, with `~/code` and
-`~/work` mounted from the host. `agents skills` refreshes the shared agent
-skills, and `agents trace` reports failed tool calls in Claude Code sessions.
+`agents vm`, or `lima-agent`, runs Claude Code in a Lima VM on a copy of the
+repository, and `agents vm take` applies the copy's changes to the host.
+`agents skills` refreshes the shared agent skills, and `agents trace` reports
+failed tool calls in Claude Code sessions.
 
 ## Make it yours
 

@@ -1,7 +1,8 @@
 -- Keeps new panes in the Lima VM from ~/.config/lima/dev.yaml. A pane runs
 -- in the VM when its shell reports the lima-dev host through OSC 7. Splits
 -- and new tabs of that pane run `limactl shell dev` in the same directory,
--- which exists in the guest because the shares mount at their host paths.
+-- which exists in the guest because `lima-agent` copies repositories to
+-- their host paths.
 -- Every pane stays in the local mux. The desktop package reaches this
 -- file through vm.lua.
 local wezterm = require("wezterm")
@@ -27,8 +28,8 @@ on run argv
   close access f
 end run]]
 
--- A tab with a shell in the VM, in the current directory.
-M.shell_tab = act.SpawnCommandInNewTab({ args = SHELL })
+-- A tab with a shell in the VM, on a copy of the current repository.
+M.shell_tab = act.SpawnCommandInNewTab({ args = { "lima-agent", "--shell" } })
 
 -- The directory in cwd, a URL from OSC 7, when it names the VM, else nil.
 local function vm_path(cwd)

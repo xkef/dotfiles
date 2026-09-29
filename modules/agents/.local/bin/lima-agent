@@ -1,59 +1,163 @@
 #!/usr/bin/env bash
-# Runs Claude Code in the Lima VM from ~/.config/lima/dev.yaml, in the
-# current directory, with permission prompts off. The VM is the sandbox:
-# it sees ~/code and ~/work at their host paths and nothing else of $HOME.
+# Runs Claude Code, or fish, in the Lima VM from ~/.config/lima/dev.yaml,
+# on a copy of the current repository. The VM is the sandbox: the copy
+# sits at the host's path, and the VM holds no host credentials.
 #
-#   lima-agent [claude args...]
+#   lima-agent [claude args...]   Claude Code, permission prompts off
+#   lima-agent --shell            fish, which `prefix v` opens
+#   lima-agent take               apply the copy's changes to the host
+#   lima-agent drop               discard the copy's changes
+#
+# Each launch copies the host's working tree into the VM, untracked files
+# included and ignored files left out. It replaces the copy only while the
+# copy holds no changes of its own, so work in the VM waits for `take` or
+# `drop`. When the shell or the agent exits, lima-agent shows the changes
+# and asks which. `take` applies the copy's changes, commits included, to
+# the host's working tree as a patch. A patch changes files only, so
+# nothing the VM writes runs on the host before you review it.
 #
 # The OAuth token comes from 1Password on every launch, from the item that
 # LIMA_AGENT_TOKEN_REF names or else the default below, and reaches the
 # guest through stdin, so it never shows up in a process list. The guest
-# deletes its copy once the agent has it in its environment. The token of
-# the host's active gh account takes the same path and logs gh in the
-# guest, where it stays for plain shells and git. WEZTERM_PANE goes along
-# so the agent's hooks report to the `mux-agents` picker.
+# deletes its copy once the agent has it in its environment. WEZTERM_PANE
+# goes along so the agent's hooks report to the `mux-agents` picker.
 set -euo pipefail
 
 readonly VM=dev
 readonly TOKEN_REF="${LIMA_AGENT_TOKEN_REF:-op://Private/Claude Code/token}"
-readonly SHARED_DIRS=("$HOME/code" "$HOME/work")
+# Guest refs: the latest host copy, and the one the guest's tree started from.
+readonly HOST_REF=refs/lima/host
+readonly BASE_REF=refs/lima/base
 
-shared=false
-for dir in "${SHARED_DIRS[@]}"; do
-  case "$PWD/" in "$dir"/*) shared=true ;; esac
-done
-if [ "$shared" = false ]; then
-  echo "lima-agent: $PWD is not shared with the VM" >&2
+mode=claude
+case "${1:-}" in
+--shell | take | drop)
+  mode=${1#--}
+  shift
+  ;;
+esac
+
+if ! root=$(git rev-parse --show-toplevel 2>/dev/null); then
+  if [ "$mode" = shell ]; then
+    exec limactl shell --start "$VM"
+  fi
+  echo "lima-agent: $PWD is not in a git repository" >&2
   exit 1
 fi
+workdir="$root/$(git rev-parse --show-prefix)"
+
+# Runs the sh script in $1 in the guest, with the repository root as its $1
+# and the remaining arguments after it.
+guest() {
+  limactl shell --start --workdir / "$VM" -- sh -c "$1" sh "$root" "${@:2}"
+}
+
+# Commits the host's working tree through a temporary index, so the host's
+# index and history stay untouched.
+snapshot() {
+  local dir tree
+  dir=$(mktemp -d)
+  cp "$(git rev-parse --git-path index)" "$dir/index" 2>/dev/null || :
+  GIT_INDEX_FILE="$dir/index" git add -A :/
+  tree=$(GIT_INDEX_FILE="$dir/index" git write-tree)
+  rm -r "$dir"
+  git commit-tree --no-gpg-sign -p HEAD -m "lima-agent: host working tree" "$tree"
+}
+
+drop() {
+  guest 'cd "$1" && git reset -q --hard '"$BASE_REF"' && git clean -fdq'
+}
+
+# Shows the VM copy's changes and applies them. With "ask", as a session
+# ends, it asks first whether to take, drop, or keep them.
+review() {
+  local patch answer=t
+  patch=$(mktemp "${TMPDIR:-/tmp}/lima-agent.XXXXXX")
+  guest 'cd "$1" && git add -A && git diff --cached --binary '"$BASE_REF" >"$patch"
+  if [ ! -s "$patch" ]; then
+    rm "$patch"
+    [ "$1" = ask ] || echo "lima-agent: the VM copy has no changes"
+    return
+  fi
+
+  git apply --stat "$patch"
+  if [ "$1" = ask ]; then
+    read -rp "Take, drop, or keep the VM changes? [t/d/K] " answer
+  fi
+  case "$answer" in
+  t*)
+    if ! git -C "$root" apply "$patch"; then
+      echo "lima-agent: the patch does not apply, see $patch" >&2
+      exit 1
+    fi
+    drop
+    ;;
+  d*) drop ;;
+  esac
+  rm "$patch"
+}
+
+case "$mode" in
+take)
+  review now
+  exit
+  ;;
+drop)
+  drop
+  exit
+  ;;
+esac
 
 # The VM mounts the agent state directory and its transcript directory,
 # which must exist first.
 mkdir -p "${XDG_STATE_HOME:-$HOME/.local/state}/agents/lima-$VM/claude-projects"
 mkdir -p "$HOME/.cache/lima-clipboard"
 
-# Reads the tokens before the VM starts, so a missing token fails fast.
-token=$(op read "$TOKEN_REF")
-gh_token=$(gh auth token)
-token_file=".cache/lima-agent/token.$$"
+# Reads the token before the VM starts, so a missing token fails fast.
+token="" token_file=""
+if [ "$mode" = claude ]; then
+  token=$(op read "$TOKEN_REF")
+  token_file=".cache/lima-agent/token.$$"
+fi
+
+# Creates the guest repository on first use. It commits under the host's
+# name without signing, since the guest has no signing key.
+guest '[ -d "$1/.git" ] || {
+  sudo install -d -o "$(id -u)" -g "$(id -g)" "$1" &&
+    git init -q "$1" &&
+    git -C "$1" config user.name "$2" &&
+    git -C "$1" config user.email "$3" &&
+    git -C "$1" config commit.gpgsign false
+}' "$(git config user.name)" "$(git config user.email)"
+
+git push -q -f "lima-$VM:$root" "$(snapshot):$HOST_REF"
+
+# Replaces the copy while it holds nothing since the last copy, and stores
+# the token for the agent.
+printf '%s' "$token" | guest 'cd "$1"
+  if [ -z "$(git status --porcelain)" ] &&
+    [ "$(git rev-parse -q --verify HEAD)" = "$(git rev-parse -q --verify '"$BASE_REF"')" ]; then
+    git reset -q --hard '"$HOST_REF"' && git update-ref '"$BASE_REF $HOST_REF"'
+  else
+    echo "lima-agent: the VM copy has changes, which lima-agent take or drop clears" >&2
+  fi
+  [ -z "$2" ] || { f="$HOME/$2" && umask 077 && mkdir -p "${f%/*}" && cat >"$f"; }' "$token_file"
 
 # The guest's fish runs without a prompt, so it never reports its
 # directory. OSC 7 with the VM's host name tells WezTerm the pane works in
 # the VM, which the status line marks and splits follow.
 if [ -t 1 ]; then
-  printf '\e]7;file://lima-%s%s\e\\' "$VM" "$PWD"
+  printf '\e]7;file://lima-%s%s\e\\' "$VM" "$workdir"
 fi
 
-# The first line holds the gh token, which gh stores in a file since the
-# guest has no keyring. Logging in again only follows a token change.
-printf '%s\n%s' "$gh_token" "$token" |
-  limactl shell --start --workdir / "$VM" -- sh -c '
-    IFS= read -r gh
-    [ "$(gh auth token 2>/dev/null)" = "$gh" ] ||
-      printf %s "$gh" | gh auth login --with-token --insecure-storage
-    f="$HOME/$1" && umask 077 && mkdir -p "${f%/*}" && cat >"$f"' sh "$token_file"
+rc=0
+if [ "$mode" = shell ]; then
+  limactl shell --workdir "$workdir" "$VM" || rc=$?
+  review ask
+  exit "$rc"
+fi
 
-exec limactl shell --workdir "$PWD" "$VM" -- \
+limactl shell --workdir "$workdir" "$VM" -- \
   env WEZTERM_PANE="${WEZTERM_PANE:-}" fish -lc '
     set -lx CLAUDE_CODE_OAUTH_TOKEN (cat ~/$argv[1])
     rm ~/$argv[1]
@@ -68,8 +172,6 @@ exec limactl shell --workdir "$PWD" "$VM" -- \
         jq --arg dir $PWD ".hasCompletedOnboarding = true | .projects[\$dir].hasTrustDialogAccepted = true" $cfg >$tmp
         and mv $tmp $cfg
     end
-    command claude --dangerously-skip-permissions \
-        --settings ~/.claude/settings.dotfiles.json $argv[2..]
-    set -l rc $status
-    agent-state clear
-    exit $rc' "$token_file" "$@"
+    claude $argv[2..]' "$token_file" "$@" || rc=$?
+review ask
+exit "$rc"

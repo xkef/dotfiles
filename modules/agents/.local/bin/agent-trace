@@ -122,8 +122,8 @@ sources() {
 
 # Prints "<environment>\t<transcript>" per session in scope. Claude names
 # each project directory after the session's cwd with every character
-# outside [A-Za-z0-9] turned into "-". Lima shares ~/code and ~/work at
-# their host paths, so a repository gets the same name in both
+# outside [A-Za-z0-9] turned into "-". `lima-agent` keeps a repository at
+# its host path in the guest, so it gets the same name in both
 # environments. A prefix match finds the sessions started in
 # subdirectories too, and the recorded cwd drops the unrelated directories
 # that share the prefix.

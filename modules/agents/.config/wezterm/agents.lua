@@ -11,7 +11,7 @@ local PICKER = picker.open({ "mux-agents" })
 local LIMA_AGENT = act.SpawnCommandInNewTab({ args = { "lima-agent" } })
 
 M.keys = {
-  -- @key wezterm :: v :: New tab in the Lima VM
+  -- @key wezterm :: v :: Repository copy in the Lima VM, new tab
   { key = "v", mods = "LEADER", action = lima.shell_tab },
   -- @key wezterm :: a :: Agent picker (all workspaces)
   { key = "a", mods = "LEADER", action = PICKER },
@@ -21,7 +21,7 @@ M.keys = {
 
 M.palette = {
   { brief = "Agents", icon = "cod_hubot", action = PICKER },
-  { brief = "Lima VM shell in a new tab", icon = "cod_vm", action = lima.shell_tab },
+  { brief = "Lima VM shell on a repository copy", icon = "cod_vm", action = lima.shell_tab },
   { brief = "Claude Code in the Lima VM", icon = "cod_hubot", action = LIMA_AGENT },
 }
 

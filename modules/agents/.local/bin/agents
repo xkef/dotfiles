@@ -17,7 +17,7 @@ switch $argv[1]
         echo "Commands:"
         echo "  skills    Refresh shared agent skills from upstream"
         echo "  trace     Report failed tool calls in Claude Code sessions"
-        echo "  vm        Run Claude Code in the Lima VM"
+        echo "  vm        Run Claude Code in the Lima VM, or take or drop its changes"
         echo ""
     case '*'
         echo "Unknown command: $argv[1]"
