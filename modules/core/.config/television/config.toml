@@ -75,5 +75,10 @@ ctrl-u = "scroll_preview_half_page_up"
 "tldr" = ["tldr"]
 "ssh-hosts" = ["ssh"]
 "brew-packages" = ["brew info", "brew upgrade", "brew uninstall"]
-"podman-containers" = ["podman exec", "podman logs", "podman start", "podman stop"]
+"podman-containers" = [
+  "podman exec",
+  "podman logs",
+  "podman start",
+  "podman stop",
+]
 "podman-images" = ["podman run"]

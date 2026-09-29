@@ -18,4 +18,3 @@ abbr -a reload 'exec fish'
 alias grep 'grep --color=auto'
 abbr -a extract 'ouch decompress'
 abbr -a compress 'ouch compress'
-
