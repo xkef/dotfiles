@@ -30,6 +30,7 @@ local FAINT_OPACITY = 0.5
 -- border below it.
 local STATUS_ABOVE = 0.5
 local STATUS_BELOW = 0.25
+local STATUS_UPDATE_MS = 100
 
 local colors = require("colors")
 colors.apply(config)
@@ -85,6 +86,9 @@ config.native_macos_fullscreen_mode = true
 config.use_fancy_tab_bar = false
 config.tab_bar_at_bottom = true
 config.show_new_tab_button_in_tab_bar = false
+-- The bar redraws often enough that the mode label follows copy mode and
+-- mouse selections without a visible lag.
+config.status_update_interval = STATUS_UPDATE_MS
 config.tab_max_width = 34
 config.colors.tab_bar = { background = config.colors.background }
 config.window_frame = {

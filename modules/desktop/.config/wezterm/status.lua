@@ -2,6 +2,7 @@
 -- color names an ANSI slot, so a tinty switch recolors the bar with the
 -- terminal.
 local wezterm = require("wezterm")
+local act = wezterm.action
 local vm = require("vm")
 local path = require("path")
 
@@ -18,6 +19,9 @@ local NOTICE_SECONDS = 2
 
 -- The notice each window shows, by window id.
 local notices = {}
+
+-- The mode label for each copy-mode selection mode, as tmux names them.
+local SELECTION_LABELS = { Cell = "VISUAL", Line = "V-LINE", Block = "V-BLOCK" }
 
 local function basename(path)
   return (path or ""):match("([^/]+)$") or ""
@@ -81,10 +85,24 @@ local function update(window, pane)
     table.insert(right, { Foreground = { AnsiColor = "Green" } })
     table.insert(right, { Text = notice.text .. "  " })
   end
+  -- The mode: the copy-mode selection, the active key table, or VISUAL
+  -- for a mouse selection, which leaves copy mode off. Leaving the key
+  -- tables ends the copy-mode selection.
   local key_table = window:active_key_table()
-  if key_table and key_table ~= "repeat" then
+  if not key_table then
+    wezterm.GLOBAL.selection = nil
+  end
+  local mode
+  if key_table == "copy_mode" then
+    mode = wezterm.GLOBAL.selection or "COPY"
+  elseif key_table and key_table ~= "repeat" then
+    mode = key_table:upper():gsub("_MODE", "")
+  elseif window:get_selection_text_for_pane(pane) ~= "" then
+    mode = "VISUAL"
+  end
+  if mode then
     table.insert(right, { Foreground = { AnsiColor = "Green" } })
-    table.insert(right, { Text = "-- " .. key_table:upper():gsub("_MODE", "") .. " --  " })
+    table.insert(right, { Text = "-- " .. mode .. " --  " })
   end
   for _, info in ipairs(window:active_tab():panes_with_info()) do
     if info.is_zoomed then
@@ -154,6 +172,37 @@ function M.notify(window, pane, text)
     end
     notices[id] = nil
     update(window, window:active_pane())
+  end)
+end
+
+-- Sets the copy-mode selection to mode, "Cell", "Line", or "Block", or
+-- clears it when it already has that mode, as WezTerm does. The label
+-- updates at once.
+function M.select(mode)
+  return wezterm.action_callback(function(window, pane)
+    local label = SELECTION_LABELS[mode]
+    wezterm.GLOBAL.selection = wezterm.GLOBAL.selection ~= label and label or nil
+    window:perform_action(act.CopyMode({ SetSelectionMode = mode }), pane)
+    update(window, pane)
+  end)
+end
+
+-- Performs action, a copy, and names the copied size in a notice when
+-- there is a selection, since the copy gives no other sign. mode, when
+-- given, is the selection mode that action sets before it copies, so its
+-- size isn't known yet.
+function M.copy(action, mode)
+  return wezterm.action_callback(function(window, pane)
+    if mode then
+      wezterm.GLOBAL.selection = SELECTION_LABELS[mode]
+    end
+    local text = window:get_selection_text_for_pane(pane)
+    window:perform_action(action, pane)
+    if text ~= "" then
+      M.notify(window, pane, "Copied " .. utf8.len(text) .. " chars")
+    elseif wezterm.GLOBAL.selection then
+      M.notify(window, pane, "Copied")
+    end
   end)
 end
 

@@ -18,7 +18,7 @@ local CLEAR_SCREEN = act.Multiple({
 
 -- Ctrl-Shift bindings, on every platform.
 local SHARED = {
-  { key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
+  { key = "c", mods = "CTRL|SHIFT", action = status.copy(act.CopyTo("Clipboard")) },
   { key = "v", mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
   { key = "n", mods = "CTRL|SHIFT", action = act.SpawnWindow },
   { key = "t", mods = "CTRL|SHIFT", action = vm.tab(act.SpawnTab("CurrentPaneDomain")) },
@@ -33,7 +33,7 @@ local SHARED = {
 
 -- macOS Cmd bindings.
 local MAC = {
-  { key = "c", mods = "SUPER", action = act.CopyTo("Clipboard") },
+  { key = "c", mods = "SUPER", action = status.copy(act.CopyTo("Clipboard")) },
   { key = "v", mods = "SUPER", action = vm.paste(act.PasteFrom("Clipboard")) },
   { key = "v", mods = "SUPER|SHIFT", action = act.PasteFrom("PrimarySelection") },
   { key = "=", mods = "SUPER", action = act.IncreaseFontSize },
@@ -100,15 +100,7 @@ end
 -- Copies the finished mouse selection and names its size in the status
 -- line, since the copy gives no other sign. A click without a drag
 -- selects nothing and shows nothing.
-local COPY_SELECTION = act.Multiple({
-  act.CompleteSelection("ClipboardAndPrimarySelection"),
-  wezterm.action_callback(function(window, pane)
-    local text = window:get_selection_text_for_pane(pane)
-    if text ~= "" then
-      status.notify(window, pane, "Copied " .. utf8.len(text) .. " chars")
-    end
-  end),
-})
+local COPY_SELECTION = status.copy(act.CompleteSelection("ClipboardAndPrimarySelection"))
 
 -- Cmd-click, or Ctrl-click off macOS, opens a link, and a plain click only
 -- selects. The press does nothing, so Neovim doesn't see it. The link
@@ -166,16 +158,27 @@ end
 -- Additions to WezTerm's vi-style copy mode: Y copies to
 -- the end of the line, o and i jump between prompts, and / and ? search.
 -- WezTerm's search starts upward, so Enter moves up and Ctrl-n down.
+-- The selection keys go through status so the status line names the
+-- selection mode, and y and Y stay in copy mode with the selection.
 local COPY_MODE = {
+  { key = "v", mods = "NONE", action = status.select("Cell") },
+  { key = "Space", mods = "NONE", action = status.select("Cell") },
+  { key = "V", mods = "NONE", action = status.select("Line") },
+  { key = "V", mods = "SHIFT", action = status.select("Line") },
+  { key = "v", mods = "CTRL", action = status.select("Block") },
+  { key = "y", mods = "NONE", action = status.copy(act.CopyTo("ClipboardAndPrimarySelection")) },
   {
     key = "Y",
     mods = "SHIFT",
-    action = act.Multiple({
-      act.CopyMode({ SetSelectionMode = "Cell" }),
-      act.CopyMode("MoveToEndOfLineContent"),
-      act.CopyTo("ClipboardAndPrimarySelection"),
-      act.CopyMode("Close"),
-    }),
+    action = status.copy(
+      act.Multiple({
+        act.CopyMode("ClearSelectionMode"),
+        act.CopyMode({ SetSelectionMode = "Cell" }),
+        act.CopyMode("MoveToEndOfLineContent"),
+        act.CopyTo("ClipboardAndPrimarySelection"),
+      }),
+      "Cell"
+    ),
   },
   { key = "o", mods = "NONE", action = act.CopyMode({ MoveBackwardZoneOfType = "Prompt" }) },
   { key = "i", mods = "NONE", action = act.CopyMode({ MoveForwardZoneOfType = "Prompt" }) },
