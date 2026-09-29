@@ -23,6 +23,11 @@ local notices = {}
 -- The mode label for each copy-mode selection mode, as tmux names them.
 local SELECTION_LABELS = { Cell = "VISUAL", Line = "V-LINE", Block = "V-BLOCK" }
 
+-- The copy-mode selection mode of each pane, by pane id, like @mode in
+-- tmux's copy-mode.conf. WezTerm doesn't expose the mode, so select()
+-- records it.
+local selections = {}
+
 local function basename(path)
   return (path or ""):match("([^/]+)$") or ""
 end
@@ -86,15 +91,17 @@ local function update(window, pane)
     table.insert(right, { Text = notice.text .. "  " })
   end
   -- The mode: the copy-mode selection, the active key table, or VISUAL
-  -- for a mouse selection, which leaves copy mode off. Leaving the key
-  -- tables ends the copy-mode selection.
+  -- for a mouse selection, which leaves copy mode off. A selection that
+  -- select() didn't make, such as a search match, reads VISUAL. Leaving
+  -- copy mode ends its selection.
   local key_table = window:active_key_table()
-  if not key_table then
-    wezterm.GLOBAL.selection = nil
+  local id = pane:pane_id()
+  if key_table ~= "copy_mode" then
+    selections[id] = nil
   end
   local mode
   if key_table == "copy_mode" then
-    mode = wezterm.GLOBAL.selection or "COPY"
+    mode = SELECTION_LABELS[selections[id]] or window:get_selection_text_for_pane(pane) ~= "" and "VISUAL" or "COPY"
   elseif key_table and key_table ~= "repeat" then
     mode = key_table:upper():gsub("_MODE", "")
   elseif window:get_selection_text_for_pane(pane) ~= "" then
@@ -175,34 +182,56 @@ function M.notify(window, pane, text)
   end)
 end
 
--- Sets the copy-mode selection to mode, "Cell", "Line", or "Block", or
--- clears it when it already has that mode, as WezTerm does. The label
+-- Sets the copy-mode selection to mode, "Cell", "Line", or "Block", like
+-- v, V, and C-v in tmux's copy-mode.conf. Without a selection it starts
+-- one at the cursor, even over a search match that WezTerm selected. The
+-- same mode again clears it, and another mode switches it. The label
 -- updates at once.
 function M.select(mode)
   return wezterm.action_callback(function(window, pane)
-    local label = SELECTION_LABELS[mode]
-    wezterm.GLOBAL.selection = wezterm.GLOBAL.selection ~= label and label or nil
-    window:perform_action(act.CopyMode({ SetSelectionMode = mode }), pane)
+    local id = pane:pane_id()
+    local current = selections[id]
+    local action = act.CopyMode({ SetSelectionMode = mode })
+    if current == mode then
+      mode, action = nil, act.CopyMode("ClearSelectionMode")
+    elseif not current then
+      action = act.Multiple({ act.CopyMode("ClearSelectionMode"), action })
+    end
+    selections[id] = mode
+    window:perform_action(action, pane)
     update(window, pane)
   end)
 end
 
--- Performs action, a copy, and names the copied size in a notice when
--- there is a selection, since the copy gives no other sign. mode, when
--- given, is the selection mode that action sets before it copies, so its
--- size isn't known yet.
-function M.copy(action, mode)
+-- Performs action, a copy, and names the copied size in a notice, since
+-- the copy gives no other sign. A copy ends the copy-mode selection.
+function M.copy(action)
   return wezterm.action_callback(function(window, pane)
-    if mode then
-      wezterm.GLOBAL.selection = SELECTION_LABELS[mode]
-    end
+    selections[pane:pane_id()] = nil
     local text = window:get_selection_text_for_pane(pane)
     window:perform_action(action, pane)
     if text ~= "" then
       M.notify(window, pane, "Copied " .. utf8.len(text) .. " chars")
-    elseif wezterm.GLOBAL.selection then
-      M.notify(window, pane, "Copied")
+    else
+      update(window, pane)
     end
+  end)
+end
+
+-- Clears the copy-mode selection when the wheel scrolls, as tmux does,
+-- and puts the cursor on the middle row. Otherwise the next key scrolls
+-- back to where the cursor was.
+function M.scrolled()
+  return wezterm.action_callback(function(window, pane)
+    if window:active_key_table() ~= "copy_mode" then
+      return
+    end
+    selections[pane:pane_id()] = nil
+    window:perform_action(
+      act.Multiple({ act.CopyMode("ClearSelectionMode"), act.CopyMode("MoveToViewportMiddle") }),
+      pane
+    )
+    update(window, pane)
   end)
 end
 

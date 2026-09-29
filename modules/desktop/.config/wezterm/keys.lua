@@ -97,10 +97,32 @@ for i = 1, 8 do
   table.insert(MAC, { key = tostring(i), mods = "SUPER", action = act.ActivateTab(i - 1) })
 end
 
+local COPY_DESTINATION = "ClipboardAndPrimarySelection"
+
+-- Leaves copy mode like tmux's cancel: the selection clears and the view
+-- returns to the bottom.
+local LEAVE_COPY_MODE = act.Multiple({
+  act.CopyMode("ClearSelectionMode"),
+  act.ScrollToBottom,
+  act.CopyMode("Close"),
+})
+
 -- Copies the finished mouse selection and names its size in the status
--- line, since the copy gives no other sign. A click without a drag
--- selects nothing and shows nothing.
-local COPY_SELECTION = status.copy(act.CompleteSelection("ClipboardAndPrimarySelection"))
+-- line. In copy mode a drag also leaves copy mode, like tmux's default
+-- copy-pipe-and-cancel. A click there drops the copy-mode selection,
+-- which the click cleared on screen, so the next key starts afresh.
+local COPY_SELECTION = wezterm.action_callback(function(window, pane)
+  local action = act.CompleteSelection(COPY_DESTINATION)
+  if window:active_key_table() == "copy_mode" then
+    local dragged = window:get_selection_text_for_pane(pane) ~= ""
+    action = act.Multiple({ action, dragged and LEAVE_COPY_MODE or act.CopyMode("ClearSelectionMode") })
+  end
+  window:perform_action(status.copy(action), pane)
+end)
+
+-- The wheel scrolls as WezTerm does, and status.scrolled() follows up in
+-- copy mode.
+local WHEEL = act.Multiple({ act.ScrollByCurrentEventWheelDelta, status.scrolled() })
 
 -- Cmd-click, or Ctrl-click off macOS, opens a link, and a plain click only
 -- selects. The press does nothing, so Neovim doesn't see it. The link
@@ -126,6 +148,14 @@ local function mouse_bindings()
       event = { Up = { streak = streak, button = "Left" } },
       mods = "NONE",
       action = COPY_SELECTION,
+    })
+  end
+  for _, button in ipairs({ { WheelUp = 1 }, { WheelDown = 1 } }) do
+    table.insert(bindings, {
+      event = { Down = { streak = 1, button = button } },
+      mods = "NONE",
+      alt_screen = false,
+      action = WHEEL,
     })
   end
   for _, reporting in ipairs({ false, true }) do
@@ -155,31 +185,43 @@ local function search_mode()
   return keys
 end
 
--- Additions to WezTerm's vi-style copy mode: Y copies to
--- the end of the line, o and i jump between prompts, and / and ? search.
--- WezTerm's search starts upward, so Enter moves up and Ctrl-n down.
--- The selection keys go through status so the status line names the
--- selection mode, and y and Y stay in copy mode with the selection.
+-- Copy mode keys that follow tmux's copy-mode.conf: v, V, and C-v
+-- select, y copies and leaves, and Escape, q, C-c, and C-g leave. Y
+-- copies to the end of the line and stays, like tmux's copy-end-of-line.
+-- o and i jump between prompts, and / and ? search. WezTerm's search
+-- starts upward, so Enter moves up and Ctrl-n down.
+--
+-- WezTerm applies a copy-mode selection only after the action that makes
+-- it, so Y copies in status.copy(), a callback that runs later.
 local COPY_MODE = {
   { key = "v", mods = "NONE", action = status.select("Cell") },
   { key = "Space", mods = "NONE", action = status.select("Cell") },
   { key = "V", mods = "NONE", action = status.select("Line") },
   { key = "V", mods = "SHIFT", action = status.select("Line") },
   { key = "v", mods = "CTRL", action = status.select("Block") },
-  { key = "y", mods = "NONE", action = status.copy(act.CopyTo("ClipboardAndPrimarySelection")) },
+  {
+    key = "y",
+    mods = "NONE",
+    action = status.copy(act.Multiple({ act.CompleteSelection(COPY_DESTINATION), LEAVE_COPY_MODE })),
+  },
   {
     key = "Y",
     mods = "SHIFT",
-    action = status.copy(
-      act.Multiple({
+    action = act.Multiple({
+      act.CopyMode("ClearSelectionMode"),
+      act.CopyMode({ SetSelectionMode = "Cell" }),
+      act.CopyMode("MoveToEndOfLineContent"),
+      status.copy(act.Multiple({
+        act.CompleteSelection(COPY_DESTINATION),
+        act.CopyMode("MoveToSelectionOtherEnd"),
         act.CopyMode("ClearSelectionMode"),
-        act.CopyMode({ SetSelectionMode = "Cell" }),
-        act.CopyMode("MoveToEndOfLineContent"),
-        act.CopyTo("ClipboardAndPrimarySelection"),
-      }),
-      "Cell"
-    ),
+      })),
+    }),
   },
+  { key = "Escape", mods = "NONE", action = LEAVE_COPY_MODE },
+  { key = "q", mods = "NONE", action = LEAVE_COPY_MODE },
+  { key = "c", mods = "CTRL", action = LEAVE_COPY_MODE },
+  { key = "g", mods = "CTRL", action = LEAVE_COPY_MODE },
   { key = "o", mods = "NONE", action = act.CopyMode({ MoveBackwardZoneOfType = "Prompt" }) },
   { key = "i", mods = "NONE", action = act.CopyMode({ MoveForwardZoneOfType = "Prompt" }) },
   { key = "/", mods = "NONE", action = act.CopyMode("EditPattern") },
