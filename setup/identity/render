@@ -8,11 +8,12 @@
 #   public_key=ssh-ed25519 AAAA...
 #   github_login=ada                              optional
 #   noreply_email=1+ada@users.noreply.github.com  optional
+#   github_orgs=lab other-lab                     optional
 #
 # Personal is the default everywhere, and without it nothing renders. Work
 # is optional and applies inside ~/work. With a github_login, Work also
-# signs commits to that account's GitHub repos, as noreply_email or else
-# email. Personal ignores the two optional fields. An empty
+# signs commits to the repos of that account and of github_orgs, as
+# noreply_email or else email. Personal ignores the optional fields. An empty
 # ~/.config/identity/no-work turns Work off.
 set -euo pipefail
 
@@ -91,6 +92,7 @@ name=$(field Work name)
 email=$(field Work email)
 key=$(field Work public_key)
 login=$(optional Work github_login)
+orgs=$(optional Work github_orgs)
 noreply=$(optional Work noreply_email)
 noreply=${noreply:-$email}
 
@@ -140,10 +142,14 @@ cat >"$git_dir/config.secondary" <<CONF
 	gpgsign = true
 CONF
 
-cat >"$git_dir/config.secondary-remotes" <<CONF
-[includeIf "hasconfig:remote.*.url:https://github.com/$login/**"]
+: >"$git_dir/config.secondary-remotes"
+for owner in $login $orgs; do
+  cat >>"$git_dir/config.secondary-remotes" <<CONF
+[includeIf "hasconfig:remote.*.url:https://github.com/$owner/**"]
 	path = ~/.config/git/config.secondary
 
-[includeIf "hasconfig:remote.*.url:git@github.com:$login/**"]
+[includeIf "hasconfig:remote.*.url:git@github.com:$owner/**"]
 	path = ~/.config/git/config.secondary
+
 CONF
+done

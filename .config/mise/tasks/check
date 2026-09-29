@@ -42,7 +42,7 @@ grep -qxF 'email = "ada@example.com"' "$tmp/home/.config/jj/conf.d/identity.toml
 }
 
 # With a github_login, Work also renders a secondary identity.
-printf 'name=Ada\nemail=ada@work.example\nnoreply_email=1+ada@users.noreply.github.com\ngithub_login=ada\npublic_key=ssh-ed25519 BBBB\n' \
+printf 'name=Ada\nemail=ada@work.example\nnoreply_email=1+ada@users.noreply.github.com\ngithub_login=ada\ngithub_orgs=lab\npublic_key=ssh-ed25519 BBBB\n' \
   >"$tmp/home/.config/identity/Work"
 render
 test -e "$tmp/home/.config/git/config.work" || {
@@ -60,6 +60,13 @@ git init -q "$repo"
 git -C "$repo" remote add origin https://github.com/ada/repo.git
 [ "$(HOME="$tmp/home" git -C "$repo" config commit.gpgsign)" = true ] || {
   echo "secondary identity in ~/work does not sign"
+  exit 1
+}
+
+# github_orgs extends the secondary identity to those organizations' repos.
+git -C "$repo" remote set-url origin https://github.com/lab/repo.git
+[ "$(HOME="$tmp/home" git -C "$repo" config user.email)" = 1+ada@users.noreply.github.com ] || {
+  echo "github_orgs repo does not use the secondary identity"
   exit 1
 }
 
