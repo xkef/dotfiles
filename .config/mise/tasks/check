@@ -55,17 +55,21 @@ test -e "$tmp/home/.config/git/config.secondary-remotes" || {
 }
 
 # The secondary identity signs even inside ~/work, where Work drops signing.
+# CI runners set XDG_CONFIG_HOME, which would hide the rendered config.
 repo="$tmp/home/work/repo"
+repo_git() {
+  HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" git -C "$repo" "$@"
+}
 git init -q "$repo"
-git -C "$repo" remote add origin https://github.com/ada/repo.git
-[ "$(HOME="$tmp/home" git -C "$repo" config commit.gpgsign)" = true ] || {
+repo_git remote add origin https://github.com/ada/repo.git
+[ "$(repo_git config commit.gpgsign)" = true ] || {
   echo "secondary identity in ~/work does not sign"
   exit 1
 }
 
 # github_orgs extends the secondary identity to those organizations' repos.
-git -C "$repo" remote set-url origin https://github.com/lab/repo.git
-[ "$(HOME="$tmp/home" git -C "$repo" config user.email)" = 1+ada@users.noreply.github.com ] || {
+repo_git remote set-url origin https://github.com/lab/repo.git
+[ "$(repo_git config user.email)" = 1+ada@users.noreply.github.com ] || {
   echo "github_orgs repo does not use the secondary identity"
   exit 1
 }
