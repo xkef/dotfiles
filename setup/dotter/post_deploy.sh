@@ -24,7 +24,13 @@ if [[ "$agents" == true ]]; then
   setup/merge-settings pi ~/.pi/agent/settings.dotfiles.json ~/.pi/agent/settings.json
 fi
 
-setup/identity/render
+# Files that setup/identity/render wrote before private/ replaced it. jj
+# still reads work.toml from conf.d.
+rm -f ~/.config/git/config.personal ~/.config/git/config.work \
+  ~/.config/git/config.secondary ~/.config/git/config.secondary-remotes \
+  ~/.config/jj/conf.d/work.toml
+
+setup/private/decrypt
 
 # The repo runs jj colocated with git, but a fresh clone is plain git. jj
 # takes it over once the package install has put jj in place, and tracks

@@ -1,7 +1,4 @@
 # Keys the 1Password SSH agent serves. Once this file exists, the agent
 # offers only the listed entries.
 [[ssh-keys]]
-vault = "Personal"
-
-[[ssh-keys]]
-vault = "Work"
+vault = "Dev"

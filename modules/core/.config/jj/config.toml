@@ -66,7 +66,7 @@ streamline = ["simplify-parents"]
 auto-update-stale = true
 max-new-file-size = "2MiB"
 
-# Name, email, and SSH signing come from 1Password through
-# conf.d/identity.toml, and the work scope through conf.d/work.toml.
+# Name, email, SSH signing, and the accounts by directory come from
+# conf.d/identity.toml, which setup/private/decrypt writes.
 [signing.backends.ssh]
 allowed-signers = "~/.config/git/allowed_signers"

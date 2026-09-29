@@ -21,80 +21,81 @@ if [ -n "$broken" ]; then
   exit 1
 fi
 
-# Without op or an identity file, render writes nothing. With a file,
-# render writes the identity from it.
-render() {
-  env PATH=/usr/bin:/bin HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \
-    setup/identity/render
-}
-render
-test ! -e "$tmp/home/.config/git/config.personal" || {
-  echo "unexpected config.personal"
-  exit 1
-}
-mkdir -p "$tmp/home/.config/identity"
-printf 'name=Ada\nemail=ada@example.com\npublic_key=ssh-ed25519 AAAA\n' \
-  >"$tmp/home/.config/identity/Personal"
-render
-grep -qxF 'email = "ada@example.com"' "$tmp/home/.config/jj/conf.d/identity.toml" || {
-  echo "identity file not rendered"
+# Without op, decrypt writes nothing.
+env PATH=/usr/bin:/bin HOME="$tmp/home" setup/private/decrypt 2>/dev/null
+test ! -e "$tmp/home/.config/git/identity" || {
+  echo "decrypt wrote without op"
   exit 1
 }
 
-# With a github_login, Work also renders a secondary identity.
-printf 'name=Ada\nemail=ada@work.example\nnoreply_email=1+ada@users.noreply.github.com\ngithub_login=ada\ngithub_orgs=lab\npublic_key=ssh-ed25519 BBBB\n' \
-  >"$tmp/home/.config/identity/Work"
-render
-test -e "$tmp/home/.config/git/config.work" || {
-  echo "work identity not rendered"
+# encrypt archives files under $HOME into private/home.tar.age, and
+# decrypt writes them back, where git picks up the identity. Copies of the
+# scripts work on a test private/ with a test key, which a stub op returns.
+repo="$tmp/repo"
+mkdir -p "$repo/setup/private" "$repo/.config/mise/tasks" "$repo/private" \
+  "$tmp/stub" "$tmp/home/.config/git" "$tmp/home/.ssh"
+cp setup/private/decrypt "$repo/setup/private/"
+cp .config/mise/tasks/encrypt "$repo/.config/mise/tasks/"
+age-keygen -o "$tmp/key" 2>/dev/null
+age-keygen -y "$tmp/key" >"$repo/private/recipients"
+printf '#!/bin/sh\ncat "%s"\n' "$tmp/key" >"$tmp/stub/op"
+chmod +x "$tmp/stub/op"
+run() {
+  (cd "$repo" && env PATH="$tmp/stub:$PATH" HOME="$tmp/home" "$@")
+}
+decrypt() { run setup/private/decrypt; }
+encrypt() { run .config/mise/tasks/encrypt "$@"; }
+
+# A second encrypt adds to the archive and keeps the first file.
+identity="$tmp/home/.config/git/identity"
+printf '[user]\n\temail = ada@example.com\n[credential "https://github.com"]\n\thelper = ada\n' >"$identity"
+touch -t 200001010000 "$identity"
+encrypt "$identity"
+echo ada >"$tmp/home/.ssh/github.pub"
+encrypt "$tmp/home/.ssh/github.pub"
+rm "$identity" "$tmp/home/.ssh/github.pub"
+decrypt
+test -e "$tmp/home/.ssh/github.pub" || {
+  echo "second encrypt dropped a file"
   exit 1
 }
-test -e "$tmp/home/.config/git/config.secondary-remotes" || {
-  echo "github_login rendered no secondary identity"
+[ -n "$(find "$identity" -perm 600)" ] || {
+  echo "decrypted identity is readable by others"
+  exit 1
+}
+[ -z "$(find "$repo/private" -name '*identity*')" ] || {
+  echo "private/ names the identity"
+  exit 1
+}
+if encrypt "$tmp/home/../escape" 2>/dev/null; then
+  echo "encrypt accepted a path outside HOME"
+  exit 1
+fi
+email=$(HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \
+  git config --global --includes user.email)
+[ "$email" = ada@example.com ] || {
+  echo "decrypted identity not included: got '$email'"
   exit 1
 }
 
-# The secondary identity signs even inside ~/work, where Work drops signing.
-# CI runners set XDG_CONFIG_HOME, which would hide the rendered config.
-repo="$tmp/home/work/repo"
-repo_git() {
-  HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" git -C "$repo" "$@"
-}
-git init -q "$repo"
-repo_git remote add origin https://github.com/ada/repo.git
-[ "$(repo_git config commit.gpgsign)" = true ] || {
-  echo "secondary identity in ~/work does not sign"
+# A credential helper in the identity wins over the repo's.
+helper=$(HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \
+  git config --global --includes --get-all credential.https://github.com.helper | tail -1)
+[ "$helper" = ada ] || {
+  echo "identity credential helper overridden: got '$helper'"
   exit 1
 }
 
-# github_orgs extends the secondary identity to those organizations' repos.
-repo_git remote set-url origin https://github.com/lab/repo.git
-[ "$(repo_git config user.email)" = 1+ada@users.noreply.github.com ] || {
-  echo "github_orgs repo does not use the secondary identity"
+# An unchanged plaintext decrypts again silently, and one edited after
+# its archived copy survives the next decrypt.
+[ -z "$(decrypt 2>&1)" ] || {
+  echo "decrypt skipped an unchanged plaintext"
   exit 1
 }
-
-# Without github_login, Work renders the same fields as Personal and no
-# secondary identity.
-printf 'name=Ada\nemail=ada@work.example\npublic_key=ssh-ed25519 BBBB\n' \
-  >"$tmp/home/.config/identity/Work"
-render
-test -e "$tmp/home/.config/git/config.work" &&
-  test ! -e "$tmp/home/.config/git/config.secondary-remotes" || {
-  echo "work without github_login rendered wrong"
-  exit 1
-}
-# The no-work marker skips the Work identity and removes its files.
-touch "$tmp/home/.config/identity/no-work"
-render
-for f in git/config.work git/config.secondary git/config.secondary-remotes jj/conf.d/work.toml; do
-  test ! -e "$tmp/home/.config/$f" || {
-    echo "no-work left $f"
-    exit 1
-  }
-done
-! grep -q BBBB "$tmp/home/.config/git/allowed_signers" || {
-  echo "no-work left the work signer"
+echo edited >>"$tmp/home/.config/git/identity"
+decrypt 2>/dev/null
+grep -qx edited "$tmp/home/.config/git/identity" || {
+  echo "decrypt overwrote an edited plaintext"
   exit 1
 }
 

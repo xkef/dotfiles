@@ -1,9 +1,5 @@
 # Personal overrides go in ~/.config/git/config.local.
 
-# Name, email, and signing key from 1Password.
-[include]
-	path = ~/.config/git/config.personal
-
 [init]
 	defaultBranch = main
 
@@ -140,14 +136,12 @@
 [gpg "ssh"]
 	allowedSignersFile = ~/.config/git/allowed_signers
 
+# ── Identity and accounts by directory ───────────────
+# From the encrypted private/ files that setup/private/decrypt writes.
+# Below the credentials, so an account's credential helper wins.
+[include]
+	path = ~/.config/git/identity
+
 # ── Local overrides: identity, signing ───────────────
 [include]
 	path = ~/.config/git/config.local
-
-# ── Work identity, from 1Password ────────────────────
-[includeIf "gitdir:~/work/"]
-	path = ~/.config/git/config.work
-
-# ── Secondary GitHub identity, matched by remote URL ─
-[include]
-	path = ~/.config/git/config.secondary-remotes

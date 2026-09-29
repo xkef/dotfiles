@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+#MISE description="Add files under $HOME to private/home.tar.age for setup/private/decrypt"
+#USAGE arg "<file>..." help="Absolute paths under $HOME, such as ~/.config/git/identity"
+# Adding to an existing archive decrypts it first, with the age key in
+# 1Password.
+set -euo pipefail
+umask 077
+
+archive=private/home.tar.age
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/encrypt.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+mkdir "$tmp/home"
+
+if [[ -e "$archive" ]]; then
+  age --decrypt --identity <(op read op://Dev/dotfiles-age-key/password) "$archive" |
+    tar -xzf - -C "$tmp/home"
+fi
+
+# cp -p keeps the mtime that decrypt compares against the plaintext.
+for file in "$@"; do
+  relative=${file#"$HOME"/}
+  if [[ "$relative" == "$file" || "/$relative/" == */../* ]]; then
+    echo "encrypt: $file is not an absolute path under \$HOME" >&2
+    exit 1
+  fi
+
+  mkdir -p "$tmp/home/$(dirname "$relative")"
+  cp -p "$file" "$tmp/home/$relative"
+done
+
+# pax keeps sub-second mtimes. COPYFILE_DISABLE and --no-xattrs keep
+# macOS metadata out of the archive. A separate gzip skips the padding
+# that tar -z adds to fill its last block.
+COPYFILE_DISABLE=1 tar --format pax --no-xattrs -cf - -C "$tmp/home" . |
+  gzip -n |
+  age --encrypt --recipients-file private/recipients --output "$tmp/archive"
+mv "$tmp/archive" "$archive"

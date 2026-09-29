@@ -63,21 +63,19 @@ skills, and `agents trace` reports failed tool calls in Claude Code sessions.
 
 ## Make it yours
 
-Deploy writes the git, jj, and SSH identity. Each identity reads its fields from
-`~/.config/identity/<name>`, or else from the SSH Key item `git` in the
-1Password vault of the same name:
+Private files, such as the git and jj identity, live in one archive encrypted
+with [age](https://age-encryption.org), `private/home.tar.age`, which mirrors
+`$HOME` and hides the file names. Deploy decrypts it into `~` with the key in
+1Password at `op://Dev/dotfiles-age-key/password`, and skips a file edited
+since. After editing one, or to add one, encrypt it back:
 
 ```sh
-name=Ada Lovelace
-email=ada@example.com
-public_key=ssh-ed25519 AAAA...
-github_login=ada
-noreply_email=1+ada@users.noreply.github.com
+mise run encrypt ~/.config/git/identity
 ```
 
-Deploy needs a `Personal` identity, used everywhere. An optional `Work` identity
-takes over inside `~/work`. Given `github_login`, Work also signs commits to
-that GitHub account's repositories, as `noreply_email` when set.
+The git config includes `~/.config/git/identity`, and jj reads
+`~/.config/jj/conf.d/identity.toml`. Both set the default account and one
+account per directory.
 
 ## Credits
 

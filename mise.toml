@@ -1,4 +1,6 @@
 [tools]
+# check encrypts and decrypts test files.
+age = "1"
 "github:SuperCuber/dotter" = "0.13.5"
 dprint = "0"
 rumdl = "0"
