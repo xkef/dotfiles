@@ -54,6 +54,15 @@ test -e "$tmp/home/.config/git/config.secondary-remotes" || {
   exit 1
 }
 
+# The secondary identity signs even inside ~/work, where Work drops signing.
+repo="$tmp/home/work/repo"
+git init -q "$repo"
+git -C "$repo" remote add origin https://github.com/ada/repo.git
+[ "$(HOME="$tmp/home" git -C "$repo" config commit.gpgsign)" = true ] || {
+  echo "secondary identity in ~/work does not sign"
+  exit 1
+}
+
 # Without github_login, Work renders the same fields as Personal and no
 # secondary identity.
 printf 'name=Ada\nemail=ada@work.example\npublic_key=ssh-ed25519 BBBB\n' \

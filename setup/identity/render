@@ -118,7 +118,8 @@ behavior = "drop"
 CONF
 
 # Secondary GitHub identity for the Work account's repos, matched by
-# remote URL. The SSH agent serves its signing key.
+# remote URL. The SSH agent serves its signing key. It turns signing back
+# on inside ~/work, where config.work turns it off.
 if [[ -z "$login" ]]; then
   rm -f "$git_dir/config.secondary" "$git_dir/config.secondary-remotes"
   exit 0
@@ -131,6 +132,12 @@ cat >"$git_dir/config.secondary" <<CONF
 	name = $name
 	email = $noreply
 	signingkey = key::$key
+
+[commit]
+	gpgsign = true
+
+[tag]
+	gpgsign = true
 CONF
 
 cat >"$git_dir/config.secondary-remotes" <<CONF
