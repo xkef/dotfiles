@@ -29,7 +29,7 @@ on run argv
 end run]]
 
 -- A tab with a shell in the VM, on a copy of the current repository.
-M.shell_tab = act.SpawnCommandInNewTab({ args = { "lima-agent", "--shell" } })
+M.shell_tab = act.SpawnCommandInNewTab({ args = { "lima-agent", "shell" } })
 
 -- The directory in cwd, a URL from OSC 7, when it names the VM, else nil.
 local function vm_path(cwd)

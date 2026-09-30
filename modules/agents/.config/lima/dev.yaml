@@ -9,11 +9,11 @@
 # Provisioning outlasts the default 10-minute start timeout, so pass
 # --timeout=30m to `limactl start`.
 #
-# The guest sees this repo read-only, at the host's path, and holds no
-# host credentials. `lima-agent` copies other repositories in through git,
-# to their host paths, so `limactl shell` opens in the current directory.
-# Symlinks under the guest home point at the mounts. Lima forwards the
-# guest's ports to localhost.
+# The guest sees this repo read-only at ~/dotfiles, and holds no host
+# credentials. `lima-agent` copies repositories in through git, to their
+# host paths, so `limactl shell` opens in the current directory. The host
+# path of this repo stays free for its copy. Symlinks under the guest home
+# point at the other mounts. Lima forwards the guest's ports to localhost.
 minimumLimaVersion: 2.0.0
 
 # Weekly build from https://github.com/xkef/archlinux-lima, pinned to the
@@ -28,6 +28,7 @@ memory: 8GiB
 mountType: virtiofs
 mounts:
   - location: ~/dotfiles
+    mountPoint: "{{.Home}}/dotfiles"
   # Images that Cmd-V pastes into VM panes as paths.
   - location: ~/.cache/lima-clipboard
   # Agent hooks in the guest report to the host's `mux-agents` picker.

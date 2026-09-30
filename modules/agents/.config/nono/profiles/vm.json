@@ -1,0 +1,68 @@
+{
+  "$schema": "https://nono.dev/schemas/nono-profile.schema.json",
+  "extends": "default",
+  "groups": {
+    "include": [
+      "git_config",
+      "mise_manager",
+      "user_tools"
+    ]
+  },
+  "filesystem": {
+    "allow": [
+      "$HOME/.claude",
+      "$HOME/.cache",
+      "$HOME/.npm",
+      "$HOME/.local/share/atuin",
+      "$HOME/.local/share/fish",
+      "$HOME/.local/share/mise",
+      "$HOME/.local/share/television",
+      "$HOME/.local/share/zoxide",
+      "$HOME/.local/state/agents",
+      "$HOME/.local/state/mise",
+      "/tmp"
+    ],
+    "allow_file": [
+      "$HOME/.claude.json",
+      "$HOME/.claude.json.lock",
+      "$HOME/.claude.lock"
+    ],
+    "bypass_protection": [
+      "$HOME/.config/fish",
+      "$HOME/.npmrc"
+    ],
+    "read": [
+      "$HOME/.agents",
+      "$HOME/.config/atuin",
+      "$HOME/.config/bat",
+      "$HOME/.config/fd",
+      "$HOME/.config/fish",
+      "$HOME/.config/git",
+      "$HOME/.config/helix",
+      "$HOME/.config/jj",
+      "$HOME/.config/lazygit",
+      "$HOME/.config/lazyvim",
+      "$HOME/.config/mise",
+      "$HOME/.config/television",
+      "$HOME/.config/tinted-theming",
+      "$HOME/.config/tmux",
+      "$HOME/.config/uv",
+      "$HOME/.config/yazi",
+      "$HOME/.local/share/claude",
+      "$HOME/.local/share/tinted-theming",
+      "$HOME/dotfiles",
+      "/etc"
+    ],
+    "read_file": [
+      "$HOME/.config/starship.toml"
+    ]
+  },
+  "linux": {
+    "af_unix_mediation": "pathname"
+  },
+  "meta": {
+    "description": "Claude Code in the Lima VM: writes reach only the repository copy, the agent state, and caches",
+    "name": "vm",
+    "version": "1.0.0"
+  }
+}

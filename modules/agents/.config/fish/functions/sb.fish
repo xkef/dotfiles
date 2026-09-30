@@ -76,7 +76,8 @@ function sb -d "Run a command inside a nono sandbox"
     return $rc
 end
 
-# Lima creates this file on every boot of a guest.
+# Lima mounts its cloud-init data here in every guest, as agent-trace
+# checks too.
 function __sb_in_vm
-    test -e /run/lima-boot-done
+    test -e /mnt/lima-cidata
 end
