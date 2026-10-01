@@ -22,7 +22,15 @@ function sb -d "Run a command inside a nono sandbox"
     set -l env_args
     if test $strict = true
         set profile $cmd-strict
-        set env_args -u GH_TOKEN -u GITHUB_TOKEN -u SSH_AUTH_SOCK
+        # Drops the SSH agent and every exported variable named like a
+        # secret, such as the MISE_GITHUB_TOKEN that env.fish copies from the
+        # gh keyring. The agent's own login stays.
+        set env_args -u SSH_AUTH_SOCK
+        for var in (set --names --export \
+                | string match -rie '(?:^|_)(?:TOKEN|SECRET|PASSWORD|PASSWD|CREDENTIALS?|API_?KEY|ACCESS_KEY|PRIVATE_KEY)(?:_|$)' \
+                | string match -rv '^(?:CLAUDE_CODE_OAUTH_TOKEN|ANTHROPIC_API_KEY)$')
+            set -a env_args -u $var
+        end
     end
 
     switch $cmd
