@@ -70,7 +70,8 @@ store_in_vm() {
 }
 
 # Reads a token from stdin and stores it under name $1, replacing the old
-# one. Empty input only deletes the old one.
+# one. Empty input typed at the terminal only deletes the old one. Empty
+# input from a pipe, such as a failed `op read`, changes nothing.
 set_token() {
   local name=${1:-} value
   case "$name" in
@@ -82,6 +83,10 @@ set_token() {
     ;;
   esac
   IFS= read -rs value || :
+  if [ -z "$value" ] && [ ! -t 0 ]; then
+    echo "agents vm: no token on stdin, nothing changed" >&2
+    exit 1
+  fi
 
   printf '%s' "$value" | store_in_vm "$name"
   op item delete "lima-agent $name" --vault "$VAULT" 2>/dev/null || :
