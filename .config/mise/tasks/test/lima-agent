@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#MISE description="Check that agents vm creates the directories the vm profile grants"
+set -eu
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-lima-agent.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+
+fail() {
+  echo "$1" >&2
+  exit 1
+}
+
+# A stub limactl runs the guest command on the host, and a stub nono
+# records whether atuin's directory exists when the session starts. nono
+# skips a grant whose path doesn't exist, so atuin couldn't create it.
+# Like Lima, the stub quotes the command for sh and hands it to the
+# guest's login shell, fish, which reads `\\` in single quotes as `\`.
+mkdir -p "$tmp/bin" "$tmp/home/.config/nono/profiles" "$tmp/cwd"
+cat >"$tmp/bin/limactl" <<'EOF'
+#!/bin/sh
+while [ "$1" != -- ]; do shift; done
+shift
+cmd=exec
+for arg; do
+  cmd="$cmd '$(printf '%s' "$arg" | sed "s/'/'\"'\"'/g")'"
+done
+exec fish --no-config -c "$cmd"
+EOF
+cat >"$tmp/bin/nono" <<'EOF'
+#!/bin/sh
+[ ! -d "$HOME/.local/share/atuin" ] || echo atuin >"$NONO_LOG"
+EOF
+chmod +x "$tmp/bin/limactl" "$tmp/bin/nono"
+cp modules/agents/.config/nono/profiles/vm.json "$tmp/home/.config/nono/profiles/"
+script=$PWD/modules/agents/.local/bin/lima-agent
+
+export HOME="$tmp/home" NONO_LOG="$tmp/nono.log" PATH="$tmp/bin:$PATH"
+(cd "$tmp/cwd" && GIT_CEILING_DIRECTORIES="$tmp" "$script" shell)
+grep -sqx atuin "$NONO_LOG" || fail "the session started before the granted directories existed"
+echo "lima-agent ok"

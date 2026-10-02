@@ -56,6 +56,14 @@ readonly TRUSTED_DOMAINS=(
   proxy.golang.org sum.golang.org
 )
 
+# Guest sh that creates the directories the profile `vm` grants. nono
+# skips a grant whose path doesn't exist, so a tool in the session, such
+# as atuin, can't create its own.
+read -r -d '' GRANT_DIRS <<'EOF' || :
+jq -r '.filesystem.allow[] | sub("^[$]HOME"; env.HOME)' "$HOME/.config/nono/profiles/vm.json" | xargs mkdir -p
+EOF
+readonly GRANT_DIRS
+
 # Prints the token stored under name $1, or nothing.
 token() {
   op read "op://$VAULT/lima-agent $1/password" 2>/dev/null || :
@@ -167,7 +175,8 @@ esac
 
 if ! root=$(git rev-parse --show-toplevel 2>/dev/null); then
   if [ "$mode" = shell ]; then
-    exec limactl shell --start "$VM" -- nono "${nono_args[@]}" -- fish -l
+    exec limactl shell --start "$VM" -- sh -c "$GRANT_DIRS"' && exec nono "$@"' sh \
+      "${nono_args[@]}" -- fish -l
   fi
   echo "agents vm: $PWD is not in a git repository" >&2
   exit 1
@@ -256,10 +265,11 @@ needed=""
 [ "$mode" != claude ] || needed+=" claude"
 [ "$github" = false ] || needed+=" github"
 
-# Checks the tokens, then creates the guest repository on first use. It
-# commits under the host's name without signing, since the guest has no
-# signing key.
-guest 'for name in $4; do
+# Creates the granted directories, checks the tokens, then creates the
+# guest repository on first use. It commits under the host's name without
+# signing, since the guest has no signing key.
+guest "$GRANT_DIRS"'
+for name in $4; do
   [ -s "$HOME/$5/$name" ] || { echo "agents vm: no $name token, run agents vm set $name" >&2; exit 1; }
 done
 [ -d "$1/.git" ] || {
