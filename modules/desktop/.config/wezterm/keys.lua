@@ -107,18 +107,50 @@ local LEAVE_COPY_MODE = act.Multiple({
   act.CopyMode("Close"),
 })
 
+-- Leaves the copy mode that a drag started. The view stays where the
+-- drag left it.
+local LEAVE_DRAG_COPY_MODE = act.Multiple({ act.CopyMode("ClearSelectionMode"), act.CopyMode("Close") })
+
+-- Panes whose copy mode a drag started, by pane id.
+local drag_copy_mode = {}
+
 -- Copies the finished mouse selection and names its size in the status
--- line. In copy mode a drag also leaves copy mode, like tmux's default
--- copy-pipe-and-cancel. A click there drops the copy-mode selection,
--- which the click cleared on screen, so the next key starts afresh.
+-- line. A drag also leaves copy mode, like tmux's default
+-- copy-pipe-and-cancel. A click in copy mode that a drag didn't start
+-- drops the copy-mode selection, which the click cleared on screen, so
+-- the next key starts afresh.
 local COPY_SELECTION = wezterm.action_callback(function(window, pane)
+  local id = pane:pane_id()
+  local from_drag = drag_copy_mode[id]
+  drag_copy_mode[id] = nil
+
   local action = act.CompleteSelection(COPY_DESTINATION)
   if window:active_key_table() == "copy_mode" then
-    local dragged = window:get_selection_text_for_pane(pane) ~= ""
-    action = act.Multiple({ action, dragged and LEAVE_COPY_MODE or act.CopyMode("ClearSelectionMode") })
+    local after = act.CopyMode("ClearSelectionMode")
+    if from_drag then
+      after = LEAVE_DRAG_COPY_MODE
+    elseif window:get_selection_text_for_pane(pane) ~= "" then
+      after = LEAVE_COPY_MODE
+    end
+    action = act.Multiple({ action, after })
   end
   window:perform_action(status.copy(action), pane)
 end)
+
+-- Enters copy mode on the first drag event, as tmux does, then extends
+-- the selection by unit. Outside copy mode WezTerm drops a selection
+-- when output changes one of its rows. Entering copy mode clears the
+-- selection, so the extension waits for that and starts anew at the
+-- first drag position, next to the click.
+local function drag_selection(unit)
+  return wezterm.action_callback(function(window, pane)
+    if window:active_key_table() ~= "copy_mode" then
+      drag_copy_mode[pane:pane_id()] = true
+      window:perform_action(act.ActivateCopyMode, pane)
+    end
+    window:perform_action(act.ExtendSelectionToMouseCursor(unit), pane)
+  end)
+end
 
 -- The wheel scrolls as WezTerm does, and status.scrolled() follows up in
 -- copy mode.
@@ -138,6 +170,13 @@ local function mouse_bindings()
       action = COPY_SELECTION,
     },
   }
+  for streak, unit in pairs({ [1] = "Cell", [2] = "Word", [3] = "Line" }) do
+    table.insert(bindings, {
+      event = { Drag = { streak = streak, button = "Left" } },
+      mods = "NONE",
+      action = drag_selection(unit),
+    })
+  end
   for streak, unit in pairs({ [2] = "Word", [3] = "Line" }) do
     table.insert(bindings, {
       event = { Down = { streak = streak, button = "Left" } },
