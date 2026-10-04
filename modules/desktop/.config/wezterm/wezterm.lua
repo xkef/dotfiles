@@ -45,6 +45,16 @@ config.unix_domains = { { name = "unix" } }
 config.default_gui_startup_args = { "connect", "unix" }
 config.set_environment_variables = { PATH = require("path").PATH }
 
+-- Panes reach the SSH agent through WezTerm's proxy, which forwards to the
+-- GUI's SSH_AUTH_SOCK. From the Dock that is launchd's agent, so programs
+-- that skip fish, such as the jjui overlay, can't sign commits. Forward to
+-- 1Password, as fish/conf.d/1password.fish does.
+local OP_AGENT_SOCK = IS_MAC and wezterm.home_dir .. "/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+  or wezterm.home_dir .. "/.1password/agent.sock"
+if #wezterm.glob(OP_AGENT_SOCK) > 0 then
+  config.default_ssh_auth_sock = OP_AGENT_SOCK
+end
+
 -- GitHub references such as wezterm/wezterm#1234 become links, and quick
 -- select also hints jj change ids, which use only the letters k to z.
 config.hyperlink_rules = wezterm.default_hyperlink_rules()
