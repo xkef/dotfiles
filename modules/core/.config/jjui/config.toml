@@ -1,0 +1,14 @@
+# The preview runs jj without a pager. Render its diffs through delta for
+# syntax highlighting. --no-gitconfig drops the line numbers and file
+# hyperlinks from git/config, which would point at jj's temporary files.
+[preview]
+revision_command = [
+  "show", "--color", "always", "-r", "$change_id",
+  "--tool", "delta",
+  "--config", 'merge-tools.delta.diff-args=["--color-only", "--no-gitconfig", "$left", "$right"]',
+]
+file_command = [
+  "diff", "--color", "always", "-r", "$change_id", "$file",
+  "--tool", "delta",
+  "--config", 'merge-tools.delta.diff-args=["--color-only", "--no-gitconfig", "$left", "$right"]',
+]
