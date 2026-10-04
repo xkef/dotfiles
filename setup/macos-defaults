@@ -96,6 +96,31 @@ apply() {
   fi
 }
 
+# Prints each element of a defaults array, one per line.
+read_array() {
+  defaults read "$1" "$2" 2>/dev/null |
+    sed -e '1d;$d' -e 's/^ *//' -e 's/,$//' -e 's/^"\(.*\)"$/\1/' || true
+}
+
+# Applies or diffs a defaults array of strings. The backup skips it.
+# Usage: apply_array domain key value...
+apply_array() {
+  local domain="$1" key="$2"
+  shift 2
+
+  if ! $DRY_RUN; then
+    defaults write "$domain" "$key" -array "$@"
+    return
+  fi
+
+  if [[ "$(read_array "$domain" "$key")" == "$(printf '%s\n' "$@")" ]]; then
+    ((skipped++)) || true
+    return
+  fi
+  printf '  \033[31m~\033[0m %s %s \033[2m(%d items)\033[0m\n' "$domain" "$key" "$#"
+  ((changed++)) || true
+}
+
 if $RESTORE; then
   backup="${2:-$(ls -t "$BACKUP_DIR"/*.tsv 2>/dev/null | head -1)}"
   if [[ -z "$backup" || ! -f "$backup" ]]; then
@@ -302,6 +327,113 @@ else
   # Indexing needs real disk access. Tolerate failure on CI runners.
   sudo mdutil -a -i on >/dev/null || [[ "${CI:-}" == true ]]
 fi
+
+# Result sources and the file types left out of the index, as the
+# Spotlight settings pane stores them.
+SPOTLIGHT_RULES=(
+  "Custom.relatedContents"
+  "Domain.SOURCE"
+  "Domain.IMAGES"
+  "Domain.MOVIES"
+  "Domain.MUSIC"
+  "Domain.PDF"
+  "Domain.SPREADSHEETS"
+  "System.files"
+  "System.folders"
+  "System.iphoneApps"
+  "System.menuItems"
+  "com.apple.AppStore"
+  "com.apple.iBooksX"
+  "com.apple.AddressBook"
+  "com.apple.Dictionary"
+  "com.apple.MobileSMS"
+  "com.wiheads.paste"
+  "com.apple.tips"
+  "net.whatsapp.WhatsApp"
+)
+SPOTLIGHT_DISABLED_TYPES=(
+  "com.adobe.pdf"
+  "com.apple.applescript.alias-object"
+  "com.apple.applescript.data-object"
+  "com.apple.applescript.text-object"
+  "com.apple.applescript.url-object"
+  "com.apple.coreanimation-bundle"
+  "com.apple.coreanimation-xml"
+  "com.apple.dashcode.css"
+  "com.apple.dashcode.javascript"
+  "com.apple.dashcode.json"
+  "com.apple.dashcode.manifest"
+  "com.apple.dashcode.xml"
+  "com.apple.dt.bundle.unit-test.objective-c"
+  "com.apple.dt.document.scheme"
+  "com.apple.dt.document.snapshot"
+  "com.apple.dt.document.workspace"
+  "com.apple.dt.dvt.plug-in"
+  "com.apple.dt.ide.plug-in"
+  "com.apple.dt.playground"
+  "com.apple.instruments.tracetemplate"
+  "com.apple.interfacebuilder.document"
+  "com.apple.interfacebuilder.document.cocoa"
+  "com.apple.iphone.developerprofile"
+  "com.apple.iphone.mobileprovision"
+  "com.apple.iwork.numbers.numbers"
+  "com.apple.iwork.numbers.sffnumbers"
+  "com.apple.iwork.numbers.template"
+  "com.apple.localized-pdf-bundle"
+  "com.apple.mach-o-binary"
+  "com.apple.mach-o-executable"
+  "com.apple.mach-o-object"
+  "com.apple.property-list"
+  "com.apple.protected-mpeg-4-audio"
+  "com.apple.quartzdebug.introspectiontrace"
+  "com.apple.quicktime-movie"
+  "com.apple.rez-source"
+  "com.apple.scripting-definition"
+  "com.apple.symbol-export"
+  "com.apple.x11-mach-o-executable"
+  "com.apple.xcode.archive"
+  "com.apple.xcode.configsettings"
+  "com.apple.xcode.docset"
+  "com.apple.xcode.dsym"
+  "com.apple.xcode.model"
+  "com.apple.xcode.mom"
+  "com.apple.xcode.plugin"
+  "com.apple.xcode.plugindata"
+  "com.apple.xcode.project"
+  "com.apple.xcode.projectdata"
+  "com.apple.xcode.strings-text"
+  "com.apple.xcode.usersettings"
+  "com.microsoft.excel.sheet.binary.macroenabled"
+  "com.microsoft.excel.xls"
+  "com.microsoft.windows-dynamic-link-library"
+  "com.microsoft.windows-executable"
+  "com.sun.java-archive"
+  "com.sun.java-class"
+  "com.sun.web-application-archive"
+  "dyn.ah62d4rv4ge80u5pbsa"
+  "dyn.ah62d4rv4ge81a7dk"
+  "org.openxmlformats.spreadsheetml.sheet"
+  "org.openxmlformats.spreadsheetml.sheet.macroenabled"
+  "public.3gpp"
+  "public.3gpp2"
+  "public.audio"
+  "public.html"
+  "public.image"
+  "public.movie"
+  "public.mpeg"
+  "public.mpeg-4"
+  "public.mpeg-4-audio"
+  "public.mpeg-video"
+  "public.object-code"
+  "public.shell-script"
+  "public.source-code"
+  "public.spreadsheet"
+  "public.unix-executable"
+  "public.xhtml"
+  "public.xml"
+)
+apply_array com.apple.Spotlight EnabledPreferenceRules "${SPOTLIGHT_RULES[@]}"
+apply_array com.apple.Spotlight DisabledUTTypes "${SPOTLIGHT_DISABLED_TYPES[@]}"
 
 # ── Dock ──────────────────────────────────────────────
 
