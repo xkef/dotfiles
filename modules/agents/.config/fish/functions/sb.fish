@@ -69,15 +69,23 @@ function sb -d "Run a command inside a nono sandbox"
     set -l nono_args --silent --log-file /dev/null --allow-cwd --read $DOTFILES_DIR --profile $profile
     test "$SB_ALLOW_LAUNCH_SERVICES" = 1; and set -a nono_args --allow-launch-services
 
+    # macOS logs the sandbox denials where only an unsandboxed process may
+    # read them, so a recorder streams them while the agent runs, and
+    # `agent-trace collect` caches them for `agent-trace sandbox`.
+    set -l recorder
+    if command -q agent-trace
+        agent-trace record &
+        set recorder $last_pid
+        disown
+    end
+
     # Not exec: the launchers call this function and clear the agent state
     # after the agent exits.
     env $env_args nono run $nono_args -- $cmd $cmd_args $rest
     set -l rc $status
 
-    # macOS logs the sandbox denials where only an unsandboxed process may
-    # read them, so the run's denials get cached here for `agent-trace
-    # sandbox`. It runs in the background because it scans the log.
-    if command -q agent-trace
+    if set -q recorder[1]
+        kill $recorder 2>/dev/null
         agent-trace collect >/dev/null 2>&1 &
         disown
     end

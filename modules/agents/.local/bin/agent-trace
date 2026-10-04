@@ -7,6 +7,7 @@
 #   agent-trace [--all] [--since <date>] errors [session-id]
 #   agent-trace [--all] [--since <date>] denials [session-id]
 #   agent-trace [--all] [--since <date>] sandbox
+#   agent-trace record
 #   agent-trace collect
 #
 # The scope is the sessions that ran inside the current repository, or
@@ -28,8 +29,8 @@
 # operation, and path per distinct Seatbelt denial, most frequent first.
 # It covers the denials a tool never reported, such as a config file git
 # skips without a word. macOS records them in its unified log, which only
-# an unsandboxed process may read, so `sb` runs `collect` after each
-# sandboxed run and the report reads that cache.
+# an unsandboxed process may read, so `sb` runs `record` while the agent
+# runs and `collect` after it exits, and the report reads that cache.
 set -euo pipefail
 
 readonly CLAUDE_PROJECTS="$HOME/.claude/projects"
@@ -39,6 +40,7 @@ readonly DENIAL_PATTERN='operation not permitted|permission denied|read-only fil
 readonly MAX_FIELD_LENGTH=200
 readonly NONO_STATE="${XDG_STATE_HOME:-$HOME/.local/state}/nono"
 readonly SANDBOX_CACHE="$AGENTS_STATE/sandbox"
+readonly SANDBOX_STREAMS="$SANDBOX_CACHE/streams"
 # Keeps file, execution, and network denials, so the many daemon denials
 # never reach jq.
 readonly SEATBELT_PREDICATE='sender == "Sandbox" AND (eventMessage CONTAINS " file-" OR eventMessage CONTAINS " process-exec" OR eventMessage CONTAINS " network-")'
@@ -74,9 +76,10 @@ readonly FAILURES_JQ='
 # Groups the Seatbelt denials of one nono session. The log names only the
 # process and its PID, so a denial counts when its PID is no older than the
 # sandboxed child. A line such as "3 duplicate reports for Sandbox: ..."
-# adds its count.
+# adds its count. The stream opens with a line that isn't JSON.
 readonly SEATBELT_JQ='
   [inputs
+    | fromjson?
     | .eventMessage // empty
     | capture("^(?:(?<dup>[0-9]+) duplicate reports? for )?Sandbox: (?<proc>.+)\\((?<pid>[0-9]+)\\) deny\\([0-9]+\\) (?<op>[^ ]+) ?(?<path>.*)$")
     | select((.pid | tonumber) >= $s.child_pid)
@@ -198,13 +201,6 @@ list() {
   done | sort -t $'\t' -k3
 }
 
-# Turns nono's "2026-09-26T10:46:02.73+02:00" into the local time
-# "2026-09-26 10:46:02" that `log show` takes.
-log_time() {
-  local time=${1:0:19}
-  echo "${time/T/ }"
-}
-
 # Keeps the denial rows of programs the agent can run. System daemons that
 # start during a long session pass the PID check, but they live outside
 # PATH. The Claude binary runs under its version number, such as 2.1.283.
@@ -218,26 +214,44 @@ own_processes() {
   done
 }
 
+# Streams the Seatbelt denials to a file named after its start time and
+# its own PID until `sb` stops it. The log daemon filters the events as
+# they arrive, so the cost follows the denials, not the log volume.
+record() {
+  [ "$(uname -s)" = Darwin ] || return 0
+  mkdir -p "$SANDBOX_STREAMS"
+  exec /usr/bin/log stream --style ndjson --predicate "$SEATBELT_PREDICATE" \
+    >"$SANDBOX_STREAMS/$(date +%Y-%m-%dT%H:%M:%S).$$.ndjson" 2>/dev/null
+}
+
 # Caches the Seatbelt denials of every finished nono session not cached
-# yet. An empty cache file marks a session without denials, or one whose
-# window the unified log no longer holds.
+# yet that started while a stopped stream ran, then drops the stream. An
+# empty cache file marks a session without denials.
 collect() {
-  local session id ended tmp
+  local stream name session id started ended tmp
   [ "$(uname -s)" = Darwin ] || return 0
   mkdir -p "$SANDBOX_CACHE"
 
-  for session in "$NONO_STATE"/sessions/*.json; do
-    id=$(basename "$session" .json)
-    [ -f "$SANDBOX_CACHE/$id.tsv" ] && continue
-    ended=$(jq -r '.ended // empty' "$NONO_STATE/audit/$id/session.json" 2>/dev/null) || continue
-    [ -n "$ended" ] || continue
+  for stream in "$SANDBOX_STREAMS"/*.ndjson; do
+    [ -f "$stream" ] || continue
+    name=$(basename "$stream" .ndjson)
+    kill -0 "${name##*.}" 2>/dev/null && continue
 
-    tmp=$(mktemp "$SANDBOX_CACHE/.$id.XXXXXX")
-    /usr/bin/log show --style ndjson --predicate "$SEATBELT_PREDICATE" \
-      --start "$(log_time "$(jq -r .started "$session")")" --end "$(log_time "$ended")" |
-      jq -rn --slurpfile s "$session" '$s[0] as $s | '"$SEATBELT_JQ" |
-      own_processes >"$tmp"
-    mv "$tmp" "$SANDBOX_CACHE/$id.tsv"
+    for session in "$NONO_STATE"/sessions/*.json; do
+      id=$(basename "$session" .json)
+      [ -f "$SANDBOX_CACHE/$id.tsv" ] && continue
+      ended=$(jq -r '.ended // empty' "$NONO_STATE/audit/$id/session.json" 2>/dev/null) || continue
+      started=$(jq -r .started "$session")
+      if [ -z "$ended" ] || [[ "${started:0:19}" < "${name%.*}" ]]; then
+        continue
+      fi
+
+      tmp=$(mktemp "$SANDBOX_CACHE/.$id.XXXXXX")
+      jq -Rrn --slurpfile s "$session" '$s[0] as $s | '"$SEATBELT_JQ" "$stream" |
+        own_processes >"$tmp"
+      mv "$tmp" "$SANDBOX_CACHE/$id.tsv"
+    done
+    rm "$stream"
   done
 }
 
@@ -268,6 +282,7 @@ list) list ;;
 errors) failures "${2:-}" | print_failures all ;;
 denials) failures "${2:-}" | print_failures denials ;;
 sandbox) sandbox ;;
+record) record ;;
 collect) collect ;;
 *) usage ;;
 esac
