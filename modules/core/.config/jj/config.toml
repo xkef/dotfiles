@@ -43,6 +43,14 @@ bookmark-advance-to = '@-'
 'stack()' = 'ancestors(reachable(@, mutable()), 2)'
 'stack(x)' = 'ancestors(reachable(x, mutable()), 2)'
 
+# ── Templates ────────────────────────────────────────
+# Show a GitHub noreply email as its username:
+# 202288743+kevin-nca@users.noreply.github.com becomes kevin-nca.
+[template-aliases]
+'format_short_signature(signature)' = '''
+stringify(signature.email()).replace(regex:'^(?:\d+\+)?([^@]+)@users\.noreply\.github\.com$', "$1")
+'''
+
 # ── Aliases ──────────────────────────────────────────
 [aliases]
 examine = ["log", "-T", "builtin_log_detailed", "-p", "-r"]
