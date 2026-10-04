@@ -33,5 +33,36 @@
     "label": "Gradle: test (current file)",
     "command": "./gradlew",
     "args": ["test", "--tests", "$ZED_STEM"]
+  },
+  {
+    "label": "mise: fmt",
+    "command": "mise",
+    "args": ["run", "fmt"]
+  },
+  {
+    "label": "mise: lint",
+    "command": "mise",
+    "args": ["run", "lint"]
+  },
+  {
+    "label": "mise: test",
+    "command": "mise",
+    "args": ["run", "test"]
+  },
+  {
+    "label": "mise: up",
+    "command": "mise",
+    "args": ["run", "up"],
+    "use_new_terminal": true
+  },
+  {
+    "label": "mise: e2e",
+    "command": "mise",
+    "args": ["run", "e2e"]
+  },
+  {
+    "label": "hurl: run current file",
+    "command": "hurl",
+    "args": ["--test", "--variable", "server=http://localhost:8080", "$ZED_FILE"]
   }
 ]

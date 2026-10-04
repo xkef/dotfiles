@@ -31,3 +31,7 @@ vim.opt.listchars = {
   precedes = "«",
   lead = "·",
 }
+
+-- A project's .nvim.lua carries settings that belong to it alone, such as a
+-- formatter's config path. nvim asks once before trusting a new file.
+vim.opt.exrc = true

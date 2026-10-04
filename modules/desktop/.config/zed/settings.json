@@ -73,6 +73,11 @@
     "basher": true,
     "dockerfile": true,
     "docker-compose": true,
+    "proto": true,
+    "helm": true,
+    "typespec": true,
+    "biome": true,
+    "hurl": true,
     "make": true,
     "env": true,
     "ini": true,
@@ -90,6 +95,9 @@
     "rose-pine-theme": true,
     "gruvbox-material": true,
     "nord": true
+  },
+  "file_types": {
+    "Shell Script": ["**/mise/tasks/**"]
   },
   "languages": {
     "Java": {
