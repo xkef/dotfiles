@@ -24,6 +24,14 @@ Claude Code's own sandbox is off, `dangerouslyDisableSandbox` has no effect, and
 terminal. Without nono, Claude Code's sandbox applies, and
 `dangerouslyDisableSandbox` lifts it.
 
+# Never use `/tmp`
+
+Put temporary files under `.claude/tmp/` in the working directory, not in
+`/tmp`, `$TMPDIR`, or a harness scratchpad. More than one account runs agents on
+this machine, and a shared temp directory leaks files between them. Create
+directories with `mkdir -p .claude/tmp && mktemp -d .claude/tmp/XXXXXX`. Git
+ignores `.claude/tmp/` globally.
+
 # Toolchains install on demand
 
 The global node, python, and go serve only as defaults, next to rustup and uv.
