@@ -2,3 +2,13 @@ local ok, theme = pcall(require, "theme")
 if ok and type(theme.setup) == "function" then
   theme.setup()
 end
+
+-- Show markdown as plain highlighted text. LazyVim's global conceallevel
+-- hides emphasis markers and link targets.
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("markdown_conceal", { clear = true }),
+  pattern = { "markdown", "markdown.mdx" },
+  callback = function()
+    vim.opt_local.conceallevel = 0
+  end,
+})
