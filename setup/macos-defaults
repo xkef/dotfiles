@@ -120,6 +120,10 @@ else
   log "Backup: $BACKUP_FILE"
   printf '\n'
   osascript -e 'tell application id "com.apple.systempreferences" to quit' 2>/dev/null || true
+  # Mail and Calendar cache their settings and ignore writes while open.
+  for app in com.apple.mail com.apple.iCal; do
+    osascript -e "if application id \"$app\" is running then tell application id \"$app\" to quit" 2>/dev/null || true
+  done
   sudo -v
   while true; do
     sudo -n true
@@ -373,6 +377,20 @@ $DRY_RUN || log "TextEdit..."
 apply com.apple.TextEdit RichText -int 0
 apply com.apple.TextEdit PlainTextEncoding -int 4
 apply com.apple.TextEdit PlainTextEncodingForWrite -int 4
+
+# ── Mail ──────────────────────────────────────────────
+
+# Mail keeps its settings in its sandbox container, so the terminal
+# needs Full Disk Access to write them.
+$DRY_RUN || log "Mail..."
+apply com.apple.mail SendFormat -string "Plain"
+apply com.apple.mail ConversationViewSortDescending -bool true
+
+# ── Calendar ──────────────────────────────────────────
+
+$DRY_RUN || log "Calendar..."
+apply com.apple.iCal "Show Week Numbers" -bool true
+apply com.apple.iCal "TimeZone support enabled" -bool true
 
 # ── Activity Monitor ──────────────────────────────────
 
