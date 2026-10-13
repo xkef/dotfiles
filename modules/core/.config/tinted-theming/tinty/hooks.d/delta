@@ -37,7 +37,7 @@ end
 set -l muted (_mix 05 0.45)
 set -l red (_hex 08)
 set -l green (_hex 0B)
-set -l blue (_hex 0D)
+set -l fg (_hex 05)
 
 # map-styles recolors the lines that git's diff.colorMoved marks as moved.
 printf '%s\n' \
@@ -53,7 +53,7 @@ printf '%s\n' \
     "	line-numbers-zero-style = \"$muted\"" \
     "	line-numbers-left-style = \"$muted\"" \
     "	line-numbers-right-style = \"$muted\"" \
-    "	file-style = bold \"$blue\"" \
-    "	file-decoration-style = \"$muted\" ul" \
-    "	hunk-header-decoration-style = \"$muted\" box" \
+    "	file-style = bold \"$fg\" \"$(_mix 0D 0.2)\"" \
+    "	file-decoration-style = none" \
+    "	hunk-header-decoration-style = none" \
     "	hunk-header-line-number-style = \"$muted\"" >$out

@@ -32,6 +32,12 @@
 [delta]
 	navigate = true
 	line-numbers = true
+	line-numbers-left-format = "{nm:>3} "
+	line-numbers-right-format = "{np:>3} │ "
+	file-modified-label = ""
+	file-added-label = +
+	file-removed-label = -
+	file-renamed-label = →
 	hunk-header-style = line-number syntax
 	hyperlinks = true
 	hyperlinks-file-link-format = "file://{path}:{line}"
