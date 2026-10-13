@@ -7,6 +7,7 @@ diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
 diff-instructions = false
 graph.style = "square"
 log-word-wrap = true
+show-cryptographic-signatures = true
 
 # ── Pager: delta ─────────────────────────────────────
 # Delta applies only to commands that produce diffs, so it can't
