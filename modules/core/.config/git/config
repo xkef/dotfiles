@@ -30,8 +30,9 @@
 
 # ── Delta pager ──────────────────────────────────────
 [delta]
+	navigate = true
 	line-numbers = true
-	hunk-header-style = omit
+	hunk-header-style = line-number syntax
 	hyperlinks = true
 	hyperlinks-file-link-format = "file://{path}:{line}"
 
@@ -113,7 +114,7 @@
 	ds = diff --shortstat
 	lg = log --oneline --graph --decorate --all -20
 	ll = log --pretty=format:'%C(yellow)%h%Creset %C(blue)%ad%Creset %C(green)%an%Creset %s%C(red)%d%Creset' --date=short
-	dft = difft
+	dft = -c diff.external=difft diff
 	wip = !git add -A && git commit -m 'wip: checkpoint'
 	undo = reset --soft HEAD~1
 	amend = commit --amend --no-edit
@@ -126,8 +127,11 @@
 	wtr = worktree remove
 
 # ── Delta colors, written by `theme` through tinty ───
+# tinted-delta sets the syntax theme. The delta hook in tinty's hooks.d
+# writes the diff colors.
 [include]
 	path = ~/.local/share/tinted-theming/tinty/tinted-delta-configs-file.gitconfig
+	path = ~/.local/share/tinted-theming/tinty/delta-colors.gitconfig
 
 # ── SSH signing through the SSH agent ────────────────
 [gpg]

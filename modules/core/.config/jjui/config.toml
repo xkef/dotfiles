@@ -1,14 +1,28 @@
-# The preview runs jj without a pager. Render its diffs through delta for
-# syntax highlighting. --no-gitconfig drops the line numbers and file
-# hyperlinks from git/config, which would point at jj's temporary files.
+# The preview runs jj without a pager or a terminal. Pipe jj's git format
+# diff through delta, sized to the preview pane, so it renders as `jj diff`
+# does in the terminal. jjui runs only jj, so `jj util exec` starts the
+# shell. jjui quotes $file as a fileset.
 [preview]
 revision_command = [
-  "show", "--color", "always", "-r", "$change_id",
-  "--tool", "delta",
-  "--config", 'merge-tools.delta.diff-args=["--color-only", "--no-gitconfig", "$left", "$right"]',
+  "util",
+  "exec",
+  "--",
+  "sh",
+  "-c",
+  'jj show --color=always --git -r "$1" | delta --paging=never --width="$2"',
+  "sh",
+  "$change_id",
+  "$preview_width",
 ]
 file_command = [
-  "diff", "--color", "always", "-r", "$change_id", "$file",
-  "--tool", "delta",
-  "--config", 'merge-tools.delta.diff-args=["--color-only", "--no-gitconfig", "$left", "$right"]',
+  "util",
+  "exec",
+  "--",
+  "sh",
+  "-c",
+  'jj diff --color=always --git -r "$1" "$3" | delta --paging=never --width="$2"',
+  "sh",
+  "$change_id",
+  "$preview_width",
+  "$file",
 ]

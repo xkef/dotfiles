@@ -4,6 +4,7 @@ conflict-marker-style = "git"
 default-command = "log"
 editor = "nvim"
 diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
+merge-editor = "vimdiff"
 diff-instructions = false
 graph.style = "square"
 log-word-wrap = true
@@ -11,11 +12,13 @@ show-cryptographic-signatures = true
 
 # ── Pager: delta ─────────────────────────────────────
 # Delta applies only to commands that produce diffs, so it can't
-# mangle the output of status or bookmark list.
+# mangle the output of status or bookmark list. Delta parses only git
+# format diffs and passes jj's default color-words format through as is.
 [[--scope]]
 --when.commands = ["diff", "show", "log"]
 [--scope.ui]
 pager = "delta"
+diff-formatter = ":git"
 
 # ── Diff and merge tools ────────────────────────────
 [merge-tools.vimdiff]
@@ -23,10 +26,6 @@ program = "nvim"
 
 [merge-tools.delta]
 diff-args = ["--color-only", "$left", "$right"]
-diff-expected-exit-codes = [0, 1]
-
-[merge-tools.difft]
-diff-args = ["--color=always", "$left", "$right"]
 diff-expected-exit-codes = [0, 1]
 
 # ── Git interop ──────────────────────────────────────
@@ -40,7 +39,6 @@ log = 'ancestors(reachable(mine() | @, mutable()), 2) | trunk() | @'
 bookmark-advance-to = '@-'
 
 [revset-aliases]
-'immutable_heads()' = 'present(trunk()) | untracked_remote_bookmarks() | tags()'
 'stack()' = 'ancestors(reachable(@, mutable()), 2)'
 'stack(x)' = 'ancestors(reachable(x, mutable()), 2)'
 
@@ -64,6 +62,10 @@ eject = ["squash", "--from", "@", "--into"]
 credit = ["file", "annotate"]
 cat = ["file", "show"]
 streamline = ["simplify-parents"]
+# Structural diffs through difftastic. jj's built-in difft tool passes
+# the terminal width.
+dft = ["diff", "--tool", "difft"]
+sft = ["show", "--tool", "difft"]
 
 # ── Diff styling ─────────────────────────────────────
 [colors]
