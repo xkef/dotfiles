@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#MISE description="Load LazyVim headless. Needs its plugins installed."
+#MISE env={NVIM_APPNAME = "lazyvim"}
+set -eu
+
+# Neovim exits 0 after a startup error, so the task fails on the error
+# message that startup left in v:errmsg instead. A throwaway state
+# directory keeps the check from writing LazyVim state, which the sandbox
+# doesn't grant.
+XDG_STATE_HOME=$(mktemp -d) nvim --headless -c "lua require('lazy')" -c 'if v:errmsg != "" | cquit | else | qall | endif'

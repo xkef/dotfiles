@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Check Lua, markdown, JSON, and YAML formatting"
+set -eu
+stylua --check modules/
+dprint check --config .config/dprint.json

@@ -10,7 +10,7 @@ Thumbs.db
 # Build artifacts
 /.rumdl_cache/
 
-# `mise run vale-sync` downloads style packages next to the vocabulary link
+# `mise run vale:sync` downloads style packages next to the vocabulary link
 /.config/vale/styles/*
 !/.config/vale/styles/config/
 /.config/vale/styles/config/*

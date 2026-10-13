@@ -35,21 +35,21 @@ jobs:
       - name: Install fish
         run: sudo apt-get update && sudo apt-get install -y fish
       - name: Shellcheck
-        run: mise run lint-sh
+        run: mise run lint:sh
       - name: Fish syntax
-        run: mise run lint-fish
+        run: mise run lint:fish
       - name: Format
-        run: mise run lint-fmt
+        run: mise run lint:fmt
       - name: Markdown lint
-        run: mise run lint-md
+        run: mise run lint:md
       - name: Prose lint
-        run: mise run lint-prose
+        run: mise run lint:prose
       - name: Workflow audit
         env:
           GH_TOKEN: ${{ github.token }} # zizmor's online audits query GitHub
-        run: mise run lint-actions
+        run: mise run lint:actions
       - name: Pi extension types
-        run: mise run lint-pi
+        run: mise run lint:pi
 
   check:
     strategy:
@@ -110,8 +110,8 @@ jobs:
           brew install --cask wezterm@nightly
           NVIM_APPNAME=lazyvim nvim --headless '+Lazy! restore' +qa
           mise trust
-          mise run lint-nvim
-          mise run lint-wezterm
+          mise run lint:nvim
+          mise run lint:wezterm
 
   e2e-arch:
     runs-on: ubuntu-latest

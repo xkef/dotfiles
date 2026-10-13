@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#MISE description="Load the WezTerm config headless. Needs wezterm."
+set -eu
+
+# WezTerm exits 0 on a config error and falls back to its defaults, so the
+# task fails on the logged ERROR instead. The config loads once without the
+# agents package and once with it, as each machine deploys it.
+for modules in desktop 'desktop agents'; do
+  XDG_CONFIG_HOME=$(mktemp -d "${TMPDIR:-/tmp}/wezterm.XXXXXX")
+  export XDG_CONFIG_HOME
+  export WEZTERM_CONFIG_FILE=$XDG_CONFIG_HOME/wezterm/wezterm.lua
+  mkdir "$XDG_CONFIG_HOME/wezterm"
+  for module in $modules; do
+    cp modules/"$module"/.config/wezterm/*.lua "$XDG_CONFIG_HOME/wezterm"
+  done
+  if wezterm ls-fonts 2>&1 >/dev/null | grep ERROR; then
+    echo "wezterm config fails with: $modules" >&2
+    exit 1
+  fi
+done

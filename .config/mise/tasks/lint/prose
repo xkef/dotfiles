@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Lint prose with vale and fail on any alert"
-#MISE depends=["vale-sync"]
+#MISE depends=["vale:sync"]
 set -eu
 
 # The repo lints with the vale config it installs on every machine. vale

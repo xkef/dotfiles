@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#MISE description="Audit the workflows and Dependabot config with zizmor"
+set -eu
+
+# zizmor rejects an empty token, which agent sandboxes set. Without a
+# token it skips the audits that query GitHub.
+[ -n "${GITHUB_TOKEN:-}" ] || unset GITHUB_TOKEN
+zizmor .
