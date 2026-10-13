@@ -7,7 +7,6 @@
 # entries from a hook and pi from an extension.
 #
 #   mux-agents          tv picker. Enter switches to the agent's pane.
-#   mux-agents --count  tmux status segment ("2• 1◦"), empty without agents
 #   mux-agents preview <pane> <lines>  the pane's last lines
 #
 # Inside tmux, where the picker runs in a popup, it lists tmux panes and
@@ -130,32 +129,6 @@ if [[ "${1:-}" == preview ]]; then
   else
     mux-tabs preview "$2" "$3"
   fi
-  exit 0
-fi
-
-# ── Count mode ───────────────────────────────────────
-# Counts every agent in the picker's sort order, so a count keeps its
-# position as the states around it change. A state without agents produces
-# nothing, and with no agents at all the segment stays empty.
-if [[ "${1:-}" == --count ]]; then
-  waiting=0 busy=0 running=0 idle=0
-  while IFS=$'\t' read -r _ _ _ state _; do
-    case "$state" in
-    waiting) ((++waiting)) ;;
-    busy) ((++busy)) ;;
-    running) ((++running)) ;;
-    *) ((++idle)) ;;
-    esac
-  done < <(collect)
-
-  segment=""
-  append() { segment="$segment${segment:+ }$1$2"; }
-  ((waiting > 0)) && append "$waiting" "$ICON_WAITING"
-  ((busy > 0)) && append "$busy" "$ICON_BUSY"
-  ((running > 0)) && append "$running" "$ICON_RUNNING"
-  ((idle > 0)) && append "$idle" "$ICON_IDLE"
-
-  [ -n "$segment" ] && printf '%s  ' "$segment"
   exit 0
 fi
 
