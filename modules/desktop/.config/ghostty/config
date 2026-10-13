@@ -35,7 +35,7 @@ unfocused-split-opacity = 0.9
 confirm-close-surface = false
 
 # ── Cursor ────────────────────────────────────────────
-cursor-style = block
+cursor-style = bar
 cursor-style-blink = false
 shell-integration-features = cursor,sudo,title,ssh-env
 
