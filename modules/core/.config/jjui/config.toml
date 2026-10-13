@@ -26,3 +26,32 @@ file_command = [
   "$preview_width",
   "$file",
 ]
+
+# t opens the selected revision, or the selected file in the details
+# view, in difftastic through `jj dft`. less drops -F and -X from $LESS so
+# a short diff stays open until q instead of vanishing behind jjui.
+[[actions]]
+name = "difftastic"
+lua = '''
+local args = {
+  "dft", "-r", context.change_id(),
+  "--config", 'ui.pager=["less", "-R", "-+F", "-+X"]',
+}
+local file = context.file()
+if file then
+  table.insert(args, string.format("file:%q", file))
+end
+jj_interactive(args)
+'''
+
+[[bindings]]
+action = "difftastic"
+key = "t"
+scope = "revisions"
+desc = "difftastic"
+
+[[bindings]]
+action = "difftastic"
+key = "t"
+scope = "revisions.details"
+desc = "difftastic"
