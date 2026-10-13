@@ -32,6 +32,15 @@ rm -f ~/.config/git/config.personal ~/.config/git/config.work \
 
 setup/private/decrypt
 
+# The archive can restore hooks for setup that would expose private
+# details in this repo, such as logins with credentials from 1Password.
+# Decrypt restores files as 0600, so bash runs each hook.
+for hook in ~/.config/dotfiles/post-deploy.d/*; do
+  if [[ -f "$hook" ]]; then
+    bash "$hook"
+  fi
+done
+
 # The repo runs jj colocated with git, but a fresh clone is plain git. jj
 # takes it over once the package install has put jj in place, and tracks
 # main as `dots update` does. A checkout without main@origin, as in CI,
