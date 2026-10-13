@@ -1,0 +1,44 @@
+# tmux session picker. prefix f opens it in a popup. Enter connects
+# through sesh, which creates the session for a directory. Each row reads
+# "icon name", or a bare path for Find. Ctrl-S cycles the sources.
+[metadata]
+name = "tmux-sessions"
+description = "tmux sessions, sesh configs, zoxide directories, and a directory search"
+requirements = ["sesh", "tmux", "fd"]
+
+[source]
+command = [
+  { name = "All", run = "sesh list --icons" },
+  { name = "tmux", run = "sesh list -t --icons" },
+  { name = "Config", run = "sesh list -c --icons" },
+  { name = "Zoxide", run = "sesh list -z --icons" },
+  { name = "Find", run = "fd -H -d 2 -t d -E .Trash . ~ | sed 's:/$::'" },
+]
+no_sort = true
+ansi = true
+
+[preview]
+command = "sesh preview '{strip_ansi}'"
+
+[ui.input_bar]
+header = "sessions │ C-s source │ C-w kill"
+
+[ui.preview_panel]
+size = 55
+hidden = true
+
+[keybindings]
+tab = "select_next_entry"
+backtab = "select_prev_entry"
+enter = "actions:connect"
+ctrl-w = ["actions:kill", "reload_source"]
+
+[actions.connect]
+description = "Switch to the session, creating it if needed"
+command = "sesh connect '{strip_ansi}'"
+mode = "execute"
+
+[actions.kill]
+description = "Kill the tmux session"
+command = "tmux kill-session -t '{strip_ansi|split: :1..|join: }'"
+mode = "fork"
