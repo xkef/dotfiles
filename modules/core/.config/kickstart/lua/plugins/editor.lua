@@ -17,7 +17,9 @@ vim.pack.add({
 })
 
 -- The fallback nvim keeps a fixed theme. The LazyVim config follows the
--- tinty scheme.
+-- tinty scheme. Frappe matches tinty's default scheme, and the transparent
+-- background shows the terminal's, so the window matches any scheme.
+require("catppuccin").setup({ flavour = "frappe", transparent_background = true })
 vim.cmd.colorscheme("catppuccin-nvim")
 
 -- C-hjkl moves across WezTerm panes and nvim splits alike.
