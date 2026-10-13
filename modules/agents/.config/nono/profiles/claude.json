@@ -2,12 +2,20 @@
   "$schema": "https://nono.dev/schemas/nono-profile.schema.json",
   "extends": "claude-strict",
   "filesystem": {
+    "allow": [
+      "$XDG_CONFIG_HOME/op"
+    ],
     "bypass_protection": [
       "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
-      "$HOME/.1password/agent.sock"
+      "$HOME/.1password/agent.sock",
+      "$XDG_CONFIG_HOME/op",
+      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/Library/Application Support/1Password/Data/settings/settings.json"
     ],
     "read": [
       "$XDG_CONFIG_HOME/gh"
+    ],
+    "read_file": [
+      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/Library/Application Support/1Password/Data/settings/settings.json"
     ],
     "unix_socket": [
       "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
@@ -15,8 +23,8 @@
     ]
   },
   "meta": {
-    "description": "Claude Code with mise, jj, maven, npm, cargo, shared skills, and keychain access",
+    "description": "Claude Code with mise, jj, maven, npm, cargo, shared skills, keychain access, and the 1Password CLI",
     "name": "claude",
-    "version": "1.4.0"
+    "version": "1.5.0"
   }
 }
