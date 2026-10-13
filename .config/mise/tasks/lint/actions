@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Audit the workflows and Dependabot config with zizmor"
+#MISE description="Audit the GitHub workflows with zizmor"
 set -eu
 
 # zizmor rejects an empty token, which agent sandboxes set. Without a
