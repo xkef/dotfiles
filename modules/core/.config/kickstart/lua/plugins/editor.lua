@@ -4,7 +4,8 @@ end
 
 vim.pack.add({
   { src = gh("catppuccin/nvim"), name = "catppuccin" },
-  gh("mrjones2014/smart-splits.nvim"),
+  -- v3 ships no WezTerm or tmux support. See the LazyVim spec.
+  { src = gh("mrjones2014/smart-splits.nvim"), version = "v2.1.1-final" },
   { src = gh("nvim-treesitter/nvim-treesitter"), version = "main" },
   gh("nvim-lua/plenary.nvim"),
   gh("nvim-telescope/telescope.nvim"),

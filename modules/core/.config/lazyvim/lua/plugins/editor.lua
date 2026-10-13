@@ -1,9 +1,12 @@
 return {
   {
     "mrjones2014/smart-splits.nvim",
-    -- Loads at startup to set the IS_NVIM user var, which WezTerm's leader
-    -- h/j/k/l reads to hand the key to Neovim. A lazy load leaves it unset
-    -- until the first move.
+    -- v3 moved the WezTerm and tmux support into separate backend plugins,
+    -- and the WezTerm one is still unstable. v2 ships both.
+    tag = "v2.1.1-final",
+    -- Loads at startup to set the IS_NVIM user var and tmux's @pane-is-vim,
+    -- which the WezTerm and tmux leader h/j/k/l read to hand the key to
+    -- Neovim. A lazy load leaves them unset until the first move.
     lazy = false,
     keys = (function()
       local ss = "smart-splits"

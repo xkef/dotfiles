@@ -47,8 +47,9 @@
       "src": "https://github.com/nvim-lua/plenary.nvim"
     },
     "smart-splits.nvim": {
-      "rev": "ec76708f1617ef9e2ac353357fe52d2c997a0f06",
-      "src": "https://github.com/mrjones2014/smart-splits.nvim"
+      "rev": "ac11b8ed1efe7cca7bb3eae9c588163c926c6894",
+      "src": "https://github.com/mrjones2014/smart-splits.nvim",
+      "version": "'v2.1.1-final'"
     },
     "telescope-fzf-native.nvim": {
       "rev": "b25b749b9db64d375d782094e2b9dce53ad53a40",
