@@ -19,7 +19,8 @@ path = "https://github.com/tinted-theming/tinted-terminal"
 themes-dir = "themes/wezterm"
 supported-systems = ["base16", "base24"]
 
-# ~/.config/git/config includes the generated file.
+# ~/.config/git/config includes the generated file, and the delta file
+# that hooks.d/delta writes.
 [[items]]
 name = "tinted-delta"
 path = "https://github.com/tinted-theming/tinted-delta"

@@ -79,6 +79,8 @@ For commit message formatting, see the `commit` skill.
 | `jj eject`   | Move changes from current into another change                    |
 | `jj credit`  | Annotate file, like `git blame`                                  |
 | `jj cat`     | Show file contents at a revision                                 |
+| `jj dft`     | Structural diff through difftastic                               |
+| `jj sft`     | Show a revision with a structural diff through difftastic        |
 
 ## Custom revset aliases
 

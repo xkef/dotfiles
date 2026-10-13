@@ -20,6 +20,7 @@ Conventional Commits
 CSP
 ctrl
 diffable
+difftastic
 distro
 docstrings?
 dotfiles
