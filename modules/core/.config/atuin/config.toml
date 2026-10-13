@@ -9,5 +9,15 @@ show_tabs = false
 max_preview_height = 0
 exit_mode = "return-query"
 
+# Keep credentials out of synced history. secrets_filter (on by default)
+# catches known token formats. These patterns catch inline assignments
+# such as `API_KEY=abc cmd` or `set -x GH_TOKEN abc`, and auth headers.
+# A value that starts with `$` or `(` comes from a substitution and stays.
+history_filter = [
+  '(?i)[a-z0-9_]*(token|secret|passw(or)?d|api_?key)[a-z0-9_]*=[^$(\s]',
+  '(?i)\bset\s+(-\w+\s+)*[a-z0-9_]*(token|secret|passw(or)?d|api_?key)[a-z0-9_]*\s+[^$(\s]',
+  '(?i)authorization:\s*(bearer|basic|token)\s',
+]
+
 [logs]
 dir = "~/.local/share/atuin/logs"
