@@ -8,6 +8,9 @@ Thumbs.db
 !/.claude/skills/
 /.claude-notes/
 
+# Restored by setup/private/decrypt
+/mise.local.toml
+
 # Build artifacts
 /.rumdl_cache/
 
