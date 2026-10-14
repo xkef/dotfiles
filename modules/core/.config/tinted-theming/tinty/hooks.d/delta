@@ -2,8 +2,9 @@
 # tinty hook: writes delta's diff colors for tinty's current scheme to
 # delta-colors.gitconfig, which ~/.config/git/config includes. The
 # tinted-delta item sets only the syntax theme, so delta would otherwise
-# draw its stock red and green backgrounds under every scheme. Line
-# backgrounds blend the scheme's red and green into its background.
+# draw its stock red and green backgrounds under every scheme. Changed
+# lines keep the terminal background. Changed words blend the scheme's
+# red and green into it.
 
 set -q TINTY_SCHEME_PALETTE_BASE00_RGB_R; or exit 0
 
@@ -43,9 +44,9 @@ set -l fg (_hex 05)
 printf '%s\n' \
     '# Written by the delta tinty hook. Changes are lost on `theme`.' \
     '[delta]' \
-    "	minus-style = syntax \"$(_mix 08 0.13)\"" \
+    "	minus-style = syntax" \
     "	minus-emph-style = syntax \"$(_mix 08 0.28)\"" \
-    "	plus-style = syntax \"$(_mix 0B 0.13)\"" \
+    "	plus-style = syntax" \
     "	plus-emph-style = syntax \"$(_mix 0B 0.28)\"" \
     "	map-styles = \"bold purple => syntax $(_mix 0E 0.18), bold cyan => syntax $(_mix 0C 0.18)\"" \
     "	line-numbers-minus-style = \"$red\"" \
