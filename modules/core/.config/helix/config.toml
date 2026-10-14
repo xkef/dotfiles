@@ -1,6 +1,6 @@
 # ── Theme ────────────────────────────────────────────
 # A fixed theme. `theme` switches the terminal and Neovim, not Helix.
-theme = "catppuccin_mocha"
+theme = "catppuccin_frappe"
 
 # ── Editor ──────────────────────────────────────────
 [editor]
