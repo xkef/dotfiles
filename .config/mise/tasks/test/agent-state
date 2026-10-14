@@ -4,6 +4,8 @@ set -eu
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-agent-state.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
 export XDG_STATE_HOME="$tmp"
+# The tests pick the pane themselves, and tmux takes precedence.
+unset TMUX_PANE
 state=modules/agents/.local/bin/agent-state
 
 fail() {
@@ -40,16 +42,25 @@ export WEZTERM_PANE=7
 
 # The task survives state writes and is cut to 60 characters.
 "$state" task "$(printf 'x%.0s' {1..80})"
-"$state" set claude running
+"$state" set claude busy
 [ "$(field 7 7 | wc -c | tr -d ' ')" = 61 ] || fail "task not cut to 60"
 
 "$state" set claude sleeping 2>/dev/null && fail "unknown state accepted"
+"$state" set claude running 2>/dev/null && fail "dropped state accepted"
 
 # In tmux the key names the host and the tmux pane, even inside WezTerm.
 TMUX_PANE=%3 HOSTNAME=box.local "$state" set pi busy
 [ "$("$state" list | awk -F '\t' '$1 == "tmux-box-3" { print $3 }')" = busy ] ||
   fail "tmux pane not keyed by host and pane"
+
+# `list <mux>` keeps the entries of that multiplexer on this host, keyed
+# by its own pane id.
+TMUX_PANE=%4 HOSTNAME=vm.local "$state" set pi busy
+[ "$(HOSTNAME=box.local "$state" list tmux | cut -f1)" = %3 ] ||
+  fail "tmux list: $(HOSTNAME=box.local "$state" list tmux)"
+[ "$("$state" list wezterm | cut -f1)" = 7 ] || fail "wezterm list: $("$state" list wezterm)"
 TMUX_PANE=%3 HOSTNAME=box.local "$state" clear
+TMUX_PANE=%4 HOSTNAME=vm.local "$state" clear
 
 # clear removes the record and the task.
 "$state" clear

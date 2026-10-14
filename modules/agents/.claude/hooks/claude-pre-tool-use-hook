@@ -5,27 +5,13 @@ FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 
 [ -z "$FILE_PATH" ] && exit 0
 
-SENSITIVE_PATTERNS=(
-  ".env"
-  ".env.local"
-  ".env.production"
-  ".env.staging"
-  "id_rsa"
-  "id_ed25519"
-  "id_ecdsa"
-  ".pem"
-  ".key"
-  "credentials.json"
-  ".netrc"
-  ".aws/credentials"
-  ".p12"
-)
+# Matches the whole file name, so .envrc or app.keymap stays writable.
+case "${FILE_PATH##*/}" in
+.env | .env.local | .env.production | .env.staging | \
+  id_rsa | id_ed25519 | id_ecdsa | *.pem | *.key | *.p12 | \
+  credentials.json | .netrc) ;;
+*) [[ "$FILE_PATH" == */.aws/credentials ]] || exit 0 ;;
+esac
 
-for pattern in "${SENSITIVE_PATTERNS[@]}"; do
-  if [[ "$FILE_PATH" == *"$pattern"* ]]; then
-    echo "Blocked: refusing to write to sensitive file matching '$pattern': $FILE_PATH" >&2
-    exit 2
-  fi
-done
-
-exit 0
+echo "Blocked: refusing to write to sensitive file: $FILE_PATH" >&2
+exit 2

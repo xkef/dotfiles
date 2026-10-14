@@ -21,13 +21,13 @@ pass them.
 
 ## Common commands
 
-| Command     | Description                                          |
-| ----------- | ---------------------------------------------------- |
-| `jj st`     | Show summary of working copy changes                 |
-| `jj diff`   | Show diff of working copy changes                    |
-| `jj log`    | Show graph of commits, by default only unpushed ones |
-| `jj evolog` | Show previous states, like `git reflog`              |
-| `jj op log` | Show previous operations                             |
+| Command     | Description                                     |
+| ----------- | ----------------------------------------------- |
+| `jj st`     | Show summary of working copy changes            |
+| `jj diff`   | Show diff of working copy changes               |
+| `jj log`    | Show your changes, their 5 ancestors, and trunk |
+| `jj evolog` | Show previous states, like `git reflog`         |
+| `jj op log` | Show previous operations                        |
 
 ## Specifying revisions
 

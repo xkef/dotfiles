@@ -1,41 +1,33 @@
 #!/usr/bin/env bash
-#MISE description="Check that setup/deploy migrates an old local config and cache"
+#MISE description="Check that setup/deploy rejects a dotter download that fails the lock"
 set -eu
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-deploy.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
-state="$tmp/state/dotter"
 
 fail() {
   echo "$1" >&2
   exit 1
 }
 
-# A stub dotter keeps the deploy from touching the real HOME, and a stub
-# systemd-detect-virt reports bare metal.
-mkdir -p "$tmp/bin" "$state"
-printf '#!/bin/sh\nexit 0\n' >"$tmp/bin/dotter"
+# A stub curl writes a binary that can't match the locked checksum, and a
+# stub systemd-detect-virt reports bare metal. The system dirs supply the
+# rest, so a dotter there would skip the download.
+mkdir -p "$tmp/bin"
+cat >"$tmp/bin/curl" <<'EOF'
+#!/bin/sh
+while [ "$1" != -o ]; do shift; done
+echo tampered >"$2"
+EOF
 printf '#!/bin/sh\nexit 1\n' >"$tmp/bin/systemd-detect-virt"
 chmod +x "$tmp/bin"/*
-export PATH="$tmp/bin:$PATH" XDG_STATE_HOME="$tmp/state" HOME="$tmp/home"
+path="$tmp/bin:/usr/bin:/bin"
+if PATH=$path command -v dotter >/dev/null; then
+  echo "deploy skipped: dotter in the system path"
+  exit 0
+fi
 
-# A ~/.npmrc with only the cooldown stands where dotter links the file.
-mkdir -p "$HOME"
-printf 'min-release-age=7\n' >"$HOME/.npmrc"
-
-printf 'packages = ["dotfiles"]\n' >"$state/local.toml"
-cat >"$state/cache.toml" <<'EOF'
-[symlinks]
-"home/agents/claude/settings.json" = "/h/.claude/settings.dotfiles.json"
-
-[templates]
-"home/agents/claude/settings.json" = "/h/.claude/settings.json"
-"home/agents/pi/settings.json" = "/h/.pi/agent/settings.json"
-EOF
-setup/deploy
-
-grep -qxF 'packages = ["core", "desktop", "agents"]' "$state/local.toml" ||
-  fail "old package not migrated: $(cat "$state/local.toml")"
-! grep -q '/settings\.json"$' "$state/cache.toml" || fail "old templates left in the cache"
-grep -q 'settings\.dotfiles\.json' "$state/cache.toml" || fail "migration dropped the new link"
-[ ! -e "$HOME/.npmrc" ] || fail "the generated ~/.npmrc blocks the link"
+if env PATH="$path" XDG_STATE_HOME="$tmp/state" HOME="$tmp/home" setup/deploy 2>/dev/null; then
+  fail "deploy ran a dotter that fails the checksum"
+fi
+[ ! -e "$tmp/state/dotter/dotter" ] || fail "deploy kept the tampered dotter"
 echo "deploy ok"

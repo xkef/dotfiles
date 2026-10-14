@@ -12,7 +12,7 @@ function sb -d "Run a command inside a nono sandbox"
     if test (count $argv) -eq 0
         echo "Usage: sb [--strict] <command> [args...]" >&2
         echo "Runs <command> in a nono sandbox using a matching profile." >&2
-        echo "Known profiles: claude, claude-strict, pi" >&2
+        echo "Known profiles: claude, claude-strict, pi, pi-strict" >&2
         return 1
     end
 

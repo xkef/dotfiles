@@ -13,7 +13,7 @@ no_sort = true
 command = "eza -T --color=always --icons --level=2 '{}'"
 
 [keybindings]
-ctrl-d = ["actions:remove", "reload_source"]
+alt-d = ["actions:remove", "reload_source"]
 
 [actions.remove]
 description = "Remove the directory from zoxide"

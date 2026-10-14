@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+#MISE description="Check which file writes the Claude Code pre-tool-use hook blocks"
+set -eu
+hook=modules/agents/.claude/hooks/claude-pre-tool-use-hook
+
+fail() {
+  echo "$1" >&2
+  exit 1
+}
+
+# Prints the hook's exit code for a write to the path in $1.
+verdict() {
+  local rc=0
+  jq -n --arg path "$1" '{tool_input: {file_path: $path}}' | "$hook" 2>/dev/null || rc=$?
+  echo "$rc"
+}
+
+for path in /r/.env /r/.env.local /r/.env.production /r/.env.staging \
+  ~/.ssh/id_rsa ~/.ssh/id_ed25519 ~/.ssh/id_ecdsa /r/cert.pem /r/tls.key \
+  /r/credentials.json ~/.netrc ~/.aws/credentials /r/store.p12; do
+  [ "$(verdict "$path")" = 2 ] || fail "allowed a write to $path"
+done
+
+# Only the file name counts, so a pattern inside a longer name passes.
+for path in /r/.envrc /r/.env.example /r/config.environment.ts /r/app.keymap \
+  /r/monkey.keynote /r/.pem.d/notes.md ~/.ssh/id_rsa.pub; do
+  [ "$(verdict "$path")" = 0 ] || fail "blocked a write to $path"
+done
+echo "claude-hooks ok"

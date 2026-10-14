@@ -11,7 +11,6 @@ boolean
 btw
 callouts?
 CDN
-chezmoi
 colocated
 colorscheme
 configs?
@@ -40,8 +39,7 @@ HTML
 inlining
 jj
 JSONL
-Jujutsu
-jujutsu
+[Jj]ujutsu
 keymaps
 Kleppmann
 landlock
@@ -64,7 +62,6 @@ repos?
 Revset
 revsets?
 ripgrep
-seatbelt
 sesh
 starship
 subcommands?

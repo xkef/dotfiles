@@ -13,7 +13,7 @@ command = "jj log --color=always --no-graph -r '{split:\t:0}'"
 
 [keybindings]
 enter = "actions:edit"
-ctrl-d = "actions:delete"
+alt-d = "actions:delete"
 ctrl-s = "actions:set"
 ctrl-f = "actions:forget"
 ctrl-g = "actions:track"

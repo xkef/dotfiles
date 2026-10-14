@@ -3,7 +3,6 @@
 -- holds the Cmd and Ctrl-Shift bindings, and these add to them.
 local wezterm = require("wezterm")
 local act = wezterm.action
-local keymap = require("keymap")
 local vm = require("vm")
 local picker = require("picker")
 local workspaces = require("workspaces")
@@ -12,6 +11,11 @@ local workspaces = require("workspaces")
 local agents = package.searchpath("agents", package.path) and require("agents")
 
 local M = {}
+
+-- The leader, Ctrl-Space, pairs with the Neovim leader, Space, after
+-- wincent, so one physical key serves both. Ctrl-A and Ctrl-B stay free
+-- for readline.
+local LEADER = { key = "Space", mods = "CTRL" }
 
 -- Repeatable bindings stay active for this long after each press without
 -- the leader.
@@ -101,11 +105,11 @@ local PALETTE = {
 }
 
 function M.apply(config)
-  config.leader = { key = keymap.key, mods = keymap.mods, timeout_milliseconds = 1000 }
+  config.leader = { key = LEADER.key, mods = LEADER.mods, timeout_milliseconds = 1000 }
 
   local keys = {
-    -- @key wezterm :: leader twice :: Last tab
-    { key = keymap.key, mods = "LEADER|" .. keymap.mods, action = act.ActivateLastTab },
+    -- @key wezterm :: leader twice :: Send the leader to the pane, such as tmux over SSH
+    { key = LEADER.key, mods = "LEADER|" .. LEADER.mods, action = act.SendKey(LEADER) },
     -- @key wezterm :: r :: Reload config
     { key = "r", mods = "LEADER", action = act.ReloadConfiguration },
     -- @key wezterm :: Ctrl-l :: Clear scrollback

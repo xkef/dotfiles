@@ -70,8 +70,9 @@ sessions.
 Private files, such as the git and jj identity, live in one archive encrypted
 with [age](https://age-encryption.org), `private/home.tar.age`, which mirrors
 `$HOME` and hides the file names. Deploy decrypts it into `~` with the key in
-1Password at `op://Dev/dotfiles-age-key/password`, and skips a file edited
-since. After editing one, or to add one, encrypt it back:
+1Password at `op://Dev/dotfiles-age-key/password` when the archive changed, and
+skips a file edited since. `dots repair` decrypts it again. After editing one,
+or to add one, encrypt it back:
 
 ```sh
 mise run encrypt ~/.config/git/identity

@@ -16,8 +16,8 @@ command = "brew info '{}'"
 layout = "portrait"
 
 [keybindings]
-ctrl-u = "actions:upgrade"
-ctrl-d = "actions:uninstall"
+alt-u = "actions:upgrade"
+alt-d = "actions:uninstall"
 
 [actions.upgrade]
 description = "Upgrade the selected package"

@@ -39,6 +39,8 @@
 # picker.
 set -euo pipefail
 
+# The VM's name. WezTerm's lima.lua names it too, and dev.yaml derives
+# its mounts from it.
 readonly VM=dev
 readonly CONFIG="$HOME/.config/lima/dev.yaml"
 readonly VAULT=Private
@@ -64,11 +66,6 @@ jq -r '.filesystem.allow[] | sub("^[$]HOME"; env.HOME)' "$HOME/.config/nono/prof
 EOF
 readonly GRANT_DIRS
 
-# Prints the token stored under name $1, or nothing.
-token() {
-  op read "op://$VAULT/lima-agent $1/password" 2>/dev/null || :
-}
-
 # Copies the token under name $1 from stdin into the VM. Empty input
 # deletes the VM's copy.
 store_in_vm() {
@@ -79,7 +76,9 @@ store_in_vm() {
 
 # Reads a token from stdin and stores it under name $1, replacing the old
 # one. Empty input typed at the terminal only deletes the old one. Empty
-# input from a pipe, such as a failed `op read`, changes nothing.
+# input from a pipe, such as a failed `op read`, changes nothing. The new
+# 1Password item exists before the old one goes, so a failed create loses
+# nothing.
 set_token() {
   local name=${1:-} value
   case "$name" in
@@ -96,14 +95,17 @@ set_token() {
     exit 1
   fi
 
+  local old
+  old=$(op item get "lima-agent $name" --vault "$VAULT" --format json 2>/dev/null | jq -r .id) || :
+  if [ -n "$value" ]; then
+    printf '%s' "$value" | jq -Rs --arg title "lima-agent $name" '{
+      title: $title,
+      category: "PASSWORD",
+      fields: [{id: "password", type: "CONCEALED", purpose: "PASSWORD", value: .}]
+    }' | op item create --vault "$VAULT" - >/dev/null
+  fi
+  [ -z "$old" ] || op item delete "$old" --vault "$VAULT"
   printf '%s' "$value" | store_in_vm "$name"
-  op item delete "lima-agent $name" --vault "$VAULT" 2>/dev/null || :
-  [ -n "$value" ] || return 0
-  jq -n --arg title "lima-agent $name" --arg value "$value" '{
-    title: $title,
-    category: "PASSWORD",
-    fields: [{id: "password", type: "CONCEALED", purpose: "PASSWORD", value: $value}]
-  }' | op item create --vault "$VAULT" - >/dev/null
 }
 
 # Rebuilds the VM, which provisions current packages, Claude Code, and the
@@ -114,8 +116,13 @@ update() {
   case "$answer" in y*) ;; *) exit 1 ;; esac
   limactl delete --force "$VM" 2>/dev/null || :
   limactl start --tty=false --name="$VM" --timeout=30m "$CONFIG"
+  local name value
   for name in claude github; do
-    token "$name" | store_in_vm "$name"
+    if value=$(op read "op://$VAULT/lima-agent $name/password" 2>/dev/null); then
+      printf '%s' "$value" | store_in_vm "$name"
+    else
+      echo "agents vm: 1Password holds no $name token, run agents vm set $name" >&2
+    fi
   done
 }
 
@@ -191,24 +198,29 @@ guest() {
 
 # Commits the host's working tree through a temporary index, so the host's
 # index and history stay untouched.
+# A repository without commits gets a root commit.
 snapshot() {
-  local dir tree
+  local dir tree parent=()
   dir=$(mktemp -d)
   cp "$(git rev-parse --git-path index)" "$dir/index" 2>/dev/null || :
   GIT_INDEX_FILE="$dir/index" git add -A :/
   tree=$(GIT_INDEX_FILE="$dir/index" git write-tree)
   rm -r "$dir"
-  git commit-tree --no-gpg-sign -p HEAD -m "lima-agent: host working tree" "$tree"
+  if git rev-parse -q --verify HEAD >/dev/null; then
+    parent=(-p HEAD)
+  fi
+  git commit-tree --no-gpg-sign ${parent[@]+"${parent[@]}"} -m "lima-agent: host working tree" "$tree"
 }
 
 # Runs the sh script in $1 in the guest repository, inside nono without
 # network. The session can write the repository's hooks and config, which
-# git would otherwise run outside the sandbox.
+# git would otherwise run outside the sandbox. JAIL is a command line for
+# the guest's sh, which the escaped root keeps whole.
 JAIL="nono run --silent --profile vm --allow $(printf %q "$root") --block-net --"
 readonly JAIL
 guest_git() {
-  # shellcheck disable=SC2086 # JAIL splits into words.
-  limactl shell --start --workdir "$root" "$VM" -- $JAIL sh -c "$1" sh "${@:2}"
+  # shellcheck disable=SC2016 # The guest's sh expands $0 and $@.
+  limactl shell --start --workdir "$root" "$VM" -- sh -c "$JAIL"' sh -c "$0" sh "$@"' "$1" "${@:2}"
 }
 
 drop() {
@@ -280,7 +292,8 @@ done
     git -C "$1" config commit.gpgsign false
 }' "$(git config user.name)" "$(git config user.email)" "$needed" "$TOKEN_DIR"
 
-git push -q -f --receive-pack="$JAIL git-receive-pack" "lima-$VM:$root" "$(snapshot):$HOST_REF"
+snap=$(snapshot)
+git push -q -f --receive-pack="$JAIL git-receive-pack" "lima-$VM:$root" "$snap:$HOST_REF"
 
 # The guest's fish runs without a prompt, so it never reports its
 # directory. OSC 7 with the VM's host name tells WezTerm the pane works in
@@ -314,7 +327,7 @@ limactl shell --workdir "$root" "$VM" -- sh -c '
   fi
   case "$needed" in *github*) GH_TOKEN=$(cat "$tokens/github") && export GH_TOKEN ;; esac
 
-  $jail sh -c "$refresh"
+  eval "$jail sh -c \"\$refresh\""
   cd "$workdir" || exit
 
   # First-run onboarding asks for a login even with a token set, and the

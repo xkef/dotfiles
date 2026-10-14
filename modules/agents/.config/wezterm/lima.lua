@@ -10,10 +10,13 @@ local act = wezterm.action
 
 local M = {}
 
-M.HOST = "lima-dev"
+-- The VM's name, which lima-agent passes to limactl too.
+local VM = "dev"
+
+M.HOST = "lima-" .. VM
 -- The shield that marks sandbox panes in tab titles and the status line.
 M.MARK = ""
-local SHELL = { "limactl", "shell", "dev" }
+local SHELL = { "limactl", "shell", VM }
 
 -- The directory for pasted images, which the VM mounts at the same path.
 local CLIPBOARD_DIR = wezterm.home_dir .. "/.cache/lima-clipboard"

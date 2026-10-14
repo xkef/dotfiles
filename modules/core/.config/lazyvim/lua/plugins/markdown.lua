@@ -1,7 +1,7 @@
 -- Replaces the LazyVim markdown extra's markdownlint-cli2 with rumdl for
--- linting and dprint for formatting, and adds vale for prose. rumdl and
--- dprint resolve from PATH through the mise shims, which mise.toml pins per
--- project. vale comes from Homebrew. rumdl and vale run only in a project
+-- linting and dprint for formatting, and adds vale for prose. All three come
+-- from Homebrew or pacman, and a project's mise.toml can pin its own
+-- versions through the mise shims. rumdl and vale run only in a project
 -- with its own config.
 
 -- Both tools search for config from the working directory, not from the

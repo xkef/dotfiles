@@ -3,6 +3,13 @@
 # Handlebars and runs it from the repo root.
 set -euo pipefail
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+# A fresh machine has no fish environment yet. Tools such as vale and brew
+# fall back to ~/Library/Application Support on macOS without it.
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+
+# sysexits.h EX_TEMPFAIL. decrypt exits with it when it skips, so the
+# next deploy retries.
+readonly EX_TEMPFAIL=75
 
 # The selected dotter packages. The quotes keep the Handlebars valid bash.
 agents="{{#if dotter.packages.agents}}true{{/if}}"
@@ -24,13 +31,11 @@ if [[ "$agents" == true ]]; then
   setup/merge-settings pi ~/.pi/agent/settings.dotfiles.json ~/.pi/agent/settings.json
 fi
 
-# Files that setup/identity/render wrote before private/ replaced it. jj
-# still reads work.toml from conf.d.
-rm -f ~/.config/git/config.personal ~/.config/git/config.work \
-  ~/.config/git/config.secondary ~/.config/git/config.secondary-remotes \
-  ~/.config/jj/conf.d/work.toml
-
-setup/private/decrypt
+status=0
+setup/onchange private private/home.tar.age -- setup/private/decrypt || status=$?
+if ((status != 0 && status != EX_TEMPFAIL)); then
+  exit "$status"
+fi
 
 # The archive can restore hooks for setup that would expose private
 # details in this repo, such as logins with credentials from 1Password.
@@ -53,13 +58,22 @@ fi
 
 if [[ "$desktop" == true && "$(uname -s)" == Darwin ]]; then
   setup/onchange macos-defaults setup/macos-defaults -- setup/macos-defaults
+
+  # ssh, git signing, and WezTerm find the 1Password agent at the Linux
+  # path, so one path serves both systems.
+  mkdir -p ~/.1password
+  ln -sfn ~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock \
+    ~/.1password/agent.sock
 fi
 
-# vale finds its global config through XDG_CONFIG_HOME, which defaults to
-# ~/Library/Application Support on macOS. A fresh machine has no fish
-# environment that sets it yet.
-setup/onchange vale-sync modules/core/.config/vale/.vale.ini -- \
-  env VALE_CONFIG_PATH="${XDG_CONFIG_HOME:-$HOME/.config}/vale/.vale.ini" vale sync
+# Docker clients reach podman through its user socket, which hooks.fish
+# exports as DOCKER_HOST.
+if [[ "$(uname -s)" == Linux ]] && command -v podman >/dev/null; then
+  systemctl --user enable --now podman.socket ||
+    echo "warning: podman.socket not enabled; docker clients can't reach podman" >&2
+fi
+
+setup/onchange vale-sync modules/core/.config/vale/.vale.ini -- vale sync
 
 # Clones the template repos the tinty config names, then applies the last
 # scheme, or the default one on a fresh machine.

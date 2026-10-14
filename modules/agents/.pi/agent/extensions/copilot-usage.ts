@@ -1,8 +1,6 @@
-import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { promisify } from "node:util";
 import type {
   ExtensionAPI,
   ExtensionContext,
@@ -13,13 +11,13 @@ const API_TIMEOUT_MS = 5_000;
 const COPILOT_PROVIDER = "github-copilot";
 const CODEX_PROVIDER = "openai-codex";
 const CODEX_USAGE_URL = "https://chatgpt.com/backend-api/wham/usage";
+const COPILOT_USAGE_URL = "https://api.github.com/copilot_internal/user";
 const CODEX_AUTH_CLAIM = "https://api.openai.com/auth";
 const FULL_PERCENT = 100;
 const SECONDS_PER_MINUTE = 60;
 const SECONDS_PER_HOUR = 3_600;
 const SECONDS_PER_DAY = 86_400;
 const format = new Intl.NumberFormat("en-US");
-const execFileAsync = promisify(execFile);
 
 type Usage = {
   used: number;
@@ -186,14 +184,17 @@ async function readCopilotUsage(signal: AbortSignal): Promise<UsageStatus | unde
   }
 
   // Use pi's Copilot account instead of the active gh account.
-  const result = await execFileAsync("gh", ["api", "copilot_internal/user"], {
-    encoding: "utf8",
-    env: { ...process.env, GH_TOKEN: token },
-    maxBuffer: 1024 * 1024,
-    signal,
-    timeout: API_TIMEOUT_MS,
+  const response = await fetch(COPILOT_USAGE_URL, {
+    headers: {
+      Authorization: `token ${token}`,
+      Accept: "application/json",
+    },
+    signal: AbortSignal.any([signal, AbortSignal.timeout(API_TIMEOUT_MS)]),
   });
-  const usage = parseUsage(JSON.parse(result.stdout));
+  if (!response.ok) {
+    return undefined;
+  }
+  const usage = parseUsage(await response.json());
   return usage ? {
     text: `Copilot ${format.format(usage.used)} / ${format.format(usage.total)} AI credits`,
     percent: (usage.used / usage.total) * FULL_PERCENT,

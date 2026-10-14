@@ -12,8 +12,8 @@ return {
     dependencies = { "MunifTanjim/nui.nvim", "nvim-lua/plenary.nvim" },
     opts = { mode = "split", env_file = { "vars.env" } },
     keys = {
-      { "<leader>hr", "<Cmd>HurlRunnerAt<CR>", ft = "hurl", desc = "Hurl: run entry at cursor" },
-      { "<leader>hf", "<Cmd>HurlRunner<CR>", ft = "hurl", desc = "Hurl: run file" },
+      { "<localleader>r", "<Cmd>HurlRunnerAt<CR>", ft = "hurl", desc = "Hurl: run entry at cursor" },
+      { "<localleader>f", "<Cmd>HurlRunner<CR>", ft = "hurl", desc = "Hurl: run file" },
     },
   },
 }

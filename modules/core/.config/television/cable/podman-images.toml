@@ -15,7 +15,7 @@ layout = "portrait"
 
 [keybindings]
 ctrl-r = "actions:run"
-ctrl-d = "actions:remove"
+alt-d = "actions:remove"
 ctrl-s = "actions:shell"
 
 [actions.run]

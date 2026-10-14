@@ -59,7 +59,6 @@ return {
 
       settings = {
         java = {
-          format = { settings = { profile = "GoogleStyle" } },
           signatureHelp = { enabled = true },
           contentProvider = { preferred = "fernflower" },
           completion = {

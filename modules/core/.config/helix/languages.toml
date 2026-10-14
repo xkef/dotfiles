@@ -6,16 +6,10 @@
 name = "java"
 auto-format = true
 
-# ── Go ──────────────────────────────────────────────
-[[language]]
-name = "go"
-formatter = { command = "goimports" }
-
 # ── Python ──────────────────────────────────────────
 [[language]]
 name = "python"
 auto-format = true
-formatter = { command = "ruff", args = ["format", "-"] }
 
 # ── TypeScript / JavaScript ─────────────────────────
 [[language]]

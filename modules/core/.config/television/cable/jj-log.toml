@@ -20,7 +20,7 @@ ctrl-i = "actions:insert_before"
 ctrl-a = "actions:insert_after"
 ctrl-shift-d = "actions:diff"
 ctrl-s = "actions:squash"
-ctrl-d = "actions:abandon"
+alt-d = "actions:abandon"
 ctrl-e = "actions:describe"
 ctrl-b = "actions:rebase"
 

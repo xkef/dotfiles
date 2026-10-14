@@ -35,7 +35,6 @@ brew "difftastic"           # structural diff tool
 brew "lazygit"              # terminal UI for git
 brew "jj"                   # Jujutsu version control
 brew "jjui"                 # terminal UI for jj
-brew "onefetch"             # git repo summary in terminal
 brew "mise"                 # dev tool version manager
 brew "dotter"               # dotfile manager (links this repo into ~)
 brew "rustup"               # Rust toolchain manager (keg-only, PATH in env.fish)
@@ -46,7 +45,6 @@ brew "node"                 # Node.js for npx outside projects
 brew "rumdl"                # markdown linter (LazyVim in every buffer)
 brew "dprint"               # markdown formatter (LazyVim in every buffer)
 brew "jdtls"                # Java language server
-brew "devcontainer"         # dev container CLI
 brew "podman"               # rootless container engine
 brew "lazydocker"           # terminal UI for Docker/Podman
 brew "fx"                   # terminal JSON viewer

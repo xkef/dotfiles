@@ -6,7 +6,7 @@
 #   agent-state set <agent> <state> [tool] [cwd]
 #   agent-state task <summary>
 #   agent-state clear
-#   agent-state list
+#   agent-state list [wezterm|tmux]
 #
 # Entries sit under $XDG_STATE_HOME/agents, keyed by the pane the agent
 # runs in: wezterm-<pane id>, or tmux-<host>-<pane id> in tmux. The key
@@ -22,6 +22,9 @@
 #
 # `list` prints pane, agent, state, tool, epoch, cwd, and task per entry. An
 # empty field reads as "-", so a run of tabs never collapses under `read`.
+# Given a multiplexer, it keeps that multiplexer's entries from this host
+# and prints the multiplexer's own pane id, 12 in WezTerm or %12 in tmux,
+# in place of the key.
 set -euo pipefail
 
 readonly STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
@@ -52,10 +55,22 @@ write() {
 }
 
 list() {
-  local file pane record task
+  local mux=${1:-} prefix file pane record task
+  case "$mux" in
+  wezterm) prefix=wezterm- ;;
+  tmux) prefix=$(tmux_key) ;;
+  '') prefix='' ;;
+  *) usage ;;
+  esac
+
   for file in "$STATE_DIR"/wezterm-* "$STATE_DIR"/tmux-*; do
     pane=${file##*/}
     [[ "$pane" =~ $PANE_KEY ]] || continue
+    if [ -n "$prefix" ]; then
+      [[ "$pane" == "$prefix"* ]] || continue
+      pane=${pane#"$prefix"}
+      [ "$mux" = wezterm ] || pane=%$pane
+    fi
     IFS= read -r record <"$file" || continue
     task=$NONE
     if [ -f "$file.task" ]; then
@@ -65,11 +80,16 @@ list() {
   done
 }
 
+# The key prefix of this host's tmux panes.
+tmux_key() {
+  printf 'tmux-%s-' "${HOSTNAME%%.*}"
+}
+
 cmd=${1:-}
 case "$cmd" in
 set | task | clear) shift ;;
 list)
-  list
+  list "${2:-}"
   exit 0
   ;;
 *) usage ;;
@@ -77,7 +97,7 @@ esac
 
 # tmux is checked first: it can run inside WezTerm, but not the reverse.
 if [ -n "${TMUX_PANE:-}" ]; then
-  pane=tmux-${HOSTNAME%%.*}-${TMUX_PANE#%}
+  pane=$(tmux_key)${TMUX_PANE#%}
 else
   pane=wezterm-${WEZTERM_PANE:-}
 fi
@@ -88,7 +108,7 @@ case "$cmd" in
 set)
   [ $# -ge 2 ] || usage
   case "$2" in
-  idle | busy | waiting | running) ;;
+  idle | busy | waiting) ;;
   *)
     echo "agent-state: unknown state '$2'" >&2
     exit 2

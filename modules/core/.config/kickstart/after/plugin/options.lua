@@ -43,5 +43,5 @@ if vim.env.SSH_TTY then
     copy = { ["+"] = copy("+"), ["*"] = copy("*") },
     paste = { ["+"] = paste, ["*"] = paste },
   }
-  vim.opt.clipboard = "unnamedplus"
 end
+vim.opt.clipboard = "unnamedplus"

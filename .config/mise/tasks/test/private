@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+#MISE description="Check that encrypt and decrypt round-trip the private archive"
+set -eu
+# macOS mktemp ignores TMPDIR without a template.
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-private.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+# The repo's git config includes the identity that decrypt writes.
+mkdir -p "$tmp/home/.config/git"
+ln -s "$PWD/modules/core/.config/git/config" "$tmp/home/.config/git/config"
+
+# Without op, decrypt writes nothing and exits with EX_TEMPFAIL, so the
+# deploy retries it.
+status=0
+env PATH=/usr/bin:/bin HOME="$tmp/home" setup/private/decrypt 2>/dev/null || status=$?
+[ "$status" = 75 ] || {
+  echo "decrypt without op exited $status, not 75"
+  exit 1
+}
+test ! -e "$tmp/home/.config/git/identity" || {
+  echo "decrypt wrote without op"
+  exit 1
+}
+
+# encrypt archives files under $HOME into private/home.tar.age, and
+# decrypt writes them back, where git picks up the identity. Copies of the
+# scripts work on a test private/ with a test key, which a stub op returns.
+repo="$tmp/repo"
+mkdir -p "$repo/setup/private" "$repo/.config/mise/tasks" "$repo/private" \
+  "$tmp/stub" "$tmp/home/.config/git" "$tmp/home/.ssh"
+cp setup/private/decrypt "$repo/setup/private/"
+cp .config/mise/tasks/encrypt "$repo/.config/mise/tasks/"
+age-keygen -o "$tmp/key" 2>/dev/null
+age-keygen -y "$tmp/key" >"$repo/private/recipients"
+printf '#!/bin/sh\ncat "%s"\n' "$tmp/key" >"$tmp/stub/op"
+chmod +x "$tmp/stub/op"
+run() {
+  (cd "$repo" && env PATH="$tmp/stub:$PATH" HOME="$tmp/home" "$@")
+}
+decrypt() { run setup/private/decrypt; }
+encrypt() { run .config/mise/tasks/encrypt "$@"; }
+
+# A second encrypt adds to the archive and keeps the first file.
+identity="$tmp/home/.config/git/identity"
+printf '[user]\n\temail = ada@example.com\n[credential "https://github.com"]\n\thelper = ada\n' >"$identity"
+touch -t 200001010000 "$identity"
+encrypt "$identity"
+echo ada >"$tmp/home/.ssh/github.pub"
+encrypt "$tmp/home/.ssh/github.pub"
+rm "$identity" "$tmp/home/.ssh/github.pub"
+decrypt
+test -e "$tmp/home/.ssh/github.pub" || {
+  echo "second encrypt dropped a file"
+  exit 1
+}
+[ -n "$(find "$identity" -perm 600)" ] || {
+  echo "decrypted identity is readable by others"
+  exit 1
+}
+[ -z "$(find "$repo/private" -name '*identity*')" ] || {
+  echo "private/ names the identity"
+  exit 1
+}
+if encrypt "$tmp/home/../escape" 2>/dev/null; then
+  echo "encrypt accepted a path outside HOME"
+  exit 1
+fi
+email=$(HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \
+  git config --global --includes user.email)
+[ "$email" = ada@example.com ] || {
+  echo "decrypted identity not included: got '$email'"
+  exit 1
+}
+
+# A credential helper in the identity wins over the repo's.
+helper=$(HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" \
+  git config --global --includes --get-all credential.https://github.com.helper | tail -1)
+[ "$helper" = ada ] || {
+  echo "identity credential helper overridden: got '$helper'"
+  exit 1
+}
+
+# An unchanged plaintext decrypts again silently, and one edited after
+# its archived copy survives the next decrypt.
+[ -z "$(decrypt 2>&1)" ] || {
+  echo "decrypt skipped an unchanged plaintext"
+  exit 1
+}
+echo edited >>"$tmp/home/.config/git/identity"
+decrypt 2>/dev/null
+grep -qx edited "$tmp/home/.config/git/identity" || {
+  echo "decrypt overwrote an edited plaintext"
+  exit 1
+}
+echo "private ok"

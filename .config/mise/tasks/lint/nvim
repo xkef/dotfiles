@@ -1,10 +1,25 @@
 #!/usr/bin/env bash
-#MISE description="Load LazyVim headless. Needs its plugins installed."
-#MISE env={NVIM_APPNAME = "lazyvim"}
-set -eu
+#MISE description="Load LazyVim and kickstart headless. LazyVim needs its plugins installed."
+set -euo pipefail
 
 # Neovim exits 0 after a startup error, so the task fails on the error
 # message that startup left in v:errmsg instead. A throwaway state
 # directory keeps the check from writing LazyVim state, which the sandbox
-# doesn't grant.
-XDG_STATE_HOME=$(mktemp -d) nvim --headless -c "lua require('lazy')" -c 'if v:errmsg != "" | cquit | else | qall | endif'
+# doesn't grant. kickstart loads from the repo, which the sandbox reads,
+# with throwaway data and cache directories, so vim.pack installs its
+# plugins fresh, as on a new machine.
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/lint-nvim.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+check='if v:errmsg != "" | cquit | else | qall | endif'
+
+NVIM_APPNAME=lazyvim XDG_STATE_HOME=$tmp/lazyvim \
+  nvim --headless -c "lua require('lazy')" -c "$check"
+
+# The install progress stays hidden unless the load fails.
+if ! out=$(NVIM_APPNAME=kickstart XDG_CONFIG_HOME=$PWD/modules/core/.config \
+  XDG_STATE_HOME=$tmp/kickstart/state \
+  XDG_DATA_HOME=$tmp/kickstart/data XDG_CACHE_HOME=$tmp/kickstart/cache \
+  nvim --headless -c "$check" 2>&1); then
+  printf '%s\n' "$out"
+  exit 1
+fi

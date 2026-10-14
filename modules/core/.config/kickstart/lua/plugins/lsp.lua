@@ -15,15 +15,17 @@ vim.pack.add({
 require("lazydev").setup({})
 require("mason").setup({})
 
+-- The same keys as LazyVim. Neovim 0.11 already maps K and the gr* keys.
+-- nowait keeps gr from waiting for those.
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(event)
-    local map = function(keys, func, desc)
-      vim.keymap.set("n", keys, func, { buffer = event.buf, desc = desc })
+    local map = function(keys, func, desc, opts)
+      opts = vim.tbl_extend("force", { buffer = event.buf, desc = desc }, opts or {})
+      vim.keymap.set("n", keys, func, opts)
     end
     map("gd", vim.lsp.buf.definition, "Go to definition")
-    map("gr", vim.lsp.buf.references, "Go to references")
+    map("gr", vim.lsp.buf.references, "Go to references", { nowait = true })
     map("gI", vim.lsp.buf.implementation, "Go to implementation")
-    map("K", vim.lsp.buf.hover, "Hover documentation")
     map("<leader>ca", vim.lsp.buf.code_action, "Code action")
     map("<leader>cr", vim.lsp.buf.rename, "Rename symbol")
   end,

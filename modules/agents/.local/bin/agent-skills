@@ -2,7 +2,8 @@
 # agent-skills: installs shared agent skills from upstream packs.
 #
 # Holds the install sentinel and the upstream source list. Tracked skills,
-# which dotter links into ~/.agents/skills/, stay untouched.
+# which dotter links into ~/.agents/skills/, stay untouched. A skill that a
+# whole-pack upstream dropped goes on the next install.
 #
 # Usage:
 #   agent-skills ensure [agent]    install once, no-op while the sentinel exists
@@ -60,11 +61,30 @@ test -f $sentinel; and exit 0
 command -q npx; or exit 0
 
 printf '\033[33m(installing shared skills for %s...)\033[0m\n' $agent >&2
+set -l started (date -u +%Y-%m-%dT%H:%M:%S)
+set -l packs
 for entry in $upstreams
     set -l parts (string split ' ' -- $entry)
     npx --yes skills@$skills_version add $parts[1] \
         --global --agent $install_target --skill $parts[2] -y
     or exit $status
+    test "$parts[2]" = '*'; and set -a packs $parts[1]
+end
+
+# The skills CLI lock records each skill's source and last update. A skill
+# from a whole pack that this install didn't update has left upstream.
+set -l lock $HOME/.agents/.skill-lock.json
+set -q XDG_STATE_HOME; and set lock $XDG_STATE_HOME/skills/.skill-lock.json
+if test -f $lock
+    set -l dropped (jq -r --arg since $started --arg packs "$packs" '
+        ($packs | split(" ")) as $packs
+        | .skills | to_entries[]
+        | select((.value.source | IN($packs[])) and .value.updatedAt < $since)
+        | .key' $lock)
+    if set -q dropped[1]
+        npx --yes skills@$skills_version remove $dropped --global -y
+        or exit $status
+    end
 end
 
 mkdir -p $sentinel_dir

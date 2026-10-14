@@ -5,8 +5,10 @@ set -eu
 # WezTerm exits 0 on a config error and falls back to its defaults, so the
 # task fails on the logged ERROR instead. The config loads once without the
 # agents package and once with it, as each machine deploys it.
+scratch=$(mktemp -d "${TMPDIR:-/tmp}/wezterm.XXXXXX")
+trap 'rm -r "$scratch"' EXIT
 for modules in desktop 'desktop agents'; do
-  XDG_CONFIG_HOME=$(mktemp -d "${TMPDIR:-/tmp}/wezterm.XXXXXX")
+  XDG_CONFIG_HOME=$(mktemp -d "$scratch/XXXXXX")
   export XDG_CONFIG_HOME
   export WEZTERM_CONFIG_FILE=$XDG_CONFIG_HOME/wezterm/wezterm.lua
   mkdir "$XDG_CONFIG_HOME/wezterm"

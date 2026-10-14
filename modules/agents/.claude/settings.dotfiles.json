@@ -30,8 +30,7 @@
     "typescript-lsp@claude-plugins-official": true
   },
   "env": {
-    "GITHUB_TOKEN": "",
-    "INSIDE_CLAUDE_CODE": "1"
+    "GITHUB_TOKEN": ""
   },
   "hooks": {
     "Notification": [
@@ -42,17 +41,6 @@
             "type": "command"
           }
         ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "~/.claude/hooks/claude-post-tool-use-hook",
-            "type": "command"
-          }
-        ],
-        "matcher": "Edit|Write"
       }
     ],
     "PreToolUse": [
@@ -171,32 +159,6 @@
   },
   "plansDirectory": ".claude-notes",
   "preferredNotifChannel": "iterm2",
-  "sandbox": {
-    "credentials": {
-      "files": [
-        {
-          "mode": "deny",
-          "path": "~/.config/gh/hosts.yml"
-        }
-      ]
-    },
-    "allowUnsandboxedCommands": true,
-    "autoAllowBashIfSandboxed": true,
-    "enabled": true,
-    "excludedCommands": ["gh *", "jj *"],
-    "filesystem": {
-      "allowWrite": [
-        "~/.cache/mise",
-        "~/.local/state/agents",
-        "~/Library/Caches/dprint"
-      ]
-    },
-    "network": {
-      "allowUnixSockets": [
-        "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
-      ]
-    }
-  },
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "spinnerTipsEnabled": false,

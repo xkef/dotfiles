@@ -16,10 +16,6 @@ return {
         { "<C-j>", "move_cursor_down" },
         { "<C-k>", "move_cursor_up" },
         { "<C-l>", "move_cursor_right" },
-        { "<A-h>", "resize_left" },
-        { "<A-j>", "resize_down" },
-        { "<A-k>", "resize_up" },
-        { "<A-l>", "resize_right" },
       }) do
         keys[#keys + 1] = {
           m[1],

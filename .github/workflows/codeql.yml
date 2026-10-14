@@ -2,10 +2,14 @@ name: CodeQL
 
 # Static analysis of the GitHub Actions workflows. The pi extensions in
 # TypeScript stay out of scope. Shell, fish, and Lua fall outside CodeQL.
+# A change elsewhere can't change the result, so only workflow changes and
+# the weekly run start it.
 on:
   pull_request:
+    paths: [".github/workflows/**"]
   push:
     branches: [main]
+    paths: [".github/workflows/**"]
   schedule:
     - cron: "40 6 * * 1"
 

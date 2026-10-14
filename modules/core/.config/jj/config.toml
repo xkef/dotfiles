@@ -2,8 +2,14 @@
 [ui]
 conflict-marker-style = "git"
 default-command = "log"
-editor = "nvim"
-diff-editor = ["nvim", "-c", "DiffEditor $left $right $output"]
+# fish alone exports NVIM_APPNAME, so the editors name the config.
+# DiffEditor comes from hunk.nvim in LazyVim.
+editor = { command = ["nvim"], env = { NVIM_APPNAME = "lazyvim" } }
+diff-editor = { command = [
+  "nvim",
+  "-c",
+  "DiffEditor $left $right $output",
+], env = { NVIM_APPNAME = "lazyvim" } }
 merge-editor = "vimdiff"
 diff-instructions = false
 graph.style = "square"
@@ -23,10 +29,6 @@ diff-formatter = ":git"
 # ── Diff and merge tools ────────────────────────────
 [merge-tools.vimdiff]
 program = "nvim"
-
-[merge-tools.delta]
-diff-args = ["--color-only", "$left", "$right"]
-diff-expected-exit-codes = [0, 1]
 
 # ── Git interop ──────────────────────────────────────
 [git]
@@ -69,8 +71,8 @@ sft = ["show", "--tool", "difft"]
 
 # ── Diff styling ─────────────────────────────────────
 [colors]
-"diff removed token" = { bg = "#331111", underline = false }
-"diff added token" = { bg = "#113311", underline = false }
+"diff removed token" = { reverse = true, underline = false }
+"diff added token" = { reverse = true, underline = false }
 
 # ── Snapshot ─────────────────────────────────────────
 [snapshot]

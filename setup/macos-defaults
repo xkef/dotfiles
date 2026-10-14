@@ -4,10 +4,8 @@
 # paulirish/dotfiles.
 #
 # Usage:
-#   ./macos-defaults               Apply all settings, backing up previous values
+#   ./macos-defaults               Apply all settings
 #   ./macos-defaults --dry-run     Show what would change
-#   ./macos-defaults --restore     Restore from the most recent backup
-#   ./macos-defaults --restore F   Restore from backup file F
 set -euo pipefail
 
 if [[ "$(uname -s)" != Darwin ]]; then
@@ -16,11 +14,7 @@ if [[ "$(uname -s)" != Darwin ]]; then
 fi
 
 DRY_RUN=false
-RESTORE=false
 [[ "${1:-}" == "--dry-run" || "${1:-}" == "-n" ]] && DRY_RUN=true
-[[ "${1:-}" == "--restore" ]] && RESTORE=true
-
-BACKUP_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/macos-defaults"
 
 log() { printf '  %s\n' "$1"; }
 
@@ -71,27 +65,25 @@ apply() {
     current=$(read_default $flag "$domain" "$key")
     expected=$(normalize "$type" "$value")
 
+    if [[ -z "$current" ]]; then
+      printf '  \033[33m+\033[0m %s %s \033[2m(not set -> %s)\033[0m\n' "$domain" "$key" "$value"
+      ((missing++)) || true
+      return
+    fi
+
     # Normalize booleans
     if [[ "$type" == "-bool" ]]; then
       [[ "$current" == "1" || "$current" == "true" ]] && current="1" || current="0"
       [[ "$expected" == "1" || "$expected" == "true" ]] && expected="1" || expected="0"
     fi
 
-    if [[ -z "$current" ]]; then
-      printf '  \033[33m+\033[0m %s %s \033[2m(not set -> %s)\033[0m\n' "$domain" "$key" "$value"
-      ((missing++)) || true
-    elif [[ "$current" != "$expected" ]]; then
+    if [[ "$current" != "$expected" ]]; then
       printf '  \033[31m~\033[0m %s %s \033[2m(%s -> %s)\033[0m\n' "$domain" "$key" "$current" "$value"
       ((changed++)) || true
     else
       ((skipped++)) || true
     fi
   else
-    local current
-    current=$(read_default $flag "$domain" "$key")
-    if [[ -n "$current" ]]; then
-      printf '%s\t%s\t%s\t%s\t%s\n' "$flag" "$domain" "$key" "$type" "$current" >>"$BACKUP_FILE"
-    fi
     defaults $flag write "$domain" "$key" "$type" "$value"
   fi
 }
@@ -102,7 +94,7 @@ read_array() {
     sed -e '1d;$d' -e 's/^ *//' -e 's/,$//' -e 's/^"\(.*\)"$/\1/' || true
 }
 
-# Applies or diffs a defaults array of strings. The backup skips it.
+# Applies or diffs a defaults array of strings.
 # Usage: apply_array domain key value...
 apply_array() {
   local domain="$1" key="$2"
@@ -121,29 +113,10 @@ apply_array() {
   ((changed++)) || true
 }
 
-if $RESTORE; then
-  backup="${2:-$(ls -t "$BACKUP_DIR"/*.tsv 2>/dev/null | head -1)}"
-  if [[ -z "$backup" || ! -f "$backup" ]]; then
-    echo "No backup found." >&2
-    exit 1
-  fi
-  printf '\n  Restoring from %s\n\n' "$backup"
-  while IFS=$'\t' read -r flag domain key type value; do
-    log "$domain $key -> $value"
-    defaults $flag write "$domain" "$key" "$type" "$value"
-  done <"$backup"
-  printf '\n  Restored. Some changes require a logout/restart.\n\n'
-  exit 0
-fi
-
 if $DRY_RUN; then
   printf '\n  macOS defaults (dry run)\n\n'
 else
-  mkdir -p "$BACKUP_DIR"
-  BACKUP_FILE="$BACKUP_DIR/$(date +%Y%m%d-%H%M%S).tsv"
-  printf '\n  Applying macOS defaults...\n'
-  log "Backup: $BACKUP_FILE"
-  printf '\n'
+  printf '\n  Applying macOS defaults...\n\n'
   osascript -e 'tell application id "com.apple.systempreferences" to quit' 2>/dev/null || true
   # Mail and Calendar cache their settings and ignore writes while open.
   for app in com.apple.mail com.apple.iCal; do

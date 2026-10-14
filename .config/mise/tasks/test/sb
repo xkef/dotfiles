@@ -50,6 +50,13 @@ done
 grep -qx MAX_THINKING_TOKENS=1 "$NONO_LOG" || fail "strict launch dropped a setting"
 grep -qx CLAUDE_CODE_OAUTH_TOKEN=login "$NONO_LOG" || fail "strict launch dropped the agent login"
 
+# Each launch picks a profile the repo ships.
+for launch in claude "--strict claude" pi "--strict pi"; do
+  sb "$launch"
+  profile=$(grep -A1 -x -- --profile "$NONO_LOG" | tail -1)
+  [ -f "modules/agents/.config/nono/profiles/$profile.json" ] || fail "sb $launch picked a missing profile: $profile"
+done
+
 # In the Lima VM, which is the sandbox, Claude Code runs without nono, its
 # own sandbox, or permission prompts.
 cat >"$tmp/bin/claude" <<'EOF'

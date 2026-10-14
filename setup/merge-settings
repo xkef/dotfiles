@@ -23,6 +23,7 @@ fi
 
 mkdir -p "$(dirname "$target")" "$owned_dir"
 tmp=$(mktemp "$target.XXXXXX")
+trap 'rm -f "$tmp"' EXIT
 jq --argjson previous "$previous" --slurpfile repo "$repo" \
   '($repo[0] | keys) as $keys
     | delpaths([$previous[] | select(IN($keys[]) | not) | [.]])

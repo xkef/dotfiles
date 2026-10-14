@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+#MISE description="Check how agents vm stores tokens and copies the repository into the VM"
+set -eu
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-agents-vm.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+script=$PWD/modules/agents/.local/bin/lima-agent
+
+fail() {
+  echo "$1" >&2
+  exit 1
+}
+
+# Stubs that log every argument list to $ARGV_LOG. limactl runs the guest
+# command on the host through fish, the guest's login shell, as in
+# test:lima-agent. op keeps each item in $tmp/op as <title>.<id>, fails a
+# create while OP_CREATE_RC is set, and has no token to read. jq passes through to the real one. ssh
+# runs its remote command locally. nono checks that each --allow names a
+# directory and runs its command, except the session's fish.
+mkdir -p "$tmp/bin" "$tmp/home/.config/nono/profiles" "$tmp/op"
+# mise shims would read the repo's mise config under the test's HOME, so
+# PATH leaves them out.
+PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -v /mise/shims | paste -sd: -)
+real_jq=$(command -v jq)
+cat >"$tmp/bin/limactl" <<'EOF'
+#!/bin/sh
+echo "limactl $*" >>"$ARGV_LOG"
+case " $* " in *" -- "*) ;; *) exit 0 ;; esac
+while [ "$1" != -- ]; do shift; done
+shift
+cmd=exec
+for arg; do
+  cmd="$cmd '$(printf '%s' "$arg" | sed "s/'/'\"'\"'/g")'"
+done
+exec fish --no-config -c "$cmd"
+EOF
+cat >"$tmp/bin/op" <<'EOF'
+#!/bin/sh
+echo "op $*" >>"$ARGV_LOG"
+items=$(dirname "$0")/../op
+case "$1 $2" in
+"item get")
+  for f in "$items/$3".*; do
+    [ ! -f "$f" ] || printf '{"id":"%s"}\n' "${f##*.}"
+  done
+  ;;
+"item create")
+  [ -z "${OP_CREATE_RC:-}" ] || exit "$OP_CREATE_RC"
+  item=$(cat)
+  printf '%s' "$item" | jq -r '.fields[0].value' >"$items/$(printf '%s' "$item" | jq -r .title).new"
+  ;;
+"item delete") rm -f "$items/$3".* "$items"/*."$3" ;;
+*) exit 1 ;;
+esac
+EOF
+cat >"$tmp/bin/jq" <<EOF
+#!/bin/sh
+echo "jq \$*" >>"\$ARGV_LOG"
+exec "$real_jq" "\$@"
+EOF
+cat >"$tmp/bin/ssh" <<'EOF'
+#!/bin/sh
+for last; do :; done
+exec sh -c "$last"
+EOF
+cat >"$tmp/bin/nono" <<'EOF'
+#!/bin/sh
+while [ $# -gt 0 ] && [ "$1" != -- ]; do
+  if [ "$1" = --allow ]; then
+    [ -d "$2" ] || echo "nono --allow $2 isn't a directory" >>"$NONO_LOG"
+    shift
+  fi
+  shift
+done
+shift
+[ "$1" != fish ] || exit 0
+exec "$@"
+EOF
+chmod +x "$tmp/bin/"*
+cp modules/agents/.config/nono/profiles/vm.json "$tmp/home/.config/nono/profiles/"
+printf '[user]\n\tname = Test\n\temail = test@example.com\n' >"$tmp/gitconfig"
+
+export HOME="$tmp/home" XDG_STATE_HOME="$tmp/state" PATH="$tmp/bin:$PATH" \
+  ARGV_LOG="$tmp/argv.log" NONO_LOG="$tmp/nono.log" \
+  GIT_CONFIG_GLOBAL="$tmp/gitconfig" GIT_CONFIG_NOSYSTEM=1
+vm_token="$HOME/.local/state/lima-agent/claude"
+
+# `set` replaces the 1Password item and the VM copy, and the token passes
+# through no argument list.
+mkdir -p "$(dirname "$vm_token")"
+echo old >"$vm_token"
+echo old >"$tmp/op/lima-agent claude.old"
+printf "tok-secret" | "$script" set claude 2>"$tmp/err" || fail "set failed: $(cat "$tmp/err")"
+[ "$(cat "$tmp/op/lima-agent claude".*)" = tok-secret ] || fail "1Password kept the old token"
+[ "$(cat "$vm_token")" = tok-secret ] || fail "the VM kept the old token"
+! grep -q tok-secret "$ARGV_LOG" || fail "the token showed in an argument list: $(grep tok-secret "$ARGV_LOG")"
+
+# A failed create keeps the old token in 1Password and in the VM.
+if printf 'tok-other' | OP_CREATE_RC=1 "$script" set claude 2>/dev/null; then
+  fail "set succeeded although 1Password failed"
+fi
+[ "$(cat "$tmp/op/lima-agent claude".*)" = tok-secret ] || fail "1Password lost the token"
+[ "$(cat "$vm_token")" = tok-secret ] || fail "the VM changed although 1Password failed"
+
+# `update` says which token 1Password doesn't hold.
+out=$(echo y | "$script" update 2>&1) || fail "update failed: $out"
+[[ "$out" == *"no claude token"* ]] || fail "update kept quiet about a missing token: $out"
+
+# A launch copies the working tree of a repository without commits, at a
+# path with a space, to the guest ref. Host and guest share the repository
+# here, so the stale ref from a previous copy sits in the same place.
+repo="$tmp/my repo"
+git init -q "$repo"
+stale=$(git -C "$repo" commit-tree -m stale "$(git -C "$repo" mktree </dev/null)")
+git -C "$repo" update-ref refs/lima/host "$stale"
+git -C "$repo" update-ref refs/lima/base "$stale"
+echo a >"$repo/a"
+(cd "$repo" && echo k | "$script" shell >/dev/null 2>&1) || fail "the launch failed: $(cat "$NONO_LOG" 2>/dev/null)"
+[ "$(git -C "$repo" ls-tree --name-only refs/lima/host 2>/dev/null)" = a ] || fail "the guest ref lacks the working tree"
+[ ! -s "$NONO_LOG" ] || fail "$(cat "$NONO_LOG")"
+echo "agents-vm ok"

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://nono.dev/schemas/nono-profile.schema.json",
+  "extends": "default",
+  "filesystem": {
+    "allow": [
+      "$HOME/.agents",
+      "$XDG_STATE_HOME/agents",
+      "$HOME/.m2",
+      "$HOME/.npm",
+      "$XDG_CACHE_HOME/mise",
+      "$XDG_CACHE_HOME/uv",
+      "$XDG_CONFIG_HOME/jj/repos",
+      "$XDG_DATA_HOME/cargo",
+      "$XDG_DATA_HOME/rustup",
+      "$XDG_DATA_HOME/go",
+      "$XDG_DATA_HOME/mise",
+      "$XDG_DATA_HOME/uv",
+      "$HOME/Library/Keychains"
+    ],
+    "bypass_protection": [
+      "$HOME/Library/Keychains"
+    ],
+    "read": [
+      "$XDG_STATE_HOME/mise",
+      "$XDG_CONFIG_HOME/git",
+      "$XDG_CONFIG_HOME/jj",
+      "$XDG_DATA_HOME/tinted-theming/tinty",
+      "$XDG_CONFIG_HOME/nono/profiles",
+      "$XDG_CONFIG_HOME/nono/packages"
+    ]
+  },
+  "groups": {
+    "include": [
+      "git_config",
+      "mise_manager",
+      "node_runtime",
+      {
+        "name": "user_caches_macos",
+        "when": "macos"
+      },
+      "unlink_protection"
+    ]
+  },
+  "meta": {
+    "description": "Base of the claude and pi profiles: shared skills, agent state, and toolchains. jj may write only its per-repository state, since jj outside the sandbox runs its config",
+    "name": "agents",
+    "version": "1.0.0"
+  },
+  "workdir": {
+    "access": "readwrite"
+  }
+}

@@ -3,6 +3,9 @@
 set -eu
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-merge.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
+# jq can be a mise shim, which reads the trusted configs from the real
+# state directory.
+export MISE_STATE_DIR="${MISE_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/mise}"
 export XDG_STATE_HOME="$tmp/state"
 repo="$tmp/repo.json" target="$tmp/home/settings.json"
 
@@ -30,4 +33,11 @@ expect '{"lastChangelog":"1.0","model":"a","theme":"dots"}' "app key"
 echo '{"theme":"dots"}' >"$repo"
 setup/merge-settings pi "$repo" "$target"
 expect '{"lastChangelog":"1.0","theme":"dots"}' "dropped key"
+
+# A target that isn't JSON fails the merge and leaves no temp file.
+echo 'not json' >"$target"
+if setup/merge-settings pi "$repo" "$target" 2>/dev/null; then
+  fail "merged into a target that isn't JSON"
+fi
+[ -z "$(find "$tmp/home" -name 'settings.json.*')" ] || fail "left a temp file"
 echo "merge-settings ok"

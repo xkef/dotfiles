@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Sync GitHub rulesets from the JSON files in this directory.
-# Creates or updates each ruleset by name via the GitHub API.
+# Creates or updates each ruleset by name via the GitHub API. GitHub
+# doesn't read these files, so run it after editing one.
+#
+# Usage: .github/rulesets/sync
 set -euo pipefail
 
 cd "$(dirname "$0")"

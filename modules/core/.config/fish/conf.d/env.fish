@@ -57,16 +57,14 @@ set -gx PAGER less
 set -gx LESS '-iFMRX --mouse -#.25'
 
 # ── PATH ─────────────────────────────────────────────
-fish_add_path -gP $HOME/.local/bin
-fish_add_path -gP $CARGO_HOME/bin
-fish_add_path -gP $GOPATH/bin
+# One call in priority order. -m moves entries already in an inherited
+# PATH, so a shell started from tmux or WezTerm gets the same order.
+# Homebrew keeps rustup keg-only, so cargo and rustc need its opt path.
+set -l paths $HOME/.local/bin $CARGO_HOME/bin $GOPATH/bin
 if set -q HOMEBREW_PREFIX
-    fish_add_path -gP $HOMEBREW_PREFIX/bin
-    fish_add_path -gP $HOMEBREW_PREFIX/sbin
-    # Homebrew keeps rustup keg-only, so cargo and rustc need this path.
-    fish_add_path -gP $HOMEBREW_PREFIX/opt/rustup/bin
+    set -a paths $HOMEBREW_PREFIX/opt/rustup/bin $HOMEBREW_PREFIX/bin $HOMEBREW_PREFIX/sbin
 end
-fish_add_path -gP /usr/local/bin
+fish_add_path -gPm $paths /usr/local/bin
 
 # ── GitHub token for mise rate limits ────────────────
 # Not exported as GITHUB_TOKEN. That would pin gh and its git credential

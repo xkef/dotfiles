@@ -3,7 +3,7 @@
 -- Ctrl-Shift-Space, take keys that the shell, Neovim, and agents use.
 local wezterm = require("wezterm")
 local act = wezterm.action
-local status = require("status")
+local copymode = require("copymode")
 local vm = require("vm")
 
 local M = {}
@@ -18,7 +18,7 @@ local CLEAR_SCREEN = act.Multiple({
 
 -- Ctrl-Shift bindings, on every platform.
 local SHARED = {
-  { key = "c", mods = "CTRL|SHIFT", action = status.copy(act.CopyTo("Clipboard")) },
+  { key = "c", mods = "CTRL|SHIFT", action = copymode.copy(act.CopyTo("Clipboard")) },
   { key = "v", mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
   { key = "n", mods = "CTRL|SHIFT", action = act.SpawnWindow },
   { key = "t", mods = "CTRL|SHIFT", action = vm.tab(act.SpawnTab("CurrentPaneDomain")) },
@@ -33,7 +33,7 @@ local SHARED = {
 
 -- macOS Cmd bindings.
 local MAC = {
-  { key = "c", mods = "SUPER", action = status.copy(act.CopyTo("Clipboard")) },
+  { key = "c", mods = "SUPER", action = copymode.copy(act.CopyTo("Clipboard")) },
   { key = "v", mods = "SUPER", action = vm.paste(act.PasteFrom("Clipboard")) },
   { key = "v", mods = "SUPER|SHIFT", action = act.PasteFrom("PrimarySelection") },
   { key = "=", mods = "SUPER", action = act.IncreaseFontSize },
@@ -134,7 +134,7 @@ local COPY_SELECTION = wezterm.action_callback(function(window, pane)
     end
     action = act.Multiple({ action, after })
   end
-  window:perform_action(status.copy(action), pane)
+  window:perform_action(copymode.copy(action), pane)
 end)
 
 -- Enters copy mode on the first drag event, as tmux does, then extends
@@ -152,9 +152,9 @@ local function drag_selection(unit)
   end)
 end
 
--- The wheel scrolls as WezTerm does, and status.scrolled() follows up in
+-- The wheel scrolls as WezTerm does, and copymode.scrolled() follows up in
 -- copy mode.
-local WHEEL = act.Multiple({ act.ScrollByCurrentEventWheelDelta, status.scrolled() })
+local WHEEL = act.Multiple({ act.ScrollByCurrentEventWheelDelta, copymode.scrolled() })
 
 -- Cmd-click, or Ctrl-click off macOS, opens a link, and a plain click only
 -- selects. The press does nothing, so Neovim doesn't see it. The link
@@ -231,17 +231,19 @@ end
 -- starts upward, so Enter moves up and Ctrl-n down.
 --
 -- WezTerm applies a copy-mode selection only after the action that makes
--- it, so Y copies in status.copy(), a callback that runs later.
+-- it, so Y copies in copymode.copy(), a callback that runs later. Space is
+-- written " ", since "Space" names the physical key and leaves WezTerm's
+-- own binding of the mapped key in place.
 local COPY_MODE = {
-  { key = "v", mods = "NONE", action = status.select("Cell") },
-  { key = "Space", mods = "NONE", action = status.select("Cell") },
-  { key = "V", mods = "NONE", action = status.select("Line") },
-  { key = "V", mods = "SHIFT", action = status.select("Line") },
-  { key = "v", mods = "CTRL", action = status.select("Block") },
+  { key = "v", mods = "NONE", action = copymode.select("Cell") },
+  { key = " ", mods = "NONE", action = copymode.select("Cell") },
+  { key = "V", mods = "NONE", action = copymode.select("Line") },
+  { key = "V", mods = "SHIFT", action = copymode.select("Line") },
+  { key = "v", mods = "CTRL", action = copymode.select("Block") },
   {
     key = "y",
     mods = "NONE",
-    action = status.copy(act.Multiple({ act.CompleteSelection(COPY_DESTINATION), LEAVE_COPY_MODE })),
+    action = copymode.copy(act.Multiple({ act.CompleteSelection(COPY_DESTINATION), LEAVE_COPY_MODE })),
   },
   {
     key = "Y",
@@ -250,7 +252,7 @@ local COPY_MODE = {
       act.CopyMode("ClearSelectionMode"),
       act.CopyMode({ SetSelectionMode = "Cell" }),
       act.CopyMode("MoveToEndOfLineContent"),
-      status.copy(act.Multiple({
+      copymode.copy(act.Multiple({
         act.CompleteSelection(COPY_DESTINATION),
         act.CopyMode("MoveToSelectionOtherEnd"),
         act.CopyMode("ClearSelectionMode"),
@@ -267,30 +269,10 @@ local COPY_MODE = {
   { key = "?", mods = "SHIFT", action = act.CopyMode("EditPattern") },
 }
 
--- Identifies a binding by key and modifiers. WezTerm writes no modifiers
--- as nil, "", or "NONE".
-local function binding_id(binding)
-  local mods = binding.mods
-  if mods == nil or mods == "" then
-    mods = "NONE"
-  end
-  return binding.key .. "+" .. mods
-end
-
--- WezTerm's copy_mode table with COPY_MODE replacing the bindings of the
--- same keys.
+-- WezTerm's copy_mode table with COPY_MODE after it. A later binding of
+-- the same key wins.
 local function copy_mode()
-  local taken = {}
-  for _, binding in ipairs(COPY_MODE) do
-    taken[binding_id(binding)] = true
-  end
-
-  local keys = {}
-  for _, binding in ipairs(wezterm.gui.default_key_tables().copy_mode) do
-    if not taken[binding_id(binding)] then
-      table.insert(keys, binding)
-    end
-  end
+  local keys = wezterm.gui.default_key_tables().copy_mode
   for _, binding in ipairs(COPY_MODE) do
     table.insert(keys, binding)
   end

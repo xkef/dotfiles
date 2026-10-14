@@ -41,6 +41,11 @@ version = "0.13.5"
 backend = "github:SuperCuber/dotter"
 specifiers = ["0.13.5"]
 
+[tools."github:SuperCuber/dotter"."platforms.linux-arm64"]
+checksum = "sha256:6efc68bf72313db462a72810b9c2d33edcf04d9b10382f564c46f9aaf942c979"
+url = "https://github.com/SuperCuber/dotter/releases/download/v0.13.5/dotter-linux-arm64-musl"
+url_api = "https://api.github.com/repos/SuperCuber/dotter/releases/assets/475859723"
+
 [tools."github:SuperCuber/dotter"."platforms.linux-x64"]
 checksum = "sha256:a79e1ef325d4ecb3e3fffe3dd961f6f854cc45e2eb82755d3be23cdfe0603211"
 url = "https://github.com/SuperCuber/dotter/releases/download/v0.13.5/dotter-linux-x64-musl"

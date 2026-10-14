@@ -4,7 +4,7 @@
 	defaultBranch = main
 
 [core]
-	editor = nvim
+	editor = env NVIM_APPNAME=lazyvim nvim
 	pager = delta
 	autocrlf = input
 	untrackedCache = true
@@ -24,9 +24,6 @@
 	algorithm = histogram
 	colorMoved = plain
 	mnemonicPrefix = true
-
-[diff "bin"]
-	textconv = hexdump -ve '1/1 "%.2x "'
 
 # ── Delta pager ──────────────────────────────────────
 [delta]
@@ -51,7 +48,7 @@
 	tool = nvimdiff
 
 [mergetool "nvimdiff"]
-	cmd = nvim -d "$LOCAL" "$MERGED" "$REMOTE"
+	cmd = env NVIM_APPNAME=lazyvim nvim -d "$LOCAL" "$MERGED" "$REMOTE"
 
 [rebase]
 	autoSquash = true
@@ -126,7 +123,7 @@
 	amend = commit --amend --no-edit
 	branches = for-each-ref --sort=-committerdate --format='%(refname:short) %(committerdate:relative)' refs/heads
 	contributors = shortlog -sn --no-merges
-	cleanup = !git branch --merged | grep -v '\\*\\|main\\|master' | xargs -n1 git branch -d
+	cleanup = !git branch --merged | grep -vE '^\\*|^ +(main|master)$' | xargs -n1 git branch -d
 	wt = worktree
 	wta = worktree add
 	wtl = worktree list

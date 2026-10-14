@@ -9,16 +9,24 @@
 set -euo pipefail
 
 readonly HISTORY_LINES=2000
-readonly URL_PATTERN='(https?|ftp|file)://[^[:space:]<>"`'"'"'()]+'
+readonly URL_PATTERN='(https?|ftp|file)://[^[:space:]<>"`'"'"']+'
 
 pane=${1:-$(wezterm cli get-pane-direction up)}
 
-# Reverses the lines, drops repeats, and trims trailing punctuation that
-# ends a sentence rather than the URL.
+# Trims trailing punctuation that ends a sentence rather than the URL, and
+# a closing parenthesis without a match in the URL, so "(see
+# https://x.org/a_(b))." yields https://x.org/a_(b). Then reverses the
+# lines and drops repeats.
 urls=$(wezterm cli get-text --pane-id "$pane" --start-line "-$HISTORY_LINES" |
   { rg -o --no-line-number "$URL_PATTERN" || true; } |
-  sed 's/[.,;:!?]*$//' |
-  awk '{ line[NR] = $0 } END { for (i = NR; i > 0; i--) if (!seen[line[i]]++) print line[i] }')
+  awk '{
+    sub(/[.,;:!?]+$/, "")
+    while (/\)$/ && gsub(/\(/, "(") < gsub(/\)/, ")")) {
+      sub(/\)$/, "")
+      sub(/[.,;:!?]+$/, "")
+    }
+    line[NR] = $0
+  } END { for (i = NR; i > 0; i--) if (!seen[line[i]]++) print line[i] }')
 
 if [ -z "$urls" ]; then
   echo "No URLs in the last $HISTORY_LINES lines"

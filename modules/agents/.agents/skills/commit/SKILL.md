@@ -42,9 +42,11 @@ For more on Jujutsu, see the `jj` skill.
 ## Commit message format
 
 - Subject: use `type: description` or `type(scope): description`. Aim for 50
-  characters, with a hard limit of 72 for the whole subject. Use lowercase,
-  imperative mood, and no final period. The subject states what the commit does,
-  such as `fix(zsh): restore history`.
+  characters, with a hard limit of 72 for the whole subject. Follow the
+  capitalization the repository already uses, which keeps the type and the
+  description lowercase under this format. Use the imperative mood and no final
+  period. The subject states what the commit does, such as
+  `fix(zsh): restore history`.
 - Scope: optional, such as `feat(tmux)` or `fix(zsh)`.
 - Body: add one only when the motivation needs explaining. Separate it from the
   subject with a blank line and wrap at 72 characters. Explain why the change

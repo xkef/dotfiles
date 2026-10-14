@@ -2,16 +2,15 @@
 -- color names an ANSI slot, so a tinty switch recolors the bar with the
 -- terminal.
 local wezterm = require("wezterm")
-local act = wezterm.action
 local vm = require("vm")
 local path = require("path")
+local copymode = require("copymode")
 
 local M = {}
 
 -- The helper forks, so the status line refreshes its output at this
 -- interval instead of on every redraw.
 local SYSSTAT_INTERVAL = 5
-local CPU_HIGH = 80
 local TAB_GAP = "   "
 
 -- How long a notice stays in the status line, in seconds.
@@ -19,14 +18,6 @@ local NOTICE_SECONDS = 2
 
 -- The notice each window shows, by window id.
 local notices = {}
-
--- The mode label for each copy-mode selection mode, as tmux names them.
-local SELECTION_LABELS = { Cell = "VISUAL", Line = "V-LINE", Block = "V-BLOCK" }
-
--- The copy-mode selection mode of each pane, by pane id, like @mode in
--- tmux's copy-mode.conf. WezTerm doesn't expose the mode, so select()
--- records it.
-local selections = {}
 
 local function basename(path)
   return (path or ""):match("([^/]+)$") or ""
@@ -61,15 +52,15 @@ local function cached(name, interval, args)
   return cache.text
 end
 
--- CPU and memory. mux-sysstat prints "<cpu%>\t<used>/<total>G".
+-- CPU and memory. mux-sysstat prints "<cpu%>\t<high|normal>\t<used>/<total>G".
 local function sysstat()
   local text = cached("sysstat", SYSSTAT_INTERVAL, { "mux-sysstat" })
-  local cpu, mem = text:match("^(%d+)\t(%S+)")
+  local cpu, level, mem = text:match("^(%d+)\t(%a+)\t(%S+)")
   if not cpu then
     return {}
   end
   return {
-    { Foreground = { AnsiColor = tonumber(cpu) >= CPU_HIGH and "Maroon" or "Grey" } },
+    { Foreground = { AnsiColor = level == "high" and "Maroon" or "Grey" } },
     { Text = cpu .. "%  " },
     { Foreground = { AnsiColor = "Grey" } },
     { Text = mem .. "  " },
@@ -90,21 +81,13 @@ local function update(window, pane)
     table.insert(right, { Foreground = { AnsiColor = "Green" } })
     table.insert(right, { Text = notice.text .. "  " })
   end
-  -- The mode: the copy-mode selection, the active key table, or VISUAL
-  -- for a mouse selection, which leaves copy mode off. A selection that
-  -- select() didn't make, such as a search match, reads VISUAL. Leaving
-  -- copy mode ends its selection.
+  -- The mode: the copy-mode label, the active key table, or VISUAL for a
+  -- mouse selection, which leaves copy mode off.
   local key_table = window:active_key_table()
-  local id = pane:pane_id()
-  if key_table ~= "copy_mode" then
-    selections[id] = nil
-  end
-  local mode
-  if key_table == "copy_mode" then
-    mode = SELECTION_LABELS[selections[id]] or window:get_selection_text_for_pane(pane) ~= "" and "VISUAL" or "COPY"
-  elseif key_table and key_table ~= "repeat" then
+  local mode = copymode.label(window, pane)
+  if not mode and key_table and key_table ~= "repeat" then
     mode = key_table:upper():gsub("_MODE", "")
-  elseif window:get_selection_text_for_pane(pane) ~= "" then
+  elseif not mode and window:get_selection_text_for_pane(pane) ~= "" then
     mode = "VISUAL"
   end
   if mode then
@@ -168,7 +151,7 @@ end
 
 -- Shows text in the status line of window for NOTICE_SECONDS. A newer
 -- notice replaces an older one and outlives its timer.
-function M.notify(window, pane, text)
+local function notify(window, pane, text)
   local id = window:window_id()
   local notice = { text = text }
   notices[id] = notice
@@ -182,61 +165,11 @@ function M.notify(window, pane, text)
   end)
 end
 
--- Sets the copy-mode selection to mode, "Cell", "Line", or "Block", like
--- v, V, and C-v in tmux's copy-mode.conf. Without a selection it starts
--- one at the cursor, even over a search match that WezTerm selected. The
--- same mode again clears it, and another mode switches it. The label
--- updates at once.
-function M.select(mode)
-  return wezterm.action_callback(function(window, pane)
-    local id = pane:pane_id()
-    local current = selections[id]
-    local action = act.CopyMode({ SetSelectionMode = mode })
-    if current == mode then
-      mode, action = nil, act.CopyMode("ClearSelectionMode")
-    elseif not current then
-      action = act.Multiple({ act.CopyMode("ClearSelectionMode"), action })
-    end
-    selections[id] = mode
-    window:perform_action(action, pane)
-    update(window, pane)
-  end)
-end
-
--- Performs action, a copy, and names the copied size in a notice, since
--- the copy gives no other sign. A copy ends the copy-mode selection.
-function M.copy(action)
-  return wezterm.action_callback(function(window, pane)
-    selections[pane:pane_id()] = nil
-    local text = window:get_selection_text_for_pane(pane)
-    window:perform_action(action, pane)
-    if text ~= "" then
-      M.notify(window, pane, "Copied " .. utf8.len(text) .. " chars")
-    else
-      update(window, pane)
-    end
-  end)
-end
-
--- Clears the copy-mode selection when the wheel scrolls, as tmux does,
--- and puts the cursor on the middle row. Otherwise the next key scrolls
--- back to where the cursor was.
-function M.scrolled()
-  return wezterm.action_callback(function(window, pane)
-    if window:active_key_table() ~= "copy_mode" then
-      return
-    end
-    selections[pane:pane_id()] = nil
-    window:perform_action(
-      act.Multiple({ act.CopyMode("ClearSelectionMode"), act.CopyMode("MoveToViewportMiddle") }),
-      pane
-    )
-    update(window, pane)
-  end)
-end
-
 function M.setup()
   wezterm.on("update-status", update)
+  wezterm.on("copied", function(window, pane, chars)
+    notify(window, pane, "Copied " .. chars .. " chars")
+  end)
   wezterm.on("format-tab-title", function(tab, _, _, config)
     return tab_title(tab, config.colors.background)
   end)

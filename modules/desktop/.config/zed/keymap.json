@@ -29,10 +29,10 @@
   {
     "context": "Terminal",
     "bindings": {
-      "ctrl-h": "workspace::ActivatePaneLeft",
-      "ctrl-l": "workspace::ActivatePaneRight",
-      "ctrl-j": "workspace::ActivatePaneDown",
-      "ctrl-k": "workspace::ActivatePaneUp"
+      "ctrl-h": ["terminal::SendKeystroke", "ctrl-h"],
+      "ctrl-l": ["terminal::SendKeystroke", "ctrl-l"],
+      "ctrl-j": ["terminal::SendKeystroke", "ctrl-j"],
+      "ctrl-k": ["terminal::SendKeystroke", "ctrl-k"]
     }
   },
   {

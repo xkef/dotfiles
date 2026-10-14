@@ -29,11 +29,13 @@ tilde() {
   esac
 }
 
-# Emits rows for directories on stdin, named after their last component.
+# Emits rows for directories on stdin, named after the path with ~ for
+# $HOME, so ~/oss/api and ~/work/api open separate workspaces.
 dir_rows() {
-  local icon=$1 dir
+  local icon=$1 dir name
   while IFS= read -r dir; do
-    printf '%s %s\t%s\t%s\n' "$icon" "$(tilde "$dir")" "${dir##*/}" "$dir"
+    name=$(tilde "$dir")
+    printf '%s %s\t%s\t%s\n' "$icon" "$name" "$name" "$dir"
   done
 }
 

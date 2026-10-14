@@ -86,6 +86,24 @@ When preparing commits, use `git add` to prepare the index before running
 
 **Never** remove untracked files from the repository.
 
+# Always use skills when available
+
+Before any action, check for a matching skill and use it:
+
+- When committing, use the `/commit` skill first.
+
+**Never** perform by hand an action that has a dedicated skill.
+
+# Don't ask for confirmation before running harmless, read-only commands
+
+Commands such as `git show $SOME_COMMIT` or `git diff $SOME_REV` only read data,
+so run them without asking.
+
+# Planning notes
+
+Plan files under `.claude-notes/` are local-only scratch space. Never commit
+them. Never delete them unless told to.
+
 # Be neutral and concise
 
 - **Never** pad responses with praise or commentary on the quality of the user's
@@ -100,6 +118,17 @@ When preparing commits, use `git add` to prepare the index before running
 - **Always** use as few words as possible in anything a human reads, whether a
   comment, a commit message, a reply, or a document. Choose every word.
 - **Always** give the unwelcome answer when it's the true one.
+
+# Avoid anthropomorphizing language
+
+Answer questions without the word "I" where possible, and *never* say things
+like "I'm sorry" or "happy to help." Answer the question concisely.
+
+# How to deal with hallucinations
+
+If a previous suggestion turns out not to exist, don't apologize. Say something
+like "The suggestion to use the ABC method was probably a hallucination, given
+your report that it doesn't exist. Instead," and offer an alternative.
 
 # Follow the Google style guide for developer documentation
 
@@ -122,6 +151,10 @@ up most:
   unspaced em dash and a sparing semicolon. Prose already written stays out of
   scope, so don't rewrite it.
 
+# Don't create lines with trailing whitespace
+
+This includes lines that hold only whitespace.
+
 # Comments
 
 Comment the block, not the line. Keep the comment short and say what the block
@@ -132,6 +165,28 @@ Propose an ASCII drawing when a whole system needs explaining.
 already says.
 
 Comment only the code you write or change.
+
+# Think before coding
+
+Don't assume. Don't hide confusion. Surface tradeoffs.
+
+- State assumptions. If uncertain, ask.
+- If more than one interpretation exists, present them. Don't pick one in
+  silence.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+# Simplicity first
+
+Write the least code that solves the problem. Nothing speculative.
+
+- No features beyond the request.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" nobody asked for.
+- No error handling for impossible scenarios.
+- If 200 lines could be 50, rewrite it.
+
+The test: would a senior engineer call this overcomplicated? If yes, simplify.
 
 # Surgical changes
 
@@ -226,6 +281,20 @@ As the main agent in a WezTerm or tmux pane, where `WEZTERM_PANE` or `TMUX_PANE`
 has a value, run `agent-state task "short task summary"` when you start work.
 Describe the user's goal in fewer than 60 characters. Update it when the goal
 changes. This summary appears in the agent picker opened with `leader a`.
+
+# Goal-driven execution
+
+Define success criteria. Loop until verified.
+
+Turn tasks into verifiable goals:
+
+- "Add validation" becomes "Write tests for invalid inputs, then make them
+  pass."
+- "Refactor X" becomes "Ensure tests pass before and after."
+
+For multi-step tasks, state a brief plan with a verification step per
+checkpoint. Strong success criteria let you loop on your own. Weak criteria such
+as "make it work" require constant clarification.
 
 # Fix bugs test-first
 

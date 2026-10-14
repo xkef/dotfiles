@@ -26,6 +26,3 @@ if command -q eza
     alias lt 'ls -T --level=2'
 end
 command -q bat; and alias cat 'bat -pp'
-command -q dust; and alias du dust
-command -q duf; and alias df duf
-command -q procs; and alias ps procs

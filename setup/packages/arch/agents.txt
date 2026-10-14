@@ -1,3 +1,5 @@
 bubblewrap      # unprivileged sandboxing
 ccusage         # Claude Code usage analyzer (AUR)
 nono-ai-bin     # capability-based sandbox (AUR; plain "nono" is a puzzle game)
+lua-language-server # Lua LSP for the Claude Code lua-lsp plugin
+typescript-language-server # TypeScript LSP for the typescript-lsp plugin

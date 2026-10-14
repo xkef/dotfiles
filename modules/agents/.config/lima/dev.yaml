@@ -37,7 +37,7 @@ mounts:
     writable: true
   # Guest transcripts land on the host, where `agent-trace` reads them
   # beside the host's own.
-  - location: ~/.local/state/agents/lima-dev/claude-projects
+  - location: "{{.Home}}/.local/state/agents/lima-{{.Name}}/claude-projects"
     mountPoint: "{{.Home}}/.claude/projects"
     writable: true
 

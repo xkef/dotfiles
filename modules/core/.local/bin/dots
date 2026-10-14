@@ -7,8 +7,8 @@ switch $argv[1]
     case update up
         # The repo is jj-colocated, so git HEAD stays detached and a plain
         # git pull can't work. Fetch and rebase with jj instead, then deploy.
-        # The README installs with a plain git clone, so the first update
-        # colocates jj.
+        # The deploy hook colocates jj too, but skips it when jj wasn't
+        # installed yet, so a plain git clone can still reach this point.
         if not test -d $DOTFILES_DIR/.jj
             jj git init --colocate $DOTFILES_DIR
             and jj -R $DOTFILES_DIR bookmark track main@origin

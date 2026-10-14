@@ -24,8 +24,7 @@
     ],
     "allow_file": [
       "$HOME/.claude.json",
-      "$HOME/.claude.json.lock",
-      "$HOME/.claude.lock"
+      "$HOME/.claude.json.lock"
     ],
     "bypass_protection": [
       "$HOME/.config/fish",

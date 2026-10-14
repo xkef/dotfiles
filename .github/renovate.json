@@ -13,12 +13,23 @@
       "groupName": "GitHub Actions"
     },
     {
-      "matchManagers": ["mise"],
+      "matchManagers": ["mise", "custom.regex"],
       "groupName": "mise tools"
     },
     {
       "matchManagers": ["npm"],
       "groupName": "pi extensions"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "jj installed through mise in the workflows",
+      "managerFilePatterns": ["/^\\.github/workflows/.+\\.ya?ml$/"],
+      "matchStrings": ["mise use -g jj@(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "jj-vcs/jj",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ]
 }

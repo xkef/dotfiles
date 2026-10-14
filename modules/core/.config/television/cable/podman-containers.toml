@@ -23,7 +23,7 @@ f2 = "actions:stop"
 ctrl-r = "actions:restart"
 ctrl-l = "actions:logs"
 ctrl-e = "actions:exec"
-ctrl-d = "actions:remove"
+alt-d = "actions:remove"
 
 [actions.start]
 description = "Start the selected container"
