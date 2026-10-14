@@ -2,10 +2,10 @@
   "private": true,
   "description": "Type-checks the pi extensions against the pi release the agent launcher installs",
   "devDependencies": {
-    "@earendil-works/pi-ai": "1.0.4",
-    "@earendil-works/pi-coding-agent": "1.0.4",
-    "@earendil-works/pi-tui": "1.0.4",
-    "@types/node": "22.20.4",
+    "@earendil-works/pi-ai": "1.1.0",
+    "@earendil-works/pi-coding-agent": "1.1.0",
+    "@earendil-works/pi-tui": "1.1.0",
+    "@types/node": "22.20.5",
     "typescript": "7.0.2"
   }
 }
