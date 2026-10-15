@@ -1,0 +1,16 @@
+# Overrides tv's default files channel. Dotfiles live under hidden
+# directories such as .config, which fd skips without --hidden.
+[metadata]
+name = "files"
+description = "A channel to select files, hidden ones included"
+requirements = ["fd", "bat"]
+
+[source]
+command = "fd -t f --hidden --exclude .git --exclude .jj"
+
+[preview]
+command = "bat -n --color=always '{}'"
+env = { BAT_THEME = "ansi" }
+
+[keybindings]
+shortcut = "f1"
