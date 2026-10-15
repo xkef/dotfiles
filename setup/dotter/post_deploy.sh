@@ -3,8 +3,8 @@
 # Handlebars and runs it from the repo root.
 set -euo pipefail
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-# A fresh machine has no fish environment yet. Tools such as vale and brew
-# fall back to ~/Library/Application Support on macOS without it.
+# A fresh machine has no fish environment yet. Tools such as brew fall back
+# to ~/Library/Application Support on macOS without it.
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 
 # sysexits.h EX_TEMPFAIL. decrypt exits with it when it skips, so the
@@ -72,8 +72,6 @@ if [[ "$(uname -s)" == Linux ]] && command -v podman >/dev/null; then
   systemctl --user enable --now podman.socket ||
     echo "warning: podman.socket not enabled; docker clients can't reach podman" >&2
 fi
-
-setup/onchange vale-sync modules/core/.config/vale/.vale.ini -- vale sync
 
 # Clones the template repos the tinty config names, then applies the last
 # scheme, or the default one on a fresh machine.
