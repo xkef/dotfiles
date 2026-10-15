@@ -36,7 +36,7 @@ private-commits = 'description(glob:"wip:*") | description(glob:"private:*")'
 
 # ── Revsets ──────────────────────────────────────────
 [revsets]
-log = 'ancestors(reachable(mine() | @, mutable()), 5) | trunk() | @'
+log = 'ancestors(reachable(mine() | @, mutable()), 2) | trunk() | @'
 # `jj tug` targets the completed change under the empty working copy.
 bookmark-advance-to = '@-'
 
