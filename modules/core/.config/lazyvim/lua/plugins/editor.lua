@@ -28,6 +28,19 @@ return {
     end)(),
   },
 
+  -- Collapses the harpoon2 extra's <leader>1-9 into one which-key row. The
+  -- hidden keys still work.
+  {
+    "folke/which-key.nvim",
+    opts = function(_, opts)
+      opts.spec = opts.spec or {}
+      table.insert(opts.spec, { "<leader>1", desc = "Harpoon to File 1-9" })
+      for i = 2, 9 do
+        table.insert(opts.spec, { "<leader>" .. i, hidden = true })
+      end
+    end,
+  },
+
   {
     "folke/snacks.nvim",
     opts = {

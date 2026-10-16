@@ -47,3 +47,8 @@ map("n", "<leader>uv", function()
     vim.diagnostic.config({ virtual_text = { current_line = true, priority = 10000 } })
   end
 end, { desc = "Toggle diagnostics virtual text (all/current line)" })
+
+-- jjui in a float, like LazyVim's <leader>gg for lazygit.
+map("n", "<leader>jj", function()
+  Snacks.terminal("jjui", { cwd = vim.fs.root(0, ".jj"), win = { style = "lazygit" } })
+end, { desc = "jjui (Root Dir)" })
