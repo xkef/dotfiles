@@ -45,6 +45,7 @@ brew "node"                 # Node.js for npx outside projects
 brew "rumdl"                # markdown linter (LazyVim in every buffer)
 brew "dprint"               # markdown formatter (LazyVim in every buffer)
 brew "jdtls"                # Java language server
+cask "kotlin-lsp"           # Kotlin language server
 brew "podman"               # rootless container engine
 brew "lazydocker"           # terminal UI for Docker/Podman
 brew "fx"                   # terminal JSON viewer

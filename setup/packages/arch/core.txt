@@ -58,3 +58,4 @@ hyperfine       # command-line benchmarking
 bandwhich       # per-process bandwidth monitor
 xdg-ninja       # audit XDG base-dir compliance
 jdtls           # Java language server (AUR)
+kotlin-lsp-bin  # Kotlin language server (AUR)
