@@ -42,6 +42,8 @@ grep -sqx atuin "$NONO_LOG" || fail "the session started before the granted dire
 # write access to the directory's repository copy.
 : >"$NONO_LOG"
 (cd "$tmp" && GIT_CEILING_DIRECTORIES="$tmp" "$script" pane "$tmp/cwd")
-grep -sq -- "--profile vm.* --allow $tmp/cwd -- fish -l" "$NONO_LOG" ||
+cwd=$(cd "$tmp/cwd" && pwd)
+if ! grep -sq -- "--profile vm " "$NONO_LOG" || ! grep -sqF -- "--allow $cwd -- fish -l" "$NONO_LOG"; then
   fail "a split of a VM pane ran outside nono: $(cat "$NONO_LOG")"
+fi
 echo "lima-agent ok"
