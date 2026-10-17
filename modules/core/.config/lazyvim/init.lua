@@ -6,6 +6,10 @@ vim.g.maplocalleader = "\\"
 -- and reports the stricter diagnostics these projects type for.
 vim.g.lazyvim_python_lsp = "basedpyright"
 
+-- TypeScript 7 drops the tsserver that vtsls drives. Its native compiler,
+-- tsc, serves LSP itself, from the project's node_modules or from Mason.
+vim.g.lazyvim_ts_lsp = "tsc"
+
 -- Debug helpers from folke/dot: dd(value) inspects, bt() prints a backtrace.
 _G.dd = function(...)
   Snacks.debug.inspect(...)
