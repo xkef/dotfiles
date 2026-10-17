@@ -131,6 +131,7 @@
       "Edit",
       "Write",
       "Skill",
+      "Bash(jj *)",
       "WebSearch",
       "WebFetch(domain:docs.claude.com)",
       "WebFetch(domain:code.claude.com)",

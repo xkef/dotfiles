@@ -86,6 +86,12 @@ When preparing commits, use `git add` to prepare the index before running
 
 **Never** remove untracked files from the repository.
 
+# Use jj in a jj repository
+
+When `jj root` succeeds, use `jj` for status, diff, commit, bookmark, rebase,
+fetch, and push. Use `git` only to inspect Git objects, as in `git show` or
+`git log`. Use the `jj` skill when available.
+
 # Always use skills when available
 
 Before any action, check for a matching skill and use it:
