@@ -50,8 +50,9 @@ function sb -d "Run a command inside a nono sandbox"
             set -a cmd_args --settings (jq -c '.sandbox.enabled = false' $HOME/.claude/settings.dotfiles.json)
     end
 
-    # The Lima VM is the sandbox, so the agent runs there without nono, and
-    # Claude Code without permission prompts.
+    # lima-agent starts every VM shell in nono with the profile vm, so the
+    # agent runs there without another nono, and Claude Code without
+    # permission prompts.
     if __sb_in_vm
         test $cmd = claude; and set -p cmd_args --dangerously-skip-permissions
         command $cmd $cmd_args $rest

@@ -14,9 +14,9 @@ command = "podman image inspect '{split: :-1}' | jq -C"
 layout = "portrait"
 
 [keybindings]
-ctrl-r = "actions:run"
+alt-r = "actions:run"
 alt-d = "actions:remove"
-ctrl-s = "actions:shell"
+alt-s = "actions:shell"
 
 [actions.run]
 description = "Run a container from the selected image"

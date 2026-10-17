@@ -1,8 +1,8 @@
 local map = vim.keymap.set
 
 -- Cowboy mode warns on 10 or more repeated hjkl without a count, after
--- folke/dot. j and k with a count over 5 lines add a jumplist entry, after
--- wincent.
+-- folke/dot. j and k without a count move by screen line, as in LazyVim, and
+-- with a count over 5 lines add a jumplist entry, after wincent.
 vim.g.cowboy_mode = false
 
 for _, key in ipairs({ "h", "j", "k", "l" }) do
@@ -21,8 +21,13 @@ for _, key in ipairs({ "h", "j", "k", "l" }) do
     else
       count = 0
     end
-    if (key == "j" or key == "k") and vim.v.count > 5 then
-      return "m'" .. vim.v.count .. key
+    if key == "j" or key == "k" then
+      if vim.v.count == 0 then
+        return "g" .. key
+      end
+      if vim.v.count > 5 then
+        return "m'" .. vim.v.count .. key
+      end
     end
     return key
   end, { expr = true })

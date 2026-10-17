@@ -36,6 +36,8 @@ install_darwin() {
   fi
 
   local module brewfile tap
+  split=$(mktemp -d "${TMPDIR:-/tmp}/packages.XXXXXX")
+  trap 'rm -rf "$split"' EXIT
   for module in "${modules[@]}"; do
     brewfile=macos/$module.Brewfile
     if [[ ! -f "$brewfile" ]]; then
@@ -48,11 +50,14 @@ install_darwin() {
       brew trust "$tap" 2>/dev/null || true
     done
 
-    # Casks fail soft. Self-updating GUI apps such as zed and 1password hit
-    # stale-receipt and quarantine issues that must not block the deploy.
-    if ! grep -q '^cask ' "$brewfile"; then
-      brew bundle --file="$brewfile"
-    elif ! brew bundle --file="$brewfile"; then
+    # Formulae must install, and casks fail soft. Self-updating GUI apps
+    # such as zed and 1password hit stale-receipt and quarantine issues that
+    # must not block the deploy. The taps go first, with the formulae.
+    list "$brewfile" | { grep -v '^cask ' || :; } >"$split/$module.formulae.Brewfile"
+    list "$brewfile" | { grep '^cask ' || :; } >"$split/$module.casks.Brewfile"
+    brew bundle --file="$split/$module.formulae.Brewfile"
+    if [[ -s "$split/$module.casks.Brewfile" ]] &&
+      ! brew bundle --file="$split/$module.casks.Brewfile"; then
       echo "warning: some casks failed; the next deploy retries them" >&2
       partial=true
     fi

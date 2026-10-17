@@ -10,10 +10,10 @@ command = "jj diff --name-only"
 command = "jj diff --color always '{}'"
 
 [keybindings]
-ctrl-r = "actions:restore"
-ctrl-e = "actions:edit"
-ctrl-s = "actions:squash"
-ctrl-a = "actions:absorb"
+alt-r = "actions:restore"
+alt-e = "actions:edit"
+alt-s = "actions:squash"
+alt-a = "actions:absorb"
 
 [actions.restore]
 description = "Discard changes in the selected file"
@@ -22,7 +22,7 @@ mode = "fork"
 
 [actions.edit]
 description = "Open the selected file in editor"
-command = "${EDITOR:-vim} {}"
+command = "${EDITOR:-nvim} {}"
 shell = "bash"
 mode = "execute"
 

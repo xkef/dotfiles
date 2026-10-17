@@ -5,7 +5,8 @@
 # `agents vm` runs this script.
 #
 #   agents vm [flags] [claude args...]   Claude Code, permission prompts off
-#   agents vm [flags] shell              fish, which `prefix v` opens
+#   agents vm [flags] shell              fish, which WezTerm's `leader v` opens
+#   agents vm [flags] pane DIR           fish in DIR on the copy as it stands
 #   agents vm take                       apply the copy's changes to the host
 #   agents vm drop                       discard the copy's changes
 #   agents vm set claude|github          store a token for the VM
@@ -15,10 +16,11 @@
 #   --github                 pass the GitHub token to the session
 #
 # The session runs in nono with the profile `vm`, which lets it write only
-# the repository copy, the agent state, and caches. Under --net off it
-# reaches only Anthropic, under trusted also GitHub and package
-# registries, and under full anything. nono's proxy enforces the domains,
-# and no_new_privs keeps sudo from lifting any of it.
+# the repository copy, Claude Code's config, the agent state, shell and tool
+# data, caches, and /tmp. Under --net off it reaches only Anthropic, under
+# trusted also GitHub and package registries, and under full anything.
+# nono's proxy enforces the domains, and no_new_privs keeps sudo from
+# lifting any of it.
 #
 # Each launch copies the host's working tree into the VM, untracked files
 # included and ignored files left out. It replaces the copy only while the
@@ -163,7 +165,7 @@ done
 
 mode=claude
 case "${1:-}" in
-shell | take | drop | set | update)
+shell | pane | take | drop | set | update)
   mode=$1
   shift
   ;;
@@ -177,6 +179,14 @@ set)
 update)
   update
   exit
+  ;;
+pane)
+  # A split or new tab of a VM pane: fish in the pane's directory, in the
+  # same sandbox as `shell`, on the repository copy as it stands.
+  exec limactl shell --start "$VM" -- sh -c "$GRANT_DIRS"' && cd "$1" &&
+    export WEZTERM_PANE="$2" && shift 2 &&
+    root=$(git rev-parse --show-toplevel 2>/dev/null || pwd) &&
+    exec nono "$@" --allow "$root" -- fish -l' sh "${1:?}" "${WEZTERM_PANE:-}" "${nono_args[@]}"
   ;;
 esac
 

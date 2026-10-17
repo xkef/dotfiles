@@ -1,5 +1,8 @@
 -- OpenTofu in place of LazyVim's Terraform extra, which runs the terraform
--- binary. tofu comes from the project's mise.toml.
+-- binary. tofu comes from the project's mise.toml. Neovim knows no .tofu
+-- filetype, and tofu_ls leaves out terraform-vars, so both are added here.
+vim.filetype.add({ extension = { tofu = "terraform" } })
+
 return {
   {
     "nvim-treesitter/nvim-treesitter",
@@ -10,7 +13,7 @@ return {
     "neovim/nvim-lspconfig",
     opts = {
       servers = {
-        tofu_ls = {},
+        tofu_ls = { filetypes = { "opentofu", "opentofu-vars", "terraform", "terraform-vars" } },
       },
     },
   },

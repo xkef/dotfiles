@@ -12,10 +12,10 @@ output = "{split: :0}"
 command = "ps -p '{split: :0}' -o user,pid,ppid,state,%cpu,%mem,command | fold"
 
 [keybindings]
-ctrl-k = "actions:kill"
+alt-k = "actions:kill"
 f2 = "actions:term"
-ctrl-s = "actions:stop"
-ctrl-c = "actions:cont"
+alt-s = "actions:stop"
+alt-c = "actions:cont"
 
 [actions.kill]
 description = "Kill the selected process (SIGKILL)"

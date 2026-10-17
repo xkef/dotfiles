@@ -15,6 +15,42 @@ local FORMAT_TIMEOUT_MS = 3000
 
 local Coverage = { FORMAT = "format", EXCLUDE = "exclude", NONE = "none" }
 
+-- treefmt reports a file that a formatter's excludes drop the same way as a
+-- file no formatter matches, so read the config. A formatter whose includes
+-- and excludes both match the file excludes it.
+local function treefmt_excludes(config, root, file)
+  local sections, current = {}, nil
+  for _, line in ipairs(vim.fn.readfile(config)) do
+    line = line:gsub("#.*$", "")
+    if line:match("^%s*%[") then
+      current = line:match("^%s*%[formatter%.") and {} or nil
+      table.insert(sections, current)
+    elseif current then
+      table.insert(current, line)
+    end
+  end
+
+  local path = vim.fs.relpath(root, file)
+  local function matches(text, key)
+    for list in text:gmatch(key .. "%s*=%s*(%b[])") do
+      for glob in list:gmatch("[\"']([^\"']+)[\"']") do
+        if vim.fn.match(path, vim.fn.glob2regpat(glob)) ~= -1 then
+          return true
+        end
+      end
+    end
+    return false
+  end
+
+  for _, lines in ipairs(sections) do
+    local text = table.concat(lines, "\n")
+    if matches(text, "includes") and matches(text, "excludes") then
+      return true
+    end
+  end
+  return false
+end
+
 -- treefmt fails on a file no formatter matches. Otherwise it reports how
 -- many files it handed to a formatter, which is none for an excluded file.
 local function treefmt_coverage(config, root, file)
@@ -33,7 +69,7 @@ local function treefmt_coverage(config, root, file)
     }, { cwd = root, stdin = "", text = true })
     :wait(PROBE_TIMEOUT_MS)
   if probe.code ~= 0 then
-    return Coverage.NONE
+    return treefmt_excludes(config, root, file) and Coverage.EXCLUDE or Coverage.NONE
   end
 
   return probe.stderr:find("emitted 1 files") and Coverage.FORMAT or Coverage.EXCLUDE

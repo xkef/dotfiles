@@ -1,6 +1,5 @@
 tap "tinted-theming/tinted" # tinty
 brew "git"                  # version control
-brew "curl"                 # URL data transfer
 brew "less"                 # pager (used as $PAGER)
 brew "gh"                   # GitHub from the command line
 brew "jq"                   # JSON processor
@@ -8,7 +7,7 @@ brew "age"                  # simple file encryption
 brew "fish"                 # shell
 brew "starship"             # cross-shell prompt
 brew "atuin"                # shell history search/sync
-brew "fzf"                  # fuzzy finder
+brew "fzf"                  # fuzzy finder (yazi's z key)
 brew "television"           # fuzzy finder with channels
 brew "zoxide"               # smarter cd with frecency
 brew "tmux"                 # terminal multiplexer, where WezTerm isn't
@@ -28,7 +27,6 @@ brew "sd"                   # intuitive find-and-replace (sed alt)
 brew "dust"                 # disk usage viewer (du alt)
 brew "duf"                  # disk free viewer (df alt)
 brew "procs"                # modern ps replacement
-brew "trash"                # move files to trash instead of rm
 brew "ouch"                 # compress/decompress archives
 brew "delta"                # syntax-highlighting diff pager
 brew "difftastic"           # structural diff tool
@@ -42,9 +40,11 @@ brew "go"                   # Go (go.mod pins newer toolchains)
 brew "uv"                   # Python package and version manager
 brew "python"               # Python for scripts outside projects
 brew "node"                 # Node.js for npx outside projects
-brew "rumdl"                # markdown linter (LazyVim in every buffer)
-brew "dprint"               # markdown formatter (LazyVim in every buffer)
-brew "jdtls"                # Java language server
+brew "rumdl"                # markdown linter and formatter (LazyVim, with a rumdl config)
+brew "dprint"               # formatter (LazyVim, with a dprint config)
+brew "stylua"               # Lua formatter (helix)
+brew "taplo"                # TOML formatter (helix)
+brew "jdtls"                # Java language server (helix; nvim uses Mason's)
 cask "kotlin-lsp"           # Kotlin language server
 brew "podman"               # rootless container engine
 brew "lazydocker"           # terminal UI for Docker/Podman

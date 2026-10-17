@@ -4,12 +4,12 @@ status is-interactive; or return
 # fish defaults, listed here for the keys reference.
 # @key shell :: Ctrl-A / E :: Beginning / end of line
 # @key shell :: Alt-F / B :: Forward / backward one word
-# @key shell :: Ctrl-W :: Delete word backward
+# @key shell :: Ctrl-W :: Delete path component backward
 # @key shell :: Alt-D :: Delete word forward
 # @key shell :: Ctrl-K :: Kill to end of line
 # @key shell :: Ctrl-U :: Kill entire line
 # @key shell :: Ctrl-Y :: Yank last killed text
-# @key shell :: Ctrl-P / N :: Prefix history search (also arrows)
+# @key shell :: Ctrl-P / N :: History search (also arrows)
 # @key shell :: Alt-H :: Context-aware man page (run-help)
 # @key shell :: Alt-. :: Insert last argument
 # @key shell :: Alt-S :: Prepend sudo

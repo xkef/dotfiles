@@ -18,11 +18,11 @@ command = "podman inspect '{split:\t:0}' | jq -C '.[0] | {Name, State, Config: {
 layout = "portrait"
 
 [keybindings]
-ctrl-s = "actions:start"
+alt-s = "actions:start"
 f2 = "actions:stop"
-ctrl-r = "actions:restart"
-ctrl-l = "actions:logs"
-ctrl-e = "actions:exec"
+alt-r = "actions:restart"
+alt-l = "actions:logs"
+alt-e = "actions:exec"
 alt-d = "actions:remove"
 
 [actions.start]

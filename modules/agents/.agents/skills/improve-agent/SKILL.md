@@ -31,10 +31,10 @@ transcripts under `<id>/subagents/`. Lima sessions live under
 `~/.local/state/agents/lima-<vm>/claude-projects/` in the same layout.
 
 The environment column separates this machine from `lima-<vm>`. They differ:
-nono confines the agent here and prompts guard its tools, while the VM confines
-it in Lima and prompts stay off. In Lima a blocked read shows up as
-`No such file or directory` on a host path the VM doesn't share, not as a
-permission error.
+nono confines the agent here and prompts guard its tools, while the VM and
+nono's profile `vm` confine it in Lima and prompts stay off. In Lima a blocked
+read shows up as `No such file or directory` on a host path the VM doesn't
+share, not as a permission error.
 
 ## 2. Analyze
 

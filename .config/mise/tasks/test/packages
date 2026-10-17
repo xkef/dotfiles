@@ -12,23 +12,32 @@ fail() {
   exit 1
 }
 
-# Stubs make the installer take the macOS path with a failing cask.
+# Stubs make the installer take the macOS path. brew fails on the list
+# whose file name matches BREW_FAIL.
 mkdir "$tmp/bin"
 printf '#!/bin/sh\necho Darwin\n' >"$tmp/bin/uname"
 cat >"$tmp/bin/brew" <<'EOF'
 #!/bin/sh
 echo "$*" >>"$BREW_LOG"
-case "$*" in *desktop.Brewfile*) exit 1 ;; esac
+case "$*" in *"$BREW_FAIL"*) exit 1 ;; esac
 EOF
 chmod +x "$tmp/bin"/*
 export PATH="$tmp/bin:$PATH" BREW_LOG="$tmp/brew.log" CI=false DOTFILES_PACKAGES="core desktop"
+export BREW_FAIL=desktop.casks
 export XDG_STATE_HOME="$tmp/state"
 
 status=0
 setup/packages/install 2>/dev/null || status=$?
 [ "$status" = "$EX_TEMPFAIL" ] || fail "cask failure exited $status, not $EX_TEMPFAIL"
-grep -q core.Brewfile "$BREW_LOG" || fail "selected core list skipped"
-! grep -q agents.Brewfile "$BREW_LOG" || fail "unselected agents list installed"
+grep -q core "$BREW_LOG" || fail "selected core list skipped"
+! grep -q agents "$BREW_LOG" || fail "unselected agents list installed"
+
+# A failed formula fails the install, even in a list that also holds a
+# cask.
+status=0
+BREW_FAIL=core.formulae setup/packages/install 2>/dev/null || status=$?
+[ "$status" != 0 ] && [ "$status" != "$EX_TEMPFAIL" ] ||
+  fail "formula failure exited $status, not a hard failure"
 
 # onchange passes the status through and records no stamp, so the next
 # run installs again.
@@ -39,7 +48,7 @@ setup/onchange packages setup/packages/install -- setup/packages/install 2>/dev/
 
 : >"$BREW_LOG"
 setup/onchange packages setup/packages/install -- setup/packages/install 2>/dev/null || true
-grep -q 'desktop.Brewfile' "$BREW_LOG" || fail "second run skipped the retry"
+grep -q desktop.casks "$BREW_LOG" || fail "second run skipped the retry"
 
 # A complete install records the stamp, and the next run skips.
 setup/onchange ok setup/packages/install -- true

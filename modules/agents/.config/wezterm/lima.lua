@@ -1,8 +1,8 @@
 -- Keeps new panes in the Lima VM from ~/.config/lima/dev.yaml. A pane runs
 -- in the VM when its shell reports the lima-dev host through OSC 7. Splits
--- and new tabs of that pane run `limactl shell dev` in the same directory,
+-- and new tabs of that pane run `lima-agent pane` in the same directory,
 -- which exists in the guest because `lima-agent` copies repositories to
--- their host paths.
+-- their host paths, and stay in its nono sandbox.
 -- Every pane stays in the local mux. The desktop package reaches this
 -- file through vm.lua.
 local wezterm = require("wezterm")
@@ -16,7 +16,6 @@ local VM = "dev"
 M.HOST = "lima-" .. VM
 -- The shield that marks sandbox panes in tab titles and the status line.
 M.MARK = ""
-local SHELL = { "limactl", "shell", VM }
 
 -- The directory for pasted images, which the VM mounts at the same path.
 local CLIPBOARD_DIR = wezterm.home_dir .. "/.cache/lima-clipboard"
@@ -67,7 +66,7 @@ end
 function M.split(action, direction)
   return wezterm.action_callback(function(window, pane)
     local dir = vm_dir(pane)
-    local split = dir and act.SplitPane({ direction = direction, command = { args = SHELL, cwd = dir } }) or action
+    local split = dir and act.SplitPane({ direction = direction, command = { args = { "lima-agent", "pane", dir }, cwd = dir } }) or action
     window:perform_action(split, pane)
   end)
 end
@@ -76,7 +75,7 @@ end
 function M.tab(action)
   return wezterm.action_callback(function(window, pane)
     local dir = vm_dir(pane)
-    local spawn = dir and act.SpawnCommandInNewTab({ args = SHELL, cwd = dir }) or action
+    local spawn = dir and act.SpawnCommandInNewTab({ args = { "lima-agent", "pane", dir }, cwd = dir }) or action
     window:perform_action(spawn, pane)
   end)
 end

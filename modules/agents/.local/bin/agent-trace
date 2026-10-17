@@ -15,8 +15,8 @@
 # it ran. --since drops what happened before an ISO 8601 date, such as
 # 2026-09-26, so a restructured repository reports on its current layout. Every row names its environment: this machine's host name, or
 # lima-<vm>. The two differ in sandbox and permissions. Here nono confines
-# the agent and prompts guard its tools. In Lima the VM confines it and
-# prompts stay off.
+# the agent and prompts guard its tools. In Lima the VM and nono's profile
+# vm confine it and prompts stay off.
 #
 # `list` prints id, environment, start, permission mode, error count,
 # denial count, and title per session. `errors` prints session,

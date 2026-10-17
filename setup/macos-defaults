@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# macOS developer defaults. Run once on a fresh install or after a major
-# upgrade. Curated from mathiasbynens/dotfiles, wincent/wincent, and
+# macOS developer defaults. setup/onchange reruns it when this file
+# changes. Curated from mathiasbynens/dotfiles, wincent/wincent, and
 # paulirish/dotfiles.
 #
 # Usage:
@@ -216,7 +216,7 @@ apply com.apple.desktopservices DSDontWriteUSBStores -bool true
 $DRY_RUN || log "Spotlight..."
 
 # Categories in menu order, 1 for on. Spotlight is a launcher here, so
-# only apps, settings panes, and the calculator and converter
+# only apps, settings panes, and the calculator, converter, and dictionary
 # answers stay on. File categories stay off so a document that shares an
 # app's name can't take the top hit. MENU_SPOTLIGHT_SUGGESTIONS stays off
 # so queries never leave the machine.

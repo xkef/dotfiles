@@ -27,8 +27,30 @@ pager = "delta"
 diff-formatter = ":git"
 
 # ── Diff and merge tools ────────────────────────────
+# A merge tool takes no env, so env names the config here. The args are
+# jj's vimdiff defaults.
 [merge-tools.vimdiff]
-program = "nvim"
+program = "env"
+merge-args = [
+  "NVIM_APPNAME=lazyvim",
+  "nvim",
+  "-f",
+  "-d",
+  "$output",
+  "-M",
+  "$left",
+  "$base",
+  "$right",
+  "-c",
+  "wincmd J",
+  "-c",
+  "set modifiable",
+  "-c",
+  "set write",
+  "-c",
+  "/<<<<<</+2",
+]
+edit-args = ["NVIM_APPNAME=lazyvim", "nvim", "-f", "-d", "$left", "$right"]
 
 # ── Git interop ──────────────────────────────────────
 [git]

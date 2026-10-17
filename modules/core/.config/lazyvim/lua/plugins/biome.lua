@@ -1,4 +1,4 @@
--- Biome diagnostics next to vtsls. lspconfig runs the project's
+-- Biome diagnostics next to tsc. lspconfig runs the project's
 -- node_modules/.bin/biome when there is one.
 return {
   {

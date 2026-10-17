@@ -3,10 +3,8 @@
 # ── Font ──────────────────────────────────────────────
 font-family = JetBrainsMono Nerd Font
 font-size = 14
-font-thicken = false
 font-feature = calt
 adjust-cell-height = 20%
-bold-is-bright = false
 minimum-contrast = 1.1
 
 # ── Input ─────────────────────────────────────────────
@@ -16,10 +14,10 @@ macos-option-as-alt = left
 
 # ── Theme ─────────────────────────────────────────────
 # Tracked default only. `theme` switches schemes through tinty, whose
-# ghostty hook links the tinted-terminal file for the current scheme
-# to the untracked ./theme and reloads Ghostty. The optional include loads
-# after this file, so it wins. The path is absolute because this file is a
-# link into the dotfiles repo.
+# ghostty hook writes the untracked ./theme, a link to the scheme's
+# tinted-terminal file or a `theme =` line for a built-in scheme, and
+# reloads Ghostty. The optional include loads after this file, so it wins.
+# The path is absolute because this file is a link into the dotfiles repo.
 theme = Catppuccin Frappe
 config-file = ?~/.config/ghostty/theme
 
@@ -30,7 +28,6 @@ window-padding-balance = true
 window-decoration = true
 macos-titlebar-style = hidden
 window-theme = ghostty
-background-opacity = 1
 unfocused-split-opacity = 0.9
 confirm-close-surface = false
 
@@ -41,13 +38,10 @@ shell-integration-features = cursor,sudo,title,ssh-env
 
 # ── Clipboard ────────────────────────────────────────
 clipboard-read = allow
-clipboard-write = allow
-clipboard-paste-protection = true
 copy-on-select = clipboard
 
 # ── Mouse ─────────────────────────────────────────────
 mouse-hide-while-typing = true
-link-url = true
 
 # ── Terminal ──────────────────────────────────────────
 scrollback-limit = 50000
@@ -66,7 +60,6 @@ keybind = ctrl+shift+zero=reset_font_size
 keybind = ctrl+shift+f=toggle_fullscreen
 
 # ── Quick terminal ─────────────────────────────────
-quick-terminal-position = top
 quick-terminal-size = 50%
 keybind = global:ctrl+grave_accent=toggle_quick_terminal
 

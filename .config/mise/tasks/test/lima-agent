@@ -28,6 +28,7 @@ EOF
 cat >"$tmp/bin/nono" <<'EOF'
 #!/bin/sh
 [ ! -d "$HOME/.local/share/atuin" ] || echo atuin >"$NONO_LOG"
+echo "$*" >>"$NONO_LOG"
 EOF
 chmod +x "$tmp/bin/limactl" "$tmp/bin/nono"
 cp modules/agents/.config/nono/profiles/vm.json "$tmp/home/.config/nono/profiles/"
@@ -36,4 +37,11 @@ script=$PWD/modules/agents/.local/bin/lima-agent
 export HOME="$tmp/home" NONO_LOG="$tmp/nono.log" PATH="$tmp/bin:$PATH"
 (cd "$tmp/cwd" && GIT_CEILING_DIRECTORIES="$tmp" "$script" shell)
 grep -sqx atuin "$NONO_LOG" || fail "the session started before the granted directories existed"
+
+# A split or new tab of a VM pane opens fish in the same sandbox, with
+# write access to the directory's repository copy.
+: >"$NONO_LOG"
+(cd "$tmp" && GIT_CEILING_DIRECTORIES="$tmp" "$script" pane "$tmp/cwd")
+grep -sq -- "--profile vm.* --allow $tmp/cwd -- fish -l" "$NONO_LOG" ||
+  fail "a split of a VM pane ran outside nono: $(cat "$NONO_LOG")"
 echo "lima-agent ok"

@@ -1,7 +1,8 @@
 -- A GUI app launched from the Dock inherits launchd's PATH,
 -- /usr/bin:/bin:/usr/sbin:/sbin, which misses Homebrew and ~/.local/bin.
 -- Panes get this PATH, so leader overlays such as lazygit resolve, and
--- helpers that WezTerm runs itself, such as zoxide, run through `env` with it.
+-- helpers that WezTerm runs itself, such as mux-sysstat, run through `env`
+-- with it.
 local wezterm = require("wezterm")
 
 local M = {}

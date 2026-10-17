@@ -47,14 +47,15 @@ return {
       opts.linters_by_ft.markdown = { "rumdl", "vale" }
       opts.linters_by_ft["markdown.mdx"] = { "rumdl", "vale" }
 
-      -- vale merges the global config into a project config unless told
-      -- not to.
       opts.linters = opts.linters or {}
       opts.linters.rumdl = configured(RUMDL_CONFIGS, {})
 
       -- nvim-lint reads rumdl's JSON from stderr, but rumdl writes it to
       -- stdout, so no rumdl diagnostic ever appeared.
       opts.linters.rumdl.stream = "stdout"
+
+      -- vale merges the global config into a project config unless told
+      -- not to.
       opts.linters.vale = configured(VALE_CONFIGS, { "--no-global" })
     end,
   },
@@ -82,7 +83,7 @@ return {
     "mason-org/mason.nvim",
     opts = function(_, opts)
       opts.ensure_installed = vim.tbl_filter(function(tool)
-        return tool ~= "markdownlint-cli2"
+        return tool ~= "markdownlint-cli2" and tool ~= "markdown-toc"
       end, opts.ensure_installed or {})
     end,
   },

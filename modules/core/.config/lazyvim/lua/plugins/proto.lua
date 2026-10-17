@@ -1,4 +1,5 @@
--- buf's built-in language server, which the mise shims resolve per project.
+-- buf's built-in language server. Mason installs buf, and its bin dir comes
+-- first on PATH.
 return {
   {
     "nvim-treesitter/nvim-treesitter",

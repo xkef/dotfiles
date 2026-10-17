@@ -1,5 +1,5 @@
 {
-  "$schema": "https://nono.dev/schemas/nono-profile.schema.json",
+  "$schema": "https://nono.sh/schemas/nono-profile.schema.json",
   "extends": "agents",
   "filesystem": {
     "allow": [

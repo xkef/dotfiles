@@ -13,7 +13,7 @@ command = "tldr '{0}' --color always"
 layout = "portrait"
 
 [keybindings]
-ctrl-e = "actions:open"
+alt-e = "actions:open"
 
 [actions.open]
 description = "Open the selected TLDR page"

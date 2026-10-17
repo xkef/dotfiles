@@ -31,7 +31,7 @@ The configs live in three packages under `modules/`: `core`, `desktop`, and
 | [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)                   | Editor with the LazyVim distro, kickstart as fallback      |
 | [WezTerm](https://wezterm.org)                                                     | Terminal and multiplexer, with an agent picker             |
 | [Ghostty](https://ghostty.org)                                                     | Terminal for tmux sessions, themed with the rest           |
-| [tmux](https://github.com/tmux/tmux) + [sesh](https://github.com/joshmedeski/sesh) | Multiplexer outside WezTerm, on the same keys              |
+| [tmux](https://github.com/tmux/tmux) + [sesh](https://github.com/joshmedeski/sesh) | Multiplexer outside WezTerm, on the same leader key        |
 | [tinty](https://github.com/tinted-theming/tinty)                                   | Color themes for the terminal, Neovim, delta, and pi       |
 | [television](https://github.com/alexpasmantier/television)                         | Fuzzy finder in the shell and WezTerm pickers              |
 | [atuin](https://atuin.sh)                                                          | Searchable shell history with sync                         |
@@ -44,7 +44,8 @@ The configs live in three packages under `modules/`: `core`, `desktop`, and
 ## Keys
 
 Neovim uses `Space` as leader, and WezTerm and tmux use `Ctrl-Space`. `leader ?`
-in any of them lists the bindings.
+in WezTerm and tmux lists the bindings, and `Space` in Neovim opens the
+which-key menu.
 
 `dots theme` switches WezTerm, Ghostty, Neovim, delta, and pi together through
 tinty.

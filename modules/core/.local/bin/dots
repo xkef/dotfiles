@@ -15,7 +15,7 @@ switch $argv[1]
             or return
         end
         jj -R $DOTFILES_DIR git fetch
-        and jj -R $DOTFILES_DIR rebase -d 'trunk()'
+        and jj -R $DOTFILES_DIR rebase -o 'trunk()'
         and dots apply $argv[2..-1]
     case diff
         # --dry-run prints each change without making it.

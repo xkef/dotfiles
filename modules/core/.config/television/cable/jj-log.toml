@@ -16,13 +16,13 @@ command = "jj show --color=always '{strip_ansi|split:\t:0}'"
 
 [keybindings]
 enter = "actions:edit"
-ctrl-i = "actions:insert_before"
-ctrl-a = "actions:insert_after"
+alt-i = "actions:insert_before"
+alt-a = "actions:insert_after"
 ctrl-shift-d = "actions:diff"
-ctrl-s = "actions:squash"
+alt-s = "actions:squash"
 alt-d = "actions:abandon"
-ctrl-e = "actions:describe"
-ctrl-b = "actions:rebase"
+alt-e = "actions:describe"
+alt-b = "actions:rebase"
 
 [actions.edit]
 description = "Edit the selected change (move working copy to it)"
@@ -62,5 +62,5 @@ mode = "execute"
 
 [actions.rebase]
 description = "Rebase the selected change onto the working copy"
-command = "jj rebase -r '{strip_ansi|split:\t:0}' -d @"
+command = "jj rebase -r '{strip_ansi|split:\t:0}' -o @"
 mode = "execute"

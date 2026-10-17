@@ -90,7 +90,6 @@ style = 'purple'
 command = '''jj --ignore-working-copy log --no-graph -r @ -T 'separate("", if(conflict, "⚠ "), if(empty, "∅ "), if(diff.files().filter(|f| f.status()=="added").len() > 0, "+" ++ diff.files().filter(|f| f.status()=="added").len() ++ " "), if(diff.files().filter(|f| f.status()=="modified").len() > 0, "!" ++ diff.files().filter(|f| f.status()=="modified").len() ++ " "), if(diff.files().filter(|f| f.status()=="deleted").len() > 0, "-" ++ diff.files().filter(|f| f.status()=="deleted").len() ++ " "))' 2>/dev/null'''
 when = 'jj --ignore-working-copy root 2>/dev/null'
 format = '($output)'
-style = 'yellow'
 
 [custom.cwd]
 command = 'basename "$PWD"'

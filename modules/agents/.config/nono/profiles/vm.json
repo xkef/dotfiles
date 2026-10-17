@@ -1,5 +1,5 @@
 {
-  "$schema": "https://nono.dev/schemas/nono-profile.schema.json",
+  "$schema": "https://nono.sh/schemas/nono-profile.schema.json",
   "extends": "default",
   "groups": {
     "include": [
@@ -60,7 +60,7 @@
     "af_unix_mediation": "pathname"
   },
   "meta": {
-    "description": "Claude Code in the Lima VM: writes reach only the repository copy, the agent state, and caches",
+    "description": "Claude Code in the Lima VM: writes reach only the repository copy, Claude Code's config, the agent state, shell and tool data, caches, and /tmp",
     "name": "vm",
     "version": "1.0.0"
   }

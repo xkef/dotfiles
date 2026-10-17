@@ -59,10 +59,9 @@ END {
   n = split(sections["shell"], lines, "\n")
   for (i = 1; i < n; i++) { split(lines[i], f, "\t"); printf "| %-13s | %-38s |\n", f[1], f[2] }
   print ""
-  print "### Modern aliases"
+  print "### Aliases"
   print ""
-  print "`extract` / `compress` ouch | `cat` bat | `ls` eza |"
-  print "`du` dust | `df` duf | `ps` procs"
+  print "`cat` bat | `ls` `ll` `la` `lt` eza"
 }
 ' $sources)
 

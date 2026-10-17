@@ -1,7 +1,7 @@
 -- Java always uses 2-space indent (Google style)
 vim.opt_local.shiftwidth = 2
 vim.opt_local.tabstop = 2
-vim.opt_local.makeprg = "mvnd clean compile"
+vim.opt_local.makeprg = (vim.fn.executable("mvnd") == 1 and "mvnd" or "mvn") .. " clean compile"
 vim.opt_local.errorformat = "[ERROR] %f:[%l\\,%c] %m"
 
 local IMPORT_FOLD_LEVEL = 20

@@ -149,6 +149,6 @@
 [include]
 	path = ~/.config/git/identity
 
-# ── Local overrides: identity, signing ───────────────
+# ── Local overrides ──────────────────────────────────
 [include]
 	path = ~/.config/git/config.local

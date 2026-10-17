@@ -5,8 +5,9 @@
 # The default theme uses ANSI color names, so it follows the tinty scheme.
 theme = "default"
 
-# Channels bind their destructive actions to Alt-D and Alt-U, so Ctrl-D and
-# Ctrl-U scroll the preview in every channel.
+# Channels bind their actions to Alt keys, so tv's Ctrl keys work in every
+# channel and Ctrl-D and Ctrl-U scroll the preview. The session pickers keep
+# Ctrl-W to kill.
 [keybindings]
 ctrl-d = "scroll_preview_half_page_down"
 ctrl-u = "scroll_preview_half_page_up"
