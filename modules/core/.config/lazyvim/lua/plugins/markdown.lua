@@ -1,15 +1,15 @@
--- Replaces the LazyVim markdown extra's markdownlint-cli2 with rumdl for
--- linting and dprint for formatting, and adds vale for prose. All three come
--- from Homebrew or pacman, and a project's mise.toml can pin its own
--- versions through the mise shims. rumdl and vale run only in a project
--- with its own config.
+-- Replaces the LazyVim markdown extra's markdownlint-cli2 with rumdl, and
+-- adds vale for prose. Both come from Homebrew or pacman, and a project's
+-- mise.toml can pin its own versions through the mise shims. rumdl and vale
+-- run only in a project with its own config. rumdl formats a file that the
+-- project's treefmt or dprint config doesn't cover, as format.lua decides.
 
 -- Both tools search for config from the working directory, not from the
 -- file, so the linter passes the file's project config explicitly. The
--- search stops below $HOME so a user-level config such as
--- ~/.config/vale/.vale.ini never counts as a project config. The dotfiles
--- repo keeps its vale config at .config/vale/.vale.ini.
-local VALE_CONFIGS = { ".vale.ini", "_vale.ini", ".config/vale/.vale.ini" }
+-- dotfiles repo keeps its vale config at .config/vale/.vale.ini.
+local project = require("project")
+
+local VALE_CONFIGS = { ".vale.ini", "_vale.ini", ".config/vale/.vale.ini", ".config/vale/vale.ini" }
 local RUMDL_CONFIGS = {
   ".rumdl.toml",
   "rumdl.toml",
@@ -22,32 +22,17 @@ local RUMDL_CONFIGS = {
   ".markdownlint-cli2.yaml",
 }
 
-local function project_config(file, names)
-  for dir in vim.fs.parents(file) do
-    if dir == vim.env.HOME then
-      return nil
-    end
-
-    for _, name in ipairs(names) do
-      local path = vim.fs.joinpath(dir, name)
-      if vim.uv.fs_stat(path) then
-        return path
-      end
-    end
-  end
-end
-
 -- Linter overrides that skip files outside a configured project and point
 -- the tool at the project config.
 local function configured(names, args)
   return {
     condition = function(ctx)
-      return project_config(ctx.filename, names) ~= nil
+      return project.config(ctx.filename, names) ~= nil
     end,
     prepend_args = vim.list_extend(args, {
       "--config",
       function()
-        return project_config(vim.api.nvim_buf_get_name(0), names)
+        return (project.config(vim.api.nvim_buf_get_name(0), names))
       end,
     }),
   }
@@ -78,8 +63,19 @@ return {
     optional = true,
     opts = function(_, opts)
       opts.formatters_by_ft = opts.formatters_by_ft or {}
-      opts.formatters_by_ft.markdown = { "dprint" }
-      opts.formatters_by_ft["markdown.mdx"] = { "dprint" }
+      opts.formatters_by_ft.markdown = { "rumdl" }
+      opts.formatters_by_ft["markdown.mdx"] = { "rumdl" }
+
+      opts.formatters = opts.formatters or {}
+      opts.formatters.rumdl = {
+        condition = function(_, ctx)
+          return project.config(ctx.filename, RUMDL_CONFIGS) ~= nil
+        end,
+        args = function(_, ctx)
+          local config = project.config(ctx.filename, RUMDL_CONFIGS)
+          return { "fmt", "--config", config, "--stdin-filename", "$FILENAME", "-" }
+        end,
+      }
     end,
   },
   {
