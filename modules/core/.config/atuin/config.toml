@@ -10,13 +10,33 @@ max_preview_height = 0
 exit_mode = "return-query"
 
 # Keep credentials out of synced history. secrets_filter (on by default)
-# catches known token formats. These patterns catch inline assignments
-# such as `API_KEY=abc cmd` or `set -x GH_TOKEN abc`, and auth headers.
-# A value that starts with `$` or `(` comes from a substitution and stays.
+# catches known token formats, age keys and 1Password tokens among them.
+# These patterns catch secrets without a known format, passed inline:
+#
+#   API_KEY=abc cmd             set -x GH_TOKEN abc
+#   cmd --password abc          sshpass -p abc, mysql -pabc, x login -p abc
+#   curl -u user:abc            openssl -passin pass:abc, ssh-keygen -N abc
+#   security add-... -w abc     op item edit x 'pw[password]=abc'
+#   kubectl create secret ... --from-literal, gh secret set -b, sops --set
+#   echo abc | x login --password-stdin
+#
+# A value that starts with `$`, `(`, or `<` comes from a substitution or
+# a file and stays.
 history_filter = [
-  '(?i)[a-z0-9_]*(token|secret|passw(or)?d|api_?key)[a-z0-9_]*=[^$(\s]',
-  '(?i)\bset\s+(-\w+\s+)*[a-z0-9_]*(token|secret|passw(or)?d|api_?key)[a-z0-9_]*\s+[^$(\s]',
+  '(?i)[a-z0-9_]*(token|secret|passw(or)?d|passphrase|api_?key|private_?key|op_session)[a-z0-9_]*=[^$(\s<]',
+  '(?i)\bset\s+(-\w+\s+)*[a-z0-9_]*(token|secret|passw(or)?d|passphrase|api_?key|private_?key|op_session)[a-z0-9_]*\s+[^$(\s<-]',
   '(?i)authorization:\s*(bearer|basic|token)\s',
+  '''(?i)--([a-z0-9]+-)*(passw(or)?d|passphrase|token|api-?key|client-secret)[= ]+["']?[^$(\s"'<-]''',
+  '''(?i)\b(sshpass|login)\s(.*\s)?-p\s+["']?[^$(\s"'<-]''',
+  '''\b(mysql|mysqldump|mariadb)\s(.*\s)?-p["']?[^$(\s"'<-]''',
+  '''\bcurl\s(.*\s)?(-u|--user)[= ]?\s*["']?[^$(\s"':]+:[^$(\s"']''',
+  '''-pass(in|out)?\s+pass:[^$(\s]''',
+  '''\bssh-keygen\s.*-N\s*["']?[^$(\s"'-]''',
+  '''\bsecurity\s+add-\w+-password\s.*\s-w\s+["']?[^$(\s"']''',
+  '''(?i)\[(password|concealed)\]=[^$(\s"']''',
+  '''\bsecret\s.*(--from-literal|\s-b\s|--body)''',
+  '''\bsops\s.*--set\b''',
+  '''\b(echo|printf)\s+["']?[^$(\s"'-][^|]*\|.*(--password-stdin|--with-token)''',
 ]
 
 [logs]
