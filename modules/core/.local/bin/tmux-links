@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# Link picker for tmux. Collects the links in a pane's last HISTORY_LINES
+# lines, newest first, and opens the picked ones. It reads OSC 8 links
+# too, such as delta's file links behind line numbers.
+#
+#   tmux-links [PANE-ID]  pick from the pane's links
+#   tmux-links --clicked  open the link in the @clicked-link option
+#
+# Without a pane id it reads the active pane, the one under the popup.
+#
+# A file link opens in nvim, at the line when it ends in :LINE as delta's
+# do. Other links go to the system opener.
+set -euo pipefail
+
+readonly HISTORY_LINES=2000
+# An OSC 8 sequence, ESC ] 8 ; params ; URI ESC \, or a plain URL.
+readonly LINK_PATTERN='\x1b\]8;[^;]*;([^\x1b]+)\x1b\\|((?:https?|ftp|file)://[^\s<>"`'"'"'\x1b]+)'
+
+open_link() {
+  local uri=$1
+
+  if [[ $uri != file://* ]]; then
+    case "$(uname)" in
+    Darwin) open "$uri" >/dev/null 2>&1 ;;
+    *) xdg-open "$uri" >/dev/null 2>&1 ;;
+    esac
+    return
+  fi
+
+  # file:///a/b:12 and file://host/a/b:12 both name /a/b at line 12.
+  local path=${uri#file://}
+  path=/${path#*/}
+  local line=1
+  if [[ $path =~ ^(.*):([0-9]+)$ ]]; then
+    path=${BASH_REMATCH[1]}
+    line=${BASH_REMATCH[2]}
+  fi
+  nvim "+$line" "$path"
+}
+
+if [ "${1:-}" = --clicked ]; then
+  open_link "$(tmux show -gv @clicked-link)"
+  exit 0
+fi
+
+pane=${1:-$(tmux display -p '#{pane_id}')}
+
+# Trims trailing punctuation that ends a sentence rather than the URL, and
+# a closing parenthesis without a match in the URL, so "(see
+# https://x.org/a_(b))." yields https://x.org/a_(b). Then reverses the
+# lines and drops repeats.
+links=$(tmux capture-pane -p -e -J -S "-$HISTORY_LINES" -t "$pane" |
+  { rg -o --no-line-number -r '$1$2' "$LINK_PATTERN" || true; } |
+  awk '{
+    sub(/[.,;:!?]+$/, "")
+    while (/\)$/ && gsub(/\(/, "(") < gsub(/\)/, ")")) {
+      sub(/\)$/, "")
+      sub(/[.,;:!?]+$/, "")
+    }
+    line[NR] = $0
+  } END { for (i = NR; i > 0; i--) if (!seen[line[i]]++) print line[i] }')
+
+if [ -z "$links" ]; then
+  echo "No links in the last $HISTORY_LINES lines"
+  sleep 1
+  exit 0
+fi
+
+# Tab marks more than one link.
+picked=$(printf '%s\n' "$links" | tv \
+  --no-sort --no-remote --no-preview \
+  --input-header 'Open link')
+[ -n "$picked" ] || exit 0
+
+while IFS= read -r link; do
+  open_link "$link"
+done <<<"$picked"
