@@ -6,12 +6,8 @@ $character"""
 
 right_format = """
 $directory\
-${custom.git}\
-${custom.jj_change}\
-${custom.jj_status}\
-${custom.java}\
-$python\
-$nodejs"""
+$vcs\
+$python"""
 
 [directory]
 truncation_length = 8
@@ -20,15 +16,12 @@ fish_style_pwd_dir_length = 1
 truncation_symbol = '…/'
 style = 'dimmed cyan'
 
-# In colocated jj repos the jj modules render the prompt, and git info, a
-# detached " HEAD" and duplicate status counts, adds noise. Built-in modules
-# can't depend on external state, so this wrapper shells back into
-# `starship module`, which reuses the [git_*] sections below, and renders
-# only outside jj repos.
-[custom.git]
-command = 'starship module git_branch; starship module git_status; starship module git_metrics'
-when = '! jj --ignore-working-copy root >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1'
-format = '$output'
+# In colocated repos jj comes first, so the git modules, with a detached
+# " HEAD" and duplicate status counts, render only outside jj repos.
+[vcs]
+order = ['jj', 'git']
+git_modules = '$git_branch$git_status$git_metrics'
+jj_modules = '$jj_change$jj_bookmark$jj_status$jj_metrics'
 
 [git_branch]
 format = '[$symbol$branch]($style) '
@@ -51,45 +44,39 @@ disabled = false
 added_style = 'green'
 deleted_style = 'red'
 
-[custom.java]
-command = 'mise current java 2>/dev/null'
-detect_extensions = ['java', 'class', 'gradle', 'jar', 'cljs', 'cljc']
-detect_files = [
-  'pom.xml',
-  'build.gradle.kts',
-  'build.sbt',
-  '.java-version',
-  'deps.edn',
-  'project.clj',
-  'build.boot',
-  '.sdkmanrc',
-]
-format = '[ $output]($style) '
-style = 'red'
-
+# Shows only an active virtualenv, without a version probe. Toolchain
+# versions are one `mise current` away.
 [python]
-format = '[$symbol($version)($virtualenv)]($style) '
-symbol = ' '
+format = '([$symbol$virtualenv]($style) )'
+symbol = ' '
+detect_extensions = []
+detect_files = []
+generic_venv_names = ['.venv', 'venv']
 
-[nodejs]
-format = '[$symbol($version)]($style) '
-symbol = ' '
+[jj_change]
+format = '[ ](purple)$change '
+prefix_style = 'bold purple'
+suffix_style = 'purple'
+change_hash_length = 8
 
-# --ignore-working-copy skips the working-copy snapshot, the cost that scales
-# with repo size. The prompt reflects the last snapshot, which any real jj
-# command refreshes.
-[custom.jj_change]
-command = '''jj --ignore-working-copy log --no-graph -r @ -T 'separate(" ", change_id.shortest(8), bookmarks.join(", "))' 2>/dev/null'''
-when = 'jj --ignore-working-copy root 2>/dev/null'
-format = '[ $output]($style) '
+[jj_bookmark]
+format = '[$bookmark(@$remote)$diverged( +$overflow_count)]($style) '
 style = 'purple'
 
-# Flags and added, modified, and deleted counts from one template call,
-# without a jj diff subprocess.
-[custom.jj_status]
-command = '''jj --ignore-working-copy log --no-graph -r @ -T 'separate("", if(conflict, "⚠ "), if(empty, "∅ "), if(diff.files().filter(|f| f.status()=="added").len() > 0, "+" ++ diff.files().filter(|f| f.status()=="added").len() ++ " "), if(diff.files().filter(|f| f.status()=="modified").len() > 0, "!" ++ diff.files().filter(|f| f.status()=="modified").len() ++ " "), if(diff.files().filter(|f| f.status()=="deleted").len() > 0, "-" ++ diff.files().filter(|f| f.status()=="deleted").len() ++ " "))' 2>/dev/null'''
-when = 'jj --ignore-working-copy root 2>/dev/null'
-format = '($output)'
+[jj_metrics]
+added_style = 'green'
+deleted_style = 'red'
+
+[jj_status]
+format = '($all)'
+conflicted = '[⚠ ](bold red)'
+description_empty = ''
+immutable = '[◆ ](yellow)'
+added = '[+${count}](green) '
+copied = '[=${count}](green) '
+deleted = '[-${count}](red) '
+modified = '[!${count}](red) '
+renamed = '[»${count}](yellow) '
 
 [custom.cwd]
 command = 'basename "$PWD"'
