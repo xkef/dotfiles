@@ -54,7 +54,9 @@ set -gx _ZO_EXCLUDE_DIRS "$HOME/Library/*:$HOME/.Trash/*:/tmp/*"
 
 # ── Pager ────────────────────────────────────────────
 set -gx PAGER less
-set -gx LESS '-iFMRX --mouse -#.25'
+# less underlines OSC 8 links, such as delta's line numbers. -DO- draws
+# them as plain text, and they stay clickable.
+set -gx LESS '-iFMRX --mouse -#.25 --use-color -DO-'
 
 # ── PATH ─────────────────────────────────────────────
 # One call in priority order. -m moves entries already in an inherited
