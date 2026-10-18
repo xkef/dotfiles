@@ -7,6 +7,12 @@ version = "1.3.2"
 backend = "aqua:FiloSottile/age"
 specifiers = ["1.3.2"]
 
+[tools.age."platforms.linux-arm64"]
+checksum = "sha256:6b8dc4333c53a5a57c9e5834e3a48f92605d7154014cd07269ff3327db5d37f4"
+url = "https://github.com/FiloSottile/age/releases/download/v1.3.2/age-v1.3.2-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/FiloSottile/age/releases/assets/535541932"
+provenance = "github-attestations"
+
 [tools.age."platforms.linux-x64"]
 checksum = "sha256:cbe24006683f8eb669266162894b9a522a1af52f2665fbc63a4bb032ed26ac10"
 url = "https://github.com/FiloSottile/age/releases/download/v1.3.2/age-v1.3.2-linux-amd64.tar.gz"
@@ -20,20 +26,26 @@ url_api = "https://api.github.com/repos/FiloSottile/age/releases/assets/53554189
 provenance = "github-attestations"
 
 [[tools.dprint]]
-version = "0.61.1"
+version = "0.62.0"
 backend = "aqua:dprint/dprint"
-specifiers = ["0.61.1"]
+specifiers = ["0.62.0"]
+
+[tools.dprint."platforms.linux-arm64"]
+checksum = "sha256:79025432b0fcfaa09fa1324a97a2cf4ec5d972175830fb496dc4be4f6a89340e"
+url = "https://github.com/dprint/dprint/releases/download/0.62.0/dprint-aarch64-unknown-linux-gnu.zip"
+url_api = "https://api.github.com/repos/dprint/dprint/releases/assets/629347825"
+provenance = "github-attestations"
 
 [tools.dprint."platforms.linux-x64"]
-checksum = "sha256:c33d901d2f5b81af680bce50902e7193e6c169f4f2dd6e1d41d3c5a96d70ecb4"
-url = "https://github.com/dprint/dprint/releases/download/0.61.1/dprint-x86_64-unknown-linux-gnu.zip"
-url_api = "https://api.github.com/repos/dprint/dprint/releases/assets/619786291"
+checksum = "sha256:9d2de0313bbfc26ed80148a38a430c037a216a905cdf317f6271f8a10311933a"
+url = "https://github.com/dprint/dprint/releases/download/0.62.0/dprint-x86_64-unknown-linux-gnu.zip"
+url_api = "https://api.github.com/repos/dprint/dprint/releases/assets/629347830"
 provenance = "github-attestations"
 
 [tools.dprint."platforms.macos-arm64"]
-checksum = "sha256:3fbf19db032dea2e8eb6e52eebbc8c328954a46d52ffd97d99a95b9c9b81414f"
-url = "https://github.com/dprint/dprint/releases/download/0.61.1/dprint-aarch64-apple-darwin.zip"
-url_api = "https://api.github.com/repos/dprint/dprint/releases/assets/619786284"
+checksum = "sha256:b0d4b4c9c2ea68f86caa044f139b898d2cd0c4080cdc8bf70be9454a8acfe0af"
+url = "https://github.com/dprint/dprint/releases/download/0.62.0/dprint-aarch64-apple-darwin.zip"
+url_api = "https://api.github.com/repos/dprint/dprint/releases/assets/629347839"
 provenance = "github-attestations"
 
 [[tools."github:SuperCuber/dotter"]]
@@ -57,26 +69,37 @@ url = "https://github.com/SuperCuber/dotter/releases/download/v0.13.5/dotter-mac
 url_api = "https://api.github.com/repos/SuperCuber/dotter/releases/assets/475859437"
 
 [[tools.rumdl]]
-version = "0.2.78"
+version = "0.2.79"
 backend = "aqua:rvben/rumdl"
-specifiers = ["0.2.78"]
+specifiers = ["0.2.79"]
+
+[tools.rumdl."platforms.linux-arm64"]
+checksum = "sha256:466b22a4fae861e104a31bfda940adf2a96d77ed683d7ed19c261cf7abc36094"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.79/rumdl-v0.2.79-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/625384614"
+provenance = "github-attestations"
 
 [tools.rumdl."platforms.linux-x64"]
-checksum = "sha256:5597ecab62c6cd50e63f85451fe4e763abc58195a3e7eff9186b6dfae890ca24"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.78/rumdl-v0.2.78-x86_64-unknown-linux-gnu.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/598548740"
+checksum = "sha256:82618d7c79c83b83781f7a30930402384fbf31d8b7ac071a63a3abccb0dbdef9"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.79/rumdl-v0.2.79-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/625384609"
 provenance = "github-attestations"
 
 [tools.rumdl."platforms.macos-arm64"]
-checksum = "sha256:450f00cdbf1da3bc3fbdf56c52dc9e6b2ab08bfd1ee6a26b44848e52a180dba5"
-url = "https://github.com/rvben/rumdl/releases/download/v0.2.78/rumdl-v0.2.78-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/598548745"
+checksum = "sha256:8c0ecf93a61bf612df5f6c6f22813d066a6f51a5680f3c12da49b93ed892aebb"
+url = "https://github.com/rvben/rumdl/releases/download/v0.2.79/rumdl-v0.2.79-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/rvben/rumdl/releases/assets/625384611"
 provenance = "github-attestations"
 
 [[tools.shellcheck]]
 version = "0.11.0"
 backend = "aqua:koalaman/shellcheck"
 specifiers = ["0.11.0"]
+
+[tools.shellcheck."platforms.linux-arm64"]
+checksum = "sha256:12b331c1d2db6b9eb13cfca64306b1b157a86eb69db83023e261eaa7e7c14588"
+url = "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.aarch64.tar.xz"
+url_api = "https://api.github.com/repos/koalaman/shellcheck/releases/assets/279056934"
 
 [tools.shellcheck."platforms.linux-x64"]
 checksum = "sha256:8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198"
@@ -93,6 +116,11 @@ version = "3.14.1"
 backend = "aqua:mvdan/sh"
 specifiers = ["3.14.1"]
 
+[tools.shfmt."platforms.linux-arm64"]
+checksum = "sha256:5f2db09dae91fca848f7adbdd014632e921a383863a2ad7e0450ad3aba0c6489"
+url = "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_linux_arm64"
+url_api = "https://api.github.com/repos/mvdan/sh/releases/assets/547320869"
+
 [tools.shfmt."platforms.linux-x64"]
 checksum = "sha256:76e77641faa025814b77f153b29796b8e6fa2fca03e0c76a691608b86c7ea7bf"
 url = "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_linux_amd64"
@@ -104,24 +132,33 @@ url = "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_darwi
 url_api = "https://api.github.com/repos/mvdan/sh/releases/assets/547320930"
 
 [[tools.stylua]]
-version = "2.5.2"
+version = "2.6.0"
 backend = "aqua:JohnnyMorganz/StyLua"
-specifiers = ["2.5.2"]
+specifiers = ["2.6.0"]
+
+[tools.stylua."platforms.linux-arm64"]
+checksum = "sha256:8e67539e5fdf7a81cd03cf592b0df18d3bb96ee17a5ea5d9bf67b86387b903b0"
+url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.6.0/stylua-linux-aarch64.zip"
+url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/628183586"
 
 [tools.stylua."platforms.linux-x64"]
-checksum = "sha256:ca6f1cf52eaf69e6632b81acef9c197aa24b85eb30d2455a35e7dbe28ae77c72"
-url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-linux-x86_64-musl.zip"
-url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421901066"
+checksum = "sha256:48ee7db28346f96f4bd545e190ab080a88a7b5a664e97649cf5d5c60426f402d"
+url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.6.0/stylua-linux-x86_64-musl.zip"
+url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/628184959"
 
 [tools.stylua."platforms.macos-arm64"]
-checksum = "sha256:92ff0889e16324801bc072692974bb67f8161e62010fc90f96c62a17f81f32c7"
-url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.5.2/stylua-macos-aarch64.zip"
-url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/421901102"
+checksum = "sha256:dab9b66d340ca5ffc8225211f1dcf89b84783e09b8cbec8c518497eba81f3c42"
+url = "https://github.com/JohnnyMorganz/StyLua/releases/download/v2.6.0/stylua-macos-aarch64.zip"
+url_api = "https://api.github.com/repos/JohnnyMorganz/StyLua/releases/assets/628185466"
 
 [[tools.taplo]]
 version = "0.10.0"
 backend = "aqua:tamasfe/taplo"
 specifiers = ["0.10.0"]
+
+[tools.taplo."platforms.linux-arm64"]
+url = "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-aarch64.gz"
+url_api = "https://api.github.com/repos/tamasfe/taplo/releases/assets/257322597"
 
 [tools.taplo."platforms.linux-x64"]
 url = "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-x86_64.gz"
@@ -135,6 +172,11 @@ url_api = "https://api.github.com/repos/tamasfe/taplo/releases/assets/257323110"
 version = "3.24.0"
 backend = "aqua:vale-cli/vale"
 specifiers = ["3.24.0"]
+
+[tools.vale."platforms.linux-arm64"]
+checksum = "sha256:104cbd349279e50c4cb40adb70adf345d93cc4a3a0191f9e68bdccb97086b582"
+url = "https://github.com/vale-cli/vale/releases/download/v3.24.0/vale_3.24.0_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/vale-cli/vale/releases/assets/603879360"
 
 [tools.vale."platforms.linux-x64"]
 checksum = "sha256:867534ddb678abca7f214bc4706ead0922bd5252ffe8035fc227013f66c8b214"
@@ -150,6 +192,12 @@ url_api = "https://api.github.com/repos/vale-cli/vale/releases/assets/603879362"
 version = "1.30.1"
 backend = "aqua:zizmorcore/zizmor"
 specifiers = ["1.30.1"]
+
+[tools.zizmor."platforms.linux-arm64"]
+checksum = "sha256:7ff1dce33bdd18fd2a4affe63bdd47efcccca97b2cec1c1863ec26e9e2647540"
+url = "https://github.com/zizmorcore/zizmor/releases/download/v1.30.1/zizmor-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/zizmorcore/zizmor/releases/assets/552067643"
+provenance = "github-attestations"
 
 [tools.zizmor."platforms.linux-x64"]
 checksum = "sha256:e65324f4430c2717591937edcec90ccbefaf14c174f8ec9415e03ca875b46e1a"
