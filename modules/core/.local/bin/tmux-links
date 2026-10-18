@@ -5,6 +5,7 @@
 #
 #   tmux-links [PANE-ID]  pick from the pane's links
 #   tmux-links --clicked  open the link in the @clicked-link option
+#   tmux-links --preview URI  print the picker preview for one link
 #
 # Without a pane id it reads the active pane, the one under the popup.
 #
@@ -13,8 +14,22 @@
 set -euo pipefail
 
 readonly HISTORY_LINES=2000
+# Lines of the file the preview shows above the link's line.
+readonly PREVIEW_CONTEXT=5
 # An OSC 8 sequence, ESC ] 8 ; params ; URI ESC \, or a plain URL.
 readonly LINK_PATTERN='\x1b\]8;[^;]*;([^\x1b]+)\x1b\\|((?:https?|ftp|file)://[^\s<>"`'"'"'\x1b]+)'
+
+# Splits a file link into the globals path and line. file:///a/b:12 and
+# file://host/a/b:12 both name /a/b at line 12.
+parse_file_link() {
+  path=${1#file://}
+  path=/${path#*/}
+  line=1
+  if [[ $path =~ ^(.*):([0-9]+)$ ]]; then
+    path=${BASH_REMATCH[1]}
+    line=${BASH_REMATCH[2]}
+  fi
+}
 
 open_link() {
   local uri=$1
@@ -27,28 +42,49 @@ open_link() {
     return
   fi
 
-  # file:///a/b:12 and file://host/a/b:12 both name /a/b at line 12.
-  local path=${uri#file://}
-  path=/${path#*/}
-  local line=1
-  if [[ $path =~ ^(.*):([0-9]+)$ ]]; then
-    path=${BASH_REMATCH[1]}
-    line=${BASH_REMATCH[2]}
-  fi
+  parse_file_link "$uri"
   nvim "+$line" "$path"
 }
 
-if [ "${1:-}" = --clicked ]; then
+# A file link shows the file with line numbers from a few lines above its
+# line, which bat highlights. Other links print as they are.
+preview_link() {
+  local uri=$1
+
+  if [[ $uri != file://* ]]; then
+    printf '%s\n' "$uri"
+    return
+  fi
+
+  parse_file_link "$uri"
+  if [ -d "$path" ]; then
+    ls -la "$path"
+    return
+  fi
+
+  local start=$((line > PREVIEW_CONTEXT ? line - PREVIEW_CONTEXT : 1))
+  bat --color=always --style=numbers --paging=never \
+    --line-range "$start:" --highlight-line "$line" -- "$path"
+}
+
+case "${1:-}" in
+--clicked)
   open_link "$(tmux show -gv @clicked-link)"
   exit 0
-fi
+  ;;
+--preview)
+  preview_link "$2"
+  exit 0
+  ;;
+esac
 
 pane=${1:-$(tmux display -p '#{pane_id}')}
 
 # Trims trailing punctuation that ends a sentence rather than the URL, and
 # a closing parenthesis without a match in the URL, so "(see
-# https://x.org/a_(b))." yields https://x.org/a_(b). Then reverses the
-# lines and drops repeats.
+# https://x.org/a_(b))." yields https://x.org/a_(b). Drops a link with a
+# single quote, which the tv preview command would run as shell code. Then
+# reverses the lines and drops repeats.
 links=$(tmux capture-pane -p -e -J -S "-$HISTORY_LINES" -t "$pane" |
   { rg -o --no-line-number -r '$1$2' "$LINK_PATTERN" || true; } |
   awk '{
@@ -57,8 +93,9 @@ links=$(tmux capture-pane -p -e -J -S "-$HISTORY_LINES" -t "$pane" |
       sub(/\)$/, "")
       sub(/[.,;:!?]+$/, "")
     }
-    line[NR] = $0
-  } END { for (i = NR; i > 0; i--) if (!seen[line[i]]++) print line[i] }')
+    if (index($0, "\047")) next
+    line[++n] = $0
+  } END { for (i = n; i > 0; i--) if (!seen[line[i]]++) print line[i] }')
 
 if [ -z "$links" ]; then
   echo "No links in the last $HISTORY_LINES lines"
@@ -68,7 +105,8 @@ fi
 
 # Tab marks more than one link.
 picked=$(printf '%s\n' "$links" | tv \
-  --no-sort --no-remote --no-preview \
+  --no-sort --no-remote \
+  --preview-command "'$0' --preview '{}'" \
   --input-header 'Open link')
 [ -n "$picked" ] || exit 0
 

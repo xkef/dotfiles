@@ -4,12 +4,49 @@
 # and a tmux buffer.
 #
 #   tmux-hints [PANE-ID]
+#   tmux-hints --preview PANE-ID TOKEN  print the picker preview for a token
 #
 # Without a pane id it reads the active pane, the one under the popup.
 #
 # A token is a URL, a path with an optional :line:column, a git hash, a
 # UUID, an IP address, or a number of four or more digits.
 set -euo pipefail
+
+# Lines the preview shows around a token: file lines above a path's line,
+# or pane lines on each side of the token.
+readonly PREVIEW_CONTEXT=5
+
+# A path that exists, relative to the pane's directory, shows the file with
+# line numbers from a few lines above its :line, which bat highlights. Any
+# other token shows the pane lines around it, with the token highlighted.
+preview_token() {
+  local pane=$1 token=$2
+  local path=${token/#\~/$HOME} line=1
+  if [[ $path =~ ^([^:]+):([0-9]+)(:[0-9]+)?$ ]]; then
+    path=${BASH_REMATCH[1]}
+    line=${BASH_REMATCH[2]}
+  fi
+  [[ $path == /* ]] || path=$(tmux display -p -t "$pane" '#{pane_current_path}')/$path
+
+  if [ -d "$path" ]; then
+    ls -la "$path"
+    return
+  fi
+  if [ -f "$path" ]; then
+    local start=$((line > PREVIEW_CONTEXT ? line - PREVIEW_CONTEXT : 1))
+    bat --color=always --style=numbers --paging=never \
+      --line-range "$start:" --highlight-line "$line" -- "$path"
+    return
+  fi
+
+  tmux capture-pane -p -J -t "$pane" |
+    rg --color=always --no-line-number -F -C "$PREVIEW_CONTEXT" -- "$token" || true
+}
+
+if [ "${1:-}" = --preview ]; then
+  preview_token "$2" "$3"
+  exit 0
+fi
 
 # Alternatives match left to right, so the longer forms come first.
 readonly TOKEN_PATTERN='(?:https?|ftp|file)://[^\s<>"`'"'"']+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|(?:~|\.{1,2})?(?:/[\w.@+-]+)+/?(?::\d+){0,2}|[\w.-]+(?:/[\w.@+-]+)+(?::\d+){0,2}|\b[0-9a-f]{7,40}\b|\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b|\b\d{4,}\b'
@@ -33,7 +70,8 @@ fi
 
 # Tab marks more than one token. They join with spaces.
 picked=$(printf '%s\n' "$tokens" | tv \
-  --no-sort --no-remote --no-preview \
+  --no-sort --no-remote \
+  --preview-command "'$0' --preview '$pane' '{}'" \
   --input-header 'Copy') || exit 0
 [ -n "$picked" ] || exit 0
 
