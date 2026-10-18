@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Quick select for tmux, after WezTerm's. Collects tokens from the visible
+# part of a pane, newest first, and copies the picked ones to the clipboard
+# and a tmux buffer.
+#
+#   tmux-hints [PANE-ID]
+#
+# Without a pane id it reads the active pane, the one under the popup.
+#
+# A token is a URL, a path with an optional :line:column, a git hash, a
+# UUID, an IP address, or a number of four or more digits.
+set -euo pipefail
+
+# Alternatives match left to right, so the longer forms come first.
+readonly TOKEN_PATTERN='(?:https?|ftp|file)://[^\s<>"`'"'"']+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|(?:~|\.{1,2})?(?:/[\w.@+-]+)+/?(?::\d+){0,2}|[\w.-]+(?:/[\w.@+-]+)+(?::\d+){0,2}|\b[0-9a-f]{7,40}\b|\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b|\b\d{4,}\b'
+
+pane=${1:-$(tmux display -p '#{pane_id}')}
+
+# -J joins wrapped lines, so a long path stays whole. Trims punctuation that
+# ends a sentence, reverses the lines, and drops repeats.
+tokens=$(tmux capture-pane -p -J -t "$pane" |
+  { rg -o --no-line-number "$TOKEN_PATTERN" || true; } |
+  awk '{
+    sub(/[.,;:!?)\]]+$/, "")
+    if (length($0) > 1) line[++n] = $0
+  } END { for (i = n; i > 0; i--) if (!seen[line[i]]++) print line[i] }')
+
+if [ -z "$tokens" ]; then
+  echo "Nothing to copy on screen"
+  sleep 1
+  exit 0
+fi
+
+# Tab marks more than one token. They join with spaces.
+picked=$(printf '%s\n' "$tokens" | tv \
+  --no-sort --no-remote --no-preview \
+  --input-header 'Copy') || exit 0
+[ -n "$picked" ] || exit 0
+
+# -w also sends the buffer to the system clipboard over OSC 52.
+text=$(printf '%s\n' "$picked" | paste -sd ' ' -)
+tmux set-buffer -w -- "$text"
+# -l prints the text literally. Without it tmux expands formats in the
+# copied text: a URL fragment such as #Heading shows the hostname, and
+# #(...) can run a shell command.
+tmux display-message -l "Copied: $text"
