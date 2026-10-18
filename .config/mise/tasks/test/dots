@@ -16,6 +16,9 @@ printf '#!/bin/sh\necho "$*" >>"$DOTS_LOG"\n' >"$tmp/bin/dots"
 chmod +x "$tmp/bin/dots"
 printf '[user]\nname = "Test"\nemail = "test@example.com"\n' >"$tmp/jj.toml"
 export PATH="$tmp/bin:$PATH" DOTS_LOG="$tmp/dots.log" JJ_CONFIG="$tmp/jj.toml"
+# mise keeps its trusted configs in its state dir, so pin that before
+# XDG_STATE_HOME moves. Otherwise a local mise.local.toml goes untrusted.
+export MISE_STATE_DIR="${MISE_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/mise}"
 export XDG_STATE_HOME="$tmp/state"
 
 # The README installs with a plain git clone, which has no .jj directory.
