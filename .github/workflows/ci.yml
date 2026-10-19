@@ -21,6 +21,12 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Shared runners start fish at about three times the local cost, so CI
+# loosens the `mise run perf` budgets. They still catch a large regression.
+env:
+  STARTUP_BUDGET_MS: 250
+  PROMPT_BUDGET_MS: 160
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -138,7 +144,7 @@ jobs:
           sudo -u builder env HOME=/home/builder CI=true GITHUB_TOKEN="$GITHUB_TOKEN" setup/deploy --force --noconfirm
       - name: Verify the machine actually works
         run: |
-          sudo -u builder env HOME=/home/builder sh -c '
+          sudo -u builder env HOME=/home/builder STARTUP_BUDGET_MS="$STARTUP_BUDGET_MS" PROMPT_BUDGET_MS="$PROMPT_BUDGET_MS" sh -c '
             set -e
             setup/deploy --dry-run
             out=$(cd / && fish -i -c "echo fish boots" 2>&1 </dev/null)
