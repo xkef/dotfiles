@@ -1,0 +1,15 @@
+## bottom config
+## https://clementtsang.github.io/bottom/nightly/configuration/config-file/
+
+# The default theme uses named ANSI colors, so btm follows the tinty
+# scheme with no hook.
+#
+# Basic mode draws htop-style bars for each core, memory, and swap over
+# the process list, with no time graphs. It ignores custom layouts.
+[flags]
+basic = true
+rate = "1s"
+
+[processes]
+columns = ["pid", "name", "user", "mem%", "cpu%"]
+default_sort = "cpu%"
