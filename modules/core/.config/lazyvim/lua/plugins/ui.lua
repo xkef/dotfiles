@@ -55,8 +55,51 @@ return {
       fi.visible = true
       fi.hide_dotfiles = false
       fi.hide_hidden = false
-      fi.never_show = { ".DS_Store", ".git", ".jj", ".idea" }
+      -- .classpath and its siblings are Eclipse metadata that jdtls writes.
+      fi.never_show = { ".DS_Store", ".git", ".jj", ".idea", ".classpath", ".project", ".settings", ".factorypath" }
       opts.filesystem.filtered_items = fi
+
+      -- Opening a directory keeps descending while it holds a single
+      -- subdirectory, so l on java opens java/com/netcetera/deip at once.
+      -- This replaces group_empty_dirs above.
+      local function open_chain(state)
+        local fs = require("neo-tree.sources.filesystem")
+        local node = state.tree:get_node()
+        if node.type ~= "directory" or node:is_expanded() then
+          return require("neo-tree.sources.filesystem.commands").open(state)
+        end
+
+        local function descend(dir)
+          local children = state.tree:get_nodes(dir:get_id())
+          if #children ~= 1 or children[1].type ~= "directory" then
+            return
+          end
+          local child = children[1]
+          if child.loaded == false then
+            fs.toggle_directory(state, child, nil, false, false, function()
+              descend(state.tree:get_node(child:get_id()))
+            end)
+            return
+          end
+          child:expand()
+          require("neo-tree.ui.renderer").redraw(state)
+          descend(child)
+        end
+
+        if node.loaded ~= false then
+          node:expand()
+          require("neo-tree.ui.renderer").redraw(state)
+          return descend(node)
+        end
+        fs.toggle_directory(state, node, nil, false, false, function()
+          descend(state.tree:get_node(node:get_id()))
+        end)
+      end
+      opts.filesystem.window = opts.filesystem.window or {}
+      opts.filesystem.window.mappings = vim.tbl_extend("force", opts.filesystem.window.mappings or {}, {
+        ["l"] = open_chain,
+        ["<cr>"] = open_chain,
+      })
     end,
   },
 
