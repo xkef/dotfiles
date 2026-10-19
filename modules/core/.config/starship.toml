@@ -78,7 +78,10 @@ deleted = '[-${count}](red) '
 modified = '[!${count}](red) '
 renamed = '[»${count}](yellow) '
 
+# Without `shell`, starship runs the command in $STARSHIP_SHELL, and a
+# fish start costs about 80ms on every prompt. sh costs about 3ms.
 [custom.cwd]
 command = 'basename "$PWD"'
 when = true
+shell = ['sh']
 format = '[$output](bold cyan) '

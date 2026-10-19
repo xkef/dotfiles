@@ -5,13 +5,10 @@
 # subprocess spawns.
 status is-interactive; or return
 
-if command -q starship
-    starship init fish | source
-end
-
-if command -q zoxide
-    zoxide init fish --cmd z | source
-end
+# __cached_init sources each init script from a cache, so a start spawns
+# none of these tools.
+__cached_init starship init fish --print-full-init
+__cached_init zoxide init fish --cmd z
 
 # The 1Password CLI completion costs about 108ms at startup, so it stays
 # out. fish loads it on the first `op` command.

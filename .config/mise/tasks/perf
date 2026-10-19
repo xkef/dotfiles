@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#MISE description="Fail when shell startup or the prompt exceeds its budget"
+set -eu
+# Runs against the deployed config in $HOME, so CI calls it after
+# setup/deploy. The startup budget counts only the config's cost, an
+# interactive start minus a start without config, which keeps it stable
+# across runners of different speeds. The first run of each command is a
+# warm-up that fills the init caches.
+startup_budget=${STARTUP_BUDGET_MS:-60}
+prompt_budget=${PROMPT_BUDGET_MS:-50}
+
+# Prints the median wall time in milliseconds of 21 runs of a command.
+median_ms() {
+  perl -MTime::HiRes=time -e '
+    open(my $out, ">&", \*STDOUT) or die;
+    open(STDOUT, ">", "/dev/null") or die;
+    system(@ARGV) == 0 or die "failed: @ARGV\n";
+    my @t;
+    for (1 .. 21) {
+      my $start = time;
+      system(@ARGV) == 0 or die "failed: @ARGV\n";
+      push @t, (time - $start) * 1000;
+    }
+    @t = sort { $a <=> $b } @t;
+    printf $out "%.0f\n", $t[10];
+  ' "$@" </dev/null
+}
+
+bare=$(median_ms fish --no-config -c exit)
+full=$(median_ms fish -i -c exit)
+startup=$((full - bare))
+prompt=$(median_ms starship prompt)
+
+echo "fish startup: ${full}ms, config ${startup}ms of ${startup_budget}ms"
+echo "prompt: ${prompt}ms of ${prompt_budget}ms"
+
+failed=0
+if [ "$startup" -gt "$startup_budget" ]; then
+  echo "fish config over budget, profile with fish --profile-startup" >&2
+  failed=1
+fi
+if [ "$prompt" -gt "$prompt_budget" ]; then
+  echo "prompt over budget, see starship timings" >&2
+  failed=1
+fi
+exit "$failed"
