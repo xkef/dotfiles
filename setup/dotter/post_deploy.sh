@@ -17,6 +17,12 @@ desktop="{{#if dotter.packages.desktop}}true{{/if}}"
 
 chmod 700 ~/.ssh
 
+# mise caches exec() output, such as the GitHub tokens in mise.local.toml,
+# as world-readable files. Other local accounts share the staff group.
+mise_cache="${XDG_CACHE_HOME:-$HOME/.cache}/mise"
+mkdir -p "$mise_cache"
+chmod 700 "$mise_cache"
+
 if [[ "$agents" == true ]]; then
   # Claude Code reads the shared skills through ~/.claude/skills. Dotter
   # links files, not directories, so the directory link lives here.

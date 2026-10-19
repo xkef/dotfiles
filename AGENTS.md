@@ -34,7 +34,7 @@ A repo that another account holds can pin it for the whole directory through
 mise, as in this `mise.local.toml`:
 
     [env]
-    GH_TOKEN = "{{ exec(command='gh auth token --user <account>') }}"
+    GH_TOKEN = "{{ exec(command='gh auth token --user <account>', cache_key='gh-<account>', cache_duration='1d') }}"
 
 Don't run `gh auth switch`. It misroutes concurrent sessions. A stray
 `GITHUB_TOKEN` in the environment pins plain `gh` to that account. `GH_TOKEN`
