@@ -7,7 +7,7 @@ set -eu
 # across runners of different speeds. The first run of each command is a
 # warm-up that fills the init caches.
 startup_budget=${STARTUP_BUDGET_MS:-60}
-prompt_budget=${PROMPT_BUDGET_MS:-50}
+prompt_budget=${PROMPT_BUDGET_MS:-80}
 
 # Prints the median wall time in milliseconds of 21 runs of a command.
 median_ms() {
@@ -29,7 +29,8 @@ median_ms() {
 bare=$(median_ms fish --no-config -c exit)
 full=$(median_ms fish -i -c exit)
 startup=$((full - bare))
-prompt=$(median_ms starship prompt)
+# fish renders the left and right prompts with one starship call each.
+prompt=$(($(median_ms starship prompt) + $(median_ms starship prompt --right)))
 
 echo "fish startup: ${full}ms, config ${startup}ms of ${startup_budget}ms"
 echo "prompt: ${prompt}ms of ${prompt_budget}ms"
