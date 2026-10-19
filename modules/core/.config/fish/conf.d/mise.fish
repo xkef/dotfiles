@@ -5,10 +5,13 @@ set -gx MISE_ACTIVATE_AGGRESSIVE 0
 set -gx MISE_FISH_AUTO_ACTIVATE 0
 
 command -q mise; or return
-fish_add_path -gP $XDG_DATA_HOME/mise/shims
 
-# Shims on PATH cover scripts. The activation below installs the cd and
-# preexec hooks that apply project [env], which only a prompt uses.
+# Shims cover scripts and go last, behind Homebrew. A shim for an
+# inactive tool costs about 25ms before it falls through. The activation
+# below removes them, as global.toml sets activate_shims = false, and
+# installs the cd and preexec hooks that apply project [env].
+fish_add_path -gPam $XDG_DATA_HOME/mise/shims
+
 status is-interactive; or return
 command mise activate fish --no-hook-env | source
 

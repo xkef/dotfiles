@@ -5,6 +5,11 @@ fetch_remote_versions_cache = "7d"
 minimum_release_age = "7d"
 # Projects pin node and java in .node-version and .java-version.
 idiomatic_version_file_enable_tools = ["node", "java"]
+# mise keeps a shim for every installed tool, active or not. A shell that
+# runs rg or eza through an inactive shim pays about 25ms before Homebrew's
+# copy starts. Activation puts the active tools' own directories on PATH,
+# so the shims stay off it.
+activate_shims = false
 
 # No global tools. Brew and pacman supply what every shell needs, and each
 # project pins the rest.

@@ -29,7 +29,15 @@ for mode in default insert
     bind --mode $mode \ct __tv_ctrl_t
 end
 
-# atuin takes over Ctrl-R from tv.
+# atuin takes over Ctrl-R from tv. Its init spawns `atuin uuid` for a new
+# session ID in each shell level, about 10ms. atuin reads the ID as an
+# opaque string, so random UUIDv4 hex from fish builtins serves. The
+# condition matches the init's own.
+if not set -q ATUIN_SESSION; or test "$ATUIN_SHLVL" != "$SHLVL"
+    set -gx ATUIN_SESSION (printf %04x (random 0 65535) (random 0 65535) (random 0 65535) \
+        (random 16384 20479) (random 32768 49151) (random 0 65535) (random 0 65535) (random 0 65535))
+    set -gx ATUIN_SHLVL $SHLVL
+end
 __cached_init atuin init fish --disable-up-arrow
 
 # zoxide's PWD hook records each cd, so the Alt-Z jump ranks too.
