@@ -2,7 +2,7 @@
 -- in the VM when its shell reports the lima-dev host through OSC 7. Splits
 -- and new tabs of that pane run `lima-agent pane` in the same directory,
 -- which exists in the guest because `lima-agent` copies repositories to
--- their host paths, and stay in its nono sandbox.
+-- their host paths.
 -- Every pane stays in the local mux. The desktop package reaches this
 -- file through vm.lua.
 local wezterm = require("wezterm")

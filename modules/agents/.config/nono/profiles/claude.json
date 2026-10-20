@@ -1,30 +1,98 @@
 {
   "$schema": "https://nono.sh/schemas/nono-profile.schema.json",
-  "extends": "claude-strict",
+  "allow_launch_services": true,
+  "diagnostics": {
+    "suppress_system_services": [
+      "forbidden-exec-sugid"
+    ]
+  },
+  "extends": "agents",
   "filesystem": {
     "allow": [
-      "$XDG_CONFIG_HOME/op"
+      "$HOME/.claude",
+      "$XDG_CONFIG_HOME/claude-code",
+      "$HOME/.local/state/claude/locks",
+      "$HOME/.cache/claude",
+      "$HOME/.config/nono/profile-drafts",
+      "/tmp/claude-$UID"
     ],
-    "bypass_protection": [
-      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
-      "$HOME/.1password/agent.sock",
-      "$XDG_CONFIG_HOME/op",
-      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/Library/Application Support/1Password/Data/settings/settings.json"
+    "allow_file": [
+      "$HOME/.claude.json",
+      "$HOME/.claude.json.lock"
     ],
     "read": [
-      "$XDG_CONFIG_HOME/gh"
-    ],
-    "read_file": [
-      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/Library/Application Support/1Password/Data/settings/settings.json"
-    ],
-    "unix_socket": [
-      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
-      "$HOME/.1password/agent.sock"
+      "$HOME/.local/share/claude",
+      "$XDG_CONFIG_HOME/fd",
+      "$HOME/.terminfo",
+      "$XDG_CONFIG_HOME/lazyvim",
+      "$XDG_DATA_HOME/lazyvim"
+    ]
+  },
+  "groups": {
+    "include": [
+      {
+        "name": "claude_code_linux",
+        "when": "linux"
+      },
+      {
+        "name": "claude_cache_linux",
+        "when": "linux"
+      },
+      "rust_runtime",
+      "python_runtime",
+      {
+        "name": "vscode_macos",
+        "when": "macos"
+      },
+      {
+        "name": "vscode_linux",
+        "when": "linux"
+      },
+      {
+        "name": "linux_sysfs_read",
+        "when": "linux"
+      },
+      "nix_runtime"
     ]
   },
   "meta": {
-    "description": "Claude Code with mise, jj, maven, npm, cargo, shared skills, keychain access, and the 1Password CLI",
+    "description": "Claude Code with mise, jj, maven, npm, cargo, and shared skills. Its login comes from the credential proxy, and the keychain stays denied",
     "name": "claude",
-    "version": "1.5.0"
+    "version": "2.0.0"
+  },
+  "network": {
+    "credentials": ["claude"],
+    "custom_credentials": {
+      "claude": {
+        "upstream": "https://api.anthropic.com",
+        "credential_key": "claude_code_oauth_token",
+        "env_var": "CLAUDE_CODE_OAUTH_TOKEN",
+        "credential_format": "Bearer {}"
+      }
+    }
+  },
+  "open_urls": {
+    "allow_localhost": true,
+    "allow_origins": [
+      "https://claude.ai",
+      "https://claude.com",
+      "https://api.anthropic.com",
+      "https://platform.claude.com"
+    ]
+  },
+  "rollback": {
+    "exclude_globs": [
+      "*.tmp.[0-9]*.[0-9]*"
+    ],
+    "exclude_patterns": [
+      "node_modules",
+      ".next",
+      "__pycache__",
+      "target"
+    ]
+  },
+  "security": {
+    "capability_elevation": false,
+    "signal_mode": "isolated"
   }
 }

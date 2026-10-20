@@ -1,22 +1,14 @@
 {
   "$schema": "https://nono.sh/schemas/nono-profile.schema.json",
-  "extends": "pi-strict",
+  "extends": "agents",
   "filesystem": {
-    "bypass_protection": [
-      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
-      "$HOME/.1password/agent.sock"
-    ],
-    "read": [
-      "$XDG_CONFIG_HOME/gh"
-    ],
-    "unix_socket": [
-      "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
-      "$HOME/.1password/agent.sock"
+    "allow": [
+      "$HOME/.pi"
     ]
   },
   "meta": {
-    "description": "pi.dev coding agent with mise, node, jj, maven, npm, cargo, shared skills, and keychain access",
+    "description": "pi.dev coding agent with mise, node, jj, maven, npm, cargo, and shared skills",
     "name": "pi",
-    "version": "1.2.0"
+    "version": "2.0.0"
   }
 }

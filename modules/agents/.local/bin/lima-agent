@@ -12,15 +12,10 @@
 #   agents vm set claude|github          store a token for the VM
 #   agents vm update                     rebuild the VM from dev.yaml
 #
-#   --net off|trusted|full   network for the session, trusted by default
 #   --github                 pass the GitHub token to the session
 #
-# The session runs in nono with the profile `vm`, which lets it write only
-# the repository copy, Claude Code's config, the agent state, shell and tool
-# data, caches, and /tmp. Under --net off it reaches only Anthropic, under
-# trusted also GitHub and package registries, and under full anything.
-# nono's proxy enforces the domains, and no_new_privs keeps sudo from
-# lifting any of it.
+# The VM is the only sandbox. The session may write anywhere in the guest
+# and reach any host, and holds no secret beyond the tokens below.
 #
 # Each launch copies the host's working tree into the VM, untracked files
 # included and ignored files left out. It replaces the copy only while the
@@ -31,9 +26,9 @@
 # nothing the VM writes runs on the host before you review it.
 #
 # `set` stores the tokens in 1Password, as the items "lima-agent claude"
-# and "lima-agent github", and in the VM under ~/.local/state/lima-agent,
-# which the profile `vm` doesn't grant. A launch reads them there, since
-# 1Password takes seconds, and `update` copies them into the rebuilt VM.
+# and "lima-agent github", and in the VM under ~/.local/state/lima-agent.
+# A launch reads them there, since 1Password takes seconds, and `update`
+# copies them into the rebuilt VM.
 # Every session gets the Claude token as CLAUDE_CODE_OAUTH_TOKEN when it
 # exists, and the GitHub token as GH_TOKEN under --github. They travel
 # through stdin and files, so they never show up in a process list.
@@ -51,22 +46,6 @@ readonly TOKEN_DIR=.local/state/lima-agent
 # Guest refs: the latest host copy, and the one the guest's tree started from.
 readonly HOST_REF=refs/lima/host
 readonly BASE_REF=refs/lima/base
-readonly ANTHROPIC_DOMAINS=(api.anthropic.com platform.claude.com)
-readonly TRUSTED_DOMAINS=(
-  github.com api.github.com codeload.github.com '*.githubusercontent.com'
-  registry.npmjs.org nodejs.org
-  pypi.org files.pythonhosted.org
-  crates.io static.crates.io index.crates.io
-  proxy.golang.org sum.golang.org
-)
-
-# Guest sh that creates the directories the profile `vm` grants. nono
-# skips a grant whose path doesn't exist, so a tool in the session, such
-# as atuin, can't create its own.
-read -r -d '' GRANT_DIRS <<'EOF' || :
-jq -r '.filesystem.allow[] | sub("^[$]HOME"; env.HOME)' "$HOME/.config/nono/profiles/vm.json" | xargs mkdir -p
-EOF
-readonly GRANT_DIRS
 
 # Copies the token under name $1 from stdin into the VM. Empty input
 # deletes the VM's copy.
@@ -128,40 +107,11 @@ update() {
   done
 }
 
-net=trusted
 github=false
-while [ $# -gt 0 ]; do
-  case "$1" in
-  --net)
-    net=${2:-}
-    shift
-    [ $# -eq 0 ] || shift
-    ;;
-  --net=*)
-    net=${1#*=}
-    shift
-    ;;
-  --github)
-    github=true
-    shift
-    ;;
-  *) break ;;
-  esac
-done
-
-case "$net" in
-off) domains=("${ANTHROPIC_DOMAINS[@]}") ;;
-trusted) domains=("${ANTHROPIC_DOMAINS[@]}" "${TRUSTED_DOMAINS[@]}") ;;
-full) domains=() ;;
-*)
-  echo "agents vm: --net takes off, trusted, or full" >&2
-  exit 2
-  ;;
-esac
-nono_args=(run --silent --profile vm)
-for domain in ${domains[@]+"${domains[@]}"}; do
-  nono_args+=(--allow-domain "$domain")
-done
+if [ "${1:-}" = --github ]; then
+  github=true
+  shift
+fi
 
 mode=claude
 case "${1:-}" in
@@ -181,19 +131,16 @@ update)
   exit
   ;;
 pane)
-  # A split or new tab of a VM pane: fish in the pane's directory, in the
-  # same sandbox as `shell`, on the repository copy as it stands.
-  exec limactl shell --start "$VM" -- sh -c "$GRANT_DIRS"' && cd "$1" &&
-    export WEZTERM_PANE="$2" && shift 2 &&
-    root=$(git rev-parse --show-toplevel 2>/dev/null || pwd) &&
-    exec nono "$@" --allow "$root" -- fish -l' sh "${1:?}" "${WEZTERM_PANE:-}" "${nono_args[@]}"
+  # A split or new tab of a VM pane: fish in the pane's directory, on the
+  # repository copy as it stands.
+  exec limactl shell --start "$VM" -- sh -c 'cd "$1" && export WEZTERM_PANE="$2" &&
+    exec fish -l' sh "${1:?}" "${WEZTERM_PANE:-}"
   ;;
 esac
 
 if ! root=$(git rev-parse --show-toplevel 2>/dev/null); then
   if [ "$mode" = shell ]; then
-    exec limactl shell --start "$VM" -- sh -c "$GRANT_DIRS"' && exec nono "$@"' sh \
-      "${nono_args[@]}" -- fish -l
+    exec limactl shell --start "$VM" -- fish -l
   fi
   echo "agents vm: $PWD is not in a git repository" >&2
   exit 1
@@ -222,15 +169,9 @@ snapshot() {
   git commit-tree --no-gpg-sign ${parent[@]+"${parent[@]}"} -m "lima-agent: host working tree" "$tree"
 }
 
-# Runs the sh script in $1 in the guest repository, inside nono without
-# network. The session can write the repository's hooks and config, which
-# git would otherwise run outside the sandbox. JAIL is a command line for
-# the guest's sh, which the escaped root keeps whole.
-JAIL="nono run --silent --profile vm --allow $(printf %q "$root") --block-net --"
-readonly JAIL
+# Runs the sh script in $1 in the guest repository.
 guest_git() {
-  # shellcheck disable=SC2016 # The guest's sh expands $0 and $@.
-  limactl shell --start --workdir "$root" "$VM" -- sh -c "$JAIL"' sh -c "$0" sh "$@"' "$1" "${@:2}"
+  limactl shell --start --workdir "$root" "$VM" -- sh -c "$1" sh "${@:2}"
 }
 
 drop() {
@@ -287,10 +228,10 @@ needed=""
 [ "$mode" != claude ] || needed+=" claude"
 [ "$github" = false ] || needed+=" github"
 
-# Creates the granted directories, checks the tokens, then creates the
-# guest repository on first use. It commits under the host's name without
-# signing, since the guest has no signing key.
-guest "$GRANT_DIRS"'
+# Checks the tokens, then creates the guest repository on first use. It
+# commits under the host's name without signing, since the guest has no
+# signing key.
+guest '
 for name in $4; do
   [ -s "$HOME/$5/$name" ] || { echo "agents vm: no $name token, run agents vm set $name" >&2; exit 1; }
 done
@@ -303,7 +244,7 @@ done
 }' "$(git config user.name)" "$(git config user.email)" "$needed" "$TOKEN_DIR"
 
 snap=$(snapshot)
-git push -q -f --receive-pack="$JAIL git-receive-pack" "lima-$VM:$root" "$snap:$HOST_REF"
+git push -q -f "lima-$VM:$root" "$snap:$HOST_REF"
 
 # The guest's fish runs without a prompt, so it never reports its
 # directory. OSC 7 with the VM's host name tells WezTerm the pane works in
@@ -319,8 +260,7 @@ if [ "$mode" = claude ]; then
 fi
 
 # Replaces the copy while it holds nothing since the last copy, then starts
-# the session in nono. Plain sh runs outside the sandbox, so no shell
-# config that the session can write runs there.
+# the session.
 rc=0
 refresh='if [ -z "$(git status --porcelain)" ] &&
   [ "$(git rev-parse -q --verify HEAD)" = "$(git rev-parse -q --verify '"$BASE_REF"')" ]; then
@@ -329,15 +269,15 @@ else
   echo "agents vm: the VM copy has changes, which agents vm take or drop clears" >&2
 fi'
 limactl shell --workdir "$root" "$VM" -- sh -c '
-  workdir=$1 jail=$2 refresh=$3 tokens=$HOME/$4 needed=$5
-  export WEZTERM_PANE="$6"
-  shift 6
+  workdir=$1 refresh=$2 tokens=$HOME/$3 needed=$4
+  export WEZTERM_PANE="$5"
+  shift 5
   if [ -s "$tokens/claude" ]; then
     CLAUDE_CODE_OAUTH_TOKEN=$(cat "$tokens/claude") && export CLAUDE_CODE_OAUTH_TOKEN
   fi
   case "$needed" in *github*) GH_TOKEN=$(cat "$tokens/github") && export GH_TOKEN ;; esac
 
-  eval "$jail sh -c \"\$refresh\""
+  sh -c "$refresh"
   cd "$workdir" || exit
 
   # First-run onboarding asks for a login even with a token set, and the
@@ -351,7 +291,7 @@ limactl shell --workdir "$root" "$VM" -- sh -c '
       mv "$tmp" "$cfg"
   fi
 
-  exec nono "$@"' sh "$workdir" "$JAIL" "$refresh" "$TOKEN_DIR" "$needed" "${WEZTERM_PANE:-}" \
-  "${nono_args[@]}" --allow "$root" -- "${session[@]}" || rc=$?
+  exec "$@"' sh "$workdir" "$refresh" "$TOKEN_DIR" "$needed" "${WEZTERM_PANE:-}" \
+  "${session[@]}" || rc=$?
 review ask
 exit "$rc"

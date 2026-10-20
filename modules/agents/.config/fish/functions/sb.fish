@@ -1,37 +1,15 @@
 function sb -d "Run a command inside a nono sandbox"
     # The agent launchers in conf.d/agents.fish route through here, so every
     # interactive launch runs sandboxed. Use `command <tool>` to skip it.
-    # --strict picks the <command>-strict profile and drops the tokens and
-    # the SSH agent from the environment, for an unfamiliar repository.
-    set -l strict false
-    if test "$argv[1]" = --strict
-        set strict true
-        set -e argv[1]
-    end
-
     if test (count $argv) -eq 0
-        echo "Usage: sb [--strict] <command> [args...]" >&2
+        echo "Usage: sb <command> [args...]" >&2
         echo "Runs <command> in a nono sandbox using a matching profile." >&2
-        echo "Known profiles: claude, claude-strict, pi, pi-strict" >&2
+        echo "Known profiles: claude, pi" >&2
         return 1
     end
 
     set -l cmd $argv[1]
     set -l rest $argv[2..-1]
-    set -l profile $cmd
-    set -l env_args
-    if test $strict = true
-        set profile $cmd-strict
-        # Drops the SSH agent and every exported variable named like a
-        # secret, such as the MISE_GITHUB_TOKEN that env.fish copies from the
-        # gh keyring. The agent's own login stays.
-        set env_args -u SSH_AUTH_SOCK
-        for var in (set --names --export \
-                | string match -rie '(?:^|_)(?:TOKEN|SECRET|PASSWORD|PASSWD|CREDENTIALS?|API_?KEY|ACCESS_KEY|PRIVATE_KEY)(?:_|$)' \
-                | string match -rv '^(?:CLAUDE_CODE_OAUTH_TOKEN|ANTHROPIC_API_KEY)$')
-            set -a env_args -u $var
-        end
-    end
 
     switch $cmd
         case claude pi
@@ -50,9 +28,8 @@ function sb -d "Run a command inside a nono sandbox"
             set -a cmd_args --settings (jq -c '.sandbox.enabled = false' $HOME/.claude/settings.dotfiles.json)
     end
 
-    # lima-agent starts every VM shell in nono with the profile vm, so the
-    # agent runs there without another nono, and Claude Code without
-    # permission prompts.
+    # The Lima VM is the sandbox there, so the agent runs without nono, and
+    # Claude Code without permission prompts.
     if __sb_in_vm
         test $cmd = claude; and set -p cmd_args --dangerously-skip-permissions
         command $cmd $cmd_args $rest
@@ -67,8 +44,15 @@ function sb -d "Run a command inside a nono sandbox"
         return $status
     end
 
-    set -l nono_args --silent --log-file /dev/null --allow-cwd --read $DOTFILES_DIR --profile $profile
+    # --strict-broker-path refuses a grant that lets the agent write a PATH
+    # directory, where it could plant a binary that runs later outside the
+    # sandbox.
+    set -l nono_args --silent --log-file /dev/null --allow-cwd --read $DOTFILES_DIR --profile $cmd --strict-broker-path
     test "$SB_ALLOW_LAUNCH_SERVICES" = 1; and set -a nono_args --allow-launch-services
+    # gh, a Go program, checks certificates only against the macOS trust
+    # store, so the proxy's CA must sit there for gh to reach GitHub
+    # through the credential proxy.
+    test (uname) = Darwin; and set -a nono_args --trust-proxy-ca
 
     # macOS logs the sandbox denials where only an unsandboxed process may
     # read them, so a recorder streams them while the agent runs, and
@@ -82,7 +66,7 @@ function sb -d "Run a command inside a nono sandbox"
 
     # Not exec: the launchers call this function and clear the agent state
     # after the agent exits.
-    env $env_args nono run $nono_args -- $cmd $cmd_args $rest
+    nono run $nono_args -- $cmd $cmd_args $rest
     set -l rc $status
 
     if set -q recorder[1]

@@ -9,8 +9,10 @@ function claude --wraps claude --description "Claude Code in a nono sandbox"
     # `claude update` writes a new version under ~/.local/share/claude and
     # replaces the ~/.local/bin/claude symlink. The profile grants neither,
     # and widening it would let the agent replace its own binary and every
-    # other user tool in ~/.local/bin.
-    if contains -- "$argv[1]" update
+    # other user tool in ~/.local/bin. `claude setup-token` mints the token
+    # the credential proxy injects, so it runs on the host, where its OAuth
+    # callback server may listen.
+    if contains -- "$argv[1]" update setup-token
         command claude $argv
         return
     end

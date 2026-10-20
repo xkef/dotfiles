@@ -7,7 +7,15 @@ The active nono profile also allows these paths:
 - The agent's own configuration and state directories.
 - The toolchain and config paths the agent needs, typically the mise, cargo,
   rustup, go, uv, npm, Maven, jj, and gh directories.
-- The OS keychain.
+- The 1Password SSH agent socket, for commit signing.
+
+Tool installs into directories on `PATH`, such as `mise install` and
+`cargo install`, fail by design. Ask the user to run them.
+
+The keychain stays denied. Network traffic goes through nono's credential proxy,
+which injects the Claude and GitHub tokens into requests. `GH_TOKEN` and
+`CLAUDE_CODE_OAUTH_TOKEN` hold placeholders that work only through the proxy, so
+`gh` and `git push` over HTTPS work without a real token in the environment.
 
 The OS blocks paths outside the granted set.
 

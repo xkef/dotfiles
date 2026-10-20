@@ -10,13 +10,12 @@ fail() {
   exit 1
 }
 
-# Stubs that log every argument list to $ARGV_LOG. limactl runs the guest
-# command on the host through fish, the guest's login shell, as in
-# test:lima-agent. op keeps each item in $tmp/op as <title>.<id>, fails a
+# Stubs that log every argument list to $ARGV_LOG. Like Lima, limactl
+# quotes the guest command for sh and hands it to fish, the guest's login
+# shell, which reads `\\` in single quotes as `\`. op keeps each item in $tmp/op as <title>.<id>, fails a
 # create while OP_CREATE_RC is set, and has no token to read. jq passes through to the real one. ssh
-# runs its remote command locally. nono checks that each --allow names a
-# directory and runs its command, except the session's fish.
-mkdir -p "$tmp/bin" "$tmp/home/.config/nono/profiles" "$tmp/op"
+# runs its remote command locally. fish, the session, exits at once.
+mkdir -p "$tmp/bin" "$tmp/home" "$tmp/op"
 # mise shims would read the repo's mise config under the test's HOME, so
 # PATH leaves them out.
 PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -v /mise/shims | paste -sd: -)
@@ -62,25 +61,16 @@ cat >"$tmp/bin/ssh" <<'EOF'
 for last; do :; done
 exec sh -c "$last"
 EOF
-cat >"$tmp/bin/nono" <<'EOF'
+cat >"$tmp/bin/fish" <<EOF
 #!/bin/sh
-while [ $# -gt 0 ] && [ "$1" != -- ]; do
-  if [ "$1" = --allow ]; then
-    [ -d "$2" ] || echo "nono --allow $2 isn't a directory" >>"$NONO_LOG"
-    shift
-  fi
-  shift
-done
-shift
-[ "$1" != fish ] || exit 0
-exec "$@"
+case "\$1" in -l) exit 0 ;; esac
+exec "$(command -v fish)" "\$@"
 EOF
 chmod +x "$tmp/bin/"*
-cp modules/agents/.config/nono/profiles/vm.json "$tmp/home/.config/nono/profiles/"
 printf '[user]\n\tname = Test\n\temail = test@example.com\n' >"$tmp/gitconfig"
 
 export HOME="$tmp/home" XDG_STATE_HOME="$tmp/state" PATH="$tmp/bin:$PATH" \
-  ARGV_LOG="$tmp/argv.log" NONO_LOG="$tmp/nono.log" \
+  ARGV_LOG="$tmp/argv.log" \
   GIT_CONFIG_GLOBAL="$tmp/gitconfig" GIT_CONFIG_NOSYSTEM=1
 vm_token="$HOME/.local/state/lima-agent/claude"
 
@@ -114,7 +104,6 @@ stale=$(git -C "$repo" commit-tree -m stale "$(git -C "$repo" mktree </dev/null)
 git -C "$repo" update-ref refs/lima/host "$stale"
 git -C "$repo" update-ref refs/lima/base "$stale"
 echo a >"$repo/a"
-(cd "$repo" && echo k | "$script" shell >/dev/null 2>&1) || fail "the launch failed: $(cat "$NONO_LOG" 2>/dev/null)"
+(cd "$repo" && echo k | "$script" shell >/dev/null 2>&1) || fail "the launch failed"
 [ "$(git -C "$repo" ls-tree --name-only refs/lima/host 2>/dev/null)" = a ] || fail "the guest ref lacks the working tree"
-[ ! -s "$NONO_LOG" ] || fail "$(cat "$NONO_LOG")"
 echo "agents-vm ok"

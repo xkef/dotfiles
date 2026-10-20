@@ -52,19 +52,22 @@ tinty.
 
 ## Agent sandbox
 
-`claude` and `pi` always start in a [nono](https://nono.dev) sandbox. The
-default profile limits writes to the working directory, the agent's own state,
-and toolchain directories, and keeps the credentials needed to commit and push.
-`sb --strict claude` drops those credentials for untrusted repositories. The
-profiles live in `modules/agents/.config/nono/profiles/`.
+`claude` and `pi` always start in a [nono](https://nono.dev) sandbox, the only
+sandbox layer. The profile limits writes to the working directory, the agent's
+own state, and toolchain directories, and denies the keychain. Secrets never
+enter the sandbox: nono's credential proxy injects the Claude token and the
+GitHub token from `gh auth token` into requests, and the agent sees only
+placeholders. The 1Password SSH agent stays reachable for commit signing. The
+profiles live in `modules/agents/.config/nono/profiles/`. Store the Claude token
+once with `security add-generic-password -s nono -a claude_code_oauth_token -w`,
+pasting what `claude setup-token` prints.
 
-`agents vm` runs Claude Code in a Lima VM on a copy of the repository, inside
-nono, and `agents vm take` applies the copy's changes to the host.
-`--net off|trusted|full` picks the domains the session reaches, and `--github`
-passes it the GitHub token. `agents vm set` stores the Claude and GitHub tokens,
-and `agents vm update` rebuilds the VM. `agents skills` refreshes the shared
-agent skills, and `agents trace` reports failed tool calls in Claude Code
-sessions.
+`agents vm` runs Claude Code in a Lima VM on a copy of the repository, and
+`agents vm take` applies the copy's changes to the host. The VM is the sandbox
+there. `--github` passes the session the GitHub token. `agents vm set` stores
+the Claude and GitHub tokens, and `agents vm update` rebuilds the VM.
+`agents skills` refreshes the shared agent skills, and `agents trace` reports
+failed tool calls in Claude Code sessions.
 
 ## Make it yours
 
