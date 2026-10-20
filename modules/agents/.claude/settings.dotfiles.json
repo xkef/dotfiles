@@ -28,9 +28,6 @@
     "skill-creator@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true
   },
-  "env": {
-    "GITHUB_TOKEN": ""
-  },
   "hooks": {
     "Notification": [
       {
@@ -43,15 +40,6 @@
       }
     ],
     "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "~/.claude/hooks/claude-pre-tool-use-hook",
-            "type": "command"
-          }
-        ],
-        "matcher": "Edit|Write"
-      },
       {
         "hooks": [
           {
@@ -154,7 +142,20 @@
       "Bash(*jj abandon*)",
       "Bash(*jj restore*)",
       "Bash(*> .env*)",
-      "Bash(*> .env.*)"
+      "Bash(*> .env.*)",
+      "Edit(//**/.env)",
+      "Edit(//**/.env.local)",
+      "Edit(//**/.env.production)",
+      "Edit(//**/.env.staging)",
+      "Edit(//**/id_rsa)",
+      "Edit(//**/id_ed25519)",
+      "Edit(//**/id_ecdsa)",
+      "Edit(//**/*.pem)",
+      "Edit(//**/*.key)",
+      "Edit(//**/*.p12)",
+      "Edit(//**/credentials.json)",
+      "Edit(//**/.netrc)",
+      "Edit(~/.aws/credentials)"
     ]
   },
   "plansDirectory": ".claude-notes",
