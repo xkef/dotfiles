@@ -1,3 +1,32 @@
+-- In a jj repo the statusline shows the working-copy change ID and its
+-- bookmarks instead of the git branch, which is a detached HEAD there.
+-- jj runs in the background with --ignore-working-copy, so it never
+-- snapshots or blocks the editor.
+local JJ_TEMPLATE = 'separate(" ", change_id.shortest(8), bookmarks.join(" "))'
+local jj_status = {}
+
+local function jj_root()
+  return vim.fs.root(0, ".jj")
+end
+
+local function jj_refresh()
+  local root = jj_root()
+  if not root then
+    return
+  end
+
+  local cmd = { "jj", "log", "-r", "@", "--no-graph", "--ignore-working-copy", "--color", "never", "-T", JJ_TEMPLATE }
+  vim.system(cmd, { cwd = root, text = true }, function(out)
+    if out.code ~= 0 then
+      return
+    end
+    jj_status[root] = vim.trim(out.stdout)
+    vim.schedule(function()
+      require("lualine").refresh()
+    end)
+  end)
+end
+
 return {
   {
     "akinsho/bufferline.nvim",
@@ -26,8 +55,30 @@ return {
 
   {
     "nvim-lualine/lualine.nvim",
+    init = function()
+      vim.api.nvim_create_autocmd({ "BufEnter", "FocusGained", "DirChanged", "BufWritePost" }, {
+        group = vim.api.nvim_create_augroup("lualine_jj", { clear = true }),
+        callback = jj_refresh,
+      })
+    end,
     opts = {
       sections = {
+        lualine_b = {
+          {
+            "branch",
+            cond = function()
+              return not jj_root()
+            end,
+          },
+          {
+            function()
+              return "󰘬 " .. (jj_status[jj_root()] or "")
+            end,
+            cond = function()
+              return jj_root() ~= nil
+            end,
+          },
+        },
         lualine_y = {
           function()
             local height = vim.fn.line("$")
