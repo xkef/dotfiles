@@ -44,6 +44,10 @@ function sb -d "Run a command inside a nono sandbox"
         return $status
     end
 
+    # The profiles point the toolchain homes here, since the host runs what
+    # its own homes hold. nono skips a grant whose path doesn't exist.
+    mkdir -p $XDG_CACHE_HOME/agents-sandbox
+
     # --strict-broker-path refuses a grant that lets the agent write a PATH
     # directory, where it could plant a binary that runs later outside the
     # sandbox.

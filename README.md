@@ -53,14 +53,15 @@ tinty.
 ## Agent sandbox
 
 `claude` and `pi` always start in a [nono](https://nono.dev) sandbox, the only
-sandbox layer. The profile grants writes to the working directory and to the
-agent's state and toolchain directories. It denies the keychain. Secrets never
-enter the sandbox: nono's credential proxy injects the Claude token and the
-GitHub token from `gh auth token` into requests, and the sandbox holds only
-placeholders. The 1Password SSH agent stays reachable for commit signing. The
-profiles live in `modules/agents/.config/nono/profiles/`. Store the Claude token
-once with `security add-generic-password -s nono -a claude_code_oauth_token -w`,
-pasting what `claude setup-token` prints.
+sandbox layer. The profile grants writes to the working directory and the
+agent's state. Each toolchain gets a home of its own inside the sandbox. The
+keychain stays denied. Secrets never enter the sandbox: nono's credential proxy
+injects the Claude token and the GitHub token from `gh auth token` into
+requests, and the sandbox holds only placeholders. The 1Password SSH agent stays
+reachable for commit signing. The profiles live in
+`modules/agents/.config/nono/profiles/`. Store the Claude token once with
+`security add-generic-password -s nono -a claude_code_oauth_token -w`, pasting
+what `claude setup-token` prints.
 
 `agents vm` runs Claude Code in a Lima VM on a copy of the repository, and
 `agents vm take` applies the copy's changes to the host. There the VM serves as

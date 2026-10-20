@@ -192,6 +192,11 @@ review() {
 
   git apply --stat "$patch"
   if [ "$1" = ask ]; then
+    # A changed file such as mise.toml or .envrc runs on the host once
+    # taken, so the whole patch shows before the question.
+    if [ -t 0 ] && [ -t 1 ]; then
+      "${PAGER:-less}" "$patch"
+    fi
     read -rp "Take, drop, or keep the VM changes? [t/d/K] " answer
   fi
   case "$answer" in

@@ -29,28 +29,29 @@
       "*_APIKEY",
       "*_ACCESS_KEY",
       "*_PRIVATE_KEY"
-    ]
+    ],
+    "set_vars": {
+      "CARGO_HOME": "$XDG_CACHE_HOME/agents-sandbox/cargo",
+      "RUSTUP_HOME": "$XDG_CACHE_HOME/agents-sandbox/rustup",
+      "GOPATH": "$XDG_CACHE_HOME/agents-sandbox/go",
+      "GOBIN": "$XDG_CACHE_HOME/agents-sandbox/go/bin",
+      "GOCACHE": "$XDG_CACHE_HOME/agents-sandbox/go-build",
+      "UV_CACHE_DIR": "$XDG_CACHE_HOME/agents-sandbox/uv/cache",
+      "UV_PYTHON_INSTALL_DIR": "$XDG_CACHE_HOME/agents-sandbox/uv/python",
+      "UV_TOOL_DIR": "$XDG_CACHE_HOME/agents-sandbox/uv/tools",
+      "UV_TOOL_BIN_DIR": "$XDG_CACHE_HOME/agents-sandbox/uv/bin",
+      "MAVEN_USER_HOME": "$XDG_CACHE_HOME/agents-sandbox/m2",
+      "MAVEN_OPTS": "-Dmaven.repo.local=$XDG_CACHE_HOME/agents-sandbox/m2/repository"
+    }
   },
   "extends": "default",
   "filesystem": {
     "allow": [
       "$HOME/.agents",
       "$XDG_STATE_HOME/agents",
-      "$HOME/.m2",
+      "$XDG_CACHE_HOME/agents-sandbox",
       "$HOME/.npm",
-      "$XDG_CACHE_HOME/mise",
-      "$XDG_CACHE_HOME/uv",
-      "$XDG_CONFIG_HOME/jj/repos",
-      "$XDG_DATA_HOME/cargo/registry",
-      "$XDG_DATA_HOME/cargo/git",
-      "$XDG_DATA_HOME/rustup",
-      "$XDG_DATA_HOME/go",
-      "$XDG_DATA_HOME/uv"
-    ],
-    "allow_file": [
-      "$XDG_DATA_HOME/cargo/.global-cache",
-      "$XDG_DATA_HOME/cargo/.package-cache",
-      "$XDG_DATA_HOME/cargo/.package-cache-mutate"
+      "$XDG_CACHE_HOME/mise"
     ],
     "bypass_protection": [
       "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
@@ -63,8 +64,10 @@
       "$XDG_CONFIG_HOME/gh",
       "$XDG_CONFIG_HOME/git",
       "$XDG_CONFIG_HOME/jj",
+      "$XDG_CONFIG_HOME/jj/repos",
       "$XDG_DATA_HOME/tinted-theming/tinty",
-      "$XDG_CONFIG_HOME/nono/profiles"
+      "$XDG_CONFIG_HOME/nono/profiles",
+      "$HOME/.m2/settings.xml"
     ],
     "unix_socket": [
       "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock",
@@ -76,15 +79,11 @@
       "git_config",
       "mise_manager",
       "node_runtime",
-      {
-        "name": "user_caches_macos",
-        "when": "macos"
-      },
       "unlink_protection"
     ]
   },
   "meta": {
-    "description": "Base of the claude and pi profiles: shared skills, agent state, toolchains, the 1Password SSH agent for commit signing, and GitHub through the credential proxy. jj may write only its per-repository state, since jj outside the sandbox runs its config",
+    "description": "Base of the claude and pi profiles: shared skills, agent state, the 1Password SSH agent for commit signing, and GitHub through the credential proxy. Toolchains, their caches, and the Maven repository live in a sandbox-only home, and jj's per-repository config stays read-only, since the host runs what both hold",
     "name": "agents",
     "version": "2.0.0"
   },

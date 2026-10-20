@@ -1,6 +1,5 @@
 {
   "$schema": "https://nono.sh/schemas/nono-profile.schema.json",
-  "allow_launch_services": true,
   "diagnostics": {
     "suppress_system_services": [
       "forbidden-exec-sugid"
@@ -41,14 +40,6 @@
       "rust_runtime",
       "python_runtime",
       {
-        "name": "vscode_macos",
-        "when": "macos"
-      },
-      {
-        "name": "vscode_linux",
-        "when": "linux"
-      },
-      {
         "name": "linux_sysfs_read",
         "when": "linux"
       },
@@ -79,6 +70,15 @@
       "https://api.anthropic.com",
       "https://platform.claude.com"
     ]
+  },
+  "platform_overrides": {
+    "macos": {
+      "filesystem": {
+        "allow": [
+          "$HOME/Library/Caches/claude-cli-nodejs"
+        ]
+      }
+    }
   },
   "rollback": {
     "exclude_globs": [
