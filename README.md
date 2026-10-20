@@ -52,43 +52,20 @@ tinty.
 
 ## Agent sandbox
 
-`claude` and `pi` always start in a [nono](https://nono.dev) sandbox, the only
-sandbox layer. The profile grants writes to the working directory and the
-agent's state. Each toolchain gets a home of its own inside the sandbox. The
-keychain stays denied. Secrets never enter the sandbox: nono's credential proxy
-injects the Claude token and a fine-grained GitHub token into requests, and the
-sandbox holds only placeholders. The 1Password SSH agent stays reachable for
-commit signing. The profiles live in `modules/agents/.config/nono/profiles/`.
-Store the Claude token once with
-`security add-generic-password -s nono -a claude_code_oauth_token -w`, pasting
-what `claude setup-token` prints. Store a fine-grained GitHub token per account
-as the password of the 1Password item `nono-github-<account>` in the `Private`
-vault. The proxy picks the account that git config `github.user` names for the
-repository, or else the active `gh` account.
+`claude` and `pi` start in a [nono](https://nono.dev) sandbox. nono's credential
+proxy adds the Claude and GitHub tokens to outgoing requests, so the sandbox
+holds only placeholders. `agents vm` runs Claude Code in a
+[Lima](https://lima-vm.io) VM on a copy of the repository instead.
 
-`agents vm` runs Claude Code in a Lima VM on a copy of the repository, and
-`agents vm take` applies the copy's changes to the host. There the VM serves as
-the sandbox. `--github` passes the session the GitHub token. `agents vm set`
-stores the Claude and GitHub tokens, and `agents vm update` rebuilds the VM.
-`agents skills` refreshes the shared agent skills, and `agents trace` reports
-failed tool calls in Claude Code sessions.
+## Private files
 
-## Make it yours
-
-Private files, such as the git and jj identity, live in one archive encrypted
-with [age](https://age-encryption.org), `private/home.tar.age`, which mirrors
-`$HOME` and hides the file names. Deploy decrypts it into `~` with the key in
-1Password at `op://Dev/dotfiles-age-key/password` when the archive changed, and
-skips a file edited since. `dots repair` decrypts it again. After editing one,
-or to add one, encrypt it back:
+Private files, such as the git and jj identity, live in an
+[age](https://age-encryption.org)-encrypted archive, `private/home.tar.age`.
+Encrypt an edited or new file back with:
 
 ```sh
 mise run encrypt ~/.config/git/identity
 ```
-
-The git config includes `~/.config/git/identity`, and jj reads
-`~/.config/jj/conf.d/identity.toml`. Both set the default account and one
-account per directory.
 
 ## Credits
 
