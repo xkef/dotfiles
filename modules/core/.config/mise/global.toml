@@ -10,6 +10,9 @@ idiomatic_version_file_enable_tools = ["node", "java"]
 # copy starts. Activation puts the active tools' own directories on PATH,
 # so the shims stay off it.
 activate_shims = false
+# GitHub rate-limits anonymous version lookups. mise asks gh for a token
+# only when it calls the API, so no shell exports one.
+github.credential_command = "gh auth token"
 
 # No global tools. Brew and pacman supply what every shell needs, and each
 # project pins the rest.

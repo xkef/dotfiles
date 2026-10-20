@@ -67,14 +67,3 @@ if set -q HOMEBREW_PREFIX
     set -a paths $HOMEBREW_PREFIX/opt/rustup/bin $HOMEBREW_PREFIX/bin $HOMEBREW_PREFIX/sbin
 end
 fish_add_path -gPm $paths /usr/local/bin
-
-# ── GitHub token for mise rate limits ────────────────
-# Not exported as GITHUB_TOKEN. That would pin gh and its git credential
-# helper to one account for the shell's lifetime and break per-repo
-# credential.username routing. gh reads the keyring, and mise gets its own
-# variable. The keyring lookup costs about 100ms, so only an interactive
-# shell pays for it. Scripts and `mise install` inherit the value.
-status is-interactive; or return
-if test -z "$MISE_GITHUB_TOKEN"; and command -q gh
-    set -gx MISE_GITHUB_TOKEN (gh auth token 2>/dev/null)
-end

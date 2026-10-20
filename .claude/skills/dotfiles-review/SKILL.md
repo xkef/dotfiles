@@ -44,11 +44,11 @@ Agents run under nono through `sb`, and in the Lima VM through `lima-agent`.
 Flag any change that lets a secret or a write reach an agent:
 
 - A profile in `modules/agents/.config/nono/profiles/` that grants a new path,
-  widens read to write, or gives `claude-strict` the gh config or the SSH agent
-  socket.
+  widens read to write, or lets the agent write a file the host later runs.
 - A token that reaches the sandbox through an exported variable such as
-  `MISE_GITHUB_TOKEN`, a file stored in plain text, or a command line.
-  `sb --strict` must strip every secret-looking variable.
+  `MISE_GITHUB_TOKEN`, a file stored in plain text, or a command line. The
+  profile's `deny_vars` must strip every secret-looking variable, and tokens
+  reach the agent only through the credential proxy.
 - A loosened deny rule in `modules/agents/.claude/settings.dotfiles.json`, a
   hook that now exits 0 where it exited 2, or a new way past the sandbox.
 - A workflow with an action not pinned by commit hash, a broader `permissions`

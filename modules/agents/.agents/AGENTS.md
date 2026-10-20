@@ -8,9 +8,10 @@ The active nono profile also allows these paths:
 - Read access to the toolchain and config paths the agent needs, typically the
   mise, cargo, npm, jj, and gh directories.
 - A sandbox-only toolchain home under `$XDG_CACHE_HOME/agents-sandbox`. The
-  profile points `CARGO_HOME`, `RUSTUP_HOME`, `GOPATH`, the uv directories, and
-  the Maven repository there, since the host runs what its own homes hold. A
-  fresh home has no default Rust toolchain, so run `rustup default stable` once.
+  profile points `CARGO_HOME`, `RUSTUP_HOME`, `GOPATH`, the uv directories, the
+  npm cache, and the Maven repository there, since the host runs what its own
+  homes hold. A fresh home has no default Rust toolchain, so run
+  `rustup default stable` once.
 - The 1Password SSH agent socket, for commit signing.
 
 Tool installs into the host's directories on `PATH`, such as `mise install`,

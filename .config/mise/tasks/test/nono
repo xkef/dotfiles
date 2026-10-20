@@ -35,11 +35,12 @@ verdict() {
 }
 
 # The host runs what these hold, outside the sandbox: toolchains, crate
-# sources, jars, jj's per-repository config, and VS Code extensions.
+# sources, jars, npx packages, jj's per-repository config, and VS Code
+# extensions.
 host_paths=("$XDG_DATA_HOME/rustup/toolchains" "$XDG_DATA_HOME/uv/tools"
   "$XDG_DATA_HOME/go/bin" "$XDG_DATA_HOME/cargo/registry/src"
   "$XDG_CACHE_HOME/uv" "$HOME/.m2/repository" "$XDG_CONFIG_HOME/jj/repos"
-  "$HOME/.vscode/extensions")
+  "$HOME/.npm/_npx" "$HOME/.vscode/extensions")
 if [ "$(uname)" = Darwin ]; then
   host_paths+=("$HOME/Library/Caches/go-build"
     "$HOME/Library/Application Support/Code/User")
@@ -49,7 +50,7 @@ fi
 # home that the profile doesn't set would point at the host's.
 homes=$(jq -r '.environment.set_vars // {} | to_entries[] | "\(.key)=\(.value)"' "$profiles/agents.json")
 home_vars=(CARGO_HOME RUSTUP_HOME GOPATH GOBIN GOCACHE UV_CACHE_DIR
-  UV_PYTHON_INSTALL_DIR UV_TOOL_DIR UV_TOOL_BIN_DIR MAVEN_USER_HOME)
+  UV_PYTHON_INSTALL_DIR UV_TOOL_DIR UV_TOOL_BIN_DIR npm_config_cache MAVEN_USER_HOME)
 home_paths=()
 for var in "${home_vars[@]}"; do
   value=$(printf '%s\n' "$homes" | sed -n "s/^$var=//p")

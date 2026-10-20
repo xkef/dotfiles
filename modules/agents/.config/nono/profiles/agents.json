@@ -2,16 +2,22 @@
   "$schema": "https://nono.sh/schemas/nono-profile.schema.json",
   "credential_capture": {
     "github": {
-      "command": ["gh", "auth", "token"],
-      "cache_ttl_secs": 900
+      "command": [
+        "/bin/sh",
+        "-c",
+        "PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin; op read -n \"op://Private/nono-github-$(git config --get github.user || gh config get -h github.com user)/password\""
+      ],
+      "cache_ttl_secs": 900,
+      "timeout_secs": 60
     },
     "github_git": {
       "command": [
         "/bin/sh",
         "-c",
-        "PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin; printf 'x-access-token:%s' \"$(gh auth token)\""
+        "PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin; printf 'x-access-token:%s' \"$(op read -n \"op://Private/nono-github-$(git config --get github.user || gh config get -h github.com user)/password\")\""
       ],
-      "cache_ttl_secs": 900
+      "cache_ttl_secs": 900,
+      "timeout_secs": 60
     }
   },
   "environment": {
@@ -40,8 +46,12 @@
       "UV_PYTHON_INSTALL_DIR": "$XDG_CACHE_HOME/agents-sandbox/uv/python",
       "UV_TOOL_DIR": "$XDG_CACHE_HOME/agents-sandbox/uv/tools",
       "UV_TOOL_BIN_DIR": "$XDG_CACHE_HOME/agents-sandbox/uv/bin",
+      "npm_config_cache": "$XDG_CACHE_HOME/agents-sandbox/npm",
       "MAVEN_USER_HOME": "$XDG_CACHE_HOME/agents-sandbox/m2",
-      "MAVEN_OPTS": "-Dmaven.repo.local=$XDG_CACHE_HOME/agents-sandbox/m2/repository"
+      "MAVEN_OPTS": "-Dmaven.repo.local=$XDG_CACHE_HOME/agents-sandbox/m2/repository",
+      "GIT_CONFIG_COUNT": "1",
+      "GIT_CONFIG_KEY_0": "credential.helper",
+      "GIT_CONFIG_VALUE_0": ""
     }
   },
   "extends": "default",
@@ -50,7 +60,6 @@
       "$HOME/.agents",
       "$XDG_STATE_HOME/agents",
       "$XDG_CACHE_HOME/agents-sandbox",
-      "$HOME/.npm",
       "$XDG_CACHE_HOME/mise"
     ],
     "bypass_protection": [

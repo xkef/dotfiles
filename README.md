@@ -56,12 +56,15 @@ tinty.
 sandbox layer. The profile grants writes to the working directory and the
 agent's state. Each toolchain gets a home of its own inside the sandbox. The
 keychain stays denied. Secrets never enter the sandbox: nono's credential proxy
-injects the Claude token and the GitHub token from `gh auth token` into
-requests, and the sandbox holds only placeholders. The 1Password SSH agent stays
-reachable for commit signing. The profiles live in
-`modules/agents/.config/nono/profiles/`. Store the Claude token once with
+injects the Claude token and a fine-grained GitHub token into requests, and the
+sandbox holds only placeholders. The 1Password SSH agent stays reachable for
+commit signing. The profiles live in `modules/agents/.config/nono/profiles/`.
+Store the Claude token once with
 `security add-generic-password -s nono -a claude_code_oauth_token -w`, pasting
-what `claude setup-token` prints.
+what `claude setup-token` prints. Store a fine-grained GitHub token per account
+as the password of the 1Password item `nono-github-<account>` in the `Private`
+vault. The proxy picks the account that git config `github.user` names for the
+repository, or else the active `gh` account.
 
 `agents vm` runs Claude Code in a Lima VM on a copy of the repository, and
 `agents vm take` applies the copy's changes to the host. There the VM serves as
