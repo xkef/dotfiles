@@ -24,7 +24,7 @@ function sb -d "Run a command inside a nono sandbox"
             # macOS can't nest Seatbelt, so Claude Code's own bash sandbox
             # stays off. With it on, every Bash command fails with
             # "sandbox_apply: Operation not permitted".
-            touch $HOME/.claude.json.lock
+            touch $HOME/.claude.json.lock $HOME/.claude.lock
             set -a cmd_args --settings (jq -c '.sandbox.enabled = false' $HOME/.claude/settings.dotfiles.json)
     end
 
