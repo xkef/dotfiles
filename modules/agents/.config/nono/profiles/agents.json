@@ -1,5 +1,5 @@
 {
-  "$schema": "https://nono.sh/schemas/nono-profile.schema.json",
+  "$schema": "https://raw.githubusercontent.com/nolabs-ai/nono/main/crates/nono-cli/data/nono-profile.schema.json",
   "credential_capture": {
     "github": {
       "command": [
