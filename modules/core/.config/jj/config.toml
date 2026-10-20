@@ -80,6 +80,10 @@ examine = ["log", "-T", "builtin_log_detailed", "-p", "-r"]
 nt = ["new", "trunk()"]
 retrunk = ["rebase", "-o", "trunk()"]
 reheat = ["rebase", "-o", "trunk()", "-s", "roots(trunk()..stack(@))"]
+# Fetch, then move every mutable stack onto the new trunk.
+sync = ["util", "exec", "--", "sh", "-c", """
+jj git fetch "$@" && jj rebase -o 'trunk()' -s 'roots(trunk()..mutable())'
+""", ""]
 tug = ["bookmark", "advance"]
 consume = ["squash", "--into", "@", "--from"]
 eject = ["squash", "--from", "@", "--into"]
