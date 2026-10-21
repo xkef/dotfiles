@@ -9,5 +9,9 @@ cask "firefox@developer-edition"                    # Firefox Developer Edition 
 cask "handy"                                        # offline speech-to-text app
 cask "hiddenbar"                                    # hide menu bar icons
 cask "rectangle"                                    # window snapping via keyboard
+cask "syntax-highlight"                             # QuickLook: source code
+cask "qlmarkdown"                                   # QuickLook: Markdown
+cask "qlvideo"                                      # QuickLook: mkv, webm, and other video
+cask "suspicious-package"                           # QuickLook: installer packages
 cask "font-jetbrains-mono-nerd-font"                # patched dev font with icons
 
