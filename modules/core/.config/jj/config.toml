@@ -63,6 +63,10 @@ log = 'ancestors(reachable(mine() | @, mutable()), 2) | trunk() | @'
 bookmark-advance-to = '@-'
 
 [revset-aliases]
+# Other authors' unmerged commits count as immutable. A stack on a
+# colleague's branch then can't rewrite their commits, and log and
+# stack() stop pulling them and their merges in.
+'immutable_heads()' = 'builtin_immutable_heads() | (trunk().. & ~mine())'
 'stack()' = 'ancestors(reachable(@, mutable()), 2)'
 'stack(x)' = 'ancestors(reachable(x, mutable()), 2)'
 
@@ -80,9 +84,11 @@ examine = ["log", "-T", "builtin_log_detailed", "-p", "-r"]
 nt = ["new", "trunk()"]
 retrunk = ["rebase", "-o", "trunk()"]
 reheat = ["rebase", "-o", "trunk()", "-s", "roots(trunk()..stack(@))"]
-# Fetch, then move every mutable stack onto the new trunk.
+# Fetch, then move every mutable stack that sits on trunk history onto
+# the new trunk. A stack on an unmerged colleague branch stays put until
+# that branch merges into trunk.
 sync = ["util", "exec", "--", "sh", "-c", """
-jj git fetch "$@" && jj rebase -o 'trunk()' -s 'roots(trunk()..mutable())'
+jj git fetch "$@" && jj rebase -o 'trunk()' -s 'roots(trunk()..mutable()) & children(::trunk())'
 """, ""]
 tug = ["bookmark", "advance"]
 consume = ["squash", "--into", "@", "--from"]
