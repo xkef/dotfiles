@@ -419,7 +419,7 @@ apply com.apple.dock mru-spaces -bool false
 apply com.apple.dock launchanim -bool false
 apply com.apple.dock expose-animation-duration -float 0.1
 apply com.apple.dock tilesize -int 36
-apply com.apple.dock expose-group-apps -bool true
+apply com.apple.dock expose-group-apps -bool false
 apply com.apple.dock minimize-to-application -bool true
 # Hot corner value 1 means no action.
 apply com.apple.dock wvous-br-corner -int 1
