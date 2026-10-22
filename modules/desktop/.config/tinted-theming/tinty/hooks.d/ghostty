@@ -45,6 +45,21 @@ if set -q index[1]
     set -l theme $builtin[(math 2 \* $index)]
     rm -f $config_dir/theme
     echo "theme = $theme" >$config_dir/theme
+
+    # Built-in themes set only palette 0-15. delta's base16-256 syntax
+    # theme reads base09, base0F, base01, base02, base04, and base06 from
+    # 16-21, which otherwise stay xterm's defaults, starting with black.
+    set -l slot 16
+    for name in 09 0F 01 02 04 06
+        set -l hex
+        for c in R G B
+            set -l v TINTY_SCHEME_PALETTE_BASE{$name}_HEX_$c
+            set -a hex $$v
+        end
+        test (count $hex) -eq 3; or break
+        printf 'palette = %d=#%s%s%s\n' $slot $hex >>$config_dir/theme
+        set slot (math $slot + 1)
+    end
 else
     set -l theme_file $tinty/repos/tinted-terminal/themes/ghostty/$scheme
     test -f $theme_file; or exit 0
