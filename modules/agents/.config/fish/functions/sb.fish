@@ -57,6 +57,11 @@ function sb -d "Run a command inside a nono sandbox"
     # store, so the proxy's CA must sit there for gh to reach GitHub
     # through the credential proxy.
     test (uname) = Darwin; and set -a nono_args --trust-proxy-ca
+    # The proxy CA lives one day by default, and sessions share the
+    # keychain copy, so a session that starts on a day-old CA fails TLS
+    # with "certificate has expired" within hours. A week outlasts any
+    # session.
+    set -a nono_args --proxy-ca-validity 7
 
     # macOS logs the sandbox denials where only an unsandboxed process may
     # read them, so a recorder streams them while the agent runs, and
