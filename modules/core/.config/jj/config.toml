@@ -87,9 +87,17 @@ reheat = ["rebase", "-o", "trunk()", "-s", "roots(trunk()..stack(@))"]
 # Fetch, then move every mutable stack that sits on trunk history onto
 # the new trunk. A stack on an unmerged colleague branch stays put until
 # that branch merges into trunk.
-sync = ["util", "exec", "--", "sh", "-c", """
+sync = [
+  "util",
+  "exec",
+  "--",
+  "sh",
+  "-c",
+  """
 jj git fetch "$@" && jj rebase -o 'trunk()' -s 'roots(trunk()..mutable()) & children(::trunk())'
-""", ""]
+""",
+  "",
+]
 tug = ["bookmark", "advance"]
 consume = ["squash", "--into", "@", "--from"]
 eject = ["squash", "--from", "@", "--into"]
