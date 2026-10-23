@@ -43,3 +43,8 @@ mise, as in this `mise.local.toml`:
 Don't run `gh auth switch`. It misroutes concurrent sessions. A stray
 `GITHUB_TOKEN` in the environment pins plain `gh` to that account. `GH_TOKEN`
 overrides it, or prefix the command with `env -u GITHUB_TOKEN`.
+
+## Verification
+
+Run `mise run lint` and `mise run check` before every commit, and fix what they
+report. CI runs both, so a skipped run breaks main.
