@@ -79,6 +79,14 @@ if [[ "$(uname -s)" == Linux ]] && command -v podman >/dev/null; then
     echo "warning: podman.socket not enabled; docker clients can't reach podman" >&2
 fi
 
+# On macOS the helper links /var/run/docker.sock to the machine's socket
+# at each `podman machine start`, so Docker clients need no DOCKER_HOST.
+helper_plist="/Library/LaunchDaemons/com.github.containers.podman.helper-$USER.plist"
+if [[ "$(uname -s)" == Darwin && ! -f "$helper_plist" ]] && command -v podman-mac-helper >/dev/null; then
+  sudo podman-mac-helper install ||
+    echo "warning: podman-mac-helper not installed; docker clients can't reach podman" >&2
+fi
+
 # Clones the template repos the tinty config names, then applies the last
 # scheme, or the default one on a fresh machine.
 setup/onchange tinty modules/core/.config/tinted-theming/tinty/config.toml -- \

@@ -1,11 +1,5 @@
 # ── Podman compatibility ─────────────────────────────
-if command -q podman
-    if test (uname) = Darwin
-        function lazydocker --wraps lazydocker
-            set -l sock (podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}' 2>/dev/null)
-            DOCKER_HOST="unix://$sock" command lazydocker $argv
-        end
-    else
-        set -gx DOCKER_HOST "unix://$XDG_RUNTIME_DIR/podman/podman.sock"
-    end
+# macOS needs no DOCKER_HOST: podman-mac-helper links /var/run/docker.sock.
+if command -q podman; and test (uname) != Darwin
+    set -gx DOCKER_HOST "unix://$XDG_RUNTIME_DIR/podman/podman.sock"
 end
