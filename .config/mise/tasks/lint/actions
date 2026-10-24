@@ -4,5 +4,7 @@ set -eu
 
 # zizmor rejects an empty token, which agent sandboxes set. Without a
 # token it skips the audits that query GitHub.
-[ -n "${GITHUB_TOKEN:-}" ] || unset GITHUB_TOKEN
+for var in GH_TOKEN GITHUB_TOKEN ZIZMOR_GITHUB_TOKEN; do
+  [ -n "${!var:-}" ] || unset "$var"
+done
 zizmor .
