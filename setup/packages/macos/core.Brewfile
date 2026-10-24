@@ -1,4 +1,5 @@
 tap "tinted-theming/tinted" # tinty
+tap "slp/krun", trusted: true # krunkit
 brew "git"                  # version control
 brew "less"                 # pager (used as $PAGER)
 brew "gh"                   # GitHub from the command line
@@ -48,6 +49,7 @@ brew "jdtls"                # Java language server (helix; nvim uses Mason's)
 cask "kotlin-lsp"           # Kotlin language server
 brew "podman"               # rootless container engine
 brew "docker-compose"       # compose provider for podman compose
+brew "krunkit"              # libkrun VM runner for podman machine
 brew "lazydocker"           # terminal UI for Docker/Podman
 brew "fx"                   # terminal JSON viewer
 brew "scooter"              # interactive find-and-replace TUI
