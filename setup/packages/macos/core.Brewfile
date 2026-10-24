@@ -1,4 +1,4 @@
-tap "tinted-theming/tinted" # tinty
+tap "tinted-theming/tinted", trusted: true # tinty
 tap "slp/krun", trusted: true # krunkit
 brew "git"                  # version control
 brew "less"                 # pager (used as $PAGER)
