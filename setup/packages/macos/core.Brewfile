@@ -50,6 +50,7 @@ cask "kotlin-lsp"           # Kotlin language server
 brew "podman"               # rootless container engine
 brew "docker-compose"       # compose provider for podman compose
 brew "krunkit"              # libkrun VM runner for podman machine
+brew "skopeo"               # registry image inspection (imgarch)
 brew "lazydocker"           # terminal UI for Docker/Podman
 brew "fx"                   # terminal JSON viewer
 brew "scooter"              # interactive find-and-replace TUI

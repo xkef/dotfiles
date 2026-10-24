@@ -49,6 +49,7 @@ stylua          # Lua formatter (helix)
 taplo-cli       # TOML formatter (helix)
 podman          # rootless container engine
 docker-compose  # compose provider for podman compose
+skopeo          # registry image inspection (imgarch)
 lazydocker      # terminal UI for Docker/Podman
 fx              # terminal JSON viewer
 yazi            # terminal file manager
