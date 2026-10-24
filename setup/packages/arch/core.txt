@@ -48,6 +48,7 @@ dprint          # formatter (LazyVim, with a dprint config)
 stylua          # Lua formatter (helix)
 taplo-cli       # TOML formatter (helix)
 podman          # rootless container engine
+docker-compose  # compose provider for podman compose
 lazydocker      # terminal UI for Docker/Podman
 fx              # terminal JSON viewer
 yazi            # terminal file manager

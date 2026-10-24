@@ -47,6 +47,7 @@ brew "taplo"                # TOML formatter (helix)
 brew "jdtls"                # Java language server (helix; nvim uses Mason's)
 cask "kotlin-lsp"           # Kotlin language server
 brew "podman"               # rootless container engine
+brew "docker-compose"       # compose provider for podman compose
 brew "lazydocker"           # terminal UI for Docker/Podman
 brew "fx"                   # terminal JSON viewer
 brew "scooter"              # interactive find-and-replace TUI
