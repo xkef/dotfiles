@@ -3,9 +3,9 @@
 # in setup/dotter, so a plain `dotter deploy` doesn't find them. The local
 # config and the cache live in ~/.local/state/dotter, not in the repo,
 # because a Lima VM mounts the same checkout. The first run writes a local
-# config that selects every package, or core and agents inside a VM. Edit
-# the packages list in ~/.local/state/dotter/local.toml to change the
-# selection. Arguments pass through to dotter, as in
+# config that selects core, desktop, and agents, or core and agents inside
+# a VM. Extras such as wezterm go in the packages list in
+# ~/.local/state/dotter/local.toml by hand. Arguments pass through to dotter, as in
 # `setup/deploy --dry-run`.
 #
 # Homebrew and paru install dotter from the package lists. The first
