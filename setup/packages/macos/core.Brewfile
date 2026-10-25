@@ -1,4 +1,3 @@
-tap "libkrun/krun", trusted: true # krunkit
 brew "git"                  # version control
 brew "less"                 # pager (used as $PAGER)
 brew "gh"                   # GitHub from the command line
@@ -42,7 +41,6 @@ brew "rumdl"                # markdown linter and formatter (LazyVim, with a rum
 brew "dprint"               # formatter (LazyVim, with a dprint config)
 brew "podman"               # rootless container engine
 brew "docker-compose"       # compose provider for podman compose
-brew "libkrun/krun/krunkit" # libkrun VM runner for podman machine
 brew "skopeo"               # registry image inspection (imgarch)
 brew "lazydocker"           # terminal UI for Docker/Podman
 brew "fx"                   # terminal JSON viewer
