@@ -30,6 +30,13 @@ cd "$tmp"
 find . -type f | while IFS= read -r file; do
   target="$HOME/${file#./}"
 
+  # The archive only adds files. A link points into the repo, as dotter's
+  # do, and cp would write the private content into the tracked file.
+  if [[ -L "$target" ]]; then
+    echo "private: skipped $target, a link into the repo; the archive only adds files" >&2
+    continue
+  fi
+
   # A plaintext newer than its archived copy holds edits not yet
   # encrypted. The archive keeps each file's mtime, and decrypt copies it.
   if [[ "$target" -nt "$file" ]]; then

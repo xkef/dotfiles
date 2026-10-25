@@ -91,4 +91,26 @@ grep -qx edited "$tmp/home/.config/git/identity" || {
   echo "decrypt overwrote an edited plaintext"
   exit 1
 }
+
+# The archive only adds files. A link at an archived path points into the
+# repo, as dotter's links do, so decrypt leaves it alone instead of
+# writing private content into a tracked file. encrypt refuses links.
+tracked="$tmp/tracked"
+mkdir -p "$tracked" "$tmp/home/.config/fish"
+local_fish="$tmp/home/.config/fish/local.fish"
+echo private >"$local_fish"
+encrypt "$local_fish"
+rm "$local_fish"
+echo tracked >"$tracked/local.fish"
+touch -t 200001010000 "$tracked/local.fish"
+ln -s "$tracked/local.fish" "$local_fish"
+decrypt 2>/dev/null
+grep -qx tracked "$tracked/local.fish" || {
+  echo "decrypt wrote through a link into a tracked file"
+  exit 1
+}
+if encrypt "$local_fish" 2>/dev/null; then
+  echo "encrypt accepted a link"
+  exit 1
+fi
 echo "private ok"

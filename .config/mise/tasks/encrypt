@@ -23,6 +23,12 @@ for file in "$@"; do
     echo "encrypt: $file is not an absolute path under \$HOME" >&2
     exit 1
   fi
+  # A link points into the repo, which owns that path. The archive only
+  # adds files at the include points the configs read.
+  if [[ -L "$file" ]]; then
+    echo "encrypt: $file is a link; the archive only adds files" >&2
+    exit 1
+  fi
 
   mkdir -p "$tmp/home/$(dirname "$relative")"
   cp -p "$file" "$tmp/home/$relative"
