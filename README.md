@@ -31,7 +31,6 @@ Lima VM gets `core` and `agents`. The extras `wezterm`, `helix`, `zed`, and
 | [Ghostty](https://ghostty.org)                                                     | Terminal that runs tmux, themed with the rest              |
 | [tmux](https://github.com/tmux/tmux) + [sesh](https://github.com/joshmedeski/sesh) | Multiplexer and sessions, with an agent picker             |
 | [WezTerm](https://wezterm.org)                                                     | Extra: terminal and multiplexer, on the tmux keys          |
-| `theme`                                                                            | Color themes for terminal, Neovim, Helix, delta, and pi    |
 | [television](https://github.com/alexpasmantier/television)                         | Fuzzy finder in the shell and the pickers                  |
 | [atuin](https://atuin.sh)                                                          | Searchable local shell history                             |
 | [Claude Code](https://claude.com/claude-code), [pi](https://pi.dev)                | AI coding agents, always launched in a nono sandbox        |
