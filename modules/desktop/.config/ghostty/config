@@ -13,10 +13,8 @@ minimum-contrast = 1.1
 macos-option-as-alt = left
 
 # ── Theme ─────────────────────────────────────────────
-# Tracked default only. `theme` switches schemes through tinty, whose
-# ghostty hook writes the untracked ./theme, a link to the scheme's
-# tinted-terminal file or a `theme =` line for a built-in scheme, and
-# reloads Ghostty. The optional include loads after this file, so it wins.
+# Tracked default only. The ghostty hook of `theme` links the untracked
+# ./theme to the theme's palette file and reloads Ghostty. The optional include loads after this file, so it wins.
 # The path is absolute because this file is a link into the dotfiles repo.
 theme = Catppuccin Frappe
 config-file = ?~/.config/ghostty/theme

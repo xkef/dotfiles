@@ -1,13 +1,45 @@
 #!/usr/bin/env fish
-# theme: switches the color scheme of WezTerm, Ghostty, Neovim, delta, and
-# pi through tinty, configured in ~/.config/tinted-theming/tinty/config.toml.
+# theme: switches the colors of the terminal, Neovim, delta, pi, and Helix.
+#
+# Each theme is a palette file in ~/.config/theme/palettes, in Ghostty's
+# theme format and named after its Neovim colorscheme. The name goes to
+# $XDG_STATE_HOME/theme/current, which WezTerm and Neovim read. Then every
+# hook in ~/.config/theme/hooks.d runs, one per package, with the theme in
+# THEME, its file in THEME_FILE, and its colors as rrggbb in
+# THEME_BACKGROUND, THEME_FOREGROUND, and THEME_COLOR_0 to THEME_COLOR_15.
+# Tools that use the 16 ANSI colors, such as fish, tv, bat, and tmux,
+# follow the terminal and need no hook.
 #
 # Usage:
-#   theme            Pick a scheme with tv
-#   theme <scheme>   Apply a scheme, such as base24-catppuccin-frappe
+#   theme            Pick a theme with tv
+#   theme <name>     Apply a theme, such as catppuccin-mocha
 #   theme auto       Match the system light or dark appearance
-#   theme --current  Print the current scheme
-#   theme --list     List the schemes
+#   theme --apply    Apply the current theme again
+#   theme --current  Print the current theme
+#   theme --list     List the themes
+
+set -g config_dir ~/.config/theme
+set -q XDG_CONFIG_HOME; and set config_dir $XDG_CONFIG_HOME/theme
+set -g state_dir ~/.local/state/theme
+set -q XDG_STATE_HOME; and set state_dir $XDG_STATE_HOME/theme
+
+# DOTS_THEME_DARK and DOTS_THEME_LIGHT override the defaults.
+set -g dark catppuccin-frappe
+set -q DOTS_THEME_DARK; and set dark $DOTS_THEME_DARK
+set -g light catppuccin-latte
+set -q DOTS_THEME_LIGHT; and set light $DOTS_THEME_LIGHT
+
+function _current
+    test -f $state_dir/current
+    and read -l name <$state_dir/current
+    and test -f $config_dir/palettes/$name
+    and echo $name
+    or echo $dark
+end
+
+function _list
+    path basename $config_dir/palettes/*
+end
 
 # Checks the system appearance on macOS and GNOME.
 function _system_is_dark
@@ -26,31 +58,49 @@ function _system_is_dark
     end
 end
 
-# Defaults to Catppuccin Latte for light and Catppuccin Frappe for dark.
-# DOTS_THEME_LIGHT and DOTS_THEME_DARK override them.
-function _auto_theme
-    set -l light (set -q DOTS_THEME_LIGHT && echo $DOTS_THEME_LIGHT || echo base24-catppuccin-latte)
-    set -l dark (set -q DOTS_THEME_DARK && echo $DOTS_THEME_DARK || echo base24-catppuccin-frappe)
-    if _system_is_dark
-        tinty apply $dark
-    else
-        tinty apply $light
+function _apply -a name
+    set -l file $config_dir/palettes/$name
+    if not test -f $file
+        echo "theme: no theme named $name. Run 'theme --list'." >&2
+        return 1
+    end
+
+    set -gx THEME $name
+    set -gx THEME_FILE (path resolve $file)
+    for line in (string match -r '^\w[\w-]* = .*' <$file)
+        if set -l m (string match -rg '^palette = (\d+)=#([0-9a-fA-F]{6})$' -- $line)
+            set -gx THEME_COLOR_$m[1] (string lower $m[2])
+        else if set -l m (string match -rg '^(background|foreground) = #([0-9a-fA-F]{6})$' -- $line)
+            set -gx THEME_(string upper $m[1]) (string lower $m[2])
+        end
+    end
+
+    mkdir -p $state_dir
+    echo $name >$state_dir/current
+    for hook in $config_dir/hooks.d/*
+        test -x $hook; and $hook
     end
 end
 
 switch "$argv[1]"
     case --current
-        tinty current
+        _current
     case --list -l
-        tinty list
+        _list
+    case --apply
+        _apply (_current)
     case auto
-        _auto_theme
+        if _system_is_dark
+            _apply $dark
+        else
+            _apply $light
+        end
     case --help -h
         sed -n 's/^#   //p' (status filename)
     case ''
-        set -l scheme (tinty list | tv --no-preview --input-header theme --input (tinty current 2>/dev/null))
-        test -n "$scheme"; or return
-        tinty apply $scheme
+        set -l name (_list | tv --no-preview --input-header theme --input (_current))
+        test -n "$name"; or return
+        _apply $name
     case '*'
-        tinty apply $argv[1]
+        _apply $argv[1]
 end

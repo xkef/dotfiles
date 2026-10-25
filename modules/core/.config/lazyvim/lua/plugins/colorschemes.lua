@@ -1,12 +1,6 @@
--- Colorschemes, all lazy-loaded. require("theme").apply() maps the current
--- tinty scheme to one of these, and renders any other scheme through
--- tinted-nvim.
+-- Colorschemes, all lazy-loaded. require("theme").apply() loads the one
+-- that `theme` applied, by name.
 return {
-  {
-    "tinted-theming/tinted-nvim",
-    lazy = true,
-    opts = { apply_scheme_on_startup = false },
-  },
 
   {
     "catppuccin/nvim",
@@ -39,15 +33,6 @@ return {
     lazy = true,
     opts = {
       dimInactive = true,
-    },
-  },
-
-  {
-    "neanias/everforest-nvim",
-    version = false,
-    lazy = true,
-    opts = {
-      italics = true,
     },
   },
 }

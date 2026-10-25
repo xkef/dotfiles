@@ -1,0 +1,11 @@
+#!/usr/bin/env fish
+# theme hook: links ~/.config/ghostty/theme, which the Ghostty config
+# includes, to the theme's palette file, then reloads running Ghostty
+# instances. Ghostty reloads its config on SIGUSR2. Without a Ghostty
+# config the hook does nothing.
+
+set -l config_dir ~/.config/ghostty
+test -f $config_dir/config; or exit 0
+
+ln -sf $THEME_FILE $config_dir/theme
+pkill -USR2 -x ghostty; or true

@@ -1,0 +1,19 @@
+#!/usr/bin/env fish
+# theme hook: writes ~/.config/helix/themes/current.toml, which inherits
+# Helix's built-in copy of the theme, then reloads running Helix
+# instances. Helix reloads its config on SIGUSR1.
+
+# Helix names most themes as Neovim does, with underscores. These differ.
+set -l name (string replace -a - _ $THEME)
+switch $THEME
+    case tokyonight-night
+        set name tokyonight
+    case kanagawa-wave
+        set name kanagawa
+    case kanagawa-dragon
+        set name kanagawa-dragon
+end
+
+mkdir -p ~/.config/helix/themes
+echo "inherits = \"$name\"" >~/.config/helix/themes/current.toml
+pkill -USR1 -x hx; or true

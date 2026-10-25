@@ -1,6 +1,6 @@
 -- Tab titles and the status line, a plain bar at the bottom. Every
--- color names an ANSI slot, so a tinty switch recolors the bar with the
--- terminal.
+-- color names an ANSI slot, so a `theme` switch recolors the bar with
+-- the terminal.
 local wezterm = require("wezterm")
 local vm = require("vm")
 local path = require("path")

@@ -16,10 +16,9 @@ vim.pack.add({
   gh("nvim-mini/mini.nvim"),
 })
 
--- The fallback nvim keeps a fixed theme. The LazyVim config follows the
--- tinty scheme. Frappe matches tinty's default scheme, and the transparent
--- background shows the terminal's, so only the background follows the
--- scheme.
+-- kickstart keeps a fixed theme. The LazyVim config follows `theme`.
+-- Frappe matches its default theme, and the transparent background shows
+-- the terminal's, so only the background follows the theme.
 require("catppuccin").setup({ flavour = "frappe", transparent_background = true })
 vim.cmd.colorscheme("catppuccin-nvim")
 

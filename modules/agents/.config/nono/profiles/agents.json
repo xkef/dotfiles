@@ -74,7 +74,7 @@
       "$XDG_CONFIG_HOME/git",
       "$XDG_CONFIG_HOME/jj",
       "$XDG_CONFIG_HOME/jj/repos",
-      "$XDG_DATA_HOME/tinted-theming/tinty",
+      "$XDG_STATE_HOME/theme",
       "$XDG_CONFIG_HOME/nono/profiles",
       "$HOME/.m2/settings.xml"
     ],

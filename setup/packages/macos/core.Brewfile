@@ -1,4 +1,3 @@
-tap "tinted-theming/tinted", trusted: true # tinty
 tap "libkrun/krun", trusted: true # krunkit
 brew "git"                  # version control
 brew "less"                 # pager (used as $PAGER)
@@ -15,7 +14,6 @@ brew "tmux"                 # terminal multiplexer
 brew "sesh"                 # tmux session manager
 brew "neovim"               # text editor
 brew "tree-sitter-cli"      # parser generator CLI (nvim-treesitter build)
-brew "tinty"                # color scheme switcher
 brew "presenterm"           # markdown-driven terminal slides
 brew "eza"                  # modern ls replacement
 brew "bat"                  # cat with syntax highlighting

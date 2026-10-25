@@ -37,7 +37,7 @@ packages = ["core", "desktop", "agents", "wezterm"]
 | [Ghostty](https://ghostty.org)                                                     | Terminal that runs tmux, themed with the rest              |
 | [tmux](https://github.com/tmux/tmux) + [sesh](https://github.com/joshmedeski/sesh) | Multiplexer and sessions, with an agent picker             |
 | [WezTerm](https://wezterm.org)                                                     | Extra: terminal and multiplexer, on the tmux keys          |
-| [tinty](https://github.com/tinted-theming/tinty)                                   | Color themes for the terminal, Neovim, delta, and pi       |
+| `theme`                                                                            | Color themes for terminal, Neovim, Helix, delta, and pi    |
 | [television](https://github.com/alexpasmantier/television)                         | Fuzzy finder in the shell and the pickers                  |
 | [atuin](https://atuin.sh)                                                          | Searchable shell history with sync                         |
 | [Claude Code](https://claude.com/claude-code), [pi](https://pi.dev)                | AI coding agents, always launched in a nono sandbox        |
@@ -52,8 +52,9 @@ Neovim uses `Space` as leader, and WezTerm and tmux use `Ctrl-Space`. `leader ?`
 in WezTerm and tmux lists the bindings, and `Space` in Neovim opens the
 which-key menu.
 
-`dots theme` switches WezTerm, Ghostty, Neovim, delta, and pi together through
-tinty.
+`dots theme` switches Ghostty, WezTerm, Neovim, Helix, delta, and pi together.
+It offers Catppuccin, Tokyo Night, Rosé Pine, and Kanagawa, each a palette file
+in `modules/core/.config/theme/palettes`.
 
 ## Agent sandbox
 

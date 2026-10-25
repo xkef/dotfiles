@@ -1,9 +1,9 @@
 # ── Theme ────────────────────────────────────────────
-# bat uses the terminal ANSI colors, so it follows every tinty scheme.
+# bat uses the terminal ANSI colors, so it follows every theme.
 set -gx BAT_THEME ansi
 
 # The Tab pager copies tv's default theme, so completions and pickers
-# match. ANSI names keep both on the tinty scheme.
+# match. ANSI names keep both on the terminal theme.
 set -g fish_pager_color_completion brblue
 set -g fish_pager_color_prefix brred --bold
 set -g fish_pager_color_description white

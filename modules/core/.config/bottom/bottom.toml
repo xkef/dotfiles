@@ -1,8 +1,8 @@
 ## bottom config
 ## https://clementtsang.github.io/bottom/nightly/configuration/config-file/
 
-# The default theme uses named ANSI colors, so btm follows the tinty
-# scheme with no hook.
+# The default theme uses named ANSI colors, so btm follows the terminal
+# theme with no hook.
 #
 # Basic mode draws htop-style bars for each core, memory, and swap over
 # the process list, with no time graphs. It ignores custom layouts.

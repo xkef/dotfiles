@@ -14,7 +14,6 @@ tmux            # terminal multiplexer
 sesh-bin        # tmux session manager (AUR; ships an aarch64 binary)
 neovim          # text editor
 tree-sitter-cli # parser generator CLI (nvim-treesitter build)
-tinty-git       # color scheme switcher (AUR; no release package)
 presenterm      # markdown-driven terminal slides
 eza             # modern ls replacement
 bat             # cat with syntax highlighting

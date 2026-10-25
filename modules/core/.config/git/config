@@ -129,12 +129,13 @@
 	wtl = worktree list
 	wtr = worktree remove
 
-# ── Delta colors, written by `theme` through tinty ───
-# tinted-delta sets the syntax theme. The delta hook in tinty's hooks.d
-# writes the diff colors.
+# ── Delta colors, written by `theme` ─────────────────
+# The base16 syntax theme follows the terminal colors. The delta hook of
+# `theme` writes the diff colors.
+[delta]
+	syntax-theme = base16
 [include]
-	path = ~/.local/share/tinted-theming/tinty/tinted-delta-configs-file.gitconfig
-	path = ~/.local/share/tinted-theming/tinty/delta-colors.gitconfig
+	path = ~/.local/state/theme/delta.gitconfig
 
 # ── SSH signing through the SSH agent ────────────────
 [gpg]

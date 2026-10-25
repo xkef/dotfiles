@@ -87,10 +87,10 @@ if [[ "$(uname -s)" == Darwin && ! -f "$helper_plist" ]] && command -v podman-ma
     echo "warning: podman-mac-helper not installed; docker clients can't reach podman" >&2
 fi
 
-# Clones the template repos the tinty config names, then applies the last
-# scheme, or the default one on a fresh machine.
-setup/onchange tinty modules/core/.config/tinted-theming/tinty/config.toml -- \
-  sh -c 'tinty sync && tinty init'
+# Applies the last theme, or the default one on a fresh machine, so every
+# hook writes its files. It runs again when a palette or a hook changes.
+setup/onchange theme modules/core/.local/bin/theme modules/core/.config/theme/palettes/* \
+  modules/*/.config/theme/hooks.d/* -- ~/.local/bin/theme --apply
 
 # zoxide learns a directory only from a cd. The seed adds every repo and
 # every directory in atuin's history, so a fresh clone is jumpable before

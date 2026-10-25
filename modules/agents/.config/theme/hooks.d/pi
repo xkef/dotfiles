@@ -1,18 +1,9 @@
 #!/usr/bin/env fish
-# tinty hook: derives the pi theme from the tinted-terminal WezTerm color
-# file for tinty's current_scheme.
+# theme hook: derives the pi theme from the theme's palette.
 #
 # The tracked pi settings select the theme by name, "dots". pi watches the
 # active custom theme file and reloads it on change, so rewriting it
 # recolors running pi sessions. The file is machine-local and untracked.
-
-set -l data_home ~/.local/share
-set -q XDG_DATA_HOME; and set data_home $XDG_DATA_HOME
-set -l tinty $data_home/tinted-theming/tinty
-
-read -l scheme <$tinty/current_scheme; or exit 0
-set -l colors_file $tinty/repos/tinted-terminal/themes/wezterm/$scheme.toml
-test -f $colors_file; or exit 0
 
 # Blends two hex colors: _blend_hex bg fg weight, with weight from 0 to 100.
 function _blend_hex -a bg_hex fg_hex weight
@@ -23,27 +14,20 @@ function _blend_hex -a bg_hex fg_hex weight
     end
 end
 
-# The color file lists background and foreground as keys, then the 8 ansi
-# and 8 bright colors as arrays, in palette order.
-set -l bg (string match -rg '^background = "#([0-9a-fA-F]{6})"' <$colors_file | string lower)
-set -l fg (string match -rg '^foreground = "#([0-9a-fA-F]{6})"' <$colors_file | string lower)
-set -l palette (string match -rg '^\s+"#([0-9a-fA-F]{6})",?$' <$colors_file | string lower)
-if test (count $palette) -lt 16; or test -z "$bg"; or test -z "$fg"
-    echo "tinty pi hook: no palette in $colors_file" >&2
-    exit 1
-end
+set -l bg $THEME_BACKGROUND
+set -l fg $THEME_FOREGROUND
 
 set -l pi_agent_dir (set -q PI_CODING_AGENT_DIR && echo $PI_CODING_AGENT_DIR || echo $HOME/.pi/agent)
 if test -d $pi_agent_dir
-    set -l pi_red $palette[2]
-    set -l pi_green $palette[3]
-    set -l pi_yellow $palette[4]
-    set -l pi_blue $palette[5]
-    set -l pi_magenta $palette[6]
-    set -l pi_cyan $palette[7]
-    set -l pi_orange $palette[10]
-    set -l pi_br_magenta $palette[14]
-    set -l pi_br_cyan $palette[15]
+    set -l pi_red $THEME_COLOR_1
+    set -l pi_green $THEME_COLOR_2
+    set -l pi_yellow $THEME_COLOR_3
+    set -l pi_blue $THEME_COLOR_4
+    set -l pi_magenta $THEME_COLOR_5
+    set -l pi_cyan $THEME_COLOR_6
+    set -l pi_orange $THEME_COLOR_9
+    set -l pi_br_magenta $THEME_COLOR_13
+    set -l pi_br_cyan $THEME_COLOR_14
 
     # Blend the grays toward the foreground instead of taking the ANSI
     # bright-black slot, so the ramp inverts by itself under light themes.

@@ -1,0 +1,50 @@
+#!/usr/bin/env fish
+# theme hook: writes delta's diff colors for the theme to
+# $XDG_STATE_HOME/theme/delta.gitconfig, which ~/.config/git/config
+# includes. The base16 syntax theme follows the terminal colors, so delta
+# would otherwise draw its stock red and green backgrounds under every
+# theme. Changed lines keep the terminal background. Changed words blend
+# the theme's red and green into it.
+
+set -l state_home ~/.local/state
+set -q XDG_STATE_HOME; and set state_home $XDG_STATE_HOME
+set -l out $state_home/theme/delta.gitconfig
+
+# Prints a rrggbb color mixed into the background at the given ratio.
+function _mix -a color ratio
+    set -l rgb
+    for i in 1 3 5
+        set -l bg 0x(string sub -s $i -l 2 $THEME_BACKGROUND)
+        set -l fg 0x(string sub -s $i -l 2 $color)
+        set -a rgb (math "round($bg + ($fg - $bg) * $ratio)")
+    end
+    printf '#%02x%02x%02x' $rgb
+end
+
+# Line numbers and rules use the foreground at a contrast that stays
+# readable on light and dark themes.
+set -l muted (_mix $THEME_FOREGROUND 0.45)
+set -l red $THEME_COLOR_1
+set -l green $THEME_COLOR_2
+set -l blue $THEME_COLOR_4
+set -l magenta $THEME_COLOR_5
+set -l cyan $THEME_COLOR_6
+
+# map-styles recolors the lines that git's diff.colorMoved marks as moved.
+printf '%s\n' \
+    '# Written by the delta theme hook. Changes are lost on `theme`.' \
+    '[delta]' \
+    "	minus-style = syntax" \
+    "	minus-emph-style = syntax \"$(_mix $red 0.28)\"" \
+    "	plus-style = syntax" \
+    "	plus-emph-style = syntax \"$(_mix $green 0.28)\"" \
+    "	map-styles = \"bold purple => syntax $(_mix $magenta 0.18), bold cyan => syntax $(_mix $cyan 0.18)\"" \
+    "	line-numbers-minus-style = \"#$red\"" \
+    "	line-numbers-plus-style = \"#$green\"" \
+    "	line-numbers-zero-style = \"$muted\"" \
+    "	line-numbers-left-style = \"$muted\"" \
+    "	line-numbers-right-style = \"$muted\"" \
+    "	file-style = bold \"#$THEME_FOREGROUND\" \"$(_mix $blue 0.2)\"" \
+    "	file-decoration-style = none" \
+    "	hunk-header-decoration-style = none" \
+    "	hunk-header-line-number-style = \"$muted\"" >$out

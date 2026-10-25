@@ -2,7 +2,7 @@
 -- process. Each module owns one concern:
 --
 --   path.lua        PATH for panes and helper programs
---   colors.lua      the palette of the tinty scheme that `theme` applied
+--   colors.lua      the palette of the theme that `theme` applied
 --   keys.lua        macOS-style key and mouse bindings, and copy mode keys
 --   copymode.lua    copy-mode selections and copies
 --   leader.lua      the leader, its bindings, and the command palette

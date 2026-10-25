@@ -10,6 +10,7 @@ blockquotes?
 boolean
 btw
 callouts?
+Catppuccin
 CDN
 colocated
 colorscheme
@@ -40,6 +41,7 @@ inlining
 jj
 JSONL
 [Jj]ujutsu
+Kanagawa
 keymaps
 Kleppmann
 landlock
@@ -66,7 +68,6 @@ sesh
 starship
 subcommands?
 taplo
-tinty
 tmux
 TOML
 toolchain

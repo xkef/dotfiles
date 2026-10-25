@@ -1,6 +1,6 @@
 #!/usr/bin/env fish
-# tinty hook: tells running Neovim instances to derive their colorscheme
-# again from tinty's current_scheme. Sockets sit at
+# theme hook: tells running Neovim instances to load the colorscheme
+# again from $XDG_STATE_HOME/theme/current. Sockets sit at
 # <base>/nvim.<user>/<random>/<appname>.<pid>.0. The flat nvim.<pid>.0 form
 # covers older layouts.
 

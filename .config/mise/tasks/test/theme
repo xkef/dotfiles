@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+#MISE description="Check that theme records the theme and hands its palette to the hooks"
+set -eu
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-theme.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+
+fail() {
+  echo "$1" >&2
+  exit 1
+}
+
+# The palettes come from the repo. A stub hook records what theme passes
+# to every hook.
+export XDG_CONFIG_HOME="$tmp/config" XDG_STATE_HOME="$tmp/state"
+mkdir -p "$XDG_CONFIG_HOME/theme/hooks.d"
+ln -s "$PWD/modules/core/.config/theme/palettes" "$XDG_CONFIG_HOME/theme/palettes"
+cat >"$XDG_CONFIG_HOME/theme/hooks.d/record" <<EOF
+#!/bin/sh
+echo "\$THEME \$THEME_BACKGROUND \$THEME_FOREGROUND \$THEME_COLOR_0 \$THEME_COLOR_15" >"$tmp/hook.log"
+EOF
+chmod +x "$XDG_CONFIG_HOME/theme/hooks.d/record"
+theme=modules/core/.local/bin/theme
+
+# A machine without a theme reports the dark default.
+[ "$("$theme" --current)" = catppuccin-frappe ] || fail "default: $("$theme" --current)"
+
+"$theme" catppuccin-mocha
+[ "$(cat "$XDG_STATE_HOME/theme/current")" = catppuccin-mocha ] || fail "state not written"
+[ "$("$theme" --current)" = catppuccin-mocha ] || fail "current: $("$theme" --current)"
+[ "$(cat "$tmp/hook.log")" = "catppuccin-mocha 1e1e2e cdd6f4 45475a bac2de" ] ||
+  fail "hook env: $(cat "$tmp/hook.log")"
+
+# An unknown name fails and keeps the current theme.
+! "$theme" nope 2>/dev/null || fail "unknown theme applied"
+[ "$("$theme" --current)" = catppuccin-mocha ] || fail "unknown theme changed the state"
+
+# Every theme parses into a full palette.
+for name in $("$theme" --list); do
+  "$theme" "$name"
+  [ "$(wc -w <"$tmp/hook.log")" -eq 5 ] || fail "$name palette: $(cat "$tmp/hook.log")"
+done
+echo "theme ok"
