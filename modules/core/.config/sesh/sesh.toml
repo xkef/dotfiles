@@ -8,12 +8,3 @@ preview_command = "eza -la --group-directories-first --git --icons --color=alway
 [[session]]
 name = "dotfiles"
 path = "~/dotfiles"
-
-[[wildcard]]
-pattern = "~/code/*"
-
-[[wildcard]]
-pattern = "~/work/*"
-
-[[wildcard]]
-pattern = "~/personal/*"
