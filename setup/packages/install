@@ -62,6 +62,12 @@ install_darwin() {
       partial=true
     fi
   done
+
+  # JetBrains signs kotlin-lsp's intellij-server but doesn't notarize it,
+  # so Gatekeeper blocks it while the quarantine flag remains.
+  if [[ -d "$(brew --prefix)/Caskroom/kotlin-lsp" ]]; then
+    xattr -dr com.apple.quarantine "$(brew --prefix)/Caskroom/kotlin-lsp"
+  fi
 }
 
 # Returns 0 only if paru exists and runs. A paru binary breaks when pacman
