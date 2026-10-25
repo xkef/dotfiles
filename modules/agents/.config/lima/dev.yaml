@@ -10,7 +10,7 @@
 # --timeout=30m to `limactl start`.
 #
 # The guest sees this repo read-only at ~/dotfiles, and holds no host
-# credentials. `lima-agent` copies repositories in through git, to their
+# credentials. `agents vm` copies repositories in through git, to their
 # host paths, so `limactl shell` opens in the current directory. The host
 # path of this repo stays free for its copy. Symlinks under the guest home
 # point at the other mounts. Lima forwards the guest's ports to localhost.
@@ -31,11 +31,11 @@ mounts:
     mountPoint: "{{.Home}}/dotfiles"
   # Images that Cmd-V pastes into VM panes as paths.
   - location: ~/.cache/lima-clipboard
-  # Agent hooks in the guest report to the host's `mux-agents` picker.
+  # Agent hooks in the guest report to the host's agent picker.
   - location: ~/.local/state/agents
     mountPoint: "{{.Home}}/.local/state/agents"
     writable: true
-  # Guest transcripts land on the host, where `agent-trace` reads them
+  # Guest transcripts land on the host, where `agents trace` reads them
   # beside the host's own.
   - location: "{{.Home}}/.local/state/agents/lima-{{.Name}}/claude-projects"
     mountPoint: "{{.Home}}/.claude/projects"
@@ -49,7 +49,7 @@ user:
   shell: /usr/bin/fish
 
 # setup/deploy installs the packages and sets fish as the login shell.
-# `lima-agent` runs Claude Code in here.
+# `agents vm` runs Claude Code in here.
 provision:
   - mode: system
     script: |

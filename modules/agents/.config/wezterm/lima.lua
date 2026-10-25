@@ -1,7 +1,7 @@
 -- Keeps new panes in the Lima VM from ~/.config/lima/dev.yaml. A pane runs
 -- in the VM when its shell reports the lima-dev host through OSC 7. Splits
--- and new tabs of that pane run `lima-agent pane` in the same directory,
--- which exists in the guest because `lima-agent` copies repositories to
+-- and new tabs of that pane run `agents vm pane` in the same directory,
+-- which exists in the guest because `agents vm` copies repositories to
 -- their host paths.
 -- Every pane stays in the local mux. The wezterm package reaches this
 -- file through vm.lua.
@@ -10,7 +10,7 @@ local act = wezterm.action
 
 local M = {}
 
--- The VM's name, which lima-agent passes to limactl too.
+-- The VM's name, which `agents vm` passes to limactl too.
 local VM = "dev"
 
 M.HOST = "lima-" .. VM
@@ -31,7 +31,7 @@ on run argv
 end run]]
 
 -- A tab with a shell in the VM, on a copy of the current repository.
-M.shell_tab = act.SpawnCommandInNewTab({ args = { "lima-agent", "shell" } })
+M.shell_tab = act.SpawnCommandInNewTab({ args = { "agents", "vm", "shell" } })
 
 -- The directory in cwd, a URL from OSC 7, when it names the VM, else nil.
 local function vm_path(cwd)
@@ -66,7 +66,7 @@ end
 function M.split(action, direction)
   return wezterm.action_callback(function(window, pane)
     local dir = vm_dir(pane)
-    local split = dir and act.SplitPane({ direction = direction, command = { args = { "lima-agent", "pane", dir }, cwd = dir } }) or action
+    local split = dir and act.SplitPane({ direction = direction, command = { args = { "agents", "vm", "pane", dir }, cwd = dir } }) or action
     window:perform_action(split, pane)
   end)
 end
@@ -75,7 +75,7 @@ end
 function M.tab(action)
   return wezterm.action_callback(function(window, pane)
     local dir = vm_dir(pane)
-    local spawn = dir and act.SpawnCommandInNewTab({ args = { "lima-agent", "pane", dir }, cwd = dir }) or action
+    local spawn = dir and act.SpawnCommandInNewTab({ args = { "agents", "vm", "pane", dir }, cwd = dir }) or action
     window:perform_action(spawn, pane)
   end)
 end

@@ -7,8 +7,8 @@ local picker = require("picker")
 
 local M = {}
 
-local PICKER = picker.open({ "mux-agents" })
-local LIMA_AGENT = act.SpawnCommandInNewTab({ args = { "lima-agent" } })
+local PICKER = picker.open({ "agents" })
+local LIMA_AGENT = act.SpawnCommandInNewTab({ args = { "agents", "vm" } })
 
 M.keys = {
   -- @key wezterm :: v :: Repository copy in the Lima VM, new tab

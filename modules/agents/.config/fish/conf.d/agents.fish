@@ -22,7 +22,7 @@ function claude --wraps claude --description "Claude Code in a nono sandbox"
 
     # The agent may exit without removing its agent-state entry: a crash or
     # a killed sandbox.
-    agent-state clear
+    ~/.local/libexec/agents/agent-state clear
     return $rc
 end
 
@@ -48,6 +48,6 @@ function pi --wraps pi --description "pi.dev coding agent in a nono sandbox"
 
     # The agent may exit without removing its agent-state entry: a crash or
     # a killed sandbox.
-    agent-state clear
+    ~/.local/libexec/agents/agent-state clear
     return $rc
 end

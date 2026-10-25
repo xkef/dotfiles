@@ -3,7 +3,7 @@
 set -eu
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-agents-vm.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
-script=$PWD/modules/agents/.local/bin/lima-agent
+script=$PWD/modules/agents/.local/libexec/agents/lima-agent
 
 fail() {
   echo "$1" >&2

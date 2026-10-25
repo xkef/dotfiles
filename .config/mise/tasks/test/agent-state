@@ -6,7 +6,7 @@ trap 'rm -rf "$tmp"' EXIT
 export XDG_STATE_HOME="$tmp"
 # The tests pick the pane themselves, and tmux takes precedence.
 unset TMUX_PANE
-state=modules/agents/.local/bin/agent-state
+state=modules/agents/.local/libexec/agents/agent-state
 
 fail() {
   echo "$1" >&2

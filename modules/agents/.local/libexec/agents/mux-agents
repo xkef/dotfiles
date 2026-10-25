@@ -9,6 +9,8 @@
 #   mux-agents          tv picker. Enter switches to the agent's pane.
 #   mux-agents preview <pane> <lines>  the pane's last lines
 #
+# `agents` runs it, and prefix a in tmux runs `agents`.
+#
 # Inside tmux, where the picker runs in a popup, it lists tmux panes and
 # jumps with switch-client. Otherwise it lists WezTerm panes and jumps by
 # focusing the pane through `wezterm cli` and setting the switch_workspace
@@ -21,6 +23,9 @@ readonly PICKER_WAIT=5
 
 # Size in percent of the preview inside the picker.
 readonly PREVIEW_SIZE=75
+
+# agent-state sits next to this script, off PATH.
+readonly LIBEXEC="${BASH_SOURCE[0]%/*}"
 
 if [ -n "${TMUX:-}" ]; then
   readonly MUX=tmux
@@ -82,7 +87,7 @@ join_panes() {
       pane = substr($0, 1, split_at - 1)
       if (pane in entry) { print pane, substr($0, split_at + 1), entry[pane] }
     }
-  ' <(agent-state list "$MUX") <(live_panes)
+  ' <("$LIBEXEC/agent-state" list "$MUX") <(live_panes)
 }
 
 # Emits the id of every WezTerm pane that runs in the Lima VM. Inside
@@ -197,7 +202,7 @@ selection=$(printf '%s\n' "$rows" | tv \
   --keybindings 'tab="select_next_entry";backtab="select_prev_entry"' \
   --layout portrait --preview-size "$PREVIEW_SIZE" \
   --preview-header '{split:\t:1}' \
-  --preview-command "mux-agents preview {split:\t:0} $preview_lines")
+  --preview-command "$LIBEXEC/mux-agents preview {split:\t:0} $preview_lines")
 [ -n "$selection" ] || exit 0
 
 IFS=$'\t' read -r pane target _ <<<"$selection"

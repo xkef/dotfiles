@@ -10,10 +10,11 @@ function sb -d "Run a command inside a nono sandbox"
 
     set -l cmd $argv[1]
     set -l rest $argv[2..-1]
+    set -l libexec ~/.local/libexec/agents
 
     switch $cmd
         case claude pi
-            command -q agent-skills; and agent-skills ensure $cmd
+            test -x $libexec/agent-skills; and $libexec/agent-skills ensure $cmd
     end
 
     set -l cmd_args
@@ -65,10 +66,10 @@ function sb -d "Run a command inside a nono sandbox"
 
     # macOS logs the sandbox denials where only an unsandboxed process may
     # read them, so a recorder streams them while the agent runs, and
-    # `agent-trace collect` caches them for `agent-trace sandbox`.
+    # `agents trace collect` caches them for `agents trace sandbox`.
     set -l recorder
-    if command -q agent-trace
-        agent-trace record &
+    if test -x $libexec/agent-trace
+        $libexec/agent-trace record &
         set recorder $last_pid
         disown
     end
@@ -80,7 +81,7 @@ function sb -d "Run a command inside a nono sandbox"
 
     if set -q recorder[1]
         kill $recorder 2>/dev/null
-        agent-trace collect >/dev/null 2>&1 &
+        $libexec/agent-trace collect >/dev/null 2>&1 &
         disown
     end
     return $rc

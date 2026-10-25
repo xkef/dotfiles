@@ -15,7 +15,7 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const AGENT = "pi";
 const NO_TOOL = "-";
-const AGENT_STATE = join(process.env.HOME ?? "", ".local", "bin", "agent-state");
+const AGENT_STATE = join(process.env.HOME ?? "", ".local", "libexec", "agents", "agent-state");
 
 type State = "idle" | "busy" | "waiting";
 

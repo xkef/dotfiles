@@ -8,7 +8,7 @@
 
 [ -n "$WEZTERM_PANE$TMUX_PANE" ] || exit 0
 
-AGENT_STATE="$HOME/.local/bin/agent-state"
+AGENT_STATE="$HOME/.local/libexec/agents/agent-state"
 
 INPUT=$(cat)
 IFS=$'\t' read -r EVENT TOOL CWD < <(

@@ -19,13 +19,13 @@ files that no longer exist.
 Run from the repository root:
 
 ```sh
-agent-trace --since <date> list      # one row per session
-agent-trace --since <date> errors    # every failed tool call
-agent-trace --since <date> denials   # failures that read like a denial
-agent-trace --since <date> sandbox   # Seatbelt denials the tools never reported
+agents trace --since <date> list      # one row per session
+agents trace --since <date> errors    # every failed tool call
+agents trace --since <date> denials   # failures that read like a denial
+agents trace --since <date> sandbox   # Seatbelt denials the tools never reported
 ```
 
-`agent-trace` without arguments prints its usage. Transcripts live at
+`agents trace` without arguments prints its usage. Transcripts live at
 `~/.claude/projects/<cwd with non-alphanumerics as ->/<id>.jsonl`, with subagent
 transcripts under `<id>/subagents/`. Lima sessions live under
 `~/.local/state/agents/lima-<vm>/claude-projects/` in the same layout.

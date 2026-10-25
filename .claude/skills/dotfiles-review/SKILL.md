@@ -40,8 +40,8 @@ second file, since the copies drift apart.
 
 ## Sandbox security
 
-Agents run under nono through `sb`, and in the Lima VM through `lima-agent`.
-Flag any change that lets a secret or a write reach an agent:
+Agents run under nono through `sb`, and in the Lima VM through `agents vm`. Flag
+any change that lets a secret or a write reach an agent:
 
 - A profile in `modules/agents/.config/nono/profiles/` that grants a new path,
   widens read to write, or lets the agent write a file the host later runs.
