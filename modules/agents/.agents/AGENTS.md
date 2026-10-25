@@ -52,7 +52,10 @@ The global node, python, and go serve only as defaults, next to rustup and uv.
 Each project pins its own versions, and the tools below install them on first
 use:
 
-- Rust: `rust-toolchain.toml` through rustup.
+- Rust: `rust-toolchain.toml` through rustup, or a `rust` entry in `mise.toml`.
+  Pin in one of the two. The mise entry sets `RUSTUP_TOOLCHAIN`, which overrides
+  the toml file. Cargo subcommands such as `cargo-nextest` go in the project's
+  `mise.toml`.
 - Go: the `toolchain` line in `go.mod`.
 - Python: `.python-version` and `pyproject.toml` through `uv run`.
 - Node and Java: `mise.toml`, `.node-version`, or `.java-version`. Run
