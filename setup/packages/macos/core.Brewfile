@@ -40,7 +40,6 @@ brew "python"               # Python for scripts outside projects
 brew "node"                 # Node.js for npx outside projects
 brew "rumdl"                # markdown linter and formatter (LazyVim, with a rumdl config)
 brew "dprint"               # formatter (LazyVim, with a dprint config)
-cask "kotlin-lsp"           # Kotlin language server
 brew "podman"               # rootless container engine
 brew "docker-compose"       # compose provider for podman compose
 brew "libkrun/krun/krunkit" # libkrun VM runner for podman machine

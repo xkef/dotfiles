@@ -63,12 +63,6 @@ install_darwin() {
     fi
   done
 
-  # JetBrains signs kotlin-lsp's intellij-server but doesn't notarize it,
-  # so Gatekeeper blocks it while the quarantine flag remains.
-  if [[ -d "$(brew --prefix)/Caskroom/kotlin-lsp" ]]; then
-    xattr -dr com.apple.quarantine "$(brew --prefix)/Caskroom/kotlin-lsp"
-  fi
-
   # Homebrew keeps rustup keg-only.
   local rustup_bin
   rustup_bin="$(brew --prefix)/opt/rustup/bin"
