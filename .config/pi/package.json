@@ -1,6 +1,9 @@
 {
   "private": true,
   "description": "Type-checks the pi extensions against the pi release the agent launcher installs",
+  "overrides": {
+    "undici": "8.12.2"
+  },
   "devDependencies": {
     "@earendil-works/pi-ai": "1.1.0",
     "@earendil-works/pi-coding-agent": "1.1.0",
