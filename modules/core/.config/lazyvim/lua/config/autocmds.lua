@@ -12,3 +12,7 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.conceallevel = 0
   end,
 })
+
+-- Keep spell checking off in text filetypes. LazyVim's group also sets
+-- wrap, which options.lua already sets everywhere. <leader>us toggles it.
+vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")

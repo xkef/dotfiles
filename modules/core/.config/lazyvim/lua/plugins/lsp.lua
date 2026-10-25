@@ -7,6 +7,8 @@ return {
       diagnostics = {
         virtual_text = { current_line = true, priority = 10000 },
       },
+      -- <leader>uh toggles them per buffer.
+      inlay_hints = { enabled = false },
       servers = {
         ["*"] = {
           capabilities = {
