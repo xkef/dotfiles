@@ -4,10 +4,13 @@ function __agents_complete_tool
     complete -C (string join ' ' -- agent-$args[1] (string escape -- $args[2..]) (commandline -ct))
 end
 
+# The subcommands and descriptions come from the @key lines in agents.
+function __agents_commands
+    awk -F ' :: ' '/^ *# @key agents :: / { print $2 "\t" $3 }' (command -s agents)
+end
+
 complete -c agents -f
-complete -c agents -n __fish_use_subcommand -xa skills -d 'Refresh shared agent skills from upstream'
-complete -c agents -n __fish_use_subcommand -xa trace -d 'Report failed tool calls in Claude Code sessions'
-complete -c agents -n __fish_use_subcommand -xa vm -d 'Claude Code or a shell on a repository copy in the Lima VM'
+complete -c agents -n __fish_use_subcommand -xa '(__agents_commands)'
 complete -c agents -n __fish_use_subcommand -xa help -d 'Show usage'
 complete -c agents -n '__fish_seen_subcommand_from skills trace' -a '(__agents_complete_tool)'
 

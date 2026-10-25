@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+# dots-ref: keybinding and command reference. Collects the comments of
+# the form "@key <section> :: <key> :: <action>" from the WezTerm, tmux,
+# and fish configs and from the scripts in ~/.local/bin, which also print
+# their help from them. Fish functions and aliases come from their own
+# definitions. Inside tmux it lists the tmux bindings, elsewhere the
+# WezTerm ones, or tmux's on a machine without WezTerm.
+#
+#   dots-ref          colored, through less
+#   dots-ref --raw    plain text
+set -euo pipefail
+shopt -s nullglob
+
+# The text files with @key lines. ~/.local/bin also holds binaries and
+# other tools' links, which can dangle, so grep skips binary and
+# unreadable files.
+sources=()
+while IFS= read -r f; do
+  sources+=("$f")
+done < <(grep -lIsE '^[[:space:]]*(#|--) @key ' \
+  ~/.config/wezterm/*.lua ~/.config/tmux/conf.d/*.conf ~/.config/fish/conf.d/*.fish ~/.local/bin/*)
+
+# One "section<TAB>key<TAB>action" line per entry, in source order.
+entries=$(awk '
+/^[ \t]*(#|--) @key / {
+  sub(/^[ \t]*(#|--) @key /, "")
+  if (split($0, f, "::") < 3) next
+  for (i = 1; i <= 3; i++) gsub(/^[ \t]+|[ \t]+$/, "", f[i])
+  print f[1] "\t" f[2] "\t" f[3]
+}' "${sources[@]}")
+
+entries+=$'\n'$(awk -v q="'" '
+/^function [^_]/ && match($0, "(--description|-d) [\"" q "][^\"" q "]*") {
+  desc = substr($0, RSTART, RLENGTH)
+  sub("^[^\"" q "]*[\"" q "]", "", desc)
+  print "functions\t" $2 "\t" desc
+}' ~/.config/fish/functions/*.fish)
+
+entries+=$'\n'$(awk -v q="'" '
+/^[ \t]*(.*; and )?(alias [^ ]+ |abbr -a [^ ]+ )/ {
+  sub(/^[ \t]*(.*; and )?/, "")
+  name = $1 == "alias" ? $2 : $3
+  sub(/^(alias|abbr -a) [^ ]+ /, "")
+  gsub("^[\"" q "]|[\"" q "]$", "")
+  print "aliases\t" name "\t" $0
+}' ~/.config/fish/conf.d/*.fish)
+
+mux=wezterm
+if [ -n "${TMUX:-}" ] || ! grep -q $'^wezterm\t' <<<"$entries"; then
+  mux=tmux
+fi
+
+if [ "${1:-}" = --raw ] || [ ! -t 1 ]; then
+  heading="" note="" key="" reset=""
+else
+  heading=$'\e[1;34m' note=$'\e[2m' key=$'\e[33m' reset=$'\e[0m'
+fi
+
+# Prints the entries of section $1 under heading $2 and note $3, with the
+# keys padded to the longest one in the section.
+section() {
+  local rows k a width=0
+  rows=$(awk -F'\t' -v s="$1" '$1 == s { print $2 "\t" $3 }' <<<"$entries")
+  if [ -z "$rows" ]; then
+    return
+  fi
+
+  while IFS=$'\t' read -r k a; do
+    if ((${#k} > width)); then
+      width=${#k}
+    fi
+  done <<<"$rows"
+
+  printf '\n%s%s%s' "$heading" "$2" "$reset"
+  if [ -n "$3" ]; then
+    printf '  %s%s%s' "$note" "$3" "$reset"
+  fi
+  printf '\n'
+  while IFS=$'\t' read -r k a; do
+    printf '  %s%-*s%s  %s\n' "$key" "$width" "$k" "$reset" "$a"
+  done <<<"$rows"
+}
+
+render() {
+  if [ $mux = tmux ]; then
+    section tmux tmux "Ctrl-Space, then"
+    section copy "tmux copy mode" "Ctrl-Space Enter"
+  else
+    section wezterm WezTerm "Ctrl-Space, then"
+  fi
+  section shell fish "at the prompt"
+  section aliases "fish aliases" "expand or replace as typed"
+  section functions "fish functions" ""
+  section dots "dots <command>" "dotfiles"
+  section agents "agents <command>" "coding agents"
+  printf '\n%sNeovim%s  %sLazyVim defaults, Space opens which-key, see https://www.lazyvim.org/keymaps%s\n' \
+    "$heading" "$reset" "$note" "$reset"
+}
+
+if [ -t 1 ] && [ "${1:-}" != --raw ]; then
+  render | less -R
+else
+  render
+fi

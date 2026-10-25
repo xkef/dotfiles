@@ -1,5 +1,5 @@
 -- Leader bindings for panes, tabs, workspaces, and pickers. `@key` comments
--- feed the `dots-keys` reference, which the leader's `?` opens. keys.lua
+-- feed the `dots-ref` reference, which the leader's `?` opens. keys.lua
 -- holds the Cmd and Ctrl-Shift bindings, and these add to them.
 local wezterm = require("wezterm")
 local act = wezterm.action
@@ -86,7 +86,7 @@ local TOOLS = {
   jjui = overlay({ "jjui" }),
   scooter = overlay({ "scooter" }),
   lazydocker = overlay({ "lazydocker" }),
-  keys = overlay({ "dots-keys" }),
+  keys = overlay({ "dots-ref" }),
 }
 
 -- Command palette entries for the pickers and tools, so Cmd-Shift-P finds

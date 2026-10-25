@@ -5,6 +5,7 @@
 
 switch $argv[1]
     case update up
+        # @key dots :: update :: Pull the repo and deploy (jj fetch and rebase, setup/deploy)
         # The repo is jj-colocated, so git HEAD stays detached and a plain
         # git pull can't work. Fetch and rebase with jj instead, then deploy.
         # The deploy hook colocates jj too, but skips it when jj wasn't
@@ -18,11 +19,14 @@ switch $argv[1]
         and jj -R $DOTFILES_DIR rebase -o 'trunk()'
         and dots apply $argv[2..-1]
     case diff
+        # @key dots :: diff :: Show pending changes (setup/deploy --dry-run)
         # --dry-run prints each change without making it.
         $DOTFILES_DIR/setup/deploy --dry-run $argv[2..-1]
     case apply
+        # @key dots :: apply :: Deploy the repo into ~ (setup/deploy)
         $DOTFILES_DIR/setup/deploy $argv[2..-1]
     case repair
+        # @key dots :: repair :: Rerun every setup step, then deploy
         # setup/onchange skips a step whose inputs match its last success,
         # even when its result is gone. Dropping the stamps runs every step
         # again, and each one installs only what is missing. The stamps are
@@ -31,20 +35,18 @@ switch $argv[1]
         set -l state (set -q XDG_STATE_HOME; and echo $XDG_STATE_HOME; or echo ~/.local/state)/dotfiles
         test -d $state; and find $state -maxdepth 1 -type f -delete
         dots apply $argv[2..-1]
-    case keys
-        dots-keys $argv[2..-1]
+    case ref
+        # @key dots :: ref :: Show keybindings, aliases, functions, and commands
+        dots-ref $argv[2..-1]
     case theme
+        # @key dots :: theme :: Switch terminal + editor theme
         theme $argv[2..-1]
     case help -h --help ''
         echo "Usage: dots <command>"
         echo ""
         echo "Commands:"
-        echo "  update    Pull the repo and deploy (jj fetch and rebase, setup/deploy)"
-        echo "  diff      Show pending changes (setup/deploy --dry-run)"
-        echo "  apply     Deploy the repo into ~ (setup/deploy)"
-        echo "  repair    Rerun every setup step, then deploy"
-        echo "  keys      Show keybinding reference"
-        echo "  theme     Switch terminal + editor theme"
+        # Each command's @key line, which dots-ref lists too.
+        awk -F ' :: ' '/^ *# @key dots :: / { printf "  %-9s %s\n", $2, $3 }' (status filename)
         echo ""
     case '*'
         echo "Unknown command: $argv[1]"
