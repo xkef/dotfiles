@@ -46,6 +46,8 @@ jobs:
         run: mise run lint:sh
       - name: Fish syntax
         run: mise run lint:fish
+      - name: tmux and WezTerm key parity
+        run: mise run lint:keys
       - name: Format
         run: mise run lint:fmt
       - name: Markdown lint

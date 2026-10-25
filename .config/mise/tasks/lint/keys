@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+#MISE description="Check that tmux and WezTerm bind the same leader keys"
+set -eu
+
+# WezTerm is an extra with the same leader keys as tmux. Both annotate
+# each binding with an "@key <mux> :: <key> :: <action>" comment, and this
+# task compares the keys across every package. A key one side lacks fails,
+# unless it names a feature only that side has.
+#
+# tmux only:
+#   @ M            floating panes, which WezTerm lacks
+#   T              pane titles, which WezTerm sets only from the program
+#   BTab           tmux's built-in session switcher
+#   Option-click   tmux opens links itself; WezTerm does on Cmd-click
+#   Ctrl-Space     last window; in WezTerm the leader twice reaches a
+#                  nested tmux instead
+# WezTerm only:
+#   leader twice   see Ctrl-Space
+readonly TMUX_ONLY='@ M T BTab Option-click Ctrl-Space'
+readonly WEZTERM_ONLY='leader twice'
+
+# Prints the keys of one multiplexer's @key lines, one per line.
+keys() {
+  local mux=$1
+  shift
+  grep -ho "@key $mux :: [^:]* ::" "$@" | sed -E "s/^@key $mux :: (.*[^ ]) *::$/\1/" | sort -u
+}
+
+# Prints the keys in $1 but not in $2, minus the allowed ones in $3.
+missing() {
+  comm -23 <(printf '%s\n' "$1") <(printf '%s\n' "$2") | while IFS= read -r key; do
+    case " $3 " in
+    *" $key "*) ;;
+    *) echo "$key" ;;
+    esac
+  done
+}
+
+tmux_keys=$(keys tmux modules/*/.config/tmux/conf.d/*.conf)
+wezterm_keys=$(keys wezterm modules/*/.config/wezterm/*.lua)
+
+report=$(
+  missing "$tmux_keys" "$wezterm_keys" "$TMUX_ONLY" | sed "s/.*/tmux binds leader &, WezTerm doesn't/"
+  missing "$wezterm_keys" "$tmux_keys" "$WEZTERM_ONLY" | sed "s/.*/WezTerm binds leader &, tmux doesn't/"
+)
+if [ -n "$report" ]; then
+  echo "$report" >&2
+  exit 1
+fi
