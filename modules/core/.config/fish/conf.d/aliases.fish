@@ -8,7 +8,6 @@ status is-interactive; or return
 abbr -a v nvim
 abbr -a vi nvim
 abbr -a vim nvim
-abbr -a helix hx
 
 # Misc
 abbr -a reload 'exec fish'
