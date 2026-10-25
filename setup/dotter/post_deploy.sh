@@ -37,10 +37,13 @@ if [[ "$agents" == true ]]; then
   setup/merge-settings pi ~/.pi/agent/settings.dotfiles.json ~/.pi/agent/settings.json
 fi
 
-status=0
-setup/onchange private private/home.tar.age -- setup/private/decrypt || status=$?
-if ((status != 0 && status != EX_TEMPFAIL)); then
-  exit "$status"
+# The age key comes from 1Password, which only desktop installs.
+if [[ "$desktop" == true ]]; then
+  status=0
+  setup/onchange private private/home.tar.age -- setup/private/decrypt || status=$?
+  if ((status != 0 && status != EX_TEMPFAIL)); then
+    exit "$status"
+  fi
 fi
 
 # The archive can restore hooks for setup that would expose private
@@ -88,9 +91,10 @@ if [[ "$(uname -s)" == Darwin && ! -f "$helper_plist" ]] && command -v podman-ma
 fi
 
 # Applies the last theme, or the default one on a fresh machine, so every
-# hook writes its files. It runs again when a palette or a hook changes.
+# hook writes its files. It runs again when a palette or a deployed hook
+# changes.
 setup/onchange theme modules/core/.local/bin/theme modules/core/.config/theme/palettes/* \
-  modules/*/.config/theme/hooks.d/* -- ~/.local/bin/theme --apply
+  ~/.config/theme/hooks.d/* -- ~/.local/bin/theme --apply
 
 # zoxide learns a directory only from a cd. The seed adds every repo and
 # every directory in atuin's history, so a fresh clone is jumpable before

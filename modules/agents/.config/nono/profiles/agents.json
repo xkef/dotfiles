@@ -5,7 +5,7 @@
       "command": [
         "/bin/sh",
         "-c",
-        "PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin; security find-generic-password -s nono -a \"github-$(git config --get github.user || gh config get -h github.com user)\" -w"
+        "PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin; a=\"github-$(git config --get github.user || gh config get -h github.com user)\"; if command -v security >/dev/null; then security find-generic-password -s nono -a \"$a\" -w; else secret-tool lookup service nono account \"$a\"; fi"
       ],
       "cache_ttl_secs": 900,
       "timeout_secs": 60
@@ -14,7 +14,7 @@
       "command": [
         "/bin/sh",
         "-c",
-        "PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin; printf 'x-access-token:%s' \"$(security find-generic-password -s nono -a \"github-$(git config --get github.user || gh config get -h github.com user)\" -w)\""
+        "PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin; printf 'x-access-token:%s' \"$(a=\"github-$(git config --get github.user || gh config get -h github.com user)\"; if command -v security >/dev/null; then security find-generic-password -s nono -a \"$a\" -w; else secret-tool lookup service nono account \"$a\"; fi)\""
       ],
       "cache_ttl_secs": 900,
       "timeout_secs": 60

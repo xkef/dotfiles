@@ -1,1 +1,2 @@
 zed # GPU-accelerated code editor
+ttf-jetbrains-mono-nerd # patched dev font with icons

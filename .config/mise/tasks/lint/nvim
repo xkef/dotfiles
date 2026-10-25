@@ -2,6 +2,12 @@
 #MISE description="Load LazyVim and kickstart headless. LazyVim needs its plugins installed."
 set -euo pipefail
 
+# A machine without Neovim or the LazyVim plugins has nothing to load.
+if ! command -v nvim >/dev/null || [[ ! -d "${XDG_DATA_HOME:-$HOME/.local/share}/lazyvim/lazy/lazy.nvim" ]]; then
+  echo "lint:nvim: skipped, needs nvim and the LazyVim plugins" >&2
+  exit 0
+fi
+
 # Neovim exits 0 after a startup error, so the task fails on the error
 # message that startup left in v:errmsg instead. A throwaway state
 # directory keeps the check from writing LazyVim state, which the sandbox

@@ -5,7 +5,7 @@ brew "jq"                   # JSON processor
 brew "age"                  # simple file encryption
 brew "fish"                 # shell
 brew "starship"             # cross-shell prompt
-brew "atuin"                # shell history search/sync
+brew "atuin"                # shell history search
 brew "fzf"                  # fuzzy finder (yazi's z key)
 brew "television"           # fuzzy finder with channels
 brew "zoxide"               # smarter cd with frecency
@@ -46,11 +46,12 @@ brew "lazydocker"           # terminal UI for Docker/Podman
 brew "fx"                   # terminal JSON viewer
 brew "scooter"              # interactive find-and-replace TUI
 brew "yazi"                 # terminal file manager
-brew "glow"                 # terminal markdown renderer
 brew "vale"                 # prose linter for markdown
 brew "tokei"                # code statistics by language
 brew "tealdeer"             # fast tldr client
 brew "htop"                 # interactive process viewer
+brew "btop"                 # resource monitor
+brew "bottom"               # resource monitor (btm)
 brew "hyperfine"            # command-line benchmarking
 brew "bandwhich"            # per-process bandwidth monitor
 brew "xdg-ninja"            # audit XDG base-dir compliance

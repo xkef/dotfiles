@@ -14,6 +14,16 @@ M.PATH = table.concat({
   os.getenv("PATH") or "/usr/bin:/bin:/usr/sbin:/sbin",
 }, ":")
 
+-- Whether another package deployed the program to ~/.local/bin, as the
+-- agents package deploys `agents`.
+function M.deployed(name)
+  local file = io.open(wezterm.home_dir .. "/.local/bin/" .. name)
+  if file then
+    file:close()
+  end
+  return file ~= nil
+end
+
 -- Arguments for wezterm.run_child_process that run a command with PATH.
 function M.command(args)
   return { "/usr/bin/env", "PATH=" .. M.PATH, table.unpack(args) }

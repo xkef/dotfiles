@@ -11,9 +11,9 @@
 --   status.lua      tab titles and the status line
 --   vm.lua          new panes and tabs that stay in the Lima VM
 --
--- The agents package adds two more when deployed:
+-- Two more load only when the agents package is deployed:
 --
---   lima.lua        the Lima VM behind vm.lua
+--   lima.lua        the Lima VM behind vm.lua, on macOS
 --   agents.lua      agent bindings
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()

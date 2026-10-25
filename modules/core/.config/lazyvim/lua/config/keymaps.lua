@@ -39,7 +39,9 @@ map("n", "<leader>uH", function()
 end, { desc = "Toggle cowboy mode" })
 
 map("n", "<leader>fC", function()
-  local dotfiles = vim.env.DOTFILES_DIR or (vim.fn.expand("~") .. "/dotfiles")
+  -- init.lua links into the repo, at modules/core/.config/lazyvim/init.lua.
+  local dotfiles = vim.env.DOTFILES_DIR
+    or vim.fn.fnamemodify(vim.fn.resolve(vim.fn.stdpath("config") .. "/init.lua"), ":h:h:h:h:h")
   require("snacks").picker.files({ cwd = dotfiles, hidden = true })
 end, { desc = "Find dotfiles" })
 

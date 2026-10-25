@@ -36,6 +36,10 @@ else
   # The picker runs in a zoomed split that fills the tab, and the scale
   # insets it like a popup.
   readonly UI_SCALE=90
+  if ! command -v mux-tabs >/dev/null; then
+    echo "agents: run it in tmux, or deploy the wezterm package" >&2
+    exit 1
+  fi
 fi
 
 # Glyph weight encodes the state, so the picker doesn't need color. A

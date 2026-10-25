@@ -27,6 +27,7 @@ memory: 8GiB
 
 mountType: virtiofs
 mounts:
+  # `agents vm update` sets this to the repo's host path.
   - location: ~/dotfiles
     mountPoint: "{{.Home}}/dotfiles"
   # Images that Cmd-V pastes into VM panes as paths.

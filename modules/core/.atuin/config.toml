@@ -9,8 +9,6 @@ update_check = false
 sync_address = "http://127.0.0.1:9"
 
 # Minimal UI
-invert = false
-show_help = true
 show_tabs = false
 show_numeric_shortcuts = false
 exit_mode = "return-query"
@@ -18,14 +16,12 @@ exit_mode = "return-query"
 # A short panel under the prompt, with the search bar at its bottom and
 # the key hints at its top.
 inline_height = 12
-style = "compact"
-show_preview = true
 
 # Search the current git repository first. Ctrl-R cycles the other modes.
 filter_mode = "workspace"
 command_chaining = true
 
-# Keep credentials out of synced history. secrets_filter (on by default)
+# Keep credentials out of history. secrets_filter (on by default)
 # catches known token formats, age keys and 1Password tokens among them.
 # These patterns catch secrets without a known format, passed inline:
 #

@@ -2,3 +2,5 @@ helix     # modal text editor (Rust)
 stylua    # Lua formatter
 taplo-cli # TOML formatter
 jdtls     # Java language server (AUR)
+lua-language-server # Lua language server
+typescript-language-server # TypeScript language server

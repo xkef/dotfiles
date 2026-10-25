@@ -1,12 +1,13 @@
 git             # version control
 curl            # URL data transfer
+xdg-utils       # xdg-open for the tmux and WezTerm URL pickers
 less            # pager (used as $PAGER)
 github-cli      # GitHub from the command line
 jq              # JSON processor
 age             # simple file encryption
 fish            # shell
 starship        # cross-shell prompt
-atuin           # shell history search/sync
+atuin           # shell history search
 fzf             # fuzzy finder (yazi's z key)
 television      # fuzzy finder with channels
 zoxide          # smarter cd with frecency
@@ -49,11 +50,12 @@ skopeo          # registry image inspection (imgarch)
 lazydocker      # terminal UI for Docker/Podman
 fx              # terminal JSON viewer
 yazi            # terminal file manager
-glow            # terminal markdown renderer
 vale            # prose linter for markdown
 tokei           # code statistics by language
 tealdeer        # fast tldr client
 htop            # interactive process viewer
+btop            # resource monitor
+bottom          # resource monitor (btm)
 hyperfine       # command-line benchmarking
 bandwhich       # per-process bandwidth monitor
 xdg-ninja       # audit XDG base-dir compliance

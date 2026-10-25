@@ -5,7 +5,7 @@
 # `agents vm` runs this script.
 #
 #   agents vm [flags] [claude args...]   Claude Code, permission prompts off
-#   agents vm [flags] shell              fish, which WezTerm's `leader v` opens
+#   agents vm [flags] shell              fish, which `leader v` opens
 #   agents vm [flags] pane DIR           fish in DIR on the copy as it stands
 #   agents vm take                       apply the copy's changes to the host
 #   agents vm drop                       discard the copy's changes
@@ -52,6 +52,13 @@ readonly PLACEHOLDER=nono-proxy
 # Guest refs: the latest host copy, and the one the guest's tree started from.
 readonly HOST_REF=refs/lima/host
 readonly BASE_REF=refs/lima/base
+# nono rejects LibreSSL's EC keys, and Homebrew keeps openssl@3 keg-only.
+readonly OPENSSL="${HOMEBREW_PREFIX:-/opt/homebrew}/opt/openssl@3/bin/openssl"
+
+if ! command -v limactl >/dev/null; then
+  echo "agents vm: limactl not found; the VM runs on macOS with Lima" >&2
+  exit 1
+fi
 
 # Rebuilds the VM, which provisions current packages, Claude Code, and the
 # host's dotfiles. The next launch makes it trust the proxy's CA.
@@ -60,15 +67,16 @@ update() {
   read -rp "Delete the VM, with every repository copy in it, and rebuild it? [y/N] " answer
   case "$answer" in y*) ;; *) exit 1 ;; esac
   limactl delete --force "$VM" 2>/dev/null || :
-  limactl start --tty=false --name="$VM" --timeout=30m "$CONFIG"
+  # dev.yaml mounts ~/dotfiles. The mount follows the repo wherever it sits.
+  limactl start --tty=false --name="$VM" --timeout=30m \
+    --set ".mounts[0].location = \"${DOTFILES_DIR:?}\"" "$CONFIG"
 }
 
-# Creates the proxy's CA once. nono rejects LibreSSL's EC keys, so this
-# needs OpenSSL 3 ahead of /usr/bin on PATH.
+# Creates the proxy's CA once.
 ensure_ca() {
   [ ! -s "$CA_CERT" ] || return 0
   mkdir -p "$STATE"
-  (umask 077 && openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes \
+  (umask 077 && "$OPENSSL" req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes \
     -keyout "$CA_KEY" -out "$CA_CERT" -days 3650 -subj "/CN=lima-agent proxy" \
     -addext basicConstraints=critical,CA:TRUE -addext keyUsage=critical,keyCertSign,cRLSign 2>/dev/null)
 }
@@ -80,7 +88,7 @@ start_proxy() {
   local log pass port profiles=(-p lima)
   [ "$github" = false ] || profiles+=(--extends agents)
   log=$(mktemp "${TMPDIR:-/tmp}/lima-agent.XXXXXX")
-  pass=$(openssl rand -hex 16)
+  pass=$("$OPENSSL" rand -hex 16)
   NONO_PROXY_PASS=$pass nono proxy "${profiles[@]}" \
     --proxy-ca-cert "$CA_CERT" --proxy-ca-key "$CA_KEY" </dev/null >"$log" 2>&1 &
   proxy_pid=$!
@@ -239,7 +247,7 @@ rm "$ca"
     git -C "$1" config user.name "$2" &&
     git -C "$1" config user.email "$3" &&
     git -C "$1" config commit.gpgsign false
-}' "$(git config user.name)" "$(git config user.email)" "$PASS_DIR" "$proxy_file" "$GUEST_CA"
+}' "$(git config user.name || echo "$USER")" "$(git config user.email || echo "$USER@localhost")" "$PASS_DIR" "$proxy_file" "$GUEST_CA"
 
 snap=$(snapshot)
 git push -q -f "lima-$VM:$root" "$snap:$HOST_REF"

@@ -6,9 +6,10 @@ local act = wezterm.action
 local vm = require("vm")
 local picker = require("picker")
 local workspaces = require("workspaces")
+local path = require("path")
 
--- The agents package adds its bindings through agents.lua, when deployed.
-local agents = package.searchpath("agents", package.path) and require("agents")
+-- agents.lua binds the agents package's commands, when it is deployed.
+local agents = path.deployed("agents") and require("agents")
 
 local M = {}
 

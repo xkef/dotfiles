@@ -2,21 +2,26 @@
 #MISE description="Load the WezTerm config headless. Needs wezterm."
 set -eu
 
+if ! command -v wezterm >/dev/null; then
+  echo "lint:wezterm: skipped, needs wezterm" >&2
+  exit 0
+fi
+
 # WezTerm exits 0 on a config error and falls back to its defaults, so the
 # task fails on the logged ERROR instead. The config loads once without the
-# agents package and once with it, as each machine deploys it.
+# agents package and once with it, which ~/.local/bin/agents marks.
 scratch=$(mktemp -d "${TMPDIR:-/tmp}/wezterm.XXXXXX")
 trap 'rm -r "$scratch"' EXIT
-for modules in wezterm 'wezterm agents'; do
-  XDG_CONFIG_HOME=$(mktemp -d "$scratch/XXXXXX")
-  export XDG_CONFIG_HOME
-  export WEZTERM_CONFIG_FILE=$XDG_CONFIG_HOME/wezterm/wezterm.lua
-  mkdir "$XDG_CONFIG_HOME/wezterm"
-  for module in $modules; do
-    cp modules/"$module"/.config/wezterm/*.lua "$XDG_CONFIG_HOME/wezterm"
-  done
-  if wezterm ls-fonts 2>&1 >/dev/null | grep ERROR; then
-    echo "wezterm config fails with: $modules" >&2
+for agents in false true; do
+  home=$(mktemp -d "$scratch/XXXXXX")
+  mkdir -p "$home/.config/wezterm" "$home/.local/bin"
+  cp modules/wezterm/.config/wezterm/*.lua "$home/.config/wezterm"
+  if [ "$agents" = true ]; then
+    touch "$home/.local/bin/agents"
+  fi
+  if HOME=$home XDG_CONFIG_HOME=$home/.config WEZTERM_CONFIG_FILE=$home/.config/wezterm/wezterm.lua \
+    wezterm ls-fonts 2>&1 >/dev/null | grep ERROR; then
+    echo "wezterm config fails with agents=$agents" >&2
     exit 1
   fi
 done

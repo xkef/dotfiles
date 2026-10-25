@@ -8,7 +8,6 @@
 # the process list, with no time graphs. It ignores custom layouts.
 [flags]
 basic = true
-rate = "1s"
 
 [processes]
 columns = ["pid", "name", "user", "mem%", "cpu%"]

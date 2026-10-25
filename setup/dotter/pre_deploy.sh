@@ -7,7 +7,8 @@ set -euo pipefail
 # On a fresh Mac the calling shell predates Homebrew. Put the install
 # prefixes first so later steps find the tools the packages step installs.
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
-# brew keeps tap trust under XDG_CONFIG_HOME, which fish sets later.
+# A fresh machine has no fish environment yet. Tools such as brew fall back
+# to ~/Library/Application Support on macOS without it.
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 
 # A partial install, EX_TEMPFAIL from sysexits.h, lets the deploy go on.

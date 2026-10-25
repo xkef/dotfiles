@@ -1,7 +1,10 @@
--- Panes in the Lima VM, through lima.lua from the agents package when
--- deployed. Without it every pane is local, and each wrapper returns its
+-- Panes in the Lima VM, through lima.lua, on a Mac with the agents
+-- package. Elsewhere every pane is local, and each wrapper returns its
 -- action unchanged.
-if package.searchpath("lima", package.path) then
+local wezterm = require("wezterm")
+local path = require("path")
+
+if wezterm.target_triple:find("darwin") and path.deployed("agents") then
   return require("lima")
 end
 

@@ -4,9 +4,9 @@
 # config and the cache live in ~/.local/state/dotter, not in the repo,
 # because a Lima VM mounts the same checkout. The first run writes a local
 # config that selects core, desktop, and agents, or core and agents inside
-# a VM. Extras such as wezterm go in the packages list in
-# ~/.local/state/dotter/local.toml by hand. Arguments pass through to dotter, as in
-# `setup/deploy --dry-run`.
+# the Lima VM, which /mnt/lima-cidata marks. Extras such as wezterm go in
+# the packages list in ~/.local/state/dotter/local.toml by hand. Arguments
+# pass through to dotter, as in `setup/deploy --dry-run`.
 #
 # Homebrew and paru install dotter from the package lists. The first
 # deploy runs before them, so it downloads the release that mise.lock pins
@@ -18,7 +18,7 @@ state="${XDG_STATE_HOME:-$HOME/.local/state}/dotter"
 
 mkdir -p "$state"
 packages='"core", "desktop", "agents"'
-if systemd-detect-virt -q 2>/dev/null; then
+if [[ -e /mnt/lima-cidata ]]; then
   packages='"core", "agents"'
 fi
 if [[ ! -f "$state/local.toml" ]]; then

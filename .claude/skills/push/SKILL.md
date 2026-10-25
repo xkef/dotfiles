@@ -12,7 +12,8 @@ its reproduction.
    includes local-only checks, so name the tasks:
 
    ```sh
-   mise run lint:sh ::: lint:fish ::: lint:fmt ::: lint:md ::: lint:prose ::: lint:actions
+   mise run lint:sh ::: lint:fish ::: lint:fmt ::: lint:md ::: lint:prose
+   mise run lint:actions ::: lint:keys
    mise run lint:pi ::: lint:nvim ::: lint:wezterm
    mise run check
    mise run test

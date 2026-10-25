@@ -40,7 +40,7 @@ function pi --wraps pi --description "pi.dev coding agent in a nono sandbox"
     # current theme once.
     set -l pi_agent_dir (set -q PI_CODING_AGENT_DIR && echo $PI_CODING_AGENT_DIR || echo $HOME/.pi/agent)
     if command -q theme; and not test -f $pi_agent_dir/themes/dots.json
-        theme (theme --current) >/dev/null
+        theme --apply >/dev/null
     end
 
     sb pi $argv

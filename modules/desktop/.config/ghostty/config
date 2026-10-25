@@ -23,7 +23,6 @@ config-file = ?~/.config/ghostty/theme
 window-padding-x = 12
 window-padding-y = 0
 window-padding-balance = true
-window-decoration = true
 macos-titlebar-style = hidden
 window-theme = ghostty
 unfocused-split-opacity = 0.9

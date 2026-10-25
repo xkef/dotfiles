@@ -1,25 +1,46 @@
 #!/usr/bin/env bash
-#MISE description="Deploy the repo into a throwaway HOME and assert results"
+#MISE description="Deploy each package selection into a throwaway HOME and assert results"
 set -eu
 # macOS mktemp ignores TMPDIR without a template.
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/check.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
-mkdir -p "$tmp/home"
-printf 'packages = ["core", "desktop", "agents", "wezterm", "helix", "zed", "kickstart"]\n' >"$tmp/local.toml"
 
-# Hook paths that don't exist skip the hooks, which install packages and
-# change the login shell.
-HOME="$tmp/home" dotter --global-config setup/dotter/global.toml \
-  --local-config "$tmp/local.toml" \
-  --cache-file "$tmp/cache.toml" --cache-directory "$tmp/cache" \
-  --pre-deploy none --post-deploy none --noconfirm --quiet deploy
+# Each selection deploys on its own, since a file in one package can link
+# or source into another that a machine leaves out.
+selections=(
+  '"core"'
+  '"core", "agents"'
+  '"core", "desktop"'
+  '"core", "wezterm"'
+  '"core", "helix"'
+  '"core", "desktop", "agents"'
+  '"core", "desktop", "agents", "wezterm", "helix", "zed", "kickstart"'
+)
+for selection in "${selections[@]}"; do
+  run=$(mktemp -d "$tmp/run.XXXXXX")
+  mkdir -p "$run/home"
+  printf 'packages = [%s]\n' "$selection" >"$run/local.toml"
 
-broken=$(find "$tmp/home" -type l ! -exec test -e {} \; -print)
-if [ -n "$broken" ]; then
-  echo "broken links:"
-  echo "$broken"
-  exit 1
-fi
+  # Hook paths that don't exist skip the hooks, which install packages and
+  # change the login shell.
+  HOME="$run/home" dotter --global-config setup/dotter/global.toml \
+    --local-config "$run/local.toml" \
+    --cache-file "$run/cache.toml" --cache-directory "$run/cache" \
+    --pre-deploy none --post-deploy none --noconfirm --quiet deploy
+
+  broken=$(find "$run/home" -type l ! -exec test -e {} \; -print)
+  if [ -n "$broken" ]; then
+    echo "broken links with [$selection]:"
+    echo "$broken"
+    exit 1
+  fi
+
+  if command -v fish >/dev/null; then
+    for f in "$run"/home/.config/fish/conf.d/*.fish "$run"/home/.config/fish/functions/*.fish; do
+      fish --no-execute "$f"
+    done
+  fi
+done
 
 # Dotter links every file in a package, ignored ones too, so a log or a
 # cache left in modules/ lands in $HOME. Finder's .DS_Store is harmless.
@@ -30,9 +51,4 @@ if [ -n "$stray" ]; then
   exit 1
 fi
 
-if command -v fish >/dev/null; then
-  for f in "$tmp"/home/.config/fish/conf.d/*.fish "$tmp"/home/.config/fish/functions/*.fish; do
-    fish --no-execute "$f"
-  done
-fi
 echo "dotter smoke ok"

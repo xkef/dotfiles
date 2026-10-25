@@ -3,8 +3,7 @@
 -- and new tabs of that pane run `agents vm pane` in the same directory,
 -- which exists in the guest because `agents vm` copies repositories to
 -- their host paths.
--- Every pane stays in the local mux. The wezterm package reaches this
--- file through vm.lua.
+-- Every pane stays in the local mux. vm.lua loads this file.
 local wezterm = require("wezterm")
 local act = wezterm.action
 
@@ -66,7 +65,9 @@ end
 function M.split(action, direction)
   return wezterm.action_callback(function(window, pane)
     local dir = vm_dir(pane)
-    local split = dir and act.SplitPane({ direction = direction, command = { args = { "agents", "vm", "pane", dir }, cwd = dir } }) or action
+    local split = dir
+        and act.SplitPane({ direction = direction, command = { args = { "agents", "vm", "pane", dir }, cwd = dir } })
+      or action
     window:perform_action(split, pane)
   end)
 end

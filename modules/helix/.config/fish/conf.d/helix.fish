@@ -1,3 +1,4 @@
 status is-interactive; or return
 
-abbr -a helix hx
+# Arch installs the binary as helix, Homebrew as hx.
+command -q hx; or abbr -a hx helix

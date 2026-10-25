@@ -485,17 +485,19 @@ apply com.apple.TextEdit PlainTextEncodingForWrite -int 4
 
 # ── Mail ──────────────────────────────────────────────
 
-# Mail keeps its settings in its sandbox container, so the terminal
-# needs Full Disk Access to write them.
+# Mail and Calendar keep their settings in sandbox containers, so the
+# terminal needs Full Disk Access to write them. Without it the writes
+# fail, and the rest of the deploy goes on.
+readonly NO_FDA="warning: grant the terminal Full Disk Access for the Mail and Calendar defaults"
 $DRY_RUN || log "Mail..."
-apply com.apple.mail SendFormat -string "Plain"
-apply com.apple.mail ConversationViewSortDescending -bool true
+apply com.apple.mail SendFormat -string "Plain" || echo "$NO_FDA" >&2
+apply com.apple.mail ConversationViewSortDescending -bool true || echo "$NO_FDA" >&2
 
 # ── Calendar ──────────────────────────────────────────
 
 $DRY_RUN || log "Calendar..."
-apply com.apple.iCal "Show Week Numbers" -bool true
-apply com.apple.iCal "TimeZone support enabled" -bool true
+apply com.apple.iCal "Show Week Numbers" -bool true || echo "$NO_FDA" >&2
+apply com.apple.iCal "TimeZone support enabled" -bool true || echo "$NO_FDA" >&2
 
 # ── Activity Monitor ──────────────────────────────────
 

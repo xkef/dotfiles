@@ -35,7 +35,7 @@ install_darwin() {
     done
   fi
 
-  local module brewfile tap
+  local module brewfile
   split=$(mktemp -d "${TMPDIR:-/tmp}/packages.XXXXXX")
   trap 'rm -rf "$split"' EXIT
   for module in "${modules[@]}"; do
@@ -44,15 +44,9 @@ install_darwin() {
       continue
     fi
 
-    # Newer Homebrew refuses formulae from untrusted third-party taps. Older
-    # brew lacks the trust subcommand, so the call may fail.
-    for tap in $(list "$brewfile" | sed -n 's/^tap "\([^"]*\)".*/\1/p'); do
-      brew trust "$tap" 2>/dev/null || true
-    done
-
     # Formulae must install, and casks fail soft. Self-updating GUI apps
     # such as zed and 1password hit stale-receipt and quarantine issues that
-    # must not block the deploy. The taps go first, with the formulae.
+    # must not block the deploy.
     list "$brewfile" | { grep -v '^cask ' || :; } >"$split/$module.formulae.Brewfile"
     list "$brewfile" | { grep '^cask ' || :; } >"$split/$module.casks.Brewfile"
     brew bundle --file="$split/$module.formulae.Brewfile"
@@ -139,7 +133,7 @@ install_arch() {
   fi
 
   local paru_flags=(--needed --noconfirm)
-  systemd-detect-virt -q 2>/dev/null && paru_flags+=(--mflags="-A")
+  [[ -e /mnt/lima-cidata ]] && paru_flags+=(--mflags="-A")
   # One broken AUR package must not abort the whole deploy. Retry one by
   # one and skip the failures with a warning.
   if ! paru -S "${paru_flags[@]}" "${packages[@]}"; then
