@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#MISE description="Check that the repo's git config commits without the private identity"
+set -eu
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-git.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+
+# A machine without the private archive has no signing key, so the
+# tracked config must not demand one. The identity turns signing on next
+# to its key.
+mkdir -p "$tmp/home/.config/git" "$tmp/repo"
+ln -s "$PWD/modules/core/.config/git/config" "$tmp/home/.config/git/config"
+cd "$tmp/repo"
+export HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" SSH_AUTH_SOCK=
+git init -q
+git -c user.name=test -c user.email=test@example.com commit -q --allow-empty -m test 2>/dev/null || {
+  echo "commit fails without the private identity"
+  exit 1
+}
+git -c user.name=test -c user.email=test@example.com tag -a -m test v0 2>/dev/null || {
+  echo "annotated tag fails without the private identity"
+  exit 1
+}
+echo "git ok"
