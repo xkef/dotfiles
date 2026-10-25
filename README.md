@@ -39,7 +39,7 @@ packages = ["core", "desktop", "agents", "wezterm"]
 | [WezTerm](https://wezterm.org)                                                     | Extra: terminal and multiplexer, on the tmux keys          |
 | `theme`                                                                            | Color themes for terminal, Neovim, Helix, delta, and pi    |
 | [television](https://github.com/alexpasmantier/television)                         | Fuzzy finder in the shell and the pickers                  |
-| [atuin](https://atuin.sh)                                                          | Searchable shell history with sync                         |
+| [atuin](https://atuin.sh)                                                          | Searchable local shell history                             |
 | [Claude Code](https://claude.com/claude-code), [pi](https://pi.dev)                | AI coding agents, always launched in a nono sandbox        |
 | [Jujutsu](https://github.com/jj-vcs/jj)                                            | Git-compatible version control, `jj`, with a simpler model |
 | [Lima](https://lima-vm.io)                                                         | Linux development VM with the host's dotfiles setup        |

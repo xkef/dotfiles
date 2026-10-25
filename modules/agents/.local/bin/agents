@@ -28,6 +28,9 @@ switch "$argv[1]"
     case trace
         # @key agents :: trace :: Report failed tool calls in Claude Code sessions
         $libexec/agent-trace $argv[2..-1]
+    case resume
+        # @key agents :: resume :: Search past agent sessions and resume one
+        atuin resume $argv[2..-1]
     case vm
         # @key agents :: vm :: Claude Code or a shell on a repository copy in the Lima VM
         $libexec/lima-agent $argv[2..-1]

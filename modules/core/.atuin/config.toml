@@ -1,16 +1,23 @@
 ## Atuin config
 ## https://docs.atuin.sh/configuration/config/
 
+# Keep history and agent threads on this machine. Neither the shell hook
+# nor the daemon syncs. A manual `atuin sync`, `login`, or `register`
+# fails, since nothing listens on the local discard port.
+auto_sync = false
+update_check = false
+sync_address = "http://127.0.0.1:9"
+
 # Minimal UI
-invert = true
-show_help = false
+invert = false
+show_help = true
 show_tabs = false
 show_numeric_shortcuts = false
 exit_mode = "return-query"
 
-# Full screen puts the search bar on the terminal's top line. The inline
-# panel sits under the prompt, which is usually at the bottom.
-inline_height = 0
+# A short panel under the prompt, with the search bar at its bottom and
+# the key hints at its top.
+inline_height = 12
 style = "compact"
 show_preview = true
 
@@ -47,6 +54,15 @@ history_filter = [
   '''\bsops\s.*--set\b''',
   '''\b(echo|printf)\s+["']?[^$(\s"'-][^|]*\|.*(--password-stdin|--with-token)''',
 ]
+
+# Capture coding agent sessions for `atuin resume`. Capture needs the
+# daemon, which atuin starts on demand. auto_sync above keeps them local.
+[daemon]
+enabled = true
+autostart = true
+
+[threads]
+capture = true
 
 [logs]
 dir = "~/.local/share/atuin/logs"
