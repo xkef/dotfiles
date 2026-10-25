@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Check how agents vm stores tokens and copies the repository into the VM"
+#MISE description="Check how agents vm starts its proxy and copies the repository into the VM"
 set -eu
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-agents-vm.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
@@ -12,10 +12,11 @@ fail() {
 
 # Stubs that log every argument list to $ARGV_LOG. Like Lima, limactl
 # quotes the guest command for sh and hands it to fish, the guest's login
-# shell, which reads `\\` in single quotes as `\`. op keeps each item in $tmp/op as <title>.<id>, fails a
-# create while OP_CREATE_RC is set, and has no token to read. jq passes through to the real one. ssh
-# runs its remote command locally. fish, the session, exits at once.
-mkdir -p "$tmp/bin" "$tmp/home" "$tmp/op"
+# shell, which reads `\\` in single quotes as `\`. nono keeps the proxy
+# password in $tmp/pass and serves until killed. sudo only logs. jq passes
+# through to the real one. ssh runs its remote command locally. fish, the
+# session, exits at once.
+mkdir -p "$tmp/bin" "$tmp/home"
 # mise shims would read the repo's mise config under the test's HOME, so
 # PATH leaves them out.
 PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -v /mise/shims | paste -sd: -)
@@ -32,24 +33,16 @@ for arg; do
 done
 exec fish --no-config -c "$cmd"
 EOF
-cat >"$tmp/bin/op" <<'EOF'
+cat >"$tmp/bin/nono" <<'EOF'
 #!/bin/sh
-echo "op $*" >>"$ARGV_LOG"
-items=$(dirname "$0")/../op
-case "$1 $2" in
-"item get")
-  for f in "$items/$3".*; do
-    [ ! -f "$f" ] || printf '{"id":"%s"}\n' "${f##*.}"
-  done
-  ;;
-"item create")
-  [ -z "${OP_CREATE_RC:-}" ] || exit "$OP_CREATE_RC"
-  item=$(cat)
-  printf '%s' "$item" | jq -r '.fields[0].value' >"$items/$(printf '%s' "$item" | jq -r .title).new"
-  ;;
-"item delete") rm -f "$items/$3".* "$items"/*."$3" ;;
-*) exit 1 ;;
-esac
+echo "nono $*" >>"$ARGV_LOG"
+printf '%s' "$NONO_PROXY_PASS" >"$(dirname "$0")/../pass"
+echo "  nono proxy listening on 127.0.0.1:4242"
+exec sleep 60
+EOF
+cat >"$tmp/bin/sudo" <<'EOF'
+#!/bin/sh
+echo "sudo $*" >>"$ARGV_LOG"
 EOF
 cat >"$tmp/bin/jq" <<EOF
 #!/bin/sh
@@ -72,29 +65,6 @@ printf '[user]\n\tname = Test\n\temail = test@example.com\n' >"$tmp/gitconfig"
 export HOME="$tmp/home" XDG_STATE_HOME="$tmp/state" PATH="$tmp/bin:$PATH" \
   ARGV_LOG="$tmp/argv.log" \
   GIT_CONFIG_GLOBAL="$tmp/gitconfig" GIT_CONFIG_NOSYSTEM=1
-vm_token="$HOME/.local/state/lima-agent/claude"
-
-# `set` replaces the 1Password item and the VM copy, and the token passes
-# through no argument list.
-mkdir -p "$(dirname "$vm_token")"
-echo old >"$vm_token"
-echo old >"$tmp/op/lima-agent claude.old"
-printf "tok-secret" | "$script" set claude 2>"$tmp/err" || fail "set failed: $(cat "$tmp/err")"
-[ "$(cat "$tmp/op/lima-agent claude".*)" = tok-secret ] || fail "1Password kept the old token"
-[ "$(cat "$vm_token")" = tok-secret ] || fail "the VM kept the old token"
-! grep -q tok-secret "$ARGV_LOG" || fail "the token showed in an argument list: $(grep tok-secret "$ARGV_LOG")"
-
-# A failed create keeps the old token in 1Password and in the VM.
-if printf 'tok-other' | OP_CREATE_RC=1 "$script" set claude 2>/dev/null; then
-  fail "set succeeded although 1Password failed"
-fi
-[ "$(cat "$tmp/op/lima-agent claude".*)" = tok-secret ] || fail "1Password lost the token"
-[ "$(cat "$vm_token")" = tok-secret ] || fail "the VM changed although 1Password failed"
-
-# `update` says which token 1Password doesn't hold.
-out=$(echo y | "$script" update 2>&1) || fail "update failed: $out"
-[[ "$out" == *"no claude token"* ]] || fail "update kept quiet about a missing token: $out"
-
 # A launch copies the working tree of a repository without commits, at a
 # path with a space, to the guest ref. Host and guest share the repository
 # here, so the stale ref from a previous copy sits in the same place.
@@ -106,4 +76,13 @@ git -C "$repo" update-ref refs/lima/base "$stale"
 echo a >"$repo/a"
 (cd "$repo" && echo k | "$script" shell >/dev/null 2>&1) || fail "the launch failed"
 [ "$(git -C "$repo" ls-tree --name-only refs/lima/host 2>/dev/null)" = a ] || fail "the guest ref lacks the working tree"
+
+# The launch trusts the CA in the guest, removes the password file, and
+# passes the password through no argument list.
+grep -q "^sudo update-ca-trust" "$ARGV_LOG" || fail "the guest did not trust the CA"
+[ ! -e "$HOME/.local/state/lima-agent/proxy-4242" ] || fail "the password file stayed"
+pass=$(cat "$tmp/pass")
+[ -n "$pass" ] || fail "the proxy got no password"
+! grep -q "$pass" "$ARGV_LOG" || fail "the password showed in an argument list: $(grep "$pass" "$ARGV_LOG")"
+grep -q "^nono proxy -p lima --proxy" "$ARGV_LOG" || fail "the proxy added GitHub without --github"
 echo "agents-vm ok"

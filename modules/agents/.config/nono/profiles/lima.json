@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nolabs-ai/nono/main/crates/nono-cli/data/nono-profile.schema.json",
+  "meta": {
+    "description": "Credential proxy for the Lima VM, which lima-agent starts with `nono proxy`. It adds the Claude token only, and lima-agent adds the agents profile for GitHub",
+    "name": "lima",
+    "version": "1.0.0"
+  },
+  "network": {
+    "credentials": ["claude"],
+    "custom_credentials": {
+      "claude": {
+        "upstream": "https://api.anthropic.com",
+        "credential_key": "claude_code_oauth_token",
+        "env_var": "CLAUDE_CODE_OAUTH_TOKEN",
+        "credential_format": "Bearer {}"
+      }
+    }
+  }
+}

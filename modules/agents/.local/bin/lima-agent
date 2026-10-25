@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs Claude Code, or fish, in the Lima VM from ~/.config/lima/dev.yaml,
 # on a copy of the current repository. The VM is the sandbox: the copy
-# sits at the host's path, and the VM holds only the tokens set below.
+# sits at the host's path, and the VM holds no token.
 # `agents vm` runs this script.
 #
 #   agents vm [flags] [claude args...]   Claude Code, permission prompts off
@@ -9,13 +9,12 @@
 #   agents vm [flags] pane DIR           fish in DIR on the copy as it stands
 #   agents vm take                       apply the copy's changes to the host
 #   agents vm drop                       discard the copy's changes
-#   agents vm set claude|github          store a token for the VM
 #   agents vm update                     rebuild the VM from dev.yaml
 #
-#   --github                 pass the GitHub token to the session
+#   --github                 give the session GitHub through the proxy
 #
 # The VM is the only sandbox. The session may write anywhere in the guest
-# and reach any host, and holds no secret beyond the tokens below.
+# and reach any host, and holds no secret.
 #
 # Each launch copies the host's working tree into the VM, untracked files
 # included and ignored files left out. It replaces the copy only while the
@@ -25,13 +24,14 @@
 # the host's working tree as a patch. A patch changes files only, so
 # nothing the VM writes runs on the host before you review it.
 #
-# `set` stores the tokens in 1Password, as the items "lima-agent claude"
-# and "lima-agent github", and in the VM under ~/.local/state/lima-agent.
-# A launch reads them there, since 1Password takes seconds, and `update`
-# copies them into the rebuilt VM.
-# Every session gets the Claude token as CLAUDE_CODE_OAUTH_TOKEN when it
-# exists, and the GitHub token as GH_TOKEN under --github. They travel
-# through stdin and files, so they never show up in a process list.
+# Each session runs behind its own nono credential proxy on the host,
+# which the guest reaches at host.lima.internal. The proxy reads the
+# tokens from the keychain, the ones `sb` uses too, and adds them to
+# requests to Anthropic, and under --github to GitHub. The session holds
+# placeholders and the proxy's password, which works only while the
+# session runs. The password travels through stdin and a file, so it
+# never shows up in a process list. The proxy signs TLS with a CA that
+# the script creates once on the host, and the guest trusts it.
 # WEZTERM_PANE goes along so the agent's hooks report to the `mux-agents`
 # picker.
 set -euo pipefail
@@ -40,71 +40,64 @@ set -euo pipefail
 # its mounts from it.
 readonly VM=dev
 readonly CONFIG="$HOME/.config/lima/dev.yaml"
-readonly VAULT=Private
-# Guest directory under $HOME that holds the tokens.
-readonly TOKEN_DIR=.local/state/lima-agent
+readonly STATE="${XDG_STATE_HOME:-$HOME/.local/state}/lima-agent"
+readonly CA_CERT="$STATE/ca.pem"
+readonly CA_KEY="$STATE/ca.key"
+# Guest directory under $HOME that holds the proxy passwords.
+readonly PASS_DIR=.local/state/lima-agent
+# Where the guest trusts the proxy's CA.
+readonly GUEST_CA=/etc/ca-certificates/trust-source/anchors/lima-agent.pem
+# Any value works, since the proxy replaces it.
+readonly PLACEHOLDER=nono-proxy
 # Guest refs: the latest host copy, and the one the guest's tree started from.
 readonly HOST_REF=refs/lima/host
 readonly BASE_REF=refs/lima/base
 
-# Copies the token under name $1 from stdin into the VM. Empty input
-# deletes the VM's copy.
-store_in_vm() {
-  limactl shell --start --workdir / "$VM" -- sh -c '
-    umask 077 && mkdir -p "$HOME/$1" && f="$HOME/$1/$2" && cat >"$f" &&
-      { [ -s "$f" ] || rm "$f"; }' sh "$TOKEN_DIR" "$1"
-}
-
-# Reads a token from stdin and stores it under name $1, replacing the old
-# one. Empty input typed at the terminal only deletes the old one. Empty
-# input from a pipe, such as a failed `op read`, changes nothing. The new
-# 1Password item exists before the old one goes, so a failed create loses
-# nothing.
-set_token() {
-  local name=${1:-} value
-  case "$name" in
-  claude) echo "Paste the token that \`claude setup-token\` prints:" >&2 ;;
-  github) echo "Paste a token from https://github.com/settings/personal-access-tokens/new:" >&2 ;;
-  *)
-    echo "usage: agents vm set claude|github" >&2
-    exit 2
-    ;;
-  esac
-  IFS= read -rs value || :
-  if [ -z "$value" ] && [ ! -t 0 ]; then
-    echo "agents vm: no token on stdin, nothing changed" >&2
-    exit 1
-  fi
-
-  local old
-  old=$(op item get "lima-agent $name" --vault "$VAULT" --format json 2>/dev/null | jq -r .id) || :
-  if [ -n "$value" ]; then
-    printf '%s' "$value" | jq -Rs --arg title "lima-agent $name" '{
-      title: $title,
-      category: "PASSWORD",
-      fields: [{id: "password", type: "CONCEALED", purpose: "PASSWORD", value: .}]
-    }' | op item create --vault "$VAULT" - >/dev/null
-  fi
-  [ -z "$old" ] || op item delete "$old" --vault "$VAULT"
-  printf '%s' "$value" | store_in_vm "$name"
-}
-
 # Rebuilds the VM, which provisions current packages, Claude Code, and the
-# host's dotfiles.
+# host's dotfiles. The next launch makes it trust the proxy's CA.
 update() {
   local answer
   read -rp "Delete the VM, with every repository copy in it, and rebuild it? [y/N] " answer
   case "$answer" in y*) ;; *) exit 1 ;; esac
   limactl delete --force "$VM" 2>/dev/null || :
   limactl start --tty=false --name="$VM" --timeout=30m "$CONFIG"
-  local name value
-  for name in claude github; do
-    if value=$(op read "op://$VAULT/lima-agent $name/password" 2>/dev/null); then
-      printf '%s' "$value" | store_in_vm "$name"
-    else
-      echo "agents vm: 1Password holds no $name token, run agents vm set $name" >&2
+}
+
+# Creates the proxy's CA once. nono rejects LibreSSL's EC keys, so this
+# needs OpenSSL 3 ahead of /usr/bin on PATH.
+ensure_ca() {
+  [ ! -s "$CA_CERT" ] || return 0
+  mkdir -p "$STATE"
+  (umask 077 && openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes \
+    -keyout "$CA_KEY" -out "$CA_CERT" -days 3650 -subj "/CN=lima-agent proxy" \
+    -addext basicConstraints=critical,CA:TRUE -addext keyUsage=critical,keyCertSign,cRLSign 2>/dev/null)
+}
+
+# Starts this session's credential proxy, which stops when the script
+# exits, and sets $proxy_url to its address with the password. The
+# proxy adds the GitHub routes from the agents profile under --github.
+start_proxy() {
+  local log pass port profiles=(-p lima)
+  [ "$github" = false ] || profiles+=(--extends agents)
+  log=$(mktemp "${TMPDIR:-/tmp}/lima-agent.XXXXXX")
+  pass=$(openssl rand -hex 16)
+  NONO_PROXY_PASS=$pass nono proxy "${profiles[@]}" \
+    --proxy-ca-cert "$CA_CERT" --proxy-ca-key "$CA_KEY" </dev/null >"$log" 2>&1 &
+  proxy_pid=$!
+  trap 'kill "$proxy_pid" 2>/dev/null' EXIT
+
+  # The keychain may ask for access first.
+  until port=$(sed -n 's/.*listening on 127\.0\.0\.1:\([0-9]*\).*/\1/p' "$log") && [ -n "$port" ]; do
+    if ! kill -0 "$proxy_pid" 2>/dev/null; then
+      cat "$log" >&2
+      rm "$log"
+      exit 1
     fi
+    sleep 0.2
   done
+  rm "$log"
+  proxy_url="http://nono:$pass@host.lima.internal:$port"
+  proxy_file="proxy-$port"
 }
 
 github=false
@@ -115,17 +108,13 @@ fi
 
 mode=claude
 case "${1:-}" in
-shell | pane | take | drop | set | update)
+shell | pane | take | drop | update)
   mode=$1
   shift
   ;;
 esac
 
 case "$mode" in
-set)
-  set_token "$@"
-  exit
-  ;;
 update)
   update
   exit
@@ -228,25 +217,29 @@ esac
 mkdir -p "${XDG_STATE_HOME:-$HOME/.local/state}/agents/lima-$VM/claude-projects"
 mkdir -p "$HOME/.cache/lima-clipboard"
 
-# The tokens the session must have.
-needed=""
-[ "$mode" != claude ] || needed+=" claude"
-[ "$github" = false ] || needed+=" github"
+ensure_ca
+start_proxy
 
-# Checks the tokens, then creates the guest repository on first use. It
-# commits under the host's name without signing, since the guest has no
-# signing key.
-guest '
-for name in $4; do
-  [ -s "$HOME/$5/$name" ] || { echo "agents vm: no $name token, run agents vm set $name" >&2; exit 1; }
-done
+# Stores the proxy's address from stdin's first line, makes the guest
+# trust the CA that follows it, then creates the guest repository on
+# first use. It commits under the host's name without signing, since the
+# guest has no signing key.
+{
+  printf '%s\n' "$proxy_url"
+  cat "$CA_CERT"
+} | guest '
+IFS= read -r url
+(umask 077 && mkdir -p "$HOME/$4" && printf "%s" "$url" >"$HOME/$4/$5")
+ca=$(mktemp) && cat >"$ca"
+cmp -s "$ca" "$6" || { sudo install -m 644 "$ca" "$6" && sudo update-ca-trust; }
+rm "$ca"
 [ -d "$1/.git" ] || {
   sudo install -d -o "$(id -u)" -g "$(id -g)" "$1" &&
     git init -q "$1" &&
     git -C "$1" config user.name "$2" &&
     git -C "$1" config user.email "$3" &&
     git -C "$1" config commit.gpgsign false
-}' "$(git config user.name)" "$(git config user.email)" "$needed" "$TOKEN_DIR"
+}' "$(git config user.name)" "$(git config user.email)" "$PASS_DIR" "$proxy_file" "$GUEST_CA"
 
 snap=$(snapshot)
 git push -q -f "lima-$VM:$root" "$snap:$HOST_REF"
@@ -273,14 +266,16 @@ refresh='if [ -z "$(git status --porcelain)" ] &&
 else
   echo "agents vm: the VM copy has changes, which agents vm take or drop clears" >&2
 fi'
+# Requests to localhost stay in the guest, since the proxy would send
+# them to the host's.
 limactl shell --workdir "$root" "$VM" -- sh -c '
-  workdir=$1 refresh=$2 tokens=$HOME/$3 needed=$4
-  export WEZTERM_PANE="$5"
-  shift 5
-  if [ -s "$tokens/claude" ]; then
-    CLAUDE_CODE_OAUTH_TOKEN=$(cat "$tokens/claude") && export CLAUDE_CODE_OAUTH_TOKEN
-  fi
-  case "$needed" in *github*) GH_TOKEN=$(cat "$tokens/github") && export GH_TOKEN ;; esac
+  workdir=$1 refresh=$2 pass_file=$HOME/$3 github=$4 placeholder=$5
+  export WEZTERM_PANE="$6" NODE_EXTRA_CA_CERTS="$7"
+  shift 7
+  proxy=$(cat "$pass_file") && rm "$pass_file" || exit
+  export HTTPS_PROXY="$proxy" HTTP_PROXY="$proxy" NO_PROXY=localhost,127.0.0.1,::1 \
+    CLAUDE_CODE_OAUTH_TOKEN="$placeholder"
+  [ "$github" = false ] || export GH_TOKEN="$placeholder"
 
   sh -c "$refresh"
   cd "$workdir" || exit
@@ -296,7 +291,7 @@ limactl shell --workdir "$root" "$VM" -- sh -c '
       mv "$tmp" "$cfg"
   fi
 
-  exec "$@"' sh "$workdir" "$refresh" "$TOKEN_DIR" "$needed" "${WEZTERM_PANE:-}" \
-  "${session[@]}" || rc=$?
+  exec "$@"' sh "$workdir" "$refresh" "$PASS_DIR/$proxy_file" "$github" "$PLACEHOLDER" \
+  "${WEZTERM_PANE:-}" "$GUEST_CA" "${session[@]}" || rc=$?
 review ask
 exit "$rc"

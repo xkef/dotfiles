@@ -55,7 +55,8 @@ tinty.
 `claude` and `pi` start in a [nono](https://nono.sh) sandbox. nono's credential
 proxy adds the Claude and GitHub tokens to outgoing requests, so the sandbox
 holds only placeholders. `agents vm` runs Claude Code in a
-[Lima](https://lima-vm.io) VM on a copy of the repository instead.
+[Lima](https://lima-vm.io) VM on a copy of the repository instead, behind the
+same proxy.
 
 ## Private files
 
