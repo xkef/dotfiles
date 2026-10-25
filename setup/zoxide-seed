@@ -1,0 +1,34 @@
+#!/usr/bin/env fish
+# Adds the directories zoxide never saw through a cd, so they are jumpable
+# before the first visit: every repo under ~ with the directories above it,
+# and every directory in atuin's history. A directory zoxide knows keeps
+# its score. The post-deploy hook runs it.
+
+# Repos sit a few levels deep, as in ~/code/topic/group/repo. A repo under
+# a hidden directory, such as a tool's cache, doesn't count.
+set -l repos (fd -H -I -t d -d 6 --prune -E Library -E node_modules '^\.(git|jj)$' ~ 2>/dev/null |
+    path dirname | string match -v -r "^$HOME/(.*/)?\.")
+
+# The directories above a repo hold its topic, as ~/code holds ~/code/cv.
+set -l parents
+for repo in $repos
+    set -l dir (path dirname $repo)
+    while string match -q -- "$HOME/*" $dir
+        set -a parents $dir
+        set dir (path dirname $dir)
+    end
+end
+
+# Synced history holds paths from machines whose user names differ, so a
+# path under any home maps into this one. `history list` shows this host
+# only, so search reads every host.
+set -l visited (atuin search --filter-mode global --include-duplicates --format '{directory}' '' 2>/dev/null |
+    string replace -r '^/(Users|home)/[^/]+(?=/|$)' $HOME)
+
+set -l known (zoxide query --list)
+set -l missing
+for dir in (path filter -d -- $repos $parents $visited | string match -v -- $HOME | path sort -u)
+    contains -- $dir $known; or set -a missing $dir
+end
+test -n "$missing"; and zoxide add -- $missing
+true

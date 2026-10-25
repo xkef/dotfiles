@@ -92,6 +92,13 @@ fi
 setup/onchange tinty modules/core/.config/tinted-theming/tinty/config.toml -- \
   sh -c 'tinty sync && tinty init'
 
+# zoxide learns a directory only from a cd. The seed adds every repo and
+# every directory in atuin's history, so a fresh clone is jumpable before
+# the first visit.
+if command -v zoxide >/dev/null && command -v fish >/dev/null; then
+  setup/zoxide-seed
+fi
+
 # $SHELL belongs to the calling process, so read the account's login shell.
 fish="$(command -v fish)"
 case "$(uname -s)" in

@@ -10,6 +10,14 @@ status is-interactive; or return
 __cached_init starship init fish --print-full-init
 __cached_init zoxide init fish --cmd z
 
+# A new pane or session starts in its directory without a cd, so the PWD
+# hook misses it. The first command records it instead, so the prompt
+# doesn't wait for zoxide.
+function __zoxide_first_cmd --on-event fish_preexec
+    functions --erase __zoxide_first_cmd
+    __zoxide_hook
+end
+
 # The 1Password CLI completion costs about 108ms at startup, so it stays
 # out. fish loads it on the first `op` command.
 
