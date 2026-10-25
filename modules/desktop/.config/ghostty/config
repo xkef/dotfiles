@@ -63,3 +63,7 @@ keybind = global:ctrl+grave_accent=toggle_quick_terminal
 
 # ── State ─────────────────────────────────────────
 window-save-state = always
+
+# ── Local overrides ───────────────────────────────
+# Per-machine overrides, untracked. Ghostty loads it after this file.
+config-file = ?~/.config/ghostty/local

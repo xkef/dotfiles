@@ -67,7 +67,42 @@ same proxy.
 ## Private files
 
 Private files, such as the git and jj identity, live in an
-[age](https://age-encryption.org)-encrypted archive, `private/home.tar.age`.
+[age](https://age-encryption.org)-encrypted archive, `private/home.tar.age`,
+which the deploy unpacks into `$HOME`. The archive only adds files. It skips a
+path that a package links, so each private file sits where a tracked config
+includes it:
+
+| Tool    | Private file                               | Holds                                         |
+| ------- | ------------------------------------------ | --------------------------------------------- |
+| git     | `~/.config/git/identity`, `config.local`   | identity, signing, and accounts by directory  |
+| jj      | `~/.config/jj/conf.d/*.toml`               | identity, signing, and accounts by repository |
+| ssh     | `~/.ssh/conf.d/*.conf`                     | hosts                                         |
+| fish    | `~/.config/fish/local.fish`                | anything                                      |
+| tmux    | `~/.config/tmux/local.conf`                | anything                                      |
+| Ghostty | `~/.config/ghostty/local`                  | anything                                      |
+| WezTerm | `~/.config/wezterm/local.lua`              | a function that changes the config            |
+| Neovim  | `~/.config/lazyvim/lua/plugins/local.lua`  | a lazy.nvim spec                              |
+| mise    | `~/.config/mise/conf.d/*.toml`             | environment by directory                      |
+| deploy  | `~/.config/dotfiles/post-deploy.d/*`       | setup that runs after each deploy             |
+
+gh keeps its logins in the system keychain and writes its own `config.yml`, so
+it has no private file. One mise file routes gh, git, and jj to an account by
+directory, because each of them reads `GH_TOKEN`:
+
+```toml
+# ~/.config/mise/conf.d/accounts.toml
+[env]
+GH_TOKEN = '''
+{%- if "/Users/me/work/" in cwd ~ "/" -%}
+  {{- exec(command="gh auth token --user me-work",
+      cache_key="gh-me-work", cache_duration="1d") -}}
+{%- else -%}
+  {{- exec(command="gh auth token --user me",
+      cache_key="gh-me", cache_duration="1d") -}}
+{%- endif -%}
+'''
+```
+
 Encrypt an edited or new file back with:
 
 ```sh
