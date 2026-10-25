@@ -53,7 +53,10 @@ readonly PLACEHOLDER=nono-proxy
 readonly HOST_REF=refs/lima/host
 readonly BASE_REF=refs/lima/base
 # nono rejects LibreSSL's EC keys, and Homebrew keeps openssl@3 keg-only.
-readonly OPENSSL="${HOMEBREW_PREFIX:-/opt/homebrew}/opt/openssl@3/bin/openssl"
+# Without Homebrew, as on Linux, the openssl on PATH is OpenSSL 3.
+OPENSSL="${HOMEBREW_PREFIX:-/opt/homebrew}/opt/openssl@3/bin/openssl"
+[ -x "$OPENSSL" ] || OPENSSL=openssl
+readonly OPENSSL
 
 if ! command -v limactl >/dev/null; then
   echo "agents vm: limactl not found; the VM runs on macOS with Lima" >&2
