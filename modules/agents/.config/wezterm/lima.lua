@@ -3,7 +3,7 @@
 -- and new tabs of that pane run `lima-agent pane` in the same directory,
 -- which exists in the guest because `lima-agent` copies repositories to
 -- their host paths.
--- Every pane stays in the local mux. The desktop package reaches this
+-- Every pane stays in the local mux. The wezterm package reaches this
 -- file through vm.lua.
 local wezterm = require("wezterm")
 local act = wezterm.action

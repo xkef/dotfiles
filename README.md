@@ -18,9 +18,14 @@ git clone https://github.com/xkef/dotfiles ~/dotfiles
 Deploy installs packages with Homebrew or pacman and links the configs into
 `$HOME`. `dots apply` deploys again after a change.
 
-The configs live in three packages under `modules/`: `core`, `desktop`, and
-`agents`. A VM gets `core` and `agents`. The `packages` list in
-`~/.local/state/dotter/local.toml` overrides the selection.
+The configs live in packages under `modules/`. A machine gets `core`, `desktop`,
+and `agents`, and a VM gets `core` and `agents`. The extras `wezterm`, `helix`,
+`zed`, and `kickstart` install only when selected. The `packages` list in
+`~/.local/state/dotter/local.toml` sets the selection:
+
+```toml
+packages = ["core", "desktop", "agents", "wezterm"]
+```
 
 ## Included tools
 
@@ -28,12 +33,12 @@ The configs live in three packages under `modules/`: `core`, `desktop`, and
 | ---------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | [Fish](https://fishshell.com)                                                      | Shell with tv pickers and practical defaults               |
 | [Starship](https://starship.rs)                                                    | Minimal, cross-shell prompt                                |
-| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)                   | Editor with the LazyVim distro, kickstart as fallback      |
-| [WezTerm](https://wezterm.org)                                                     | Terminal and multiplexer, with an agent picker             |
-| [Ghostty](https://ghostty.org)                                                     | Terminal for tmux sessions, themed with the rest           |
-| [tmux](https://github.com/tmux/tmux) + [sesh](https://github.com/joshmedeski/sesh) | Multiplexer outside WezTerm, on the same leader key        |
+| [Neovim](https://neovim.io) + [LazyVim](https://www.lazyvim.org)                   | Editor with the LazyVim distro                             |
+| [Ghostty](https://ghostty.org)                                                     | Terminal that runs tmux, themed with the rest              |
+| [tmux](https://github.com/tmux/tmux) + [sesh](https://github.com/joshmedeski/sesh) | Multiplexer and sessions, with an agent picker             |
+| [WezTerm](https://wezterm.org)                                                     | Extra: terminal and multiplexer, on the tmux keys          |
 | [tinty](https://github.com/tinted-theming/tinty)                                   | Color themes for the terminal, Neovim, delta, and pi       |
-| [television](https://github.com/alexpasmantier/television)                         | Fuzzy finder in the shell and WezTerm pickers              |
+| [television](https://github.com/alexpasmantier/television)                         | Fuzzy finder in the shell and the pickers                  |
 | [atuin](https://atuin.sh)                                                          | Searchable shell history with sync                         |
 | [Claude Code](https://claude.com/claude-code), [pi](https://pi.dev)                | AI coding agents, always launched in a nono sandbox        |
 | [Jujutsu](https://github.com/jj-vcs/jj)                                            | Git-compatible version control, `jj`, with a simpler model |

@@ -1,6 +1,4 @@
-cask "wezterm@nightly"                              # terminal and multiplexer
 cask "ghostty"                                      # terminal, for tmux sessions
-cask "zed"                                          # GPU-accelerated code editor
 cask "neovide-app"                                  # GUI client for Neovim
 cask "claude"                                       # Claude desktop app
 cask "1password", args: { appdir: "/Applications" } # password manager

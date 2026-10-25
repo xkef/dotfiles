@@ -7,7 +7,7 @@ set -eu
 # agents package and once with it, as each machine deploys it.
 scratch=$(mktemp -d "${TMPDIR:-/tmp}/wezterm.XXXXXX")
 trap 'rm -r "$scratch"' EXIT
-for modules in desktop 'desktop agents'; do
+for modules in wezterm 'wezterm agents'; do
   XDG_CONFIG_HOME=$(mktemp -d "$scratch/XXXXXX")
   export XDG_CONFIG_HOME
   export WEZTERM_CONFIG_FILE=$XDG_CONFIG_HOME/wezterm/wezterm.lua

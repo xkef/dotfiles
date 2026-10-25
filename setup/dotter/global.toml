@@ -3,10 +3,18 @@
 # can add their own files next to them. setup/deploy keeps the package
 # selection, one per machine, in ~/.local/state/dotter/local.toml.
 #
-#   core     shell, editors, version control, and CLI tools
-#   desktop  GUI apps, the 1Password SSH agent, and WezTerm and Ghostty
+#   core     shell, Neovim, tmux, version control, and CLI tools
+#   desktop  GUI apps, the 1Password SSH agent, and Ghostty
 #   agents   Claude Code, pi, their nono sandbox, the agent state, and
 #            the Lima VM that runs Claude Code
+#
+# Extras, which no machine selects by default:
+#
+#   wezterm    WezTerm as terminal and multiplexer, an alternative to Ghostty
+#              and tmux, with the same leader keys
+#   helix      Helix and its formatters and language servers
+#   zed        Zed
+#   kickstart  kickstart.nvim, a minimal Neovim config, run with knvim
 
 [settings]
 default_target_type = "symbolic"
@@ -22,3 +30,15 @@ default_target_type = "symbolic"
 
 [agents.files]
 "modules/agents" = "~"
+
+[wezterm.files]
+"modules/wezterm" = "~"
+
+[helix.files]
+"modules/helix" = "~"
+
+[zed.files]
+"modules/zed" = "~"
+
+[kickstart.files]
+"modules/kickstart" = "~"

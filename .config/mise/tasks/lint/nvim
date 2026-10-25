@@ -16,7 +16,7 @@ NVIM_APPNAME=lazyvim XDG_STATE_HOME=$tmp/lazyvim \
   nvim --headless -c "lua require('lazy')" -c "$check"
 
 # The install progress stays hidden unless the load fails.
-if ! out=$(NVIM_APPNAME=kickstart XDG_CONFIG_HOME=$PWD/modules/core/.config \
+if ! out=$(NVIM_APPNAME=kickstart XDG_CONFIG_HOME=$PWD/modules/kickstart/.config \
   XDG_STATE_HOME=$tmp/kickstart/state \
   XDG_DATA_HOME=$tmp/kickstart/data XDG_CACHE_HOME=$tmp/kickstart/cache \
   nvim --headless -c "$check" 2>&1); then

@@ -11,9 +11,8 @@ brew "atuin"                # shell history search/sync
 brew "fzf"                  # fuzzy finder (yazi's z key)
 brew "television"           # fuzzy finder with channels
 brew "zoxide"               # smarter cd with frecency
-brew "tmux"                 # terminal multiplexer, where WezTerm isn't
+brew "tmux"                 # terminal multiplexer
 brew "sesh"                 # tmux session manager
-brew "helix"                # modal text editor (Rust)
 brew "neovim"               # text editor
 brew "tree-sitter-cli"      # parser generator CLI (nvim-treesitter build)
 brew "tinty"                # color scheme switcher
@@ -43,9 +42,6 @@ brew "python"               # Python for scripts outside projects
 brew "node"                 # Node.js for npx outside projects
 brew "rumdl"                # markdown linter and formatter (LazyVim, with a rumdl config)
 brew "dprint"               # formatter (LazyVim, with a dprint config)
-brew "stylua"               # Lua formatter (helix)
-brew "taplo"                # TOML formatter (helix)
-brew "jdtls"                # Java language server (helix; nvim uses Mason's)
 cask "kotlin-lsp"           # Kotlin language server
 brew "podman"               # rootless container engine
 brew "docker-compose"       # compose provider for podman compose

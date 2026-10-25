@@ -5,9 +5,10 @@ name: CI
 # result, and `mise run test`, the behavior tests, a fast signal on every
 # push. e2e-macos and e2e-arch run the real thing: setup/deploy with its
 # hooks, so packages install, macos-defaults applies, and the resulting
-# interactive shell starts. The package install skips the desktop package,
-# its casks and Arch GUI apps, under CI, so e2e-macos installs WezTerm
-# itself to load the WezTerm and Neovim configs. Both e2e jobs then hold
+# interactive shell starts. The deploy selects no extras, and the package
+# install skips the desktop package, its casks and Arch GUI apps, under CI,
+# so e2e-macos installs WezTerm itself to load the WezTerm and Neovim
+# configs. Both e2e jobs then hold
 # shell startup and the prompt to the budgets in `mise run perf`.
 on:
   pull_request:

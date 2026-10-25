@@ -1,0 +1,1 @@
+wezterm-nightly-bin # terminal and multiplexer (AUR; the repo package is the 2024-02 release)
