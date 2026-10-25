@@ -72,7 +72,7 @@ bookmark-advance-to = '@-'
 
 # ── Templates ────────────────────────────────────────
 # Show a GitHub noreply email as its username:
-# 202288743+kevin-nca@users.noreply.github.com becomes kevin-nca.
+# 583231+octocat@users.noreply.github.com becomes octocat.
 [template-aliases]
 'format_short_signature(signature)' = '''
 stringify(signature.email()).replace(regex:'^(?:\d+\+)?([^@]+)@users\.noreply\.github\.com$', "$1")
