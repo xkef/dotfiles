@@ -67,6 +67,7 @@
       "$HOME/.1password/agent.sock"
     ],
     "read": [
+      "$HOME/.local/libexec/agents",
       "$XDG_DATA_HOME/cargo/bin",
       "$XDG_DATA_HOME/mise",
       "$XDG_STATE_HOME/mise",
