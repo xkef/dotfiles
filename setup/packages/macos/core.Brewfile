@@ -11,7 +11,7 @@ brew "television"           # fuzzy finder with channels
 brew "zoxide"               # smarter cd with frecency
 brew "tmux"                 # terminal multiplexer
 brew "sesh"                 # tmux session manager
-brew "neovim"               # text editor
+brew "neovim", args: ["HEAD"] # text editor (nightly)
 brew "tree-sitter-cli"      # parser generator CLI (nvim-treesitter build)
 brew "presenterm"           # markdown-driven terminal slides
 brew "eza"                  # modern ls replacement

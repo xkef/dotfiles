@@ -13,7 +13,7 @@ television      # fuzzy finder with channels
 zoxide          # smarter cd with frecency
 tmux            # terminal multiplexer
 sesh-bin        # tmux session manager (AUR; ships an aarch64 binary)
-neovim          # text editor
+neovim-git      # text editor (AUR nightly)
 tree-sitter-cli # parser generator CLI (nvim-treesitter build)
 presenterm      # markdown-driven terminal slides
 eza             # modern ls replacement
