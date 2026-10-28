@@ -16,6 +16,12 @@ return {
         { "<C-j>", "move_cursor_down" },
         { "<C-k>", "move_cursor_up" },
         { "<C-l>", "move_cursor_right" },
+        -- macOS takes Ctrl-arrows for Spaces, so LazyVim's resize keys never
+        -- reach Neovim.
+        { "<A-H>", "resize_left" },
+        { "<A-J>", "resize_down" },
+        { "<A-K>", "resize_up" },
+        { "<A-L>", "resize_right" },
       }) do
         keys[#keys + 1] = {
           m[1],
