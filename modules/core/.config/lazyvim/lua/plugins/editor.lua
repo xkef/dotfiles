@@ -15,7 +15,6 @@ return {
         { "<C-h>", "move_cursor_left" },
         { "<C-j>", "move_cursor_down" },
         { "<C-k>", "move_cursor_up" },
-        { "<C-l>", "move_cursor_right" },
         -- macOS takes Ctrl-arrows for Spaces, so LazyVim's resize keys never
         -- reach Neovim.
         { "<A-H>", "resize_left" },
@@ -30,6 +29,22 @@ return {
           end,
         }
       end
+
+      -- Clears multicursors while any exist, as the default CTRL-L mapping
+      -- does (:h CTRL-L-default). Otherwise the key moves right like its
+      -- siblings.
+      local mc_ns = vim.api.nvim_create_namespace("nvim.multicursor")
+      keys[#keys + 1] = {
+        "<C-l>",
+        function()
+          if next(vim.api.nvim_buf_get_extmarks(0, mc_ns, 0, -1, { limit = 1 })) then
+            vim.api.nvim_buf_clear_namespace(0, mc_ns, 0, -1)
+            return
+          end
+
+          require(ss).move_cursor_right()
+        end,
+      }
       return keys
     end)(),
   },
