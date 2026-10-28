@@ -29,7 +29,26 @@ return {
 
   {
     "mason-org/mason.nvim",
-    opts = { ensure_installed = { "google-java-format", "vscode-spring-boot-tools" } },
+    opts = { ensure_installed = { "google-java-format", "vscode-spring-boot-tools", "vscode-java-dependency" } },
+  },
+
+  -- Java Projects view: modules, packages, and dependencies as jdtls sees
+  -- them, through the vscode-java-dependency bundle below.
+  {
+    "JavaHello/java-deps.nvim",
+    ft = "java",
+    dependencies = { "mfussenegger/nvim-jdtls" },
+    keys = {
+      {
+        "<leader>cj",
+        function()
+          require("java-deps").toggle_outline()
+        end,
+        ft = "java",
+        desc = "Java Projects",
+      },
+    },
+    opts = {},
   },
 
   {
@@ -54,6 +73,10 @@ return {
         if ok then
           vim.list_extend(config.init_options.bundles, spring_boot.java_extensions())
         end
+        vim.list_extend(
+          config.init_options.bundles,
+          vim.fn.glob("$MASON/share/vscode-java-dependency/com.microsoft.jdtls.ext.core-*.jar", false, true)
+        )
         return config
       end,
 
