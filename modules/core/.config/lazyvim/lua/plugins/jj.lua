@@ -65,6 +65,13 @@ return {
     opts = function(_, opts)
       opts.sources = opts.sources or { "filesystem", "buffers", "git_status" }
       table.insert(opts.sources, "jjreview.neotree")
+      opts.event_handlers = opts.event_handlers or {}
+      table.insert(opts.event_handlers, {
+        event = "neo_tree_window_after_open",
+        handler = function(args)
+          require("jjreview.panel").on_neotree_open(args)
+        end,
+      })
     end,
   },
 

@@ -23,8 +23,7 @@ local PRESETS = {
 }
 local CUSTOM = "Custom revset…"
 local SELECT_DELAY_MS = 80
-local SIDEBAR_WIDTH = 0.3
-local SIDEBAR_MIN_WIDTH = 40
+local DEFAULT_WIDTH = 40
 local LOG_HEIGHT = 0.6
 
 -- Panel state per tabpage: { revset, cursor, marks, rows, log_buf,
@@ -329,7 +328,22 @@ local function close(tab)
   end
 end
 
--- Opens the sidebar: the log at the far left, the tree below it.
+-- The panel and neo-tree share the left sidebar, one at a time. A neo-tree
+-- window other than the panel's own tree closes the panel.
+function M.on_neotree_open(args)
+  local s = tabs[args.tabid]
+  if not s or args.winid == s.tree_win then
+    return
+  end
+  vim.schedule(function()
+    if tabs[args.tabid] == s then
+      close(args.tabid)
+    end
+  end)
+end
+
+-- Opens the sidebar in neo-tree's place and width: the log at the far
+-- left, the tree below it.
 function M.toggle(revset)
   local tab = vim.api.nvim_get_current_tabpage()
   if tabs[tab] then
@@ -345,6 +359,7 @@ function M.toggle(revset)
   local s = { revset = revset or DEFAULT_REVSET, marks = {}, rows = {} }
   tabs[tab] = s
   require("jjreview.watch").start(root, M.on_change)
+  require("neo-tree.sources.manager").close_all()
 
   log.create(s)
   vim.cmd("topleft vsplit")
@@ -360,7 +375,8 @@ function M.toggle(revset)
   log.setup_win(s, log_win)
   vim.wo[log_win].winhighlight = vim.wo[s.tree_win].winhighlight
   vim.wo[s.tree_win].winfixwidth = true
-  vim.api.nvim_win_set_width(log_win, math.max(SIDEBAR_MIN_WIDTH, math.floor(vim.o.columns * SIDEBAR_WIDTH)))
+  local width = require("neo-tree").config.window.width
+  vim.api.nvim_win_set_width(log_win, type(width) == "number" and width or DEFAULT_WIDTH)
   vim.api.nvim_win_set_height(log_win, math.floor((vim.o.lines - vim.o.cmdheight) * LOG_HEIGHT))
 
   log.render(s)
