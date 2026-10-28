@@ -97,6 +97,18 @@ return {
 
   {
     "nvim-neo-tree/neo-tree.nvim",
+    init = function()
+      -- The tree's statusline runs under its separator column, so the
+      -- separator takes the tree's background and hides its line to keep
+      -- the sidebar flush.
+      vim.api.nvim_create_autocmd("ColorScheme", {
+        group = vim.api.nvim_create_augroup("neotree_separator", { clear = true }),
+        callback = function()
+          local bg = vim.api.nvim_get_hl(0, { name = "NeoTreeNormal", link = false }).bg
+          vim.api.nvim_set_hl(0, "NeoTreeWinSeparator", { fg = bg, bg = bg })
+        end,
+      })
+    end,
     opts = function(_, opts)
       opts.filesystem = opts.filesystem or {}
       -- group_empty_dirs crashes nui when a second single-child chain
