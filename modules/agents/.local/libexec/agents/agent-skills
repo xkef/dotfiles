@@ -2,7 +2,7 @@
 # agent-skills: installs shared agent skills from upstream packs.
 #
 # Holds the install sentinel and the upstream source list. Tracked skills,
-# which dotter links into ~/.agents/skills/, stay untouched. A skill that a
+# which setup/link links into ~/.agents/skills/, stay untouched. A skill that a
 # whole-pack upstream dropped goes on the next install.
 #
 # Usage:

@@ -31,7 +31,6 @@ brew "lazygit"              # terminal UI for git
 brew "jj"                   # Jujutsu version control
 brew "jjui"                 # terminal UI for jj
 brew "mise"                 # dev tool version manager
-brew "dotter"               # dotfile manager (links this repo into ~)
 brew "rustup"               # Rust toolchain manager (keg-only, PATH in env.fish)
 brew "go"                   # Go (go.mod pins newer toolchains)
 brew "uv"                   # Python package and version manager

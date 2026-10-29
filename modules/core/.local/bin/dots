@@ -1,14 +1,14 @@
 #!/usr/bin/env fish
-# dots: dotfiles management command, a thin dispatcher over dotter and jj.
+# dots: dotfiles management command, a thin dispatcher over setup/apply and jj.
 #
 # Usage: dots <command> [args]
 
 switch $argv[1]
     case update up
-        # @key dots :: update :: Pull the repo and deploy (jj fetch and rebase, setup/deploy)
+        # @key dots :: update :: Pull the repo and apply (jj fetch and rebase, setup/apply)
         # The repo is jj-colocated, so git HEAD stays detached and a plain
         # git pull can't work. Fetch and rebase with jj instead, then deploy.
-        # The deploy hook colocates jj too, but skips it when jj wasn't
+        # setup/apply colocates jj too, but skips it when jj wasn't
         # installed yet, so a plain git clone can still reach this point.
         if not test -d $DOTFILES_DIR/.jj
             jj git init --colocate $DOTFILES_DIR
@@ -19,22 +19,11 @@ switch $argv[1]
         and jj -R $DOTFILES_DIR rebase -o 'trunk()'
         and dots apply $argv[2..-1]
     case diff
-        # @key dots :: diff :: Show pending changes (setup/deploy --dry-run)
-        # --dry-run prints each change without making it.
-        $DOTFILES_DIR/setup/deploy --dry-run $argv[2..-1]
+        # @key dots :: diff :: Show pending link changes (setup/apply --dry-run)
+        $DOTFILES_DIR/setup/apply --dry-run
     case apply
-        # @key dots :: apply :: Deploy the repo into ~ (setup/deploy)
-        $DOTFILES_DIR/setup/deploy $argv[2..-1]
-    case repair
-        # @key dots :: repair :: Rerun every setup step, then deploy
-        # setup/onchange skips a step whose inputs match its last success,
-        # even when its result is gone. Dropping the stamps runs every step
-        # again, and each one installs only what is missing. The stamps are
-        # the plain files. owned/ records the settings keys the repo owns and
-        # stays.
-        set -l state (set -q XDG_STATE_HOME; and echo $XDG_STATE_HOME; or echo ~/.local/state)/dotfiles
-        test -d $state; and find $state -maxdepth 1 -type f -delete
-        dots apply $argv[2..-1]
+        # @key dots :: apply :: Apply the repo to this machine (setup/apply)
+        $DOTFILES_DIR/setup/apply
     case ref
         # @key dots :: ref :: Show keybindings, aliases, functions, and commands
         dots-ref $argv[2..-1]

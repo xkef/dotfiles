@@ -48,26 +48,6 @@ url = "https://github.com/dprint/dprint/releases/download/0.62.0/dprint-aarch64-
 url_api = "https://api.github.com/repos/dprint/dprint/releases/assets/629347839"
 provenance = "github-attestations"
 
-[[tools."github:SuperCuber/dotter"]]
-version = "0.13.5"
-backend = "github:SuperCuber/dotter"
-specifiers = ["0.13.5"]
-
-[tools."github:SuperCuber/dotter"."platforms.linux-arm64"]
-checksum = "sha256:6efc68bf72313db462a72810b9c2d33edcf04d9b10382f564c46f9aaf942c979"
-url = "https://github.com/SuperCuber/dotter/releases/download/v0.13.5/dotter-linux-arm64-musl"
-url_api = "https://api.github.com/repos/SuperCuber/dotter/releases/assets/475859723"
-
-[tools."github:SuperCuber/dotter"."platforms.linux-x64"]
-checksum = "sha256:a79e1ef325d4ecb3e3fffe3dd961f6f854cc45e2eb82755d3be23cdfe0603211"
-url = "https://github.com/SuperCuber/dotter/releases/download/v0.13.5/dotter-linux-x64-musl"
-url_api = "https://api.github.com/repos/SuperCuber/dotter/releases/assets/475858853"
-
-[tools."github:SuperCuber/dotter"."platforms.macos-arm64"]
-checksum = "sha256:1de749c8ca106e164db3c63fcf3fd0cb7820645663ae6c4afe5c976779ba3738"
-url = "https://github.com/SuperCuber/dotter/releases/download/v0.13.5/dotter-macos-arm64.arm"
-url_api = "https://api.github.com/repos/SuperCuber/dotter/releases/assets/475859437"
-
 [[tools.rumdl]]
 version = "0.2.79"
 backend = "aqua:rvben/rumdl"

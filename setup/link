@@ -1,0 +1,74 @@
+#!/usr/bin/env -S fish --no-config
+# Links each file under modules/<module>/ to the same path under ~, one
+# file at a time, so apps can add their own files next to them:
+#
+#   + link    a target that is missing
+#   ! backup  a file in the way moves to <state>/backup/<time>/ first
+#   - prune   a link of the last run whose source left the selection
+#
+# <state>/links lists the links of the last run. A dry run prints the
+# changes without making them.
+#
+# Usage: setup/link [--dry-run] <state> <module>...
+
+argparse dry-run -- $argv; or exit
+set -l state $argv[1]
+set -l repo (path resolve (status dirname)/..)
+set -l backup $state/backup/(date +%Y%m%d-%H%M%S)
+set -l links
+
+# Prints one change with ~ for the home directory.
+function report -a sign target
+    echo $sign (string replace -- $HOME '~' $target)
+end
+
+for module in $argv[2..-1]
+    set -l root $repo/modules/$module
+    for source in (find $root -type f -o -type l | sort)
+        set -l rel (string replace -- $root/ '' $source)
+        # mise would load a config.toml in the repo as the config of
+        # every directory under modules/core, so the repo names it
+        # global.toml.
+        set rel (string replace -- .config/mise/global.toml \
+            .config/mise/config.toml $rel)
+        set -l target $HOME/$rel
+        set -a links $target
+        # A link in the repo, such as pi's AGENTS.md, links to the file
+        # it resolves to.
+        set source (path resolve $source)
+
+        if test "$(readlink $target)" = $source
+            continue
+        end
+
+        if test -e $target; or test -L $target
+            report ! $target
+            if not set -q _flag_dry_run
+                mkdir -p (path dirname $backup/$rel)
+                mv $target $backup/$rel; or exit
+            end
+        end
+
+        report + $target
+        if not set -q _flag_dry_run
+            mkdir -p (path dirname $target)
+            ln -s $source $target; or exit
+        end
+    end
+end
+
+# Only a link that still points into the modules is this script's to
+# remove. A path the user replaced since stays.
+if test -f $state/links
+    for old in (command cat $state/links)
+        contains -- $old $links; and continue
+        string match -q -- "$repo/modules/*" (readlink $old); or continue
+        report - $old
+        set -q _flag_dry_run; or rm $old
+    end
+end
+
+if not set -q _flag_dry_run
+    mkdir -p $state
+    printf '%s\n' $links >$state/links
+end

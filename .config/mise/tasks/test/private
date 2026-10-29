@@ -8,12 +8,12 @@ trap 'rm -rf "$tmp"' EXIT
 mkdir -p "$tmp/home/.config/git"
 ln -s "$PWD/modules/core/.config/git/config" "$tmp/home/.config/git/config"
 
-# Without op, decrypt writes nothing and exits with EX_TEMPFAIL, so the
-# deploy retries it.
+# Without op, decrypt writes nothing and exits cleanly, so the apply
+# goes on and the next one retries.
 status=0
 env PATH=/usr/bin:/bin HOME="$tmp/home" setup/private/decrypt 2>/dev/null || status=$?
-[ "$status" = 75 ] || {
-  echo "decrypt without op exited $status, not 75"
+[ "$status" = 0 ] || {
+  echo "decrypt without op exited $status, not 0"
   exit 1
 }
 test ! -e "$tmp/home/.config/git/identity" || {
@@ -93,7 +93,7 @@ grep -qx edited "$tmp/home/.config/git/identity" || {
 }
 
 # The archive only adds files. A link at an archived path points into the
-# repo, as dotter's links do, so decrypt leaves it alone instead of
+# repo, as setup/link's links do, so decrypt leaves it alone instead of
 # writing private content into a tracked file. encrypt refuses links.
 tracked="$tmp/tracked"
 mkdir -p "$tracked" "$tmp/home/.config/fish"

@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+#MISE description="Check that setup/link links, backs up, prunes, and reruns clean"
+set -eu
+# macOS mktemp ignores TMPDIR without a template.
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/test-link.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+export HOME="$tmp/home"
+state="$tmp/state"
+repo=$PWD
+mkdir -p "$HOME/.config/fish"
+
+fail() {
+  echo "$1" >&2
+  exit 1
+}
+
+# A dry run changes nothing.
+setup/link --dry-run "$state" core >/dev/null
+[ ! -e "$HOME/.config/starship.toml" ] || fail "dry run linked a file"
+
+# A real file in the way moves to the backup, and the link takes its place.
+echo mine >"$HOME/.config/fish/config.fish"
+setup/link "$state" core >/dev/null
+[ "$(readlink "$HOME/.config/fish/config.fish")" = "$repo/modules/core/.config/fish/config.fish" ] ||
+  fail "config.fish not linked"
+backup=$(find "$state/backup" -path '*/.config/fish/config.fish')
+[ "$(cat "$backup")" = mine ] || fail "the replaced file is not in the backup"
+
+# mise would load global.toml as a project config, so it links under the
+# name mise reads.
+[ -L "$HOME/.config/mise/config.toml" ] || fail "mise config not renamed"
+
+# A rerun has nothing to do.
+[ -z "$(setup/link "$state" core)" ] || fail "rerun changed links"
+
+# A link the last run made whose source is gone leaves. A recorded path
+# that no longer points into the repo stays.
+ln -s "$repo/modules/core/gone" "$HOME/.gone"
+echo "$HOME/.gone" >>"$state/links"
+ln -s /elsewhere "$HOME/.mine"
+echo "$HOME/.mine" >>"$state/links"
+setup/link "$state" core >/dev/null
+[ ! -L "$HOME/.gone" ] || fail "stale link kept"
+[ -L "$HOME/.mine" ] || fail "foreign link removed"
+
+# A module that leaves the selection takes its links along.
+setup/link "$state" core agents >/dev/null
+[ -L "$HOME/.claude/CLAUDE.md" ] || fail "agents not linked"
+
+# A source that is a link in the repo links to the file it resolves to.
+[ "$(readlink "$HOME/.pi/agent/AGENTS.md")" = "$repo/modules/agents/.agents/AGENTS.md" ] ||
+  fail "a linked source not resolved"
+setup/link "$state" core >/dev/null
+[ ! -L "$HOME/.claude/CLAUDE.md" ] || fail "deselected module kept its links"
+echo "link ok"

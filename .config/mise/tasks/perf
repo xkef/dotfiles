@@ -2,7 +2,7 @@
 #MISE description="Fail when shell startup or the prompt exceeds its budget"
 set -eu
 # Runs against the deployed config in $HOME, so CI calls it after
-# setup/deploy. The startup budget counts only the config's cost, an
+# setup/bootstrap. The startup budget counts only the config's cost, an
 # interactive start minus a start without config, which keeps it stable
 # across runners of different speeds. The first run of each command is a
 # warm-up that fills the init caches.

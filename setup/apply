@@ -1,0 +1,212 @@
+#!/usr/bin/env -S fish --no-config
+# Applies the dotfiles to this machine. Every step is idempotent, so a
+# rerun repeats work and repairs whatever drifted. `dots apply` runs
+# it, and setup/bootstrap runs it on a new machine.
+#
+# Usage: setup/apply [--dry-run]
+#
+# --dry-run prints the link changes and runs no other step.
+
+argparse dry-run -- $argv; or exit
+
+set -g repo (path resolve (status dirname)/..)
+set -g state ~/.local/state/dotfiles
+set -q XDG_STATE_HOME; and set state $XDG_STATE_HOME/dotfiles
+
+# The pipeline in order: a step, then what it does. step_<name> runs it.
+set -l pipeline \
+    packages "install each module's package list" \
+    links "link modules/<module>/ into ~" \
+    private "unpack private/home.tar.age (desktop)" \
+    agents "link the shared skills, seed pi settings (agents)" \
+    system "file modes, sockets, and jj in this checkout" \
+    macos "apply the macOS defaults (desktop on macOS)" \
+    shell "make fish the login shell" \
+    theme "apply the current theme" \
+    zoxide "add every repo to zoxide"
+
+# $state/modules selects the modules, one per line. The first run
+# writes core, desktop, and agents, or core and agents in the Lima VM,
+# which /mnt/lima-cidata marks. The extras go in by hand.
+#
+#   core       shell, Neovim, tmux, version control, and CLI tools
+#   desktop    GUI apps, the 1Password SSH agent, and Ghostty
+#   agents     Claude Code, pi, their nono sandbox, and the Lima VM
+#   wezterm    WezTerm, an alternative to Ghostty and tmux
+#   helix      Helix with its formatters and language servers
+#   zed        Zed
+#   kickstart  kickstart.nvim, a minimal Neovim config, run as knvim
+mkdir -p $state
+if not test -f $state/modules
+    set -l default core desktop agents
+    test -e /mnt/lima-cidata; and set default core agents
+    printf '%s\n' $default >$state/modules
+end
+set -g modules (string trim <$state/modules |
+    string match -rv '^(#.*)?$')
+
+# The repo links the state as state/, which git ignores, so the
+# selection and the links sit next to the modules. The Lima VM mounts
+# the repo read-only and sees the host's link.
+if test -w $repo; and not test -L $repo/state
+    ln -s $state $repo/state
+end
+
+function selected -a module
+    contains -- $module $modules
+end
+
+function step_packages
+    env DOTFILES_PACKAGES="$modules" $repo/setup/packages/install
+end
+
+function step_links
+    $repo/setup/link $state $modules
+end
+
+# The age key comes from 1Password, which only desktop installs. The
+# archive can restore hooks for setup that would expose private details
+# in this repo, such as logins with credentials from 1Password.
+function step_private
+    selected desktop; or return 0
+    $repo/setup/private/decrypt; or return
+    for hook in ~/.config/dotfiles/post-deploy.d/*
+        if test -f $hook
+            bash $hook; or return
+        end
+    end
+end
+
+# Claude Code reads the shared skills through ~/.claude/skills, a
+# directory link, which setup/link doesn't make. pi rewrites its
+# settings.json at runtime, so the repo's copy only seeds a new one.
+function step_agents
+    selected agents; or return 0
+    if test -L ~/.claude/skills; or not test -e ~/.claude/skills
+        ln -sfn ~/.agents/skills ~/.claude/skills; or return
+    else
+        echo "warning: ~/.claude/skills is a directory; move it" >&2
+    end
+
+    set -l pi ~/.pi/agent
+    test -e $pi/settings.json
+    or cp $pi/settings.dotfiles.json $pi/settings.json
+end
+
+function step_system
+    chmod 700 ~/.ssh; or return
+
+    # mise caches exec() output, such as the GitHub tokens in
+    # mise.local.toml, as world-readable files. Other local accounts
+    # share the staff group.
+    set -l mise_cache ~/.cache/mise
+    set -q XDG_CACHE_HOME; and set mise_cache $XDG_CACHE_HOME/mise
+    mkdir -p $mise_cache; and chmod 700 $mise_cache; or return
+
+    # ssh, git signing, and WezTerm find the 1Password agent at the
+    # Linux path, so one path serves both systems.
+    if selected desktop; and test (uname -s) = Darwin
+        set -l group ~/Library/Group\ Containers/2BUA8C4S2C.com.1password
+        mkdir -p ~/.1password
+        ln -sfn $group/t/agent.sock ~/.1password/agent.sock; or return
+    end
+
+    # Docker clients reach podman through its user socket on Linux,
+    # which hooks.fish exports as DOCKER_HOST. On macOS the helper links
+    # /var/run/docker.sock to the machine's socket at each `podman
+    # machine start`.
+    set -l helper /Library/LaunchDaemons/com.github.containers.podman
+    set helper $helper.helper-$USER.plist
+    if test (uname -s) = Linux; and command -q podman
+        systemctl --user enable --now podman.socket
+        or echo "warning: podman.socket not enabled" >&2
+    else if test (uname -s) = Darwin; and not test -f $helper
+        and command -q podman-mac-helper
+        sudo podman-mac-helper install
+        or echo "warning: podman-mac-helper not installed" >&2
+    end
+
+    # A fresh clone is plain git. jj takes it over and tracks main as
+    # `dots update` does. A checkout without main@origin, as in CI,
+    # skips the tracking. The Lima VM's read-only checkout stays.
+    if not test -d $repo/.jj; and test -w $repo; and command -q jj
+        jj -R $repo git init --colocate; or return
+        jj -R $repo bookmark track main@origin 2>/dev/null
+    end
+    return 0
+end
+
+# The dry run exits 1 when a setting differs. Applying asks for sudo
+# and restarts the Dock and Finder, so it runs only then.
+function step_macos
+    selected desktop; and test (uname -s) = Darwin; or return 0
+    $repo/setup/macos-defaults --dry-run >/dev/null; and return
+    $repo/setup/macos-defaults
+end
+
+# $SHELL belongs to the calling process, so read the login shell. The
+# shell is fish from PATH, since status fish-path names the versioned
+# Homebrew path, which an upgrade removes.
+function step_shell
+    set -l fish (command -s fish)
+    set -l login
+    switch (uname -s)
+        case Darwin
+            set login (dscl . -read /Users/$USER UserShell |
+                string split -f2 ' ')
+        case '*'
+            set login (getent passwd $USER | string split -f7 :)
+    end
+    test "$fish" = "$login"; and return
+
+    if not grep -qxF $fish /etc/shells
+        echo $fish | sudo tee -a /etc/shells >/dev/null; or return
+    end
+    switch (uname -s)
+        case Darwin
+            chsh -s $fish; or echo "  ! Run manually: chsh -s $fish"
+        case '*'
+            sudo usermod -s $fish $USER
+            or echo "  ! Run manually: chsh -s $fish"
+    end
+end
+
+# Writes every themed tool's files for the current theme, or the
+# default one on a new machine.
+function step_theme
+    ~/.local/bin/theme --apply
+end
+
+# zoxide learns a directory only from a cd. The seed adds every repo
+# and every directory in atuin's history before the first visit.
+function step_zoxide
+    command -q zoxide; or return 0
+    $repo/setup/zoxide-seed
+end
+
+if set -q _flag_dry_run
+    echo "dots apply --dry-run: link changes for $modules"
+    $repo/setup/link --dry-run $state $modules
+    exit
+end
+
+set -l names $pipeline[(seq 1 2 (count $pipeline))]
+set -l docs $pipeline[(seq 2 2 (count $pipeline))]
+echo "dots apply: $modules"
+echo "state: "(string replace -- $HOME '~' $state)
+for n in (seq (count $names))
+    printf '  %d %-9s %s\n' $n $names[$n] $docs[$n]
+end
+
+for n in (seq (count $names))
+    echo
+    set_color --bold
+    printf '[%d/%d] %s\n' $n (count $names) $names[$n]
+    set_color normal
+    if not step_$names[$n]
+        echo "dots apply: the $names[$n] step failed" >&2
+        exit 1
+    end
+end
+echo
+echo "dots apply: done"

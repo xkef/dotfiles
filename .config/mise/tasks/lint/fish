@@ -3,6 +3,6 @@
 set -eu
 
 # Scripts without a .fish extension count through their shebang.
-for f in $(git ls-files '*.fish' && git grep -l '^#!/usr/bin/env fish' -- modules); do
+for f in $(git ls-files '*.fish' && git grep -l '^#!/usr/bin/env fish' -- modules setup); do
   fish --no-execute "$f"
 done

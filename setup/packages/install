@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
 # Installs the packages this repo lists: Homebrew on macOS, pacman and paru
-# on Arch. Other systems install nothing. Each dotter package has its own
-# list, such as macos/agents.Brewfile or arch/agents.txt, and only the
-# packages in DOTFILES_PACKAGES install. The deploy sets it to the selected
-# ones, such as "agents core". CI skips desktop, the GUI apps.
+# on Arch. Other systems install nothing. Each module has its own list,
+# such as macos/agents.Brewfile or arch/agents.txt, and only the modules
+# in DOTFILES_PACKAGES install. setup/apply sets it to the selected ones,
+# such as "agents core". CI skips desktop, the GUI apps.
 #
-# An optional package that fails to install doesn't stop the others. The
-# script then exits with EX_TEMPFAIL, so setup/onchange records no stamp
-# and the next deploy retries.
+# Each run checks the lists first and installs only what is missing. An
+# optional package that fails to install doesn't stop the others, and
+# the next run retries it.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-# sysexits.h EX_TEMPFAIL.
-readonly EX_TEMPFAIL=75
-partial=false
 modules=()
 for module in ${DOTFILES_PACKAGES:-core}; do
   if [[ "$module" == desktop && "${CI:-}" == true ]]; then
@@ -40,7 +37,7 @@ install_darwin() {
   trap 'rm -rf "$split"' EXIT
   for module in "${modules[@]}"; do
     brewfile=macos/$module.Brewfile
-    if [[ ! -f "$brewfile" ]]; then
+    if [[ ! -f "$brewfile" ]] || brew bundle check --file="$brewfile" >/dev/null; then
       continue
     fi
 
@@ -52,8 +49,7 @@ install_darwin() {
     brew bundle --file="$split/$module.formulae.Brewfile"
     if [[ -s "$split/$module.casks.Brewfile" ]] &&
       ! brew bundle --file="$split/$module.casks.Brewfile"; then
-      echo "warning: some casks failed; the next deploy retries them" >&2
-      partial=true
+      echo "warning: some casks failed; the next apply retries them" >&2
     fi
   done
 
@@ -119,12 +115,17 @@ install_arch() {
     fi
   done
 
+  # pacman -T fails when a package is missing. Without one, the install
+  # needs neither sudo nor a sync.
+  if pacman -T "${packages[@]}" >/dev/null; then
+    return
+  fi
+
   sudo -v
   sudo pacman -Syu --noconfirm
   ensure_rustup
   if ! ensure_paru; then
     echo "warning: paru unusable; installing repo packages via pacman, AUR skipped" >&2
-    partial=true
     for pkg in "${packages[@]}"; do
       sudo pacman -S --needed --noconfirm "$pkg" ||
         echo "warning: $pkg not in official repos (AUR?), skipped" >&2
@@ -141,7 +142,6 @@ install_arch() {
     for pkg in "${packages[@]}"; do
       if ! paru -S "${paru_flags[@]}" "$pkg"; then
         echo "warning: $pkg failed to install, skipped" >&2
-        partial=true
       fi
     done
   fi
@@ -159,7 +159,3 @@ Linux)
   fi
   ;;
 esac
-
-if [[ "$partial" == true ]]; then
-  exit "$EX_TEMPFAIL"
-fi

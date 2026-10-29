@@ -35,7 +35,6 @@ lazygit         # terminal UI for git
 jujutsu         # Jujutsu version control
 jjui-bin        # terminal UI for jj (AUR)
 mise            # dev tool version manager
-dotter-rs-bin   # dotfile manager (AUR)
 rustup          # Rust toolchain manager
 go              # Go (go.mod pins newer toolchains)
 uv              # Python package and version manager

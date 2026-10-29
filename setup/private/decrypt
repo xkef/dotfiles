@@ -2,24 +2,21 @@
 # Decrypts private/home.tar.age, an archive of files under $HOME, into
 # $HOME with the age key in 1Password. One archive keeps the file names
 # out of the public repo. `mise run encrypt <file>` adds a file to it.
-# Without op, age, or the key, it decrypts nothing and exits with
-# EX_TEMPFAIL, so setup/onchange records no stamp and the next deploy
+# Without op, age, or the key, it decrypts nothing, and the next apply
 # retries.
 set -euo pipefail
 umask 077
 
-# sysexits.h EX_TEMPFAIL.
-readonly EX_TEMPFAIL=75
 key_ref="op://Dev/dotfiles-age-key/password"
 archive="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/private/home.tar.age"
 
 if ! command -v op >/dev/null || ! command -v age >/dev/null; then
   echo "private: op or age not found, skipping" >&2
-  exit "$EX_TEMPFAIL"
+  exit 0
 fi
 if ! key=$(op read "$key_ref" 2>/dev/null); then
   echo "private: no age key at $key_ref, skipping" >&2
-  exit "$EX_TEMPFAIL"
+  exit 0
 fi
 
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/private.XXXXXX")
@@ -30,7 +27,7 @@ cd "$tmp"
 find . -type f | while IFS= read -r file; do
   target="$HOME/${file#./}"
 
-  # The archive only adds files. A link points into the repo, as dotter's
+  # The archive only adds files. A link points into the repo, as setup/link's
   # do, and cp would write the private content into the tracked file.
   if [[ -L "$target" ]]; then
     echo "private: skipped $target, a link into the repo; the archive only adds files" >&2

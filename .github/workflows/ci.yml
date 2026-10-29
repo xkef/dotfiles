@@ -1,15 +1,15 @@
 name: CI
 
 # lint runs the portable subset of `mise run lint`. check runs `mise run
-# check`, which deploys the repo into a throwaway HOME and asserts the
-# result, and `mise run test`, the behavior tests, a fast signal on every
-# push. e2e-macos and e2e-arch run the real thing: setup/deploy with its
-# hooks, so packages install, macos-defaults applies, and the resulting
-# interactive shell starts. The deploy selects no extras, and the package
-# install skips the desktop package, its casks and Arch GUI apps, under CI,
-# so e2e-macos installs WezTerm itself to load the WezTerm and Neovim
-# configs. Both e2e jobs then hold
-# shell startup and the prompt to the budgets in `mise run perf`.
+# check`, which links each module selection into a throwaway HOME and
+# asserts the result, and `mise run test`, the behavior tests, a fast
+# signal on every push. e2e-macos and e2e-arch run the real thing:
+# setup/bootstrap, so packages install, macos-defaults applies, and the
+# resulting interactive shell starts. The apply selects no extras, and
+# the package install skips the desktop package, its casks and Arch GUI
+# apps, under CI, so e2e-macos installs WezTerm itself to load the
+# WezTerm and Neovim configs. Both e2e jobs then hold shell startup
+# and the prompt to the budgets in `mise run perf`.
 on:
   pull_request:
   push:
@@ -95,17 +95,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Full setup (files + hooks)
+      - name: Full setup (bootstrap)
         env:
           GITHUB_TOKEN: ${{ github.token }} # mise version lookups rate-limit without it
         # A fresh Mac runs the README one-liner from a shell that predates
         # Homebrew, so PATH has no /opt/homebrew/bin. Reproduce that. The
-        # hooks must find the tools they install on their own. --force
-        # replaces the files the runner image ships in their place.
-        run: env PATH=/usr/bin:/bin:/usr/sbin:/sbin setup/deploy --force --noconfirm
+        # setup must find the tools it installs on its own. setup/link
+        # backs up the files the runner image ships in their place.
+        run: env PATH=/usr/bin:/bin:/usr/sbin:/sbin setup/bootstrap
       - name: Verify the machine actually works
         run: |
-          setup/deploy --dry-run
+          setup/apply --dry-run
           # -i runs the conf.d files that return early without a prompt.
           # Any output besides the echo, such as a failing init, fails.
           out=$(cd / && fish -i -c 'echo fish boots' 2>&1 </dev/null)
@@ -145,12 +145,12 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }} # mise version lookups rate-limit without it
         run: |
           chown -R builder: "$PWD"
-          sudo -u builder env HOME=/home/builder CI=true GITHUB_TOKEN="$GITHUB_TOKEN" setup/deploy --force --noconfirm
+          sudo -u builder env HOME=/home/builder CI=true GITHUB_TOKEN="$GITHUB_TOKEN" setup/bootstrap
       - name: Verify the machine actually works
         run: |
           sudo -u builder env HOME=/home/builder STARTUP_BUDGET_MS="$STARTUP_BUDGET_MS" PROMPT_BUDGET_MS="$PROMPT_BUDGET_MS" sh -c '
             set -e
-            setup/deploy --dry-run
+            setup/apply --dry-run
             out=$(cd / && fish -i -c "echo fish boots" 2>&1 </dev/null)
             echo "$out"
             [ "$out" = "fish boots" ]

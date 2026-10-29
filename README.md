@@ -5,21 +5,43 @@
 
 ![screenshot](.github/scrot.png)
 
-macOS and Arch Linux dotfiles, deployed with
-[Dotter](https://github.com/SuperCuber/dotter).
+macOS and Arch Linux dotfiles, applied by one fish script, `setup/apply`.
 
 ## Install
 
 ```bash
 git clone https://github.com/xkef/dotfiles ~/dotfiles
-~/dotfiles/setup/deploy
+~/dotfiles/setup/bootstrap
 ```
 
-Deploy installs packages with Homebrew or pacman and links each package under
-`modules/` into `$HOME`. A machine gets `core`, `desktop`, and `agents`, and the
-Lima VM gets `core` and `agents`. The extras `wezterm`, `helix`, `zed`, and
-`kickstart` go in the `packages` list in `~/.local/state/dotter/local.toml`.
-`dots apply` deploys again after a change.
+Bootstrap installs the `core` packages, which bring fish, then runs
+`setup/apply`. After that, `dots apply` runs it again. Each run prints its
+pipeline and then works through it:
+
+```text
+  1 packages  install each module's package list
+  2 links     link modules/<module>/ into ~
+  3 private   unpack private/home.tar.age (desktop)
+  4 agents    link the shared skills, seed pi settings (agents)
+  5 system    file modes, sockets, and jj in this checkout
+  6 macos     apply the macOS defaults (desktop on macOS)
+  7 shell     make fish the login shell
+  8 theme     apply the current theme
+  9 zoxide    add every repo to zoxide
+```
+
+Each step can run again without harm, so a rerun repairs whatever drifted.
+`dots diff` prints the link changes without making them.
+
+The machine's state lives in `~/.local/state/dotfiles`, which the repo links as
+`state/`:
+
+- `modules` selects the modules under `modules/`. A machine gets `core`,
+  `desktop`, and `agents`, and the Lima VM gets `core` and `agents`. The extras
+  `wezterm`, `helix`, `zed`, and `kickstart` go in by hand.
+- `links` lists every link the last run made, so a file removed from the repo
+  loses its link.
+- `backup/` holds the files that stood where a link goes.
 
 ## Included tools
 
@@ -63,7 +85,7 @@ security add-generic-password -s nono -a github-<gh user> -w
 
 Private files, such as the git identity, live in `private/home.tar.age`, an
 [age](https://age-encryption.org) archive whose key sits in 1Password. A desktop
-deploy unpacks it into `$HOME`, next to the configs that include each file.
+apply unpacks it into `$HOME`, next to the configs that include each file.
 `mise run encrypt <file>` adds or updates one.
 
 ## Credits

@@ -7,6 +7,9 @@
 !/.claude/skills/
 /.claude-notes/
 
+# setup/apply links the machine's state here
+/state
+
 # Restored by setup/private/decrypt
 /mise.local.toml
 

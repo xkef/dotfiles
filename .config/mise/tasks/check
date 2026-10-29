@@ -1,32 +1,26 @@
 #!/usr/bin/env bash
-#MISE description="Deploy each package selection into a throwaway HOME and assert results"
+#MISE description="Link each module selection into a throwaway HOME and assert results"
 set -eu
 # macOS mktemp ignores TMPDIR without a template.
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/check.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
 
-# Each selection deploys on its own, since a file in one package can link
+# Each selection links on its own, since a file in one module can link
 # or source into another that a machine leaves out.
 selections=(
-  '"core"'
-  '"core", "agents"'
-  '"core", "desktop"'
-  '"core", "wezterm"'
-  '"core", "helix"'
-  '"core", "desktop", "agents"'
-  '"core", "desktop", "agents", "wezterm", "helix", "zed", "kickstart"'
+  'core'
+  'core agents'
+  'core desktop'
+  'core wezterm'
+  'core helix'
+  'core desktop agents'
+  'core desktop agents wezterm helix zed kickstart'
 )
 for selection in "${selections[@]}"; do
   run=$(mktemp -d "$tmp/run.XXXXXX")
   mkdir -p "$run/home"
-  printf 'packages = [%s]\n' "$selection" >"$run/local.toml"
-
-  # Hook paths that don't exist skip the hooks, which install packages and
-  # change the login shell.
-  HOME="$run/home" dotter --global-config setup/dotter/global.toml \
-    --local-config "$run/local.toml" \
-    --cache-file "$run/cache.toml" --cache-directory "$run/cache" \
-    --pre-deploy none --post-deploy none --noconfirm --quiet deploy
+  # shellcheck disable=SC2086 # The selection splits into modules.
+  HOME="$run/home" setup/link "$run/state" $selection >/dev/null
 
   broken=$(find "$run/home" -type l ! -exec test -e {} \; -print)
   if [ -n "$broken" ]; then
@@ -42,7 +36,7 @@ for selection in "${selections[@]}"; do
   fi
 done
 
-# Dotter links every file in a package, ignored ones too, so a log or a
+# setup/link links every file in a module, ignored ones too, so a log or a
 # cache left in modules/ lands in $HOME. Finder's .DS_Store is harmless.
 stray=$(git ls-files --others --ignored --exclude-standard -- 'modules/*/*' ':!:*.DS_Store')
 if [ -n "$stray" ]; then
@@ -51,4 +45,4 @@ if [ -n "$stray" ]; then
   exit 1
 fi
 
-echo "dotter smoke ok"
+echo "link smoke ok"
