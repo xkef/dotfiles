@@ -1,0 +1,34 @@
+# eza colors. Named ANSI colors keep eza on the terminal palette, so it
+# follows `theme` like bat and fish. Metadata columns stay dim, so names,
+# git status, and large files stand out.
+colourful: true
+
+filekinds:
+  directory: {foreground: Blue, is_bold: true}
+  symlink: {foreground: Cyan}
+  executable: {foreground: Green, is_bold: true}
+
+size:
+  number_byte: {foreground: Default, is_dimmed: true}
+  number_kilo: {foreground: Default, is_dimmed: true}
+  number_mega: {foreground: Yellow}
+  number_giga: {foreground: Red, is_bold: true}
+  number_huge: {foreground: Red, is_bold: true}
+  unit_byte: {foreground: Default, is_dimmed: true}
+  unit_kilo: {foreground: Default, is_dimmed: true}
+  unit_mega: {foreground: Yellow}
+  unit_giga: {foreground: Red}
+  unit_huge: {foreground: Red}
+
+git:
+  new: {foreground: Green}
+  modified: {foreground: Yellow}
+  deleted: {foreground: Red}
+  renamed: {foreground: Cyan}
+  typechange: {foreground: Purple}
+  ignored: {foreground: Default, is_dimmed: true}
+  conflicted: {foreground: Red, is_bold: true}
+
+date: {foreground: Purple, is_dimmed: true}
+punctuation: {foreground: Default, is_dimmed: true}
+header: {is_underline: true}

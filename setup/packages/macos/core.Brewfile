@@ -48,6 +48,7 @@ brew "scooter"              # interactive find-and-replace TUI
 brew "yazi"                 # terminal file manager
 brew "vale"                 # prose linter for markdown
 brew "tokei"                # code statistics by language
+brew "onefetch"             # git repository summary
 brew "tealdeer"             # fast tldr client
 brew "htop"                 # interactive process viewer
 brew "btop"                 # resource monitor

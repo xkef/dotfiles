@@ -52,6 +52,7 @@ fx              # terminal JSON viewer
 yazi            # terminal file manager
 vale            # prose linter for markdown
 tokei           # code statistics by language
+onefetch        # git repository summary
 tealdeer        # fast tldr client
 htop            # interactive process viewer
 btop            # resource monitor

@@ -50,6 +50,8 @@ set -gx GOPATH $XDG_DATA_HOME/go
 set -gx GOBIN $GOPATH/bin
 set -gx LESSHISTFILE $XDG_STATE_HOME/less/history
 set -gx NODE_REPL_HISTORY $XDG_DATA_HOME/node_repl_history
+# eza looks for theme.yml in ~/Library/Application Support on macOS.
+set -gx EZA_CONFIG_DIR $XDG_CONFIG_HOME/eza
 set -gx _ZO_EXCLUDE_DIRS "$HOME/Library/*:$HOME/.Trash/*:/tmp/*"
 
 # ── Pager ────────────────────────────────────────────
@@ -57,6 +59,9 @@ set -gx PAGER less
 # less underlines OSC 8 links, such as delta's line numbers. -DO- draws
 # them as plain text, and they stay clickable.
 set -gx LESS '-iFMRX --mouse -#.25 --use-color -DO-'
+# Nerd Font icons sit in the Private Use Areas, which less otherwise
+# shows as <U+E5FF>.
+set -gx LESSUTFCHARDEF 'e000-f8ff:p,f0000-ffffd:p'
 
 # ── PATH ─────────────────────────────────────────────
 # One call in priority order. -m moves entries already in an inherited
