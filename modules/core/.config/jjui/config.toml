@@ -88,3 +88,29 @@ action = "difftastic"
 key = "t"
 scope = "revisions.details"
 desc = "difftastic"
+
+# Alt-Shift-hjkl resizes the preview, as in Neovim, tmux, and WezTerm.
+# H and K grow it, L and J shrink it, so the keys follow the border with
+# the preview on the right or at the bottom. Ctrl-h and Ctrl-l move
+# between panes everywhere else, so the no-op action takes them back from
+# jjui's resize. A later binding of a key wins.
+[[actions]]
+name = "noop"
+lua = "-- does nothing"
+
+[[bindings]]
+action = "noop"
+key = ["ctrl+h", "ctrl+l"]
+scope = "ui.preview"
+
+[[bindings]]
+action = "ui.preview_expand"
+key = ["alt+shift+h", "alt+shift+k"]
+scope = "ui.preview"
+desc = "expand preview"
+
+[[bindings]]
+action = "ui.preview_shrink"
+key = ["alt+shift+l", "alt+shift+j"]
+scope = "ui.preview"
+desc = "shrink preview"

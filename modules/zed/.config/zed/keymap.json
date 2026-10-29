@@ -23,7 +23,11 @@
       "ctrl-h": "workspace::ActivatePaneLeft",
       "ctrl-l": "workspace::ActivatePaneRight",
       "ctrl-j": "workspace::ActivatePaneDown",
-      "ctrl-k": "workspace::ActivatePaneUp"
+      "ctrl-k": "workspace::ActivatePaneUp",
+      "alt-shift-h": "vim::ResizePaneLeft",
+      "alt-shift-j": "vim::ResizePaneDown",
+      "alt-shift-k": "vim::ResizePaneUp",
+      "alt-shift-l": "vim::ResizePaneRight"
     }
   },
   {

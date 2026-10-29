@@ -57,6 +57,18 @@ local function navigate(key, direction)
   }
 end
 
+-- Resizes the pane, or hands Alt plus the key, such as Alt-H, to
+-- Neovim so that smart-splits.nvim resizes Neovim's own splits first.
+local function resize(key, direction)
+  return wezterm.action_callback(function(window, pane)
+    if is_vim(pane) then
+      window:perform_action(act.SendKey({ key = key, mods = "ALT" }), pane)
+    else
+      window:perform_action(act.AdjustPaneSize({ direction, 5 }), pane)
+    end
+  end)
+end
+
 -- A leader binding plus the same key in the `repeat` table, which each
 -- press keeps open for another REPEAT_MS.
 local repeat_keys = {}
@@ -121,11 +133,11 @@ function M.apply(config)
     navigate("j", "Down"),
     navigate("k", "Up"),
     navigate("l", "Right"),
-    -- @key wezterm :: H/J/K/L :: Resize pane (repeatable)
-    repeatable("H", act.AdjustPaneSize({ "Left", 5 })),
-    repeatable("J", act.AdjustPaneSize({ "Down", 5 })),
-    repeatable("K", act.AdjustPaneSize({ "Up", 5 })),
-    repeatable("L", act.AdjustPaneSize({ "Right", 5 })),
+    -- @key wezterm :: H/J/K/L :: Resize pane (and Neovim splits, repeatable)
+    repeatable("H", resize("H", "Left")),
+    repeatable("J", resize("J", "Down")),
+    repeatable("K", resize("K", "Up")),
+    repeatable("L", resize("L", "Right")),
 
     -- @key wezterm :: | / - :: Split right / down
     { key = "|", mods = "LEADER", action = vm.split(act.SplitHorizontal({ domain = "CurrentPaneDomain" }), "Right") },

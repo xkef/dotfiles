@@ -50,7 +50,8 @@ nbsp = "all"
 ";" = "command_mode"
 C-s = ":write"
 
-# Window navigation matches the nvim C-hjkl.
+# Window navigation matches the nvim C-hjkl. Helix has no command to
+# resize a split, so A-HJKL stays unbound.
 C-h = "jump_view_left"
 C-j = "jump_view_down"
 C-k = "jump_view_up"

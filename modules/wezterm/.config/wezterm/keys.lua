@@ -90,7 +90,7 @@ local MAC = {
 local DIRECTIONS = { UpArrow = "Up", DownArrow = "Down", LeftArrow = "Left", RightArrow = "Right" }
 for key, direction in pairs(DIRECTIONS) do
   table.insert(MAC, { key = key, mods = "SUPER|ALT", action = act.ActivatePaneDirection(direction) })
-  table.insert(MAC, { key = key, mods = "SUPER|CTRL", action = act.AdjustPaneSize({ direction, 10 }) })
+  table.insert(MAC, { key = key, mods = "SUPER|CTRL", action = act.AdjustPaneSize({ direction, 5 }) })
 end
 
 for i = 1, 8 do

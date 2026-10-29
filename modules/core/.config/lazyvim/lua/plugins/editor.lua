@@ -8,6 +8,8 @@ return {
     -- which the WezTerm and tmux leader h/j/k/l read to hand the key to
     -- Neovim. A lazy load leaves them unset until the first move.
     lazy = false,
+    -- Resizes by the same 5 cells as the tmux and WezTerm leader H/J/K/L.
+    opts = { default_amount = 5 },
     keys = (function()
       local ss = "smart-splits"
       local keys = {}
