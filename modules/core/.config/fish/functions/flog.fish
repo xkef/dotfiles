@@ -1,3 +1,3 @@
-function flog --description 'Interactive git log browser (tv)'
-    tv git-log
+function flog --description 'Interactive jj log browser (tv)'
+    tv jj-log
 end
