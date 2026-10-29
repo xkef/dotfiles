@@ -6,7 +6,7 @@ description: Review a pull request against this dotfiles repo's failure modes. U
 # Review a dotfiles PR
 
 The argument names the PR, as in `xkef/dotfiles/pull/21`. CI already lints,
-deploys, and runs the tests on macOS and Arch. This review hunts the four
+applies, and runs the tests on macOS and Arch. This review hunts the four
 classes that CI has missed before, because no check covers them. The review ends
 when you have checked every changed hunk against all four and posted each
 finding.
@@ -17,7 +17,7 @@ finding.
 2. Check each hunk against the four classes below.
 3. Test each suspicion before you post it. The checkout holds the PR head with
    `mise`, fish, and jj installed.
-   - `mise run check` deploys the repo into a throwaway `HOME`. `mise run test`
+   - `mise run check` links the repo into a throwaway `HOME`. `mise run test`
      runs the behavior tests. `mise tasks` lists the rest.
    - Run a changed script under `HOME=$(mktemp -d)` with stub binaries first on
      `PATH`, the way `.config/mise/tasks/test/sb` stubs nono.
@@ -64,7 +64,7 @@ A change leaves text behind that no longer matches the code. Grep for every
 file, function, task, flag, and key that the diff removes or renames, and flag
 each remaining reference in comments, `README.md`, `AGENTS.md`, skills, package
 lists, and sandbox profiles. After a move between modules, flag code in one
-module that still reaches into the other, since the VM deploys core and agents
+module that still reaches into the other, since the VM applies core and agents
 without desktop. Flag a config key or flag the installed tool no longer accepts.
 Run the tool with `--help` or its config check through `mise x` when `PATH`
 lacks it.

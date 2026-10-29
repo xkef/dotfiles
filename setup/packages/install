@@ -43,7 +43,7 @@ install_darwin() {
 
     # Formulae must install, and casks fail soft. Self-updating GUI apps
     # such as zed and 1password hit stale-receipt and quarantine issues that
-    # must not block the deploy.
+    # must not block the apply.
     list "$brewfile" | { grep -v '^cask ' || :; } >"$split/$module.formulae.Brewfile"
     list "$brewfile" | { grep '^cask ' || :; } >"$split/$module.casks.Brewfile"
     brew bundle --file="$split/$module.formulae.Brewfile"
@@ -135,7 +135,7 @@ install_arch() {
 
   local paru_flags=(--needed --noconfirm)
   [[ -e /mnt/lima-cidata ]] && paru_flags+=(--mflags="-A")
-  # One broken AUR package must not abort the whole deploy. Retry one by
+  # One broken AUR package must not abort the whole apply. Retry one by
   # one and skip the failures with a warning.
   if ! paru -S "${paru_flags[@]}" "${packages[@]}"; then
     echo "warning: batch install failed; retrying packages individually" >&2

@@ -7,7 +7,7 @@ switch $argv[1]
     case update up
         # @key dots :: update :: Pull the repo and apply (jj fetch and rebase, setup/apply)
         # The repo is jj-colocated, so git HEAD stays detached and a plain
-        # git pull can't work. Fetch and rebase with jj instead, then deploy.
+        # git pull can't work. Fetch and rebase with jj instead, then apply.
         # setup/apply colocates jj too, but skips it when jj wasn't
         # installed yet, so a plain git clone can still reach this point.
         if not test -d $DOTFILES_DIR/.jj

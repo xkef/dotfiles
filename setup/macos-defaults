@@ -487,7 +487,7 @@ apply com.apple.TextEdit PlainTextEncodingForWrite -int 4
 
 # Mail and Calendar keep their settings in sandbox containers, so the
 # terminal needs Full Disk Access to write them. Without it the writes
-# fail, and the rest of the deploy goes on.
+# fail, and the rest of the apply goes on.
 readonly NO_FDA="warning: grant the terminal Full Disk Access for the Mail and Calendar defaults"
 $DRY_RUN || log "Mail..."
 apply com.apple.mail SendFormat -string "Plain" || echo "$NO_FDA" >&2

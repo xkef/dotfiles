@@ -29,11 +29,9 @@ for selection in "${selections[@]}"; do
     exit 1
   fi
 
-  if command -v fish >/dev/null; then
-    for f in "$run"/home/.config/fish/conf.d/*.fish "$run"/home/.config/fish/functions/*.fish; do
-      fish --no-execute "$f"
-    done
-  fi
+  for f in "$run"/home/.config/fish/conf.d/*.fish "$run"/home/.config/fish/functions/*.fish; do
+    fish --no-execute "$f"
+  done
 done
 
 # setup/link links every file in a module, ignored ones too, so a log or a

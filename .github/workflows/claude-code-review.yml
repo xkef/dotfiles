@@ -39,7 +39,7 @@ jobs:
           fetch-depth: 0 # git log -S finds when a name went away
           persist-credentials: false
       # The same tools as the CI check job, so the review can run the
-      # deploy check and the behavior tests.
+      # link check and the behavior tests.
       - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
       - name: Install fish and jj
         run: |

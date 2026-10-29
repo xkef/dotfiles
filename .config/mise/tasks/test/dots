@@ -26,6 +26,6 @@ git init -q -b main "$tmp/origin"
 git -C "$tmp/origin" -c user.name=t -c user.email=t@t commit -q --allow-empty -m init
 git clone -q "$tmp/origin" "$tmp/clone"
 DOTFILES_DIR="$tmp/clone" fish --no-config "$dots" update || fail "update failed on a git clone"
-grep -qx apply "$DOTS_LOG" || fail "update did not deploy"
+grep -qx apply "$DOTS_LOG" || fail "update did not apply"
 
 echo "dots ok"
