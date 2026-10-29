@@ -78,8 +78,12 @@ once:
 claude setup-token  # then store its output:
 security add-generic-password -s nono -a claude_code_oauth_token -w
 security add-generic-password -s nono -a github-<gh user> -w
+security add-generic-password -s nono -a openrouter_api_key -w  # pi
 # Linux: secret-tool store --label=nono service nono account github-<gh user>
 ```
+
+pi starts on DeepSeek V4.1 Flash through OpenRouter. Its footer shows the
+session's cost, and the status line shows the key's spend today and this month.
 
 ## Private files
 

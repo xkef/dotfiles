@@ -10,14 +10,20 @@ const STATUS_KEY = "copilot-usage";
 const API_TIMEOUT_MS = 5_000;
 const COPILOT_PROVIDER = "github-copilot";
 const CODEX_PROVIDER = "openai-codex";
+const OPENROUTER_PROVIDER = "openrouter";
 const CODEX_USAGE_URL = "https://chatgpt.com/backend-api/wham/usage";
 const COPILOT_USAGE_URL = "https://api.github.com/copilot_internal/user";
+const OPENROUTER_KEY_URL = "https://openrouter.ai/api/v1/key";
 const CODEX_AUTH_CLAIM = "https://api.openai.com/auth";
 const FULL_PERCENT = 100;
 const SECONDS_PER_MINUTE = 60;
 const SECONDS_PER_HOUR = 3_600;
 const SECONDS_PER_DAY = 86_400;
 const format = new Intl.NumberFormat("en-US");
+const dollars = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
 
 type Usage = {
   used: number;
@@ -201,6 +207,56 @@ async function readCopilotUsage(signal: AbortSignal): Promise<UsageStatus | unde
   } : undefined;
 }
 
+// OpenRouter reports the key's spend in dollars, and the limit when the
+// key has one. The footer shows the session's own cost next to it.
+function parseOpenRouterUsage(value: unknown): UsageStatus | undefined {
+  if (!isRecord(value) || !isRecord(value.data)) {
+    return undefined;
+  }
+
+  const key = value.data;
+  const today = numberField(key.usage_daily);
+  const month = numberField(key.usage_monthly);
+  if (today === undefined || month === undefined) {
+    return undefined;
+  }
+
+  const parts = [`${dollars.format(today)} today`, `${dollars.format(month)} this month`];
+  const limit = numberField(key.limit);
+  const remaining = numberField(key.limit_remaining);
+  let percent = 0;
+  if (limit !== undefined && remaining !== undefined && limit > 0) {
+    parts.push(`${dollars.format(remaining)} left`);
+    percent = ((limit - remaining) / limit) * FULL_PERCENT;
+  }
+
+  return { text: `OpenRouter ${parts.join(" · ")}`, percent };
+}
+
+async function readOpenRouterUsage(
+  ctx: ExtensionContext,
+  signal: AbortSignal,
+): Promise<UsageStatus | undefined> {
+  // In the sandbox the key is nono's placeholder, which the credential
+  // proxy swaps for the real key.
+  const apiKey = await ctx.modelRegistry.getApiKeyForProvider(OPENROUTER_PROVIDER);
+  if (!apiKey || signal.aborted) {
+    return undefined;
+  }
+
+  const response = await fetch(OPENROUTER_KEY_URL, {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      Accept: "application/json",
+    },
+    signal: AbortSignal.any([signal, AbortSignal.timeout(API_TIMEOUT_MS)]),
+  });
+  if (!response.ok) {
+    return undefined;
+  }
+  return parseOpenRouterUsage(await response.json());
+}
+
 function showUsage(ctx: ExtensionContext, usage: UsageStatus | undefined): void {
   if (!usage) {
     ctx.ui.setStatus(STATUS_KEY, undefined);
@@ -228,6 +284,8 @@ export default function (pi: ExtensionAPI) {
       usage = await readCodexUsage(ctx, signal);
     } else if (provider === COPILOT_PROVIDER) {
       usage = await readCopilotUsage(signal);
+    } else if (provider === OPENROUTER_PROVIDER) {
+      usage = await readOpenRouterUsage(ctx, signal);
     }
 
     if (active && !signal.aborted && selectedProvider === provider) {
