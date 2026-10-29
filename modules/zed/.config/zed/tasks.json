@@ -2,67 +2,103 @@
   {
     "label": "Maven: build",
     "command": "mvn",
-    "args": ["clean", "compile"]
+    "args": ["clean", "compile"],
+    "save": "all"
   },
   {
     "label": "Maven: test",
     "command": "mvn",
-    "args": ["test"]
+    "args": ["test"],
+    "save": "all"
   },
   {
     "label": "Maven: test (current file)",
     "command": "mvn",
-    "args": ["test", "-Dtest=$ZED_STEM"]
+    "args": ["test", "-Dtest=$ZED_STEM"],
+    "save": "all"
   },
   {
     "label": "Maven: package",
     "command": "mvn",
-    "args": ["clean", "package", "-DskipTests"]
+    "args": ["clean", "package", "-DskipTests"],
+    "save": "all"
   },
   {
     "label": "Gradle: build",
     "command": "./gradlew",
-    "args": ["build"]
+    "args": ["build"],
+    "save": "all"
   },
   {
     "label": "Gradle: test",
     "command": "./gradlew",
-    "args": ["test"]
+    "args": ["test"],
+    "save": "all"
   },
   {
     "label": "Gradle: test (current file)",
     "command": "./gradlew",
-    "args": ["test", "--tests", "$ZED_STEM"]
+    "args": ["test", "--tests", "$ZED_STEM"],
+    "save": "all"
   },
   {
     "label": "mise: fmt",
     "command": "mise",
-    "args": ["run", "fmt"]
+    "args": ["run", "fmt"],
+    "save": "all"
   },
   {
     "label": "mise: lint",
     "command": "mise",
-    "args": ["run", "lint"]
+    "args": ["run", "lint"],
+    "save": "all"
   },
   {
     "label": "mise: test",
     "command": "mise",
-    "args": ["run", "test"]
+    "args": ["run", "test"],
+    "save": "all"
   },
   {
     "label": "mise: up",
     "command": "mise",
     "args": ["run", "up"],
-    "use_new_terminal": true
+    "use_new_terminal": true,
+    "save": "all"
   },
   {
     "label": "mise: e2e",
     "command": "mise",
-    "args": ["run", "e2e"]
+    "args": ["run", "e2e"],
+    "save": "all"
   },
   {
     "label": "hurl: run current file",
     "command": "hurl",
-    "args": ["--test", "--variable", "server=http://localhost:8080", "$ZED_FILE"]
+    "args": ["--test", "--variable", "server=http://localhost:8080", "$ZED_FILE"],
+    "save": "all"
+  },
+  {
+    "label": "jjui",
+    "command": "jjui",
+    "cwd": "$ZED_WORKTREE_ROOT"
+  },
+  {
+    "label": "jj: new",
+    "command": "jj",
+    "args": ["new"],
+    "cwd": "$ZED_WORKTREE_ROOT"
+  },
+  {
+    "label": "jj: fetch",
+    "command": "jj",
+    "args": ["git", "fetch"],
+    "cwd": "$ZED_WORKTREE_ROOT"
+  },
+  {
+    "label": "jj: push",
+    "command": "jj",
+    "args": ["git", "push"],
+    "cwd": "$ZED_WORKTREE_ROOT"
   }
 ]

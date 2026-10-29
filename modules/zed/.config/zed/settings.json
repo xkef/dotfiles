@@ -3,6 +3,9 @@
   "ui_font_weight": 500.0,
   "buffer_line_height": "standard",
   "vim_mode": true,
+  "vim": {
+    "use_smartcase_find": true
+  },
   "which_key": {
     "enabled": true,
     "delay_ms": 0
