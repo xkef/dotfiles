@@ -93,7 +93,9 @@ desc = "difftastic"
 # H and K grow it, L and J shrink it, so the keys follow the border with
 # the preview on the right or at the bottom. Ctrl-h and Ctrl-l move
 # between panes everywhere else, so the no-op action takes them back from
-# jjui's resize. A later binding of a key wins.
+# jjui's resize. A later binding of a key wins. Each key has three names,
+# since terminals encode Alt-Shift-H as ESC H, a kitty key, or tmux's
+# CSI u, and jjui names those alt+shift+h, alt+H, or alt+shift+H.
 [[actions]]
 name = "noop"
 lua = "-- does nothing"
@@ -105,12 +107,26 @@ scope = "ui.preview"
 
 [[bindings]]
 action = "ui.preview_expand"
-key = ["alt+shift+h", "alt+shift+k"]
+key = [
+  "alt+shift+h",
+  "alt+H",
+  "alt+shift+H",
+  "alt+shift+k",
+  "alt+K",
+  "alt+shift+K",
+]
 scope = "ui.preview"
 desc = "expand preview"
 
 [[bindings]]
 action = "ui.preview_shrink"
-key = ["alt+shift+l", "alt+shift+j"]
+key = [
+  "alt+shift+l",
+  "alt+L",
+  "alt+shift+L",
+  "alt+shift+j",
+  "alt+J",
+  "alt+shift+J",
+]
 scope = "ui.preview"
 desc = "shrink preview"
