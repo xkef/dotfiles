@@ -122,6 +122,53 @@ return {
       fi.never_show = { ".DS_Store", ".git", ".jj", ".idea", ".classpath", ".project", ".settings", ".factorypath" }
       opts.filesystem.filtered_items = fi
 
+      -- A wide tree shows stat columns. Type and date say little, so they
+      -- go, and the size column shows the line count instead. Counts are
+      -- cached by mtime. Binary files and files over 1 MB show "-".
+      opts.default_component_configs = opts.default_component_configs or {}
+      opts.default_component_configs.type = { enabled = false }
+      opts.default_component_configs.last_modified = { enabled = false }
+      opts.default_component_configs.file_size = { width = 8 }
+      local max_bytes = 1024 * 1024
+      local loc_cache = {}
+      local function count_lines(path)
+        local stat = vim.uv.fs_stat(path)
+        if not stat or stat.size > max_bytes then
+          return nil
+        end
+        local cached = loc_cache[path]
+        if cached and cached.mtime == stat.mtime.sec then
+          return cached.lines
+        end
+
+        local f = io.open(path, "rb")
+        if not f then
+          return nil
+        end
+        local data = f:read("*a")
+        f:close()
+        local lines = nil
+        if not data:find("\0", 1, true) then
+          local _, n = data:gsub("\n", "")
+          lines = n
+        end
+        loc_cache[path] = { mtime = stat.mtime.sec, lines = lines }
+        return lines
+      end
+      opts.filesystem.components = opts.filesystem.components or {}
+      opts.filesystem.components.file_size = function(config, node)
+        local text = "-"
+        if node:get_depth() == 1 then
+          text = "Lines"
+        elseif node.type == "file" then
+          text = tostring(count_lines(node.path) or "-")
+        end
+        return {
+          text = string.format("%" .. config.width .. "s  ", text),
+          highlight = node:get_depth() == 1 and "NeoTreeFileStatsHeader" or "NeoTreeFileStats",
+        }
+      end
+
       -- Opening a directory keeps descending while it holds a single
       -- subdirectory, so l on java opens java/com/netcetera/deip at once.
       -- This replaces group_empty_dirs above.
