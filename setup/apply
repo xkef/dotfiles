@@ -130,7 +130,7 @@ function step_system
     # `dots update` does. A checkout without main@origin, as in CI,
     # skips the tracking. The Lima VM's read-only checkout stays.
     if not test -d $repo/.jj; and test -w $repo; and command -q jj
-        jj -R $repo git init --colocate; or return
+        jj git init --colocate $repo; or return
         jj -R $repo bookmark track main@origin 2>/dev/null
     end
     return 0
