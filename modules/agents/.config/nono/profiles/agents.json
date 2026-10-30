@@ -47,6 +47,8 @@
       "UV_TOOL_DIR": "$XDG_CACHE_HOME/agents-sandbox/uv/tools",
       "UV_TOOL_BIN_DIR": "$XDG_CACHE_HOME/agents-sandbox/uv/bin",
       "npm_config_cache": "$XDG_CACHE_HOME/agents-sandbox/npm",
+      "DPRINT_CACHE_DIR": "$XDG_CACHE_HOME/agents-sandbox/dprint",
+      "ZIZMOR_CACHE_DIR": "$XDG_CACHE_HOME/agents-sandbox/zizmor",
       "MAVEN_USER_HOME": "$XDG_CACHE_HOME/agents-sandbox/m2",
       "MAVEN_OPTS": "-Dmaven.repo.local=$XDG_CACHE_HOME/agents-sandbox/m2/repository",
       "GIT_CONFIG_COUNT": "1",

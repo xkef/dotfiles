@@ -9,16 +9,16 @@ if ! command -v nvim >/dev/null || [[ ! -d "${XDG_DATA_HOME:-$HOME/.local/share}
 fi
 
 # Neovim exits 0 after a startup error, so the task fails on the error
-# message that startup left in v:errmsg instead. A throwaway state
-# directory keeps the check from writing LazyVim state, which the sandbox
-# doesn't grant. kickstart loads from the repo, which the sandbox reads,
+# message that startup left in v:errmsg instead. Throwaway state and cache
+# directories keep the check from writing LazyVim state and its Lua module
+# cache, which the sandbox doesn't grant. kickstart loads from the repo, which the sandbox reads,
 # with throwaway data and cache directories, so vim.pack installs its
 # plugins fresh, as on a new machine.
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/lint-nvim.XXXXXX")
 trap 'rm -rf "$tmp"' EXIT
 check='if v:errmsg != "" | cquit | else | qall | endif'
 
-NVIM_APPNAME=lazyvim XDG_STATE_HOME=$tmp/lazyvim \
+NVIM_APPNAME=lazyvim XDG_STATE_HOME=$tmp/lazyvim/state XDG_CACHE_HOME=$tmp/lazyvim/cache \
   nvim --headless -c "lua require('lazy')" -c "$check"
 
 # The install progress stays hidden unless the load fails.

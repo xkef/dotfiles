@@ -7,4 +7,7 @@ set -eu
 for var in GH_TOKEN GITHUB_TOKEN ZIZMOR_GITHUB_TOKEN; do
   [ -n "${!var:-}" ] || unset "$var"
 done
-zizmor .
+
+# The agent sandbox points ZIZMOR_CACHE_DIR at a cache it may write, since
+# zizmor has no environment variable for its cache.
+zizmor ${ZIZMOR_CACHE_DIR:+--cache-dir "$ZIZMOR_CACHE_DIR"} .
