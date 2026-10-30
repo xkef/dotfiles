@@ -20,5 +20,4 @@ complete -c agents -n $vm_first -a shell -d 'fish on the repository copy'
 complete -c agents -n $vm_first -a take -d "Apply the VM copy's changes to the host"
 complete -c agents -n $vm_first -a drop -d "Discard the VM copy's changes"
 complete -c agents -n $vm_first -a update -d 'Rebuild the VM from dev.yaml'
-complete -c agents -n $vm_first -l net -xa 'off trusted full' -d 'Network for the session'
 complete -c agents -n $vm_first -l github -d 'Give the session GitHub through the proxy'

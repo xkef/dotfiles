@@ -9,7 +9,7 @@ function __agent_trace_sessions
     path basename -E -- $transcripts
 end
 
-set -l commands list errors denials sandbox record collect
+set -l commands list errors denials sandbox prompts corrections record collect
 complete -c agent-trace -f
 complete -c agent-trace -n "not __fish_seen_subcommand_from $commands" -l all -d 'Every session, not only this repository'
 complete -c agent-trace -n "not __fish_seen_subcommand_from $commands" -l since -x -d 'Drop what happened before an ISO 8601 date'
@@ -17,6 +17,8 @@ complete -c agent-trace -n "not __fish_seen_subcommand_from $commands" -a list -
 complete -c agent-trace -n "not __fish_seen_subcommand_from $commands" -a errors -d 'Failed tool calls'
 complete -c agent-trace -n "not __fish_seen_subcommand_from $commands" -a denials -d 'Failed tool calls that read like denials'
 complete -c agent-trace -n "not __fish_seen_subcommand_from $commands" -a sandbox -d 'Seatbelt denials, most frequent first'
+complete -c agent-trace -n "not __fish_seen_subcommand_from $commands" -a prompts -d 'Prompts the user typed, after the reply they answer'
+complete -c agent-trace -n "not __fish_seen_subcommand_from $commands" -a corrections -d 'Prompts that read like corrections'
 complete -c agent-trace -n "not __fish_seen_subcommand_from $commands" -a record -d 'Stream the Seatbelt denials until stopped'
 complete -c agent-trace -n "not __fish_seen_subcommand_from $commands" -a collect -d 'Cache the Seatbelt denials of stopped streams'
-complete -c agent-trace -n '__fish_seen_subcommand_from errors denials' -a '(__agent_trace_sessions)'
+complete -c agent-trace -n '__fish_seen_subcommand_from errors denials prompts corrections' -a '(__agent_trace_sessions)'
