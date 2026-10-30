@@ -10,11 +10,14 @@ function __cached_init
 
     if not test -s $cache; or test $bin -nt $cache
         mkdir -p (path dirname $cache)
-        if not $bin $argv[2..] >$cache.tmp; or not test -s $cache.tmp
-            command rm -f $cache.tmp
+        # Shells that start together after an upgrade each write their
+        # own file, so none moves another's partial output into place.
+        set -l tmp $cache.$fish_pid.tmp
+        if not $bin $argv[2..] >$tmp; or not test -s $tmp
+            command rm -f $tmp
             return 1
         end
-        command mv -f $cache.tmp $cache
+        command mv -f $tmp $cache
     end
 
     source $cache

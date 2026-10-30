@@ -15,7 +15,7 @@ __cached_init zoxide init fish --cmd z
 # doesn't wait for zoxide.
 function __zoxide_first_cmd --on-event fish_preexec
     functions --erase __zoxide_first_cmd
-    __zoxide_hook
+    functions -q __zoxide_hook; and __zoxide_hook
 end
 
 # The 1Password CLI completion costs about 108ms at startup, so it stays
