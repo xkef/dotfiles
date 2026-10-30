@@ -55,6 +55,7 @@ nono
 npm
 pacman
 paru
+[Pp]apercuts?
 perf
 proselint
 PRs?
