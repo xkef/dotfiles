@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Sets up the runner as a new machine with setup/bootstrap, then checks
+# that the result works: the apply is clean, the interactive shell
+# starts, and startup and the prompt stay within the `mise run perf`
+# budgets. CI runs it on macOS and in an Arch container. It changes the
+# machine it runs on, so it refuses to run outside CI.
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+
+if [ "${CI:-}" != true ]; then
+  echo "e2e: runs only in CI, it changes the machine" >&2
+  exit 1
+fi
+
+# The Arch container starts as root, and makepkg refuses root, so the
+# test reruns itself as a user with sudo.
+if [ "$(id -u)" = 0 ]; then
+  pacman -S --noconfirm --needed sudo base-devel
+  useradd -m builder
+  echo 'builder ALL=(ALL) NOPASSWD: ALL' >/etc/sudoers.d/builder
+  chown -R builder: .
+  exec sudo --preserve-env=CI,GITHUB_TOKEN,STARTUP_BUDGET_MS,PROMPT_BUDGET_MS \
+    -u builder env HOME=/home/builder .github/scripts/e2e
+fi
+
+# A fresh Mac runs the README one-liner from a shell that predates
+# Homebrew, so PATH has no /opt/homebrew/bin. The setup must find the
+# tools it installs on its own. setup/link backs up the files the runner
+# image ships in their place.
+env PATH=/usr/bin:/bin:/usr/sbin:/sbin setup/bootstrap
+
+setup/apply --dry-run
+
+# -i runs the conf.d files that return early without a prompt. Any
+# output besides the echo, such as a failing init, fails.
+out=$(cd / && fish -i -c 'echo fish boots' 2>&1 </dev/null)
+echo "$out"
+[ "$out" = "fish boots" ]
+for f in ~/.config/fish/config.fish ~/.config/fish/conf.d/*.fish ~/.config/fish/functions/*.fish; do
+  fish -n "$f"
+done
+~/.local/bin/theme --current
+~/.local/bin/dots-ref --raw | tail -3
+.config/mise/tasks/perf
+
+if [ "$(uname)" != Darwin ]; then
+  exit 0
+fi
+
+# The apply selects no extras, and the package install skips casks under
+# CI, so the test installs WezTerm itself to load its config.
+brew install --cask wezterm@nightly
+NVIM_APPNAME=lazyvim nvim --headless '+Lazy! restore' +qa
+mise trust
+mise run lint:nvim
+mise run lint:wezterm
