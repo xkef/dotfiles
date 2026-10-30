@@ -1,6 +1,6 @@
 ---
 name: push
-description: Push the main bookmark and watch CI until it passes. Use when the user asks to push.
+description: Prepare the main bookmark for the user's push and watch CI until it passes. Use when the user asks to push.
 ---
 
 # Push main and watch CI
@@ -23,7 +23,8 @@ its reproduction.
    `jj bookmark set main -r <rev>`. jj refuses to push a commit without a
    description, so ask the user for one if an ancestor lacks it.
 
-3. Run `jj git push -b main` as a command of its own, with no `cd` prefix.
+3. Ask the user to run `jj git push -b main`, and wait for them to confirm.
+   Permission rules deny pushes, so the user pushes.
 
 4. Find the run for the pushed commit and wait for it:
 

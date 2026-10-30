@@ -49,6 +49,10 @@
           {
             "command": "~/.claude/hooks/claude-nono-guard",
             "type": "command"
+          },
+          {
+            "command": "~/.claude/hooks/claude-jj-guard",
+            "type": "command"
           }
         ],
         "matcher": "Bash"
@@ -131,8 +135,8 @@
       "Bash(*rm -fr*)",
       "Bash(*rm -r -f*)",
       "Bash(*rm -f -r*)",
-      "Bash(*git push --force*)",
-      "Bash(*git push -f*)",
+      "Bash(*git push*)",
+      "Bash(*jj git push*)",
       "Bash(*git merge *)",
       "Bash(*git rebase*)",
       "Bash(*git reset --hard*)",
