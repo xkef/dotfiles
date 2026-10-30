@@ -7,6 +7,8 @@
 #   agent-trace [--all] [--since <date>] errors [session-id]
 #   agent-trace [--all] [--since <date>] denials [session-id]
 #   agent-trace [--all] [--since <date>] sandbox
+#   agent-trace [--all] [--since <date>] prompts [session-id]
+#   agent-trace [--all] [--since <date>] corrections [session-id]
 #   agent-trace record
 #   agent-trace collect
 #
@@ -25,6 +27,11 @@
 # output reads like a permission denial. A subagent failure carries the
 # session label <id>/agent-<name>.
 #
+# `prompts` prints session, environment, timestamp, the tail of the
+# agent's last reply, and the message per prompt the user typed. The reply
+# shows what a correction answers. `corrections` keeps the prompts whose
+# wording reads like a correction, such as "no", "don't", or "again".
+#
 # `sandbox` prints nono session, profile, start, workdir, count, process,
 # operation, and path per distinct Seatbelt denial, most frequent first.
 # It covers the denials a tool never reported, such as a config file git
@@ -36,8 +43,14 @@ set -euo pipefail
 readonly CLAUDE_PROJECTS="$HOME/.claude/projects"
 readonly AGENTS_STATE="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
 readonly LIMA_GUEST_MARKER=/mnt/lima-cidata
-readonly DENIAL_PATTERN='operation not permitted|permission denied|read-only file system|\beperm\b|\beacces\b|sandbox[ _-]?(apply|blocked|denied)'
+readonly OS_DENIAL_PATTERN='operation not permitted|permission denied|read-only file system|\beperm\b|\beacces\b|sandbox[ _-]?(apply|blocked|denied)'
+# Claude Code's own refusals: permission rules, the auto mode classifier,
+# user rejections, and PreToolUse hooks.
+readonly CLAUDE_DENIAL_PATTERN='has been denied|denied by the claude code|doesn.t want to proceed|pretooluse:[a-z]+ hook error'
+readonly DENIAL_PATTERN="$OS_DENIAL_PATTERN|$CLAUDE_DENIAL_PATTERN"
 readonly MAX_FIELD_LENGTH=200
+readonly MAX_PROMPT_LENGTH=800
+readonly CORRECTION_PATTERN='(^|[^a-z])(no[,. ]|don.?t|never|stop|wrong|instead|why did|i said|again|revert|undo|not what|should|always)'
 readonly NONO_STATE="${XDG_STATE_HOME:-$HOME/.local/state}/nono"
 readonly SANDBOX_CACHE="$AGENTS_STATE/sandbox"
 readonly SANDBOX_STREAMS="$SANDBOX_CACHE/streams"
@@ -72,6 +85,28 @@ readonly FAILURES_JQ='
     }
   | select($since == "" or .ts >= $since)
 '
+
+# Emits one JSON object per prompt the user typed, with the text of the
+# agent reply before it. Claude Code also records slash command wrappers,
+# reminders, notifications, and interrupts as user lines, so those drop.
+readonly PROMPTS_JQ='
+  def text: if type == "string" then . else map(select(.type == "text") | .text) | join("\n") end;
+  foreach (inputs | select(.isSidechain != true)) as $l ({reply: ""};
+    .prompt = null
+    | if $l.type == "assistant" then
+        ($l.message.content | text) as $t
+        | if ($t | test("\\S")) then .reply = $t else . end
+      elif $l.type == "user" and ($l.isMeta | not) then
+        ($l.message.content | text) as $t
+        | if ($t | test("\\S")) and ($t | test($machine) | not) then
+            .prompt = {ts: $l.timestamp, reply: .reply, text: $t}
+          else . end
+      else . end;
+    .prompt // empty)
+  | select($since == "" or .ts >= $since)
+  | {session: $session, env: $env} + .
+'
+readonly MACHINE_PROMPT='^\s*(<command-|<local-command|<system-reminder>|<task-notification>|Caveat:|\[Request interrupted)'
 
 # Groups the Seatbelt denials of one nono session. The log names only the
 # process and its PID, so a denial counts when its PID is no older than the
@@ -182,6 +217,19 @@ print_failures() {
   '
 }
 
+prompts() {
+  local env transcript
+
+  transcripts "${1:-}" | while IFS=$'\t' read -r env transcript; do
+    jq -cn --arg session "$(basename "$transcript" .jsonl)" --arg env "$env" \
+      --arg since "$since" --arg machine "$MACHINE_PROMPT" "$PROMPTS_JQ" "$transcript"
+  done | jq -r --argjson max "$MAX_PROMPT_LENGTH" --argjson tail "$MAX_FIELD_LENGTH" '
+    def flat: gsub("[\t\r\n]+"; " ");
+    [.session, .env, .ts, (.reply | flat | .[-$tail:]), (.text | flat | .[0:$max])]
+    | @tsv
+  '
+}
+
 list() {
   local env transcript id counts
 
@@ -282,6 +330,8 @@ list) list ;;
 errors) failures "${2:-}" | print_failures all ;;
 denials) failures "${2:-}" | print_failures denials ;;
 sandbox) sandbox ;;
+prompts) prompts "${2:-}" ;;
+corrections) prompts "${2:-}" | awk -F '\t' -v re="$CORRECTION_PATTERN" 'tolower($5) ~ re' ;;
 record) record ;;
 collect) collect ;;
 *) usage ;;
