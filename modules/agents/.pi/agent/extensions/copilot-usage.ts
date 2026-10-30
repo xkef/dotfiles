@@ -8,6 +8,7 @@ import type {
 
 const STATUS_KEY = "copilot-usage";
 const API_TIMEOUT_MS = 5_000;
+const POLL_INTERVAL_MS = 15_000;
 const COPILOT_PROVIDER = "github-copilot";
 const CODEX_PROVIDER = "openai-codex";
 const OPENROUTER_PROVIDER = "openrouter";
@@ -207,8 +208,10 @@ async function readCopilotUsage(signal: AbortSignal): Promise<UsageStatus | unde
   } : undefined;
 }
 
-// OpenRouter reports the key's spend in dollars, and the limit when the
-// key has one. The footer shows the session's own cost next to it.
+// OpenRouter reports the key's spend in dollars. The footer shows the
+// session's own cost next to it. The key's limit_remaining is a per-key
+// cap, not the account balance, and the balance endpoint needs a
+// management key, so the footer shows no amount left.
 function parseOpenRouterUsage(value: unknown): UsageStatus | undefined {
   if (!isRecord(value) || !isRecord(value.data)) {
     return undefined;
@@ -221,16 +224,10 @@ function parseOpenRouterUsage(value: unknown): UsageStatus | undefined {
     return undefined;
   }
 
-  const parts = [`${dollars.format(today)} today`, `${dollars.format(month)} this month`];
-  const limit = numberField(key.limit);
-  const remaining = numberField(key.limit_remaining);
-  let percent = 0;
-  if (limit !== undefined && remaining !== undefined && limit > 0) {
-    parts.push(`${dollars.format(remaining)} left`);
-    percent = ((limit - remaining) / limit) * FULL_PERCENT;
-  }
-
-  return { text: `OpenRouter ${parts.join(" · ")}`, percent };
+  return {
+    text: `OpenRouter ${dollars.format(today)} today · ${dollars.format(month)} this month`,
+    percent: 0,
+  };
 }
 
 async function readOpenRouterUsage(
@@ -273,6 +270,8 @@ export default function (pi: ExtensionAPI) {
   let pendingContext: ExtensionContext | undefined;
   let request: Promise<void> | undefined;
   let selectedProvider: string | undefined;
+  let latestContext: ExtensionContext | undefined;
+  let timer: ReturnType<typeof setInterval> | undefined;
 
   async function update(
     ctx: ExtensionContext,
@@ -331,28 +330,37 @@ export default function (pi: ExtensionAPI) {
       });
   }
 
+  function refreshLatest(ctx: ExtensionContext): void {
+    latestContext = ctx;
+    if (ctx.hasUI) {
+      refresh(ctx);
+    }
+  }
+
+  // Subagents spend on the same key without firing events here, and
+  // OpenRouter books spend some seconds after a response, so the footer
+  // also polls while the session runs.
   pi.on("session_start", async (_event, ctx) => {
     active = true;
-    if (ctx.hasUI) {
-      refresh(ctx);
-    }
+    refreshLatest(ctx);
+    clearInterval(timer);
+    timer = setInterval(() => {
+      if (latestContext) {
+        refreshLatest(latestContext);
+      }
+    }, POLL_INTERVAL_MS);
+    timer.unref();
   });
 
-  pi.on("model_select", async (_event, ctx) => {
-    if (ctx.hasUI) {
-      refresh(ctx);
-    }
-  });
-
-  pi.on("agent_settled", async (_event, ctx) => {
-    if (ctx.hasUI) {
-      refresh(ctx);
-    }
-  });
+  pi.on("model_select", async (_event, ctx) => refreshLatest(ctx));
+  pi.on("turn_end", async (_event, ctx) => refreshLatest(ctx));
+  pi.on("agent_settled", async (_event, ctx) => refreshLatest(ctx));
 
   pi.on("session_shutdown", async () => {
     active = false;
     pendingContext = undefined;
+    latestContext = undefined;
+    clearInterval(timer);
     controller?.abort();
   });
 }
