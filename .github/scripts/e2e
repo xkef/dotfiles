@@ -29,7 +29,13 @@ fi
 # image ships in their place.
 env PATH=/usr/bin:/bin:/usr/sbin:/sbin setup/bootstrap
 
-setup/apply --dry-run
+# The dry run exits 0 either way, so a change line fails the test.
+changes=$(setup/apply --dry-run)
+echo "$changes"
+if grep -E '^[-+!] ' <<<"$changes"; then
+  echo "e2e: the apply is not idempotent" >&2
+  exit 1
+fi
 
 # -i runs the conf.d files that return early without a prompt. Any
 # output besides the echo, such as a failing init, fails.
