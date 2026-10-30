@@ -7,7 +7,7 @@ status is-interactive; or return
 # @key shell :: Ctrl-W :: Delete path component backward
 # @key shell :: Alt-D :: Delete word forward
 # @key shell :: Ctrl-K :: Kill to end of line
-# @key shell :: Ctrl-U :: Kill entire line
+# @key shell :: Ctrl-U :: Kill to start of line
 # @key shell :: Ctrl-Y :: Yank last killed text
 # @key shell :: Ctrl-P / N :: History search (also arrows)
 # @key shell :: Alt-H :: Context-aware man page (run-help)

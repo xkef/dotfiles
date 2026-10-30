@@ -5,9 +5,9 @@
 # in DOTFILES_PACKAGES install. setup/apply sets it to the selected ones,
 # such as "agents core". CI skips desktop, the GUI apps.
 #
-# Each run checks the lists first and installs only what is missing. An
-# optional package that fails to install doesn't stop the others, and
-# the next run retries it.
+# Each run checks the lists first and installs only what is missing. A
+# failed Arch package or macOS cask doesn't stop the others, and the
+# next run retries it. A failed formula stops the run.
 set -euo pipefail
 cd "$(dirname "$0")"
 
