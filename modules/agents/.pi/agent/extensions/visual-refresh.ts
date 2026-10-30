@@ -12,6 +12,7 @@ import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 const METER_WIDTH = 8;
 const MIN_GAP = 2;
 const PULSE_INTERVAL_MS = 110;
+const JJ_TIMEOUT_MS = 2_000;
 const ANSI_CYAN = "\x1b[36m";
 const ANSI_RESET = "\x1b[39m";
 const PULSE_FRAMES = ["·", "•", "◆", "•"].map(
@@ -210,7 +211,47 @@ function footerLines(
   ];
 }
 
+// In a colocated jj repo HEAD stays detached, so pi's git branch reads
+// "detached". The footer shows the working-copy change and the nearest
+// bookmark instead, as the starship prompt does. --ignore-working-copy
+// skips the snapshot, so the read never takes the working-copy lock.
+async function readJjRef(
+  pi: ExtensionAPI,
+  cwd: string,
+): Promise<string | undefined> {
+  const result = await pi.exec(
+    "jj",
+    [
+      "log",
+      "--no-graph",
+      "--ignore-working-copy",
+      "--color=never",
+      "-r",
+      "@ | latest(heads(::@ & bookmarks()))",
+      "-T",
+      'change_id.short(8) ++ "\\t" ++ local_bookmarks.join(" ") ++ "\\n"',
+    ],
+    { cwd, timeout: JJ_TIMEOUT_MS },
+  ).catch(() => undefined);
+  if (!result || result.code !== 0) {
+    return undefined;
+  }
+
+  const rows = result.stdout.trim().split("\n").map((line) => line.split("\t"));
+  const change = rows[0]?.[0];
+  const bookmark = rows.find((row) => row[1])?.[1];
+  return [change, bookmark].filter(Boolean).join(" ") || undefined;
+}
+
 export default function (pi: ExtensionAPI) {
+  let jjRef: string | undefined;
+  let requestRender: (() => void) | undefined;
+
+  async function refreshJjRef(ctx: ExtensionContext): Promise<void> {
+    jjRef = await readJjRef(pi, ctx.cwd);
+    requestRender?.();
+  }
+
   pi.on("session_start", (_event, ctx) => {
     if (ctx.mode !== "tui") {
       return;
@@ -227,17 +268,32 @@ export default function (pi: ExtensionAPI) {
       render: (width) => renderHeader(theme, project, width),
       invalidate() {},
     }));
-    ctx.ui.setFooter((tui, theme, footerData) => ({
-      dispose: footerData.onBranchChange(() => tui.requestRender()),
-      render: (width) =>
-        footerLines(
-          ctx,
-          theme,
-          footerData.getGitBranch(),
-          footerData.getExtensionStatuses(),
-          width,
-        ),
-      invalidate() {},
-    }));
+    // jj rewrites HEAD on every commit, so a branch change also
+    // refreshes the jj ref.
+    ctx.ui.setFooter((tui, theme, footerData) => {
+      requestRender = () => tui.requestRender();
+      return {
+        dispose: footerData.onBranchChange(() => {
+          tui.requestRender();
+          void refreshJjRef(ctx);
+        }),
+        render: (width) =>
+          footerLines(
+            ctx,
+            theme,
+            jjRef ?? footerData.getGitBranch(),
+            footerData.getExtensionStatuses(),
+            width,
+          ),
+        invalidate() {},
+      };
+    });
+    void refreshJjRef(ctx);
+  });
+
+  pi.on("turn_end", async (_event, ctx) => {
+    if (ctx.mode === "tui") {
+      await refreshJjRef(ctx);
+    }
   });
 }
