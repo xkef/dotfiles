@@ -31,12 +31,12 @@ without trying. A real denial shows up as an ordinary permission error, which
 abandoning the task. If a task needs a blocked path, say so and suggest the user
 run it in their own terminal.
 
-`NONO_CAP_FILE` is set only under nono. The user may relaunch the session
-outside nono, so check it before you name a sandbox as the cause. Under nono,
-Claude Code's own sandbox is off, `dangerouslyDisableSandbox` has no effect, and
-`!` commands stay confined, so hand the command to the user for a separate
-terminal. Without nono, Claude Code's sandbox applies, and
-`dangerouslyDisableSandbox` lifts it.
+When `NONO_CAP_FILE` is set, never pass `dangerouslyDisableSandbox`. Under nono
+it has no effect and `!` commands stay confined, so hand the command to the user
+for a separate terminal. Without nono, Claude Code's sandbox applies, and
+`dangerouslyDisableSandbox` lifts it. The user may relaunch the session outside
+nono, so check the variable and quote the actual denial before you name a
+sandbox as the cause.
 
 # Never use `/tmp`
 
@@ -44,7 +44,8 @@ Put temporary files under `.claude/tmp/` in the working directory, not in
 `/tmp`, `$TMPDIR`, or a harness scratchpad. More than one account runs agents on
 this machine, and a shared temp directory leaks files between them. Create
 directories with `mkdir -p .claude/tmp && mktemp -d .claude/tmp/XXXXXX`. Git
-ignores `.claude/tmp/` globally.
+ignores `.claude/tmp/` globally. This rule overrides the harness instruction to
+use its scratchpad directory.
 
 # Toolchains install on demand
 
@@ -75,7 +76,17 @@ POSIX shells:
 - Conditionals and loops end with `end`, not `fi` or `done`. `&&` and `||` work.
 
 Commands the agent runs itself through its own tool can stay in whatever shell
-that tool uses.
+that tool uses. A `!` command runs in that shell too, not in fish.
+
+Run a command yourself when the sandbox allows it. A command you hand to the
+user must work on the first paste:
+
+- Put it in its own code block, so no punctuation joins a path.
+- Make it run without prompts. Pass messages inline, as in
+  `git tag -a v1 -m v1`.
+- Check every path and precondition it relies on. Use
+  `mise x <tool>@<version> --` for a tool without a global version.
+- Number the steps left to the user and say what success looks like.
 
 # Prefer `rg` over `grep`
 
@@ -103,11 +114,33 @@ When preparing commits, use `git add` to prepare the index before running
 
 **Never** remove untracked files from the repository.
 
-# Use jj in a jj repository
+# Use jj for version control
 
 When `jj root` succeeds, use `jj` for status, diff, commit, bookmark, rebase,
-fetch, and push. Use `git` only to inspect Git objects, as in `git show` or
-`git log`. Use the `jj` skill when available.
+and fetch. Use `git` only to inspect Git objects, as in `git show` or `git log`.
+The `claude-jj-guard` hook blocks every other Git command there. Use the `jj`
+skill when available.
+
+To bring a change up to date, run `jj git fetch` and
+`jj rebase -d <bookmark>@origin`, then rerun the checks. In a Git-only
+repository, run `jj git init --colocate` first.
+
+The user pushes. When work is ready, end with the push command for the user.
+
+# Denied commands
+
+Permission rules deny the commands below anywhere in a Bash call, so one match
+blocks the whole chain. A denied command stays denied in every form. Use the
+alternative:
+
+- `rm -rf`: create a new `mktemp -d .claude/tmp/XXXXXX` directory instead of
+  clearing an old one, and leave stale scratch directories to the user.
+- `jj abandon` and `jj restore`: move content with
+  `jj squash --from <src> --into <dst>` and undo your own edits with Edit. To
+  drop a change, give the user its change ID.
+- `git merge`, `git rebase`, `git reset --hard`, `git checkout --`, `git clean`,
+  and `git stash drop`: use the jj equivalent.
+- `git push` and `jj git push`: the user pushes.
 
 # Always use skills when available
 
@@ -121,6 +154,12 @@ Before any action, check for a matching skill and use it:
 
 Commands such as `git show $SOME_COMMIT` or `git diff $SOME_REV` only read data,
 so run them without asking.
+
+# Finish what the user approved
+
+Once the user approves a plan or a list of items, finish every approved item
+without asking again. A bare "ok" after a proposal approves it. Ask again only
+before a destructive or outward-facing step the approval didn't name.
 
 # Planning notes
 
@@ -153,6 +192,9 @@ If a previous suggestion turns out not to exist, don't apologize. Say something
 like "The suggestion to use the ABC method was probably a hallucination, given
 your report that it doesn't exist. Instead," and offer an alternative.
 
+Before you state a tool's behavior, keys, or URL, check the installed version's
+`--help`, docs, or source. Mark a claim you couldn't check as unverified.
+
 # Follow the Google style guide for developer documentation
 
 <https://developers.google.com/style> governs comments, docstrings, commit
@@ -180,9 +222,21 @@ This includes lines that hold only whitespace.
 
 # Comments
 
-Comment the block, not the line. Keep the comment short and say what the block
-does and why it does it. Add an example when one makes the rule concrete.
-Propose an ASCII drawing when a whole system needs explaining.
+Code says how. Comments say why. Write a comment only for what the code can't
+state:
+
+- Context the reader can't recover, such as references, lessons from past
+  failures, and how a constant was derived.
+- Decisions and rejected alternatives, such as why not the obvious approach,
+  tradeoffs, and choices other code depends on.
+- Intent, such as correctness arguments, algorithm outlines, and TODOs.
+
+Keep comments rare so a reader can't skip any of them. Each one must earn its
+place.
+
+Comment the block, not the line. Keep the comment short and say why the block
+exists. Add an example when one makes the rule concrete. Propose an ASCII
+drawing when a whole system needs explaining.
 
 **Never** write a comment that restates what a well-named variable or function
 already says.
@@ -210,6 +264,19 @@ Write the least code that solves the problem. Nothing speculative.
 - If 200 lines could be 50, rewrite it.
 
 The test: would a senior engineer call this overcomplicated? If yes, simplify.
+
+This applies to docs, plans, infrastructure, UI, and setup as much as to code:
+
+- Propose the smallest step that meets the goal first.
+- Offer an optional extra in one line, and build it only after a yes.
+- Use a tool's shipped presets, profiles, and defaults before writing your own
+  config. Write custom config only for a gap upstream leaves, and name the gap.
+
+# Keep docs current
+
+Each fact lives in one place. Elsewhere, link to it instead of restating it.
+After a change, search the docs, ADRs, and comments for statements the change
+made false, and fix them in the same change.
 
 # Surgical changes
 
@@ -318,6 +385,10 @@ Turn tasks into verifiable goals:
 For multi-step tasks, state a brief plan with a verification step per
 checkpoint. Strong success criteria let you loop on your own. Weak criteria such
 as "make it work" require constant clarification.
+
+Verify against the real system before you hand work back: run the tests, load
+the config headless, or exercise the running stack and read its logs. Call a
+change untested only when no check can run, and name the blocker.
 
 # Fix bugs test-first
 
