@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# ssh-keygen for git and jj signing. With a security key, ssh-keygen
+# prints the touch prompt to stderr, which git and jj capture, so the
+# command would wait without a visible reason. This hands the prompt to
+# ssh-prompt and passes everything else through.
+set -euo pipefail
+
+sign='' key=''
+args=("$@")
+for ((i = 0; i < ${#args[@]} - 1; i++)); do
+  case ${args[i]} in
+  -Y) [[ ${args[i + 1]} == sign ]] && sign=1 ;;
+  -f) key=${args[i + 1]} ;;
+  esac
+done
+
+# A security key's public key starts with its type, sk-ssh-ed25519@...
+if [[ -n $sign && -r $key ]]; then
+  read -r type _ <"$key" || :
+  if [[ ${type:-} == sk-* ]]; then
+    SSH_ASKPASS_PROMPT=none "${BASH_SOURCE[0]%/*}/ssh-prompt" \
+      'Touch the security key to sign' >/dev/null 2>&1 &
+  fi
+fi
+
+exec ssh-keygen "$@"

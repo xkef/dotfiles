@@ -135,13 +135,15 @@
 [include]
 	path = ~/.local/state/theme/delta.gitconfig
 
-# ── SSH signing through the SSH agent ────────────────
+# ── SSH signing ──────────────────────────────────────
 # The identity sets the key and turns on commit.gpgsign and tag.gpgsign,
-# so a machine without it still commits, unsigned.
+# so a machine without it still commits, unsigned. ssh-sign shows the
+# touch prompt of a security key, which git hides.
 [gpg]
 	format = ssh
 
 [gpg "ssh"]
+	program = ssh-sign
 	allowedSignersFile = ~/.config/git/allowed_signers
 
 # ── Identity and accounts by directory ───────────────

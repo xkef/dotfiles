@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# SSH_ASKPASS program. ssh runs it in one of two modes:
+#
+#   SSH_ASKPASS_PROMPT=none  a notice, such as "Confirm user presence for
+#                            key ...", the touch prompt of a security key
+#   otherwise                a question, such as a password, answered on
+#                            stdout
+#
+# A notice goes to the desktop and tmux, because the command waiting for
+# the touch may sit in a background pane, and jj hides ssh's stderr. A
+# question goes to the terminal, which SSH_ASKPASS_REQUIRE=force skips.
+set -euo pipefail
+
+readonly TITLE='Security key'
+
+notify() {
+  if [[ -n ${TMUX:-} ]]; then
+    tmux display-message "$1" || :
+  fi
+  if command -v osascript >/dev/null; then
+    osascript -e 'on run argv' \
+      -e 'display notification (item 2 of argv) with title (item 1 of argv)' \
+      -e 'end run' "$TITLE" "$1" >/dev/null || :
+  elif command -v notify-send >/dev/null; then
+    notify-send "$TITLE" "$1" || :
+  fi
+}
+
+prompt=${1:-}
+
+if [[ ${SSH_ASKPASS_PROMPT:-} == none ]]; then
+  notify "$prompt"
+  exit 0
+fi
+
+read -rs -p "$prompt" answer </dev/tty 2>/dev/tty
+printf '\n' >/dev/tty
+printf '%s\n' "$answer"

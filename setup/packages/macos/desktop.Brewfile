@@ -12,4 +12,6 @@ cask "qlmarkdown"                                   # QuickLook: Markdown
 cask "quicklook-video"                              # QuickLook: mkv, webm, and other video
 cask "suspicious-package"                           # QuickLook: installer packages
 cask "font-jetbrains-mono-nerd-font"                # patched dev font with icons
+brew "openssh"                                      # ssh with FIDO2 security key support
+brew "framefilter/keyroost/keyroost", trusted: true # manage FIDO2 security keys
 

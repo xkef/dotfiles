@@ -62,6 +62,10 @@ diff-formatter = ":git"
 # ═══ [git] ══════════════════════════════════════════
 [git]
 private-commits = 'description(glob:"wip:*") | description(glob:"private:*")'
+# Signs at push, once per commit. A security key needs a touch for each
+# signature, and signing on every rewrite would ask on each jj command.
+# Takes effect once the identity sets signing.behavior to "drop".
+sign-on-push = true
 
 # ═══ [snapshot] ═════════════════════════════════════
 [snapshot]
@@ -72,6 +76,7 @@ max-new-file-size = "2MiB"
 # Name, email, SSH signing, and the accounts by directory come from
 # conf.d/identity.toml, which setup/private/decrypt writes.
 [signing.backends.ssh]
+program = "ssh-sign"
 allowed-signers = "~/.config/git/allowed_signers"
 
 # ═══ [revsets] ══════════════════════════════════════
