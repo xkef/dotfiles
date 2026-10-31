@@ -84,6 +84,12 @@ section() {
 render() {
   if [ $mux = tmux ]; then
     section tmux tmux "Ctrl-Space, then"
+    section tmux-panes "tmux panes" "Ctrl-Space, then"
+    section tmux-float "tmux floating panes" "Ctrl-Space, then"
+    section tmux-windows "tmux windows" "Ctrl-Space, then"
+    section tmux-sessions "tmux sessions" "Ctrl-Space, then"
+    section tmux-tools "tmux tools" "Ctrl-Space, then"
+    section tmux-scroll "tmux scrollback and paste" "Ctrl-Space, then"
     section copy "tmux copy mode" "Ctrl-Space Enter"
   else
     section wezterm WezTerm "Ctrl-Space, then"

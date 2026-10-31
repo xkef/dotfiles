@@ -3,8 +3,8 @@
 set -eu
 
 # WezTerm is an extra with the same leader keys as tmux. Both annotate
-# each binding with an "@key <mux> :: <key> :: <action>" comment, and this
-# task compares the keys across every package. A key one side lacks fails,
+# each binding with an "@key <mux>[-<group>] :: <key> :: <action>"
+# comment, and this task compares the keys across every package. A key one side lacks fails,
 # unless it names a feature only that side has.
 #
 # tmux only:
@@ -14,25 +14,56 @@ set -eu
 #   Option-click   tmux opens links itself; WezTerm does on Cmd-click
 #   Ctrl-Space     last window; in WezTerm the leader twice reaches a
 #                  nested tmux instead
+#   W P            join-pane, which WezTerm lacks
+#   the rest       tmux defaults, listed for the reference
 # WezTerm only:
 #   leader twice   see Ctrl-Space
-readonly TMUX_ONLY='@ M T BTab Option-click Ctrl-Space'
+# One key per line, since keys can hold spaces.
+readonly TMUX_ONLY='@
+M
+T
+BTab
+Option-click
+Ctrl-Space
+W
+P
+~
+;
+{ / }
+Ctrl-o / Alt-o
+Space
+Alt-1 to Alt-7
+Arrows
+Ctrl/Alt-Arrows
+!
+1 to 9
+'"'"'
+.
+,
+&
+Alt-n / Alt-p
+( / )
+$
+D
+Ctrl-z
+PageUp
+]
+= / #'
 readonly WEZTERM_ONLY='leader twice'
 
 # Prints the keys of one multiplexer's @key lines, one per line.
 keys() {
   local mux=$1
   shift
-  grep -ho "@key $mux :: [^:]* ::" "$@" | sed -E "s/^@key $mux :: (.*[^ ]) *::$/\1/" | sort -u
+  grep -hoE "@key $mux(-[a-z]+)? :: [^:]* ::" "$@" | sed -E "s/^@key $mux(-[a-z]+)? :: (.*[^ ]) *::$/\2/" | sort -u
 }
 
 # Prints the keys in $1 but not in $2, minus the allowed ones in $3.
 missing() {
   comm -23 <(printf '%s\n' "$1") <(printf '%s\n' "$2") | while IFS= read -r key; do
-    case " $3 " in
-    *" $key "*) ;;
-    *) echo "$key" ;;
-    esac
+    if ! grep -qxF -- "$key" <<<"$3"; then
+      echo "$key"
+    fi
   done
 }
 
