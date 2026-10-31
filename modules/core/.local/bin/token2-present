@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Exits 0 when a Token2 security key is plugged in over USB. ssh and
+# ssh-sign check it to fall back to the 1Password key without the token.
+set -euo pipefail
+
+readonly VENDOR_ID=349e
+
+# No grep -q on the ioreg pipe: grep would quit early, and pipefail would
+# turn ioreg's broken pipe into a miss.
+if [[ $(uname) == Darwin ]]; then
+  [[ $(ioreg -r -c IOUSBHostDevice -l) == *"\"idVendor\" = $((16#$VENDOR_ID))"* ]]
+else
+  grep -qsx "$VENDOR_ID" /sys/bus/usb/devices/*/idVendor
+fi
