@@ -101,6 +101,14 @@ install_user_fish() (
   esac
 )
 
+# Installs mise into ~/.local/bin from mise.run rather than a package
+# manager, so `mise self-update` can replace it without root.
+install_user_mise() {
+  [[ -x "$HOME/.local/bin/mise" ]] && return
+  echo "packages: installing mise into ~/.local/bin"
+  curl -fsSL https://mise.run | sh
+}
+
 # macOS ships shasum and Arch ships sha256sum.
 sha256() {
   if command -v sha256sum >/dev/null; then
@@ -266,4 +274,8 @@ esac
 
 if [[ "$admin" == no ]]; then
   install_user_fish
+fi
+
+if [[ " ${modules[*]} " == *" core "* ]]; then
+  install_user_mise
 fi

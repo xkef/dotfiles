@@ -1,5 +1,7 @@
 # ── Mise ─────────────────────────────────────────────
-# Disables Homebrew's vendor mise-activate.fish. Shims stay available at
+# Disables the vendor mise-activate.fish that a Homebrew or pacman mise
+# ships. setup installs mise from mise.run, but an older package install
+# can remain. Shims stay available at
 # startup. Project [env] waits until a command is about to run.
 set -gx MISE_ACTIVATE_AGGRESSIVE 0
 set -gx MISE_FISH_AUTO_ACTIVATE 0
