@@ -35,6 +35,48 @@ local function jj_refresh()
   end)
 end
 
+-- jdtls names a library class buffer
+-- jdt://contents/<jar>/<package>/<Class>.class?<handle>. The path shortener
+-- keeps only the tail of the percent-encoded handle, so the statusline
+-- shows the package, the class, and the jar instead.
+local JDT_CLASS = "^jdt://contents/([^/]+)/([^/]+)/([^/?]+)%.class"
+
+local function path_component()
+  local pretty_path = LazyVim.lualine.pretty_path()
+  local format = LazyVim.lualine.format
+  return function(self)
+    local jar, pkg, class = vim.api.nvim_buf_get_name(0):match(JDT_CLASS)
+    if not jar then
+      return pretty_path(self)
+    end
+
+    return format(self, pkg .. ".", "") .. format(self, class, "Bold") .. format(self, " " .. jar, "Comment")
+  end
+end
+
+-- LazyVim's symbol breadcrumb, minus the type and method parameters that
+-- jdtls puts into symbol names. With them, one generic Java class fills
+-- the statusline and pushes the file name out.
+local function symbols_component()
+  local symbols = require("trouble").statusline({
+    mode = "symbols",
+    groups = {},
+    title = false,
+    filter = { range = true },
+    format = "{kind_icon}{symbol.name:Normal}",
+    hl_group = "lualine_c_normal",
+  })
+  return {
+    symbols.get,
+    cond = function()
+      return vim.b.trouble_lualine ~= false and symbols.has()
+    end,
+    fmt = function(text)
+      return (text:gsub("%b<>", ""):gsub("%b()", ""))
+    end,
+  }
+end
+
 return {
   { "akinsho/bufferline.nvim", enabled = false },
 
@@ -51,38 +93,56 @@ return {
         end,
       })
     end,
-    opts = {
-      sections = {
-        lualine_b = {
-          {
-            "branch",
-            cond = function()
-              return not jj_root()
-            end,
-          },
-          {
-            function()
-              return "󰘬 " .. (jj_status[jj_root()] or "")
-            end,
-            cond = function()
-              return jj_root() ~= nil
-            end,
-          },
-        },
-        lualine_y = {
-          function()
-            local height = vim.fn.line("$")
-            local width = #tostring(height)
-            return "ℓ " .. string.format("%" .. width .. "d/%d", vim.fn.line("."), height)
+    opts = function(_, opts)
+      local s = opts.sections
+      s.lualine_b = {
+        {
+          "branch",
+          cond = function()
+            return not jj_root()
           end,
         },
-        lualine_z = {
+        {
           function()
-            return "𝚌" .. string.format(" %2d", vim.fn.virtcol("."))
+            return "󰘬 " .. (jj_status[jj_root()] or "")
+          end,
+          cond = function()
+            return jj_root() ~= nil
           end,
         },
-      },
-    },
+      }
+
+      -- Replaces LazyVim's section to swap the path and symbol components.
+      -- The others match LazyVim's.
+      s.lualine_c = {
+        LazyVim.lualine.root_dir(),
+        {
+          "diagnostics",
+          symbols = {
+            error = LazyVim.config.icons.diagnostics.Error,
+            warn = LazyVim.config.icons.diagnostics.Warn,
+            info = LazyVim.config.icons.diagnostics.Info,
+            hint = LazyVim.config.icons.diagnostics.Hint,
+          },
+        },
+        { "filetype", icon_only = true, separator = "", padding = { left = 1, right = 0 } },
+        { path_component() },
+        symbols_component(),
+      }
+
+      s.lualine_y = {
+        function()
+          local height = vim.fn.line("$")
+          local width = #tostring(height)
+          return "ℓ " .. string.format("%" .. width .. "d/%d", vim.fn.line("."), height)
+        end,
+      }
+      s.lualine_z = {
+        function()
+          return "𝚌" .. string.format(" %2d", vim.fn.virtcol("."))
+        end,
+      }
+    end,
   },
 
   {
