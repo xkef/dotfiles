@@ -1,3 +1,58 @@
+-- Node kinds of the vscode-java-dependency bundle, from its NodeKind enum.
+local NODE_KIND = { package = 4, primary_type = 5 }
+
+local function jdtls_command(client, command, arg, on_result)
+  local params = { command = command, arguments = { arg } }
+  client:request("workspace/executeCommand", params, function(err, result)
+    if err then
+      vim.notify(command .. ": " .. err.message, vim.log.levels.WARN)
+      return
+    end
+    on_result(result)
+  end, 0)
+end
+
+-- Picks a class from the current class's package, in project sources and
+-- in library jars alike. The vscode-java-dependency bundle resolves the
+-- package from the buffer URI and lists its top-level types.
+local function package_classes()
+  local client = vim.lsp.get_clients({ bufnr = 0, name = "jdtls" })[1]
+  if not client then
+    vim.notify("jdtls isn't attached", vim.log.levels.WARN)
+    return
+  end
+
+  jdtls_command(client, "java.resolvePath", vim.uri_from_bufnr(0), function(path)
+    local pkg = vim.iter(path or {}):find(function(node)
+      return node.kind == NODE_KIND.package
+    end)
+    if not pkg then
+      vim.notify("No package for this buffer", vim.log.levels.WARN)
+      return
+    end
+
+    local query = { kind = NODE_KIND.package, path = pkg.name, handlerIdentifier = pkg.handlerIdentifier }
+    jdtls_command(client, "java.getPackageData", query, function(nodes)
+      local types = vim.tbl_filter(function(node)
+        return node.kind == NODE_KIND.primary_type
+      end, nodes or {})
+      table.sort(types, function(a, b)
+        return a.name < b.name
+      end)
+      vim.ui.select(types, {
+        prompt = pkg.name,
+        format_item = function(node)
+          return node.name
+        end,
+      }, function(node)
+        if node then
+          vim.lsp.util.show_document({ uri = node.uri }, client.offset_encoding)
+        end
+      end)
+    end)
+  end)
+end
+
 return {
   {
     "JavaHello/spring-boot.nvim",
@@ -58,6 +113,9 @@ return {
 
   {
     "mfussenegger/nvim-jdtls",
+    keys = {
+      { "<leader>cJ", package_classes, ft = "java", desc = "Classes in Package" },
+    },
     opts = function(_, opts)
       -- jdtls reads this flag only as a JVM system property, not from LSP
       -- settings. It keeps .project and .classpath out of the project root.
