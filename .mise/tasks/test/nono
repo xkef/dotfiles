@@ -92,7 +92,15 @@ for path in "$XDG_CONFIG_HOME/jj/repos" "$HOME/.m2/settings.xml" \
 done
 
 # A direct LaunchServices open starts an app outside the sandbox. sb grants
-# it per launch through SB_ALLOW_LAUNCH_SERVICES.
-[ "$(nono profile show claude --json | jq .allow_launch_services)" != true ] ||
-  fail "the claude profile grants LaunchServices"
+# it per launch through SB_ALLOW_LAUNCH_SERVICES. nono takes the flag only
+# when the profile opts in, and the opt-in alone must grant nothing. The
+# run with the flag proves that the log line is still the one to look for.
+launch_services() {
+  nono run --dry-run -vv --profile claude --allow "$tmp/work" "$@" -- true 2>&1 |
+    grep -c -- '--allow-launch-services enabled' || true
+}
+[ "$(launch_services --allow-launch-services)" = 1 ] ||
+  fail "the claude profile refuses --allow-launch-services"
+[ "$(launch_services)" = 0 ] ||
+  fail "the claude profile grants LaunchServices without the flag"
 echo "nono ok"
