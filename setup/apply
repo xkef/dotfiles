@@ -3,11 +3,31 @@
 # rerun repeats work and repairs whatever drifted. `dots apply` runs
 # it, and setup/bootstrap runs it on a new machine.
 #
-# Usage: setup/apply [--dry-run]
+# Usage: dots apply [options]
 #
-# --dry-run prints the link changes and runs no other step.
+# Prints the modules and steps, asks before it applies them, then
+# applies them. The README's module table says what each module holds.
+#
+#   --modules <list>  replace the selection with a comma-separated list,
+#                     such as core,agents. core is required.
+#   --no-admin        run nothing that needs sudo
+#   --plan            print the modules, their packages, and the steps,
+#                     and change nothing
+#   --dry-run         print the link changes and run no other step
+#   --yes             apply without asking
+#   --help            print this help
 
-argparse dry-run -- $argv; or exit
+argparse h/help dry-run plan no-admin yes modules= -- $argv; or exit
+
+# The help is the comment block above, from its usage line.
+if set -q _flag_help
+    awk '/^# Usage:/ { on = 1 } on && !/^#/ { exit } on { sub(/^# ?/, ""); print }' (status filename)
+    exit
+end
+
+# The scripts the steps run read DOTFILES_ADMIN, yes or no.
+set -gx DOTFILES_ADMIN yes
+set -q _flag_no_admin; and set DOTFILES_ADMIN no
 
 set -g repo (path resolve (status dirname)/..)
 set -g state ~/.local/state/dotfiles
@@ -17,7 +37,7 @@ set -q XDG_STATE_HOME; and set state $XDG_STATE_HOME/dotfiles
 set -l pipeline \
     packages "install each module's package list" \
     links "link modules/<module>/ into ~" \
-    private "unpack private/home.tar.age (desktop)" \
+    private "unpack private/home.tar.age (private)" \
     agents "link the shared skills, seed pi settings (agents)" \
     system "file modes, sockets, and jj in this checkout" \
     macos "apply the macOS defaults (desktop on macOS)" \
@@ -25,61 +45,102 @@ set -l pipeline \
     theme "apply the current theme" \
     zoxide "add every repo to zoxide"
 
-# $state/modules selects the modules, one per line. The first run
-# writes core, desktop, and agents, plus agentvm on macOS, or core and
-# agents in the agent VM, which /etc/agentvm marks. The extras go in by
-# hand.
-#
-#   core       shell, Neovim, tmux, version control, and CLI tools
-#   desktop    GUI apps, the 1Password SSH agent, and Ghostty
-#   agents     Claude Code, pi, and their nono sandbox
-#   agentvm    a sandbox VM for agents, on macOS
-#   wezterm    WezTerm, an alternative to Ghostty and tmux
-#   rex        Rex keys, for the Rex beta app installed by hand
-#   helix      Helix with its formatters and language servers
-#   zed        Zed
-#   kickstart  kickstart.nvim, a minimal Neovim config, run as knvim
-mkdir -p $state
-if not test -f $state/modules
-    set -l default core desktop agents
-    test (uname -s) = Darwin; and set -a default agentvm
-    test -e /etc/agentvm; and set default core agents
-    printf '%s\n' $default >$state/modules
+# $state/modules selects the modules, one per line. The README's
+# module table says what each one holds. The first run selects every
+# module under modules/, less agentvm off macOS, or core and agents in
+# the agent VM, which /etc/agentvm marks. private, which unpacks
+# private/home.tar.age, goes in by hand or through --modules. A plan or
+# dry run uses the selection without writing it.
+set -l preview
+set -q _flag_plan; or set -q _flag_dry_run; and set preview yes
+set -l write
+if set -q _flag_modules
+    set -g modules (string split , -- $_flag_modules)
+    for module in $modules
+        if not test -d $repo/modules/$module; and test $module != private
+            echo "setup/apply: no module $module" >&2
+            exit 2
+        end
+    end
+    if not contains -- core $modules
+        echo "setup/apply: --modules needs core" >&2
+        exit 2
+    end
+    set write yes
+else if test -f $state/modules
+    set -g modules (string trim <$state/modules |
+        string match -rv '^(#.*)?$')
+else if test -e /etc/agentvm
+    set -g modules core agents
+    set write yes
+else
+    set -g modules core (path basename $repo/modules/*/ | string match -v core)
+    test (uname -s) = Darwin; or set modules (string match -v agentvm $modules)
+    set write yes
 end
-set -g modules (string trim <$state/modules |
-    string match -rv '^(#.*)?$')
+if set -q write[1]; and not set -q preview[1]
+    mkdir -p $state
+    printf '%s\n' $modules >$state/modules
+end
+
+# A module without a directory, such as private, links nothing.
+set -g linked
+for module in $modules
+    test -d $repo/modules/$module; and set -a linked $module
+end
 
 # The repo links the state as state/, which git ignores, so the
 # selection and the links sit next to the modules, and the agent VM's
 # copies and runtime as vm/. The agent VM's image holds a read-only copy
 # of the repo, which gets neither link.
-if test -w $repo; and not test -L $repo/state
-    ln -s $state $repo/state
-end
-if test -w $repo; and not test -L $repo/vm
-    ln -s (path dirname $state)/agentvm $repo/vm
+if not set -q _flag_plan
+    if test -w $repo; and not test -L $repo/state
+        ln -s $state $repo/state
+    end
+    if test -w $repo; and not test -L $repo/vm
+        ln -s (path dirname $state)/agentvm $repo/vm
+    end
 end
 
 function selected -a module
     contains -- $module $modules
 end
 
+# Prints why step $name skips on this machine, or nothing when it runs.
+function skip_reason -a name
+    switch $name
+        case private agents
+            selected $name; or echo "$name is not selected"
+        case macos
+            if test (uname -s) != Darwin
+                echo "not macOS"
+            else if not selected desktop
+                echo "desktop is not selected"
+            end
+        case zoxide
+            command -q zoxide; or echo "zoxide is not installed"
+    end
+end
+
 # The agent VM installs the slim sandbox list in place of the modules'.
-function step_packages
+function packages -a flag
     set -l packages $modules
     test -e /etc/agentvm; and set packages sandbox
-    env DOTFILES_PACKAGES="$packages" $repo/setup/packages/install
+    env DOTFILES_PACKAGES="$packages" $repo/setup/packages/install $flag
+end
+
+function step_packages
+    packages
 end
 
 function step_links
-    $repo/setup/link $state $modules
+    $repo/setup/link $state $linked
 end
 
 # The age key comes from 1Password, which only desktop installs. The
 # archive can restore hooks for setup that would expose private details
 # in this repo, such as logins with credentials from 1Password.
 function step_private
-    selected desktop; or return 0
     $repo/setup/private/decrypt; or return
     for hook in ~/.config/dotfiles/post-deploy.d/*
         if test -f $hook
@@ -92,7 +153,6 @@ end
 # directory link, which setup/link doesn't make. pi rewrites its
 # settings.json at runtime, so the repo's copy only seeds a new one.
 function step_agents
-    selected agents; or return 0
     if test -L ~/.claude/skills; or not test -e ~/.claude/skills
         ln -sfn ~/.agents/skills ~/.claude/skills; or return
     else
@@ -132,7 +192,7 @@ function step_system
         systemctl --user enable --now podman.socket
         or echo "warning: podman.socket not enabled" >&2
     else if test (uname -s) = Darwin; and not test -f $helper
-        and command -q podman-mac-helper
+        and command -q podman-mac-helper; and test $DOTFILES_ADMIN = yes
         sudo podman-mac-helper install
         or echo "warning: podman-mac-helper not installed" >&2
     end
@@ -150,7 +210,6 @@ end
 # The dry run exits 1 when a setting differs. Applying asks for sudo
 # and restarts the Dock and Finder, so it runs only then.
 function step_macos
-    selected desktop; and test (uname -s) = Darwin; or return 0
     $repo/setup/macos-defaults --dry-run >/dev/null; and return
     $repo/setup/macos-defaults
 end
@@ -170,16 +229,22 @@ function step_shell
     end
     test "$fish" = "$login"; and return
 
+    # chsh accepts only the shells in /etc/shells, which only an admin
+    # can change. chsh itself needs no admin.
     if not grep -qxF $fish /etc/shells
+        if test $DOTFILES_ADMIN = no
+            echo "  ! $fish is not in /etc/shells. An admin adds it with:"
+            echo "    echo $fish | sudo tee -a /etc/shells"
+            return 0
+        end
         echo $fish | sudo tee -a /etc/shells >/dev/null; or return
     end
-    switch (uname -s)
-        case Darwin
-            chsh -s $fish; or echo "  ! Run manually: chsh -s $fish"
-        case '*'
-            sudo usermod -s $fish $USER
-            or echo "  ! Run manually: chsh -s $fish"
+    if test (uname -s) = Linux; and test $DOTFILES_ADMIN = yes
+        sudo usermod -s $fish $USER
+    else
+        chsh -s $fish
     end
+    or echo "  ! Run manually: chsh -s $fish"
 end
 
 # Writes every themed tool's files for the current theme, or the
@@ -191,13 +256,12 @@ end
 # zoxide learns a directory only from a cd. The seed adds every repo
 # and every directory in atuin's history before the first visit.
 function step_zoxide
-    command -q zoxide; or return 0
     $repo/setup/zoxide-seed
 end
 
 if set -q _flag_dry_run
-    echo "dots apply --dry-run: link changes for $modules"
-    $repo/setup/link --dry-run $state $modules
+    echo "dots apply --dry-run: link changes for $linked"
+    $repo/setup/link --dry-run $state $linked
     exit
 end
 
@@ -205,8 +269,31 @@ set -l names $pipeline[(seq 1 2 (count $pipeline))]
 set -l docs $pipeline[(seq 2 2 (count $pipeline))]
 echo "dots apply: $modules"
 echo "state: "(string replace -- $HOME '~' $state)
+echo "admin: $DOTFILES_ADMIN"
 for n in (seq (count $names))
-    printf '  %d %-9s %s\n' $n $names[$n] $docs[$n]
+    set -l reason (skip_reason $names[$n])
+    set -l doc $docs[$n]
+    set -q reason[1]; and set doc "skip, $reason"
+    printf '  %d %-9s %s\n' $n $names[$n] $doc
+end
+
+if set -q _flag_plan
+    echo
+    echo "packages:"
+    packages --list | string replace -r '^' '  '
+    exit
+end
+
+# A run without a terminal, such as CI, can't answer, so it applies.
+if not set -q _flag_yes; and isatty stdin
+    echo
+    echo "--plan lists the packages, --modules changes the selection, and"
+    echo "--no-admin skips sudo. dots apply --help explains each option."
+    read -P "Apply? [Y/n] " reply; or exit 1
+    if string match -qir '^n' -- $reply
+        echo "dots apply: nothing applied"
+        exit 1
+    end
 end
 
 for n in (seq (count $names))
@@ -214,6 +301,11 @@ for n in (seq (count $names))
     set_color --bold
     printf '[%d/%d] %s\n' $n (count $names) $names[$n]
     set_color normal
+    set -l reason (skip_reason $names[$n])
+    if set -q reason[1]
+        echo "skipped: $reason"
+        continue
+    end
     if not step_$names[$n]
         echo "dots apply: the $names[$n] step failed" >&2
         exit 1

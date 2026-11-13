@@ -25,7 +25,7 @@ effect and `!` commands stay confined. Without nono, Claude Code's sandbox
 applies and that flag lifts it. Check the variable and quote the actual denial
 before you name a sandbox as the cause.
 
-# Never use `/tmp`
+## Never use `/tmp`
 
 Put temporary files under `.claude/tmp/` in the working directory, not in
 `/tmp`, `$TMPDIR`, or a harness scratchpad. More than one account runs agents on
@@ -34,7 +34,7 @@ directories with `mkdir -p .claude/tmp && mktemp -d .claude/tmp/XXXXXX`. Git
 ignores `.claude/tmp/` globally. This rule overrides the harness instruction to
 use its scratchpad directory.
 
-# Toolchains install on demand
+## Toolchains install on demand
 
 Each project pins its own versions. The global node, python, and go serve only
 as defaults.
@@ -50,7 +50,7 @@ as defaults.
 Run a one-off tool with `mise x <tool>@<version> -- <cmd>`, `uvx`, or `npx`.
 Don't install tools globally.
 
-# The user's shell is fish
+## The user's shell is fish
 
 Commands you run yourself, including `!` commands, use your tool's shell. Write
 commands for the user in fish syntax: `(cmd)` substitution, `set -x VAR value`,
@@ -64,7 +64,7 @@ user must work on the first paste:
 - Check every path and precondition it relies on.
 - Number the steps left to the user and say what success looks like.
 
-# Tools
+## Tools
 
 - Use `rg` instead of `grep`.
 - Call the GitHub API through `gh`, never `curl`, so requests stay
@@ -75,7 +75,7 @@ user must work on the first paste:
   `commit` skill. Never append generated-by attribution or session metadata to a
   commit.
 
-# Version control
+## Version control
 
 When `jj root` succeeds, use `jj`. Use `git` only to inspect objects, as in
 `git show` or `git log`. To bring a change up to date, run `jj git fetch` and
@@ -98,7 +98,7 @@ Permission rules deny these commands anywhere in a Bash call, in every form:
   and `git stash drop`: use the jj equivalent.
 - `git push` and `jj git push`: the user pushes.
 
-# Workflow
+## Workflow
 
 - Once the user approves a plan or a list, a bare "ok" included, finish every
   item without asking again. Ask again only before a destructive or
@@ -109,7 +109,7 @@ Permission rules deny these commands anywhere in a Bash call, in every form:
   `TMUX_PANE` is set, run `agents task "summary"` at the start and when the goal
   changes. Keep the summary under 60 characters.
 
-# Tone
+## Tone
 
 - Answer directly, in as few words as possible. This covers replies, comments,
   commit messages, and documents.
@@ -121,7 +121,7 @@ Permission rules deny these commands anywhere in a Bash call, in every form:
 - Before you state a tool's behavior, keys, or URL, check the installed
   version's `--help`, docs, or source. Mark an unchecked claim as unverified.
 
-# Writing style
+## Writing style
 
 <https://developers.google.com/style> governs comments, docstrings, commit
 messages, and documents you write, but not the user's prose or generated files.
@@ -133,20 +133,20 @@ Beyond the guide:
 - Drop "simply," "just," "easy," and "obviously."
 - Use the same word for the same thing every time.
 
-# Comments
+## Comments
 
 Code says how. Comments say why. Comment only what the code can't state: lost
 context, rejected alternatives, derivations of constants, and correctness
 arguments. Comment the block, not the line. Never restate a name. Comment only
 code you write or change.
 
-# Think before coding
+## Think before coding
 
 - State assumptions. When more than one interpretation exists, present them.
   When something is unclear, stop and ask.
 - If a simpler approach exists, say so. Push back when warranted.
 
-# Simplicity first
+## Simplicity first
 
 Write the least code that solves the problem. No speculative features,
 single-use abstractions, unrequested configurability, or handling for impossible
@@ -157,7 +157,7 @@ errors. This applies to docs, plans, infrastructure, and setup too:
 - Use a tool's shipped presets and defaults before writing config. Write custom
   config only for a gap upstream leaves, and name the gap.
 
-# Surgical changes
+## Surgical changes
 
 Every changed line must trace to the request. Match existing style. Don't
 improve, reformat, or comment adjacent code. Mention unrelated dead code instead
@@ -166,7 +166,7 @@ of deleting it. Remove only the orphans your own change created.
 Each fact lives in one place, and other places link to it. After a change, fix
 the docs, ADRs, and comments it made false, in the same change.
 
-# Code style
+## Code style
 
 - Name a recurring literal as a constant or enum. A value from a specification,
   such as HTTP status 200, always gets a constant.
@@ -179,7 +179,7 @@ the docs, ADRs, and comments it made false, in the same change.
 - Hide low-level mechanics, such as raw I/O and sockets, behind a layer with a
   domain API. Each layer calls only the layer below it.
 
-# Verify
+## Verify
 
 Turn each task into a verifiable goal, such as "write tests for invalid inputs,
 then make them pass." For multi-step tasks, state a brief plan with a check per

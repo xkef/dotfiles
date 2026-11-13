@@ -37,6 +37,7 @@ switch $argv[1]
         # Each command's @key line, which dots-ref lists too.
         awk -F ' :: ' '/^ *# @key dots :: / { printf "  %-9s %s\n", $2, $3 }' (status filename)
         echo ""
+        echo "dots apply --help lists the options of apply, update, and diff."
     case '*'
         echo "Unknown command: $argv[1]"
         echo "Run 'dots help' for usage."

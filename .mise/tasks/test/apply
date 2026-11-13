@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#MISE description="Check that setup/apply --plan changes nothing and private stays opt-in"
+#MISE hide=true
+set -eu
+. .mise/lib.sh
+scratch test-apply
+export HOME="$tmp/home" XDG_STATE_HOME="$tmp/state"
+state="$XDG_STATE_HOME/dotfiles"
+mkdir -p "$HOME"
+
+# A plan on a new machine lists the default modules, leaves private out,
+# and writes no state.
+out=$(fish --no-config setup/apply --plan --no-admin)
+grep -q '^admin: no$' <<<"$out" || fail "plan does not show --no-admin"
+grep -q 'private *skip, private is not selected' <<<"$out" || fail "private not skipped by default"
+grep -q '^  core:$' <<<"$out" || fail "plan lists no core packages"
+[ ! -e "$state/modules" ] || fail "plan wrote the module selection"
+
+# private selects the archive but has no directory to link.
+mkdir -p "$state"
+printf 'core\nprivate\n' >"$state/modules"
+out=$(fish --no-config setup/apply --plan)
+! grep -q 'private *skip' <<<"$out" || fail "selected private skipped"
+fish --no-config setup/apply --dry-run >/dev/null || fail "dry run failed with private selected"
+
+# A new machine selects every module that fits it, and --modules replaces
+# the selection.
+rm "$state/modules"
+fish --no-config setup/apply --dry-run --modules core,wezterm >/dev/null ||
+  fail "dry run with --modules failed"
+[ ! -e "$state/modules" ] || fail "dry run wrote --modules"
+out=$(fish --no-config setup/apply --plan)
+for module in core helix zed kickstart wezterm; do
+  grep -q "^  $module:$" <<<"$out" || fail "default lacks $module"
+done
+! fish --no-config setup/apply --plan --modules agents 2>/dev/null || fail "--modules without core passed"
+! fish --no-config setup/apply --plan --modules core,nope 2>/dev/null || fail "unknown module passed"
+fish --no-config setup/apply --help | grep -q -- '--no-admin' || fail "--help lacks the options"
+echo "apply ok"

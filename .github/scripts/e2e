@@ -50,9 +50,8 @@ if [ "$(uname)" != Darwin ]; then
   exit 0
 fi
 
-# The apply selects no extras, and the package install skips the desktop
-# module under CI, so the test installs WezTerm itself to load its config.
-brew install --cask wezterm@nightly
+# The package install skips the desktop module under CI, and the
+# wezterm module installs WezTerm.
 NVIM_APPNAME=lazyvim nvim --headless '+Lazy! restore' +qa
 mise trust
 mise run lint:nvim

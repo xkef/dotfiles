@@ -8,8 +8,23 @@
 # Each run checks the lists first and installs only what is missing. A
 # failed Arch package or macOS cask doesn't stop the others, and the
 # next run retries it. A failed formula stops the run.
+#
+# DOTFILES_ADMIN=no installs nothing that needs sudo. Homebrew installs
+# only into a prefix this user can write, pacman doesn't run, and fish,
+# which setup/apply needs, comes from its release into ~/.local/bin.
+#
+# Usage: setup/packages/install [--list]
+#
+# --list prints each module's list for this system and installs nothing.
 set -euo pipefail
 cd "$(dirname "$0")"
+admin=${DOTFILES_ADMIN:-yes}
+
+# fish 4 builds as one binary with its functions inside, so a release
+# asset runs from any directory. The checksums pin the assets of this
+# version.
+FISH_VERSION=4.9.3
+FISH_RELEASES=https://github.com/fish-shell/fish-shell/releases/download
 
 modules=()
 for module in ${DOTFILES_PACKAGES:-core}; do
@@ -24,7 +39,82 @@ list() {
   sed -e 's/#.*//' -e 's/[[:space:]]*$//' -e '/^$/d' "$1"
 }
 
+# Prints each module's list for this system with the comments that say
+# what each package is for.
+print_lists() {
+  local dir=none ext module
+  case "$(uname -s)" in
+  Darwin) dir=macos ext=Brewfile ;;
+  Linux) dir=arch ext=txt ;;
+  esac
+  for module in "${modules[@]}"; do
+    echo "$module:"
+    if [[ -f "$dir/$module.$ext" ]]; then
+      sed -e '/^[[:space:]]*#/d' -e '/^[[:space:]]*$/d' -e 's/^/  /' "$dir/$module.$ext"
+    else
+      echo "  (no packages)"
+    fi
+  done
+}
+
+# Installs the fish release into ~/.local/bin when no fish is on PATH.
+# Runs in a subshell so its trap leaves the caller's alone.
+install_user_fish() (
+  command -v fish >/dev/null && exit 0
+  local asset sum tmp
+  case "$(uname -s)-$(uname -m)" in
+  Darwin-*)
+    asset=fish-$FISH_VERSION.app.zip
+    sum=3619fa92d540ed0dff4816594429290550d21b92226e0523457e5f0242c5e9a8
+    ;;
+  Linux-x86_64)
+    asset=fish-$FISH_VERSION-linux-x86_64.tar.xz
+    sum=8f643d10ad1abb0ef7072764c01ceb5cf61b2d373fda400cf60f0bad69b7e095
+    ;;
+  Linux-aarch64)
+    asset=fish-$FISH_VERSION-linux-aarch64.tar.xz
+    sum=57349f0111728c64b703a84e611aa97ff4d1fa8466385d64e67bd5bc3ffa49fc
+    ;;
+  *)
+    echo "packages: no fish release for $(uname -sm), install fish by hand" >&2
+    exit 1
+    ;;
+  esac
+
+  tmp=$(mktemp -d "${TMPDIR:-/tmp}/fish.XXXXXX")
+  trap 'rm -rf "$tmp"' EXIT
+  echo "packages: installing fish $FISH_VERSION into ~/.local/bin"
+  curl -fsSL -o "$tmp/$asset" "$FISH_RELEASES/$FISH_VERSION/$asset"
+  if [[ "$(sha256 "$tmp/$asset")" != "$sum" ]]; then
+    echo "packages: $asset fails its checksum" >&2
+    exit 1
+  fi
+
+  mkdir -p "$HOME/.local/bin"
+  case "$asset" in
+  *.zip)
+    local bin=fish-$FISH_VERSION.app/Contents/Resources/base/usr/local/bin/fish
+    unzip -q "$tmp/$asset" "$bin" -d "$tmp"
+    mv "$tmp/$bin" "$HOME/.local/bin/fish"
+    ;;
+  *) tar -xJf "$tmp/$asset" -C "$HOME/.local/bin" fish ;;
+  esac
+)
+
+# macOS ships shasum and Arch ships sha256sum.
+sha256() {
+  if command -v sha256sum >/dev/null; then
+    sha256sum "$1" | cut -d' ' -f1
+  else
+    shasum -a 256 "$1" | cut -d' ' -f1
+  fi
+}
+
 install_darwin() {
+  if [[ "$admin" == no ]] && ! brew_writable; then
+    echo "packages: Homebrew is missing or not writable, and --no-admin skips its install" >&2
+    return
+  fi
   if ! command -v brew >/dev/null; then
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew; do
@@ -59,6 +149,11 @@ install_darwin() {
   if [[ -x "$rustup_bin/rustup" ]]; then
     PATH="$rustup_bin:$PATH" ensure_toolchain
   fi
+}
+
+# Returns 0 when brew exists and this user can write its prefix.
+brew_writable() {
+  command -v brew >/dev/null && [[ -w "$(brew --prefix)" ]]
 }
 
 # Returns 0 only if paru exists and runs. A paru binary breaks when pacman
@@ -117,7 +212,12 @@ install_arch() {
 
   # pacman -T fails when a package is missing. Without one, the install
   # needs neither sudo nor a sync.
-  if pacman -T "${packages[@]}" >/dev/null; then
+  local missing
+  if missing=$(pacman -T "${packages[@]}"); then
+    return
+  fi
+  if [[ "$admin" == no ]]; then
+    echo "packages: --no-admin skips pacman, missing: ${missing//$'\n'/ }" >&2
     return
   fi
 
@@ -146,6 +246,11 @@ install_arch() {
   fi
 }
 
+if [[ "${1:-}" == --list ]]; then
+  print_lists
+  exit
+fi
+
 case "$(uname -s)" in
 Darwin)
   install_darwin
@@ -158,3 +263,7 @@ Linux)
   fi
   ;;
 esac
+
+if [[ "$admin" == no ]]; then
+  install_user_fish
+fi

@@ -6,6 +6,9 @@
 # Usage:
 #   ./macos-defaults               Apply all settings
 #   ./macos-defaults --dry-run     Show what would change, exit 1 if any
+#
+# DOTFILES_ADMIN=no leaves out the one setting that needs sudo, the
+# Spotlight index.
 set -euo pipefail
 
 if [[ "$(uname -s)" != Darwin ]]; then
@@ -15,6 +18,7 @@ fi
 
 DRY_RUN=false
 [[ "${1:-}" == "--dry-run" || "${1:-}" == "-n" ]] && DRY_RUN=true
+ADMIN=${DOTFILES_ADMIN:-yes}
 
 log() { printf '  %s\n' "$1"; }
 
@@ -130,12 +134,14 @@ else
   for app in com.apple.mail com.apple.iCal; do
     osascript -e "if application id \"$app\" is running then tell application id \"$app\" to quit" 2>/dev/null || true
   done
-  sudo -v
-  while true; do
-    sudo -n true
-    sleep 60
-    kill -0 "$$" || exit
-  done 2>/dev/null &
+  if [[ "$ADMIN" == yes ]]; then
+    sudo -v
+    while true; do
+      sudo -n true
+      sleep 60
+      kill -0 "$$" || exit
+    done 2>/dev/null &
+  fi
 fi
 
 # ── Typing and input ──────────────────────────────────
@@ -284,7 +290,7 @@ if $DRY_RUN; then
     ((changed++)) || true
   fi
 
-  if [[ "$spotlight_index" == *"Indexing enabled"* ]]; then
+  if [[ "$ADMIN" == no || "$spotlight_index" == *"Indexing enabled"* ]]; then
     ((skipped++)) || true
   else
     printf '  \033[31m~\033[0m %s \033[2m(indexing off -> on)\033[0m\n' mdutil
@@ -306,7 +312,9 @@ else
     [[ "${CI:-}" == true ]]
 
   # Indexing needs real disk access. Tolerate failure on CI runners.
-  sudo mdutil -a -i on >/dev/null || [[ "${CI:-}" == true ]]
+  if [[ "$ADMIN" == yes ]]; then
+    sudo mdutil -a -i on >/dev/null || [[ "${CI:-}" == true ]]
+  fi
 fi
 
 # Result sources and the file types left out of the index, as the

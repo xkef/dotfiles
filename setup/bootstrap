@@ -2,6 +2,8 @@
 # Sets up a new machine. setup/apply needs fish, which a new machine
 # lacks, so this installs the core package list first, which brings fish
 # and the package manager. `dots apply` runs setup/apply afterwards.
+#
+# Usage: setup/bootstrap [--no-admin]
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -11,6 +13,15 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 # A new machine has no fish environment yet. Tools such as brew fall back
 # to ~/Library/Application Support on macOS without it.
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+
+# --no-admin reaches the package install through DOTFILES_ADMIN, which
+# can put fish into ~/.local/bin.
+export DOTFILES_ADMIN=yes PATH="$HOME/.local/bin:$PATH"
+for arg in "$@"; do
+  if [[ "$arg" == --no-admin ]]; then
+    DOTFILES_ADMIN=no
+  fi
+done
 
 DOTFILES_PACKAGES=core setup/packages/install
 exec fish --no-config setup/apply "$@"

@@ -27,4 +27,23 @@ grep -q core "$BREW_LOG" || fail "selected core list skipped"
 # cask.
 ! BREW_FAIL=core.formulae setup/packages/install 2>/dev/null ||
   fail "a formula failure passed"
+
+# Without admin, a brew prefix this user can't write installs nothing,
+# and a fish on PATH needs no download.
+cat >"$tmp/bin/brew" <<'EOF2'
+#!/bin/sh
+case "$*" in --prefix) echo /System ;; *) echo "$*" >>"$BREW_LOG" ;; esac
+EOF2
+printf '#!/bin/sh\nexit 1\n' >"$tmp/bin/curl"
+printf '#!/bin/sh\n' >"$tmp/bin/fish"
+chmod +x "$tmp/bin"/*
+: >"$BREW_LOG"
+DOTFILES_ADMIN=no setup/packages/install 2>/dev/null || fail "no-admin install failed"
+[ ! -s "$BREW_LOG" ] || fail "no-admin ran brew on a prefix it can't write"
+
+# --list prints the selected lists and installs nothing.
+out=$(setup/packages/install --list)
+grep -q '^core:$' <<<"$out" || fail "--list lacks core"
+! grep -q '^agents:$' <<<"$out" || fail "--list shows an unselected module"
+[ ! -s "$BREW_LOG" ] || fail "--list ran brew"
 echo "packages ok"
