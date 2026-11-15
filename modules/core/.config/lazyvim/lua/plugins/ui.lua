@@ -98,6 +98,47 @@ return {
           vim.api.nvim_set_hl(0, "NeoTreeWinSeparator", { fg = bg, bg = bg })
         end,
       })
+
+      -- follow_current_file skips files outside the tree root, such as a
+      -- dependency that go-to-definition opened. The open tree re-roots at
+      -- that dependency's package, as IntelliJ's external libraries do,
+      -- and returns to the previous root on the next file under it. Java
+      -- and Kotlin libraries open as jar: and jdt: buffers with no path on
+      -- disk, so they stay out of the tree. A picker preview is a floating
+      -- window, and re-rooting from it moves focus out of the picker.
+      local markers = { "Cargo.toml", "go.mod", "package.json" }
+      local home
+      vim.api.nvim_create_autocmd("BufEnter", {
+        group = vim.api.nvim_create_augroup("neotree_dependency", { clear = true }),
+        callback = function(args)
+          local file = vim.api.nvim_buf_get_name(args.buf)
+          if vim.api.nvim_win_get_config(0).relative ~= "" then
+            return
+          end
+          if vim.bo[args.buf].buftype ~= "" or not vim.uv.fs_stat(file) then
+            return
+          end
+
+          local state = require("neo-tree.sources.manager").get_state("filesystem")
+          if not state.path or not require("neo-tree.ui.renderer").window_exists(state) then
+            return
+          end
+
+          local utils = require("neo-tree.utils")
+          local root
+          if home and utils.is_subpath(home, file) then
+            root, home = home, nil
+          elseif not utils.is_subpath(home or state.path, file) then
+            root = vim.fs.root(file, markers)
+            home = home or state.path
+          end
+          if not root or root == state.path then
+            return
+          end
+
+          require("neo-tree.command").execute({ source = "filesystem", action = "show", dir = root, reveal_file = file })
+        end,
+      })
     end,
     opts = function(_, opts)
       opts.filesystem = opts.filesystem or {}
