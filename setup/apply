@@ -182,6 +182,19 @@ function step_system
         ln -sfn $group/t/agent.sock ~/.1password/agent.sock; or return
     end
 
+    # Firefox reads user.js from the profile folder, which it creates at
+    # its first start under a random prefix, so setup/link can't place
+    # it, and an apply after the first start links it. On Linux the
+    # profiles sit in ~/.mozilla, or in ~/.config/mozilla on a machine
+    # without ~/.mozilla.
+    if selected desktop
+        set -l roots ~/Library/Application\ Support/Firefox/Profiles \
+            ~/.mozilla/firefox ~/.config/mozilla/firefox
+        for profile in $roots/*.dev-edition-default
+            ln -sf ~/.config/firefox/user.js $profile/user.js; or return
+        end
+    end
+
     # Docker clients reach podman through its user socket on Linux,
     # which conf.d/podman.fish exports as DOCKER_HOST. On macOS the
     # helper links /var/run/docker.sock to the machine's socket at each

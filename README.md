@@ -27,7 +27,7 @@ A new machine gets the modules that fit it. Every selection needs `core`.
 | Module      | What it holds                                                         |
 | ----------- | --------------------------------------------------------------------- |
 | `core`      | fish, Starship, Neovim with LazyVim, tmux, jj, and command-line tools |
-| `desktop`   | Ghostty, GUI apps, and the 1Password SSH agent                        |
+| `desktop`   | Ghostty, GUI apps, Firefox's look, and the 1Password SSH agent        |
 | `agents`    | Claude Code and pi in a [nono](https://nono.sh) sandbox               |
 | `agentvm`   | A sandbox VM for agents with no network device, on macOS              |
 | `wezterm`   | WezTerm, on the tmux keys                                             |
