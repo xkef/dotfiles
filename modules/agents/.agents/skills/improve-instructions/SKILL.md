@@ -29,10 +29,10 @@ blocks that stopped a tool call.
 ## 2. Analyze
 
 Split `corrections.tsv` into chunks of about 150 rows and hand each chunk and
-`denials.tsv` to its own subagent. Every subagent reads the global `AGENTS.md`
+`denials.tsv` to its own subagent. Each subagent reads the global `AGENTS.md`
 first, then reads every row of its chunk, and reports up to 12 **patterns**. A
 pattern means one agent behavior the user corrected in two or more rows. Each
-pattern carries:
+pattern includes:
 
 - The behavior, in one line.
 - The row count and one to three verbatim quotes with their project and date.
@@ -53,7 +53,7 @@ one quote supports stays out.
 ## 4. Report
 
 Write `.claude-notes/instructions-review-<date>.md` with one section per pattern
-in rank order. Each section holds the evidence and the current coverage, then
+in rank order. Each section gives the evidence and the current coverage, then
 the proposed edit as a diff. List the project-specific patterns and the
 permission-rule changes apart from the `AGENTS.md` edits. Show the user a
 summary and apply nothing until they choose which edits to make. Apply the

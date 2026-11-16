@@ -18,16 +18,17 @@ belongs to the repo state.
 
 ## GitHub accounts
 
-More than one gh login exists. The primary account holds this repo and sits
-keyring-active in gh. git and jj pushes route through `gh auth git-credential`,
-which picks the active account. To run one command as another account without
-touching global state, set `GH_TOKEN` inline. The credential helper follows it,
-so this routes `gh`, `git`, and `jj git push` alike:
+More than one gh login exists. This repo belongs to the primary account, which
+sits keyring-active in gh. git and jj pushes route through
+`gh auth git-credential`, which picks the active account. To run one command as
+another account without touching global state, set `GH_TOKEN` inline. The
+credential helper follows it, so this routes `gh`, `git`, and `jj git push`
+alike:
 
     GH_TOKEN=$(gh auth token --user <account>) <cmd...>
 
-A repo that another account holds can pin it for the whole directory through
-mise, as in this `mise.local.toml`:
+A repo that belongs to another account can pin it for the whole directory
+through mise, as in this `mise.local.toml`:
 
     [env]
     GH_TOKEN = "{{ exec(command='gh auth token --user <account>') }}"
@@ -41,5 +42,5 @@ overrides it, or prefix the command with `env -u GITHUB_TOKEN`.
 ## Verification
 
 Run `mise run ci` before every commit, and fix what it reports. CI runs the same
-task, so a skipped run breaks main. `mise tasks --hidden` lists the individual
-checks, such as `mise run test:private`, for a faster loop.
+task. A commit that skips it breaks main. `mise tasks --hidden` lists the
+individual checks, such as `mise run test:private`, for a faster loop.

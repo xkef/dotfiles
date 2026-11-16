@@ -16,9 +16,9 @@ code first. The explainer covers the system, not only the diff.
 - **Background**: explain the existing system relevant to this change. The
   reader's prior knowledge varies, so start with a deep background for
   beginners, marked as optional, then a narrower background tied to the change.
-- **Intuition**: explain the core idea of the change. Focus on the essence, not
-  the full details. Use concrete examples with toy data. Use figures and
-  diagrams liberally.
+- **Intuition**: explain the core idea of the change. Focus on the essence and
+  leave the full details to the code walkthrough. Use concrete examples with toy
+  data. Use figures and diagrams liberally.
 - **Code**: a literate walkthrough that groups and orders the changes for
   understanding, with prose before each group. Never a list of files in
   alphabetical order.

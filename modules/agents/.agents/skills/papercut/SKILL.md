@@ -7,7 +7,8 @@ description: Record a problem from the current session in this project's local c
 
 A **papercut** means a problem in the user's setup that interrupted the session,
 such as a denied command, a blocked path, a missing tool, or a skill that
-misfired. Record it and return to the task. Leave the fix for later.
+triggered at the wrong time. Record it and return to the task. Leave the fix for
+later.
 
 ## 1. Identify
 
@@ -18,7 +19,7 @@ failure in the conversation. Collect from the conversation alone:
 - The task the session worked on when it failed.
 - The place the fix most likely goes. Pick from permissions, the nono profile,
   tools, hooks, skills, and `AGENTS.md`, or write `unknown`.
-- The session ID, which names the newest transcript in
+- The session ID, which matches the filename of the newest transcript in
   `~/.claude/projects/<working directory, non-alphanumerics as ->/`.
 
 ## 2. Append

@@ -8,7 +8,7 @@ description: Create a commit in a repository
 ## Git commits
 
 In a Git repository, run `command git diff` to see the changes and
-`command git diff --staged` to see what the index already holds. Stage the files
+`command git diff --staged` to see the changes already staged. Stage the files
 that belong to the commit with `git add <file>...`. Every change belongs unless
 the user names a subset.
 
@@ -32,7 +32,7 @@ For more on Jujutsu, see the `jj` skill.
 
 1. Run the Git or Jujutsu commands that show what belongs in the commit.
 2. Never commit plan files under `.claude-notes/`. The global
-   `~/.config/git/ignore` file ignores that directory. Plan files stay local.
+   `~/.config/git/ignore` file ignores that directory.
 3. Draft a commit message in the format below. Never include prompt text or
    generated-by attribution.
 4. **Always** show the proposed commit message to the user and wait for their
@@ -53,8 +53,8 @@ For more on Jujutsu, see the `jj` skill.
   `fix(zsh): restore history`.
 - Scope: optional, such as `feat(tmux)` or `fix(zsh)`.
 - Body: add one only when the motivation needs explaining. Separate it from the
-  subject with a blank line and wrap at 72 characters. Explain why the change
-  matters. Keep it brief and don't repeat what the diff shows.
+  subject with a blank line and wrap at 72 characters. Explain briefly why the
+  change matters, without repeating what the diff shows.
 - Footer: put a blank line before it. Use the fields below when they apply.
 
 ### Footer fields

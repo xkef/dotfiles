@@ -17,8 +17,8 @@ flowchart LR
 
 - `sb` picks the nono profile that matches the agent, installs the shared skills
   once, and records sandbox denials for `agents trace`.
-- nono's credential proxy adds the Claude and GitHub tokens to requests, so the
-  agent never holds them.
+- nono's credential proxy adds the Claude and GitHub tokens to requests. They
+  never enter the agent's environment.
 - `agents vm` runs the agent in a VM instead, through the
   [`agentvm` module](../agentvm/README.md). `vm-agent` adds Claude's credentials
   profile, its transcripts, and the picker. `.config/agentvm/guest.d/agents.sh`

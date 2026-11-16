@@ -59,8 +59,8 @@ you checked.
    corrections. Rank files and directories by this friction. Fix each with a doc
    line, an `AGENTS.md` entry, or a rename.
 4. **Skills to derive:** find tool sequences and user instructions that recur
-   across three or more sessions. Each candidate names its trigger, its steps,
-   and the sessions it would have served.
+   across three or more sessions. Each candidate lists its trigger and steps,
+   plus the sessions it would have served.
 5. **Anti-patterns to block:** find commands that break an `AGENTS.md` rule,
    commands the user rejected or corrected, and failure-then-workaround loops.
    Propose a PreToolUse hook or a `hookify` rule for each, with the pattern it

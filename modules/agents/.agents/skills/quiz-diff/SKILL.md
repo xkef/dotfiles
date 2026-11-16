@@ -5,8 +5,8 @@ description: Quiz the user on a diff, branch, or PR to check that they understoo
 
 # Quiz diff
 
-A five-question quiz on a code change, answered in the terminal. The rule this
-enforces: don't send code for review until you can pass a quiz about it.
+A five-question quiz on a code change, answered in the terminal. It enforces a
+rule that you don't send code for review until you can pass a quiz about it.
 
 ## Steps
 
@@ -16,13 +16,13 @@ enforces: don't send code for review until you can pass a quiz about it.
    questions.
 2. Write five questions with answer choices, of medium difficulty. Answering
    must require understanding the change. Avoid gotchas and trivia. Wrong
-   options must look plausible. Cover different aspects: why the change exists,
-   how the mechanism works, behavior at edges, and what breaks without a piece
-   of it.
+   options must look plausible. Cover different aspects, such as the reason for
+   the change and how the mechanism works, as well as edge-case behavior and
+   what breaks without a piece of it.
 3. Ask one question at a time with AskUserQuestion. Don't reveal the correct
    option in the labels. After each answer, say whether it matched and explain
    in one or two sentences.
-4. Report the score. 4/5 or better: ready to send. Below that: name the areas
+4. Report the score. 4/5 or better: ready to send. Below that: list the areas
    the misses point at, suggest what to reread, and offer to run `/explain-diff`
    on the change.
 

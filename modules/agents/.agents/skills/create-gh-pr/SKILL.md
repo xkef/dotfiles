@@ -20,12 +20,12 @@ Use `gh` for all GitHub operations. Never use `curl` against the GitHub API.
    - `git diff <base>...HEAD` for the full change.
    - In Jujutsu, use `jj log` and `jj diff` against the matching revset.
 
-3. **Prefer one commit.** The user squash-merges, so the PR represents one
-   logical change.
+3. **Prefer one commit.** The user squash-merges. The PR becomes one commit and
+   must represent one logical change.
    - For a run of work-in-progress or fixup commits, suggest squashing them
      locally before opening the PR. The squash merge collapses them either way,
      but the PR title and body still need to read as the final commit message.
-   - If the branch holds independent commits that must stay separate, ask the
+   - If the branch has independent commits that must not merge as one, ask the
      user whether to split them into separate PRs.
 
 4. **Find related issues to reference.**
@@ -38,8 +38,8 @@ Use `gh` for all GitHub operations. Never use `curl` against the GitHub API.
      related or partial one. Confirm each choice. When unsure, ask.
 
 5. **Draft the PR title.**
-   - Same rules as a commit subject: a Conventional Commits type, optional
-     scope, imperative verb, at most 72 characters.
+   - Same rules as a commit subject. Use a Conventional Commits type with an
+     optional scope and an imperative verb, in at most 72 characters.
    - Example: `feat(login): add support for magic links`.
 
 6. **Draft the PR body.** Write Markdown. **Don't hard-wrap the body.** GitHub

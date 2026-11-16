@@ -22,7 +22,7 @@ modules, lives in `~/.local/state/dotfiles`, which the repo links as `state/`.
 
 ## Modules
 
-A new machine gets every module that fits it. Every selection needs `core`.
+A new machine gets the modules that fit it. Every selection needs `core`.
 
 | Module      | What it holds                                                         |
 | ----------- | --------------------------------------------------------------------- |

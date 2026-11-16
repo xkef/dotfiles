@@ -46,15 +46,15 @@ flowchart LR
 
 The first session starts the repository's VM, with its proxy and bridge, and
 `agents vm stop` ends it. Every later session, pane, `take`, and `drop` runs
-inside it through `container exec`, so it pays no boot. `agents vm ls` lists the
-VMs. The VM's runtime lives in the repository's folder under `run/`, which only
-the host writes.
+inside it through `container exec` without a new boot. `agents vm ls` lists the
+VMs. The VM keeps its runtime state in the repository's folder under `run/`,
+which only the host writes.
 
 - The copy, the caches, and the `--persist` paths belong to one repository.
   Another repository's VM never gets them.
 - The shares, the ports, the size, and the proxy's profiles come from the
   session that started the VM. A later session's profiles join the proxy's,
-  which restarts on its port, so every session keeps what it had.
+  which restarts on its port. Earlier sessions keep their profiles.
 - The proxy reaches only the hosts in
   [`agentvm.json`](.config/nono/profiles/agentvm.json). A machine adds hosts in
   `~/.config/nono/profiles/agentvm-local.json`, which stays out of the repo. A
@@ -121,8 +121,8 @@ builds on a commit the repository has.
   the session's own, so sessions in one VM don't mix their status. The host
   passes each change to the `--on-status` command as `NAME VALUE`, and runs it
   alone when the session ends. It reads regular files only, with names from a
-  fixed character set, and passes printable text only, so a guest can't reach
-  the host's terminal or files through it.
+  fixed character set, and passes printable text only. A guest can't use it to
+  access the host's terminal or files.
 
 The [agents module](../agents/README.md) uses all three for `agents vm`.
 

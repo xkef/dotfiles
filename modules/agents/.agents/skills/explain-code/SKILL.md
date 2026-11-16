@@ -6,15 +6,15 @@ description: Publish an Artifact that explains a feature, subsystem, codebase, o
 # Explain code as an Artifact
 
 Publish one Artifact page that a reader new to the code can follow from top to
-bottom. It explains the **mechanism**, meaning the parts, the paths that data
-and control take between them, and the reasons behind the design.
+bottom. It explains the **mechanism**: the parts and the paths that data and
+control take between them, with the reasons behind the design.
 
 ## 1. Read
 
-Read the code the user names, and follow it to its callers, its storage, and its
-external boundaries. For a session, read its transcript, or else the visible
-conversation. Done when you can name every component the page shows and point to
-the file that holds it.
+Read the code the user names, and follow it outward through its callers and
+storage to its external boundaries. For a session, read its transcript, or else
+the visible conversation. Done when you can list each component the page shows
+and point to the file that defines it.
 
 ## 2. Plan the page
 
@@ -30,8 +30,8 @@ files, never placeholders. Order the page as:
 
 1. Summary: what it does and why it exists, in three to five bullets.
 2. The diagrams, each with a short paragraph on what to notice.
-3. Key code: the few files and functions that carry the design, with short
-   excerpts and `file:line` references.
+3. Key code: the few files and functions that make up the core of the design,
+   with short excerpts and `file:line` references.
 4. Decisions and tradeoffs the code makes.
 5. Open questions or risks, only when the reading found some.
 

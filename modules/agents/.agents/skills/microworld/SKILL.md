@@ -42,7 +42,7 @@ process the user doesn't yet trust:
   the repo.
 - Keep instrumentation of real code minimal and remove it after capturing the
   trace, unless the user asks to keep it.
-- Self-contained HTML only: inline CSS and JS, trace data embedded in the file,
-  and zero external requests.
+- Self-contained HTML only: inline CSS and JS, with the trace data embedded in
+  the file and no external requests.
 - Tune the input, not the viewer. A small, chosen example input explains more
   than an exhaustive one.
