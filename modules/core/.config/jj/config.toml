@@ -71,12 +71,20 @@ max-new-file-size = "2MiB"
 # ═══ [signing] ══════════════════════════════════════
 # Name, email, SSH signing, and the accounts by directory come from
 # conf.d/identity.toml, which setup/private/decrypt writes.
+#
+# Signing waits for the push. With "own", every snapshot signs the working
+# copy, so even `jj status` needs an unlocked 1Password agent, which the
+# agent sandbox and a locked vault both break.
+[signing]
+behavior = "drop"
+
 [signing.backends.ssh]
 allowed-signers = "~/.config/git/allowed_signers"
 
 # ═══ [revsets] ══════════════════════════════════════
 [revsets]
 log = 'stack(@) | trunk()'
+git-sign-on-push = '~signed() & mine()'
 # `jj tug` targets the completed change under the empty working copy.
 bookmark-advance-to = '@-'
 
