@@ -15,12 +15,19 @@ cat >"$tmp/bin/brew" <<'EOF'
 echo "$*" >>"$BREW_LOG"
 case "$*" in "bundle check"* | *"$BREW_FAIL"*) exit 1 ;; esac
 EOF
+# The curl stub stands in for the mise.run script, which installs into
+# ~/.local/bin of an empty HOME.
+cat >"$tmp/bin/curl" <<'EOF'
+#!/bin/sh
+printf 'mkdir -p "$HOME/.local/bin"\nprintf "#!/bin/sh\\n" >"$HOME/.local/bin/mise"\nchmod +x "$HOME/.local/bin/mise"\n'
+EOF
 chmod +x "$tmp/bin"/*
 export PATH="$tmp/bin:$PATH" BREW_LOG="$tmp/brew.log" CI=false DOTFILES_PACKAGES="core desktop"
-export BREW_FAIL=desktop.casks
+export BREW_FAIL=desktop.casks HOME="$tmp/home"
 
 setup/packages/install 2>/dev/null || fail "a cask failure failed the install"
 grep -q core "$BREW_LOG" || fail "selected core list skipped"
+[ -x "$HOME/.local/bin/mise" ] || fail "core didn't install mise"
 ! grep -q agents "$BREW_LOG" || fail "unselected agents list installed"
 
 # A failed formula fails the install, even in a list that also holds a
