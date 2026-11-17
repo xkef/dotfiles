@@ -1,5 +1,16 @@
 {
   "$schema": "https://raw.githubusercontent.com/nolabs-ai/nono/main/crates/nono-cli/data/nono-profile.schema.json",
+  "credential_capture": {
+    "claude": {
+      "command": [
+        "/bin/sh",
+        "-c",
+        "exec \"$HOME/.local/libexec/agents/nono-secret\" claude_code_oauth_token"
+      ],
+      "cache_ttl_secs": 900,
+      "timeout_secs": 60
+    }
+  },
   "meta": {
     "description": "Claude credentials for the credential proxy, which the claude profile extends and agents vm stacks on agentvm",
     "name": "agentvm-claude",
@@ -12,7 +23,7 @@
     "custom_credentials": {
       "claude": {
         "upstream": "https://api.anthropic.com",
-        "credential_key": "claude_code_oauth_token",
+        "credential_key": "cmd://claude",
         "env_var": "CLAUDE_CODE_OAUTH_TOKEN",
         "credential_format": "Bearer {}"
       }
