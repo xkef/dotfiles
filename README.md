@@ -46,10 +46,10 @@ once.
 ## Agent sandbox
 
 nono's credential proxy adds the Claude, GitHub, and OpenRouter tokens to the
-agents' requests. It reads them through `security`, which needs no password,
-since `security` stored them. macOS still asks for the password when nono renews
-the proxy CA that gh trusts, once a week, and after a nono upgrade. Store the
-tokens once on each machine. The GitHub entry takes its name from
+agents' requests. It reads them through `security`, which doesn't need a
+password, since `security` stored them. macOS still asks for the password when
+nono renews the proxy CA that gh trusts, once a week, and after a nono upgrade.
+Store the tokens once on each machine. The GitHub entry takes its name from
 `git config --global github.user`, or else from gh's user:
 
 ```sh
