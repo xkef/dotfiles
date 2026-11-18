@@ -3,7 +3,11 @@
 -- kotlin-lsp imports Gradle and Maven builds, such as a Spring Boot
 -- project's. Mason installs it on macOS. The AUR installs it on Arch,
 -- since Mason's linux_arm64 entry is broken.
-local cmd = vim.fn.executable("intellij-server") == 1 and "intellij-server" or "kotlin-lsp"
+--
+-- An executable() check here can't find Mason's binary, since this spec
+-- loads before Mason prepends its bin to PATH. It fell through to a
+-- Homebrew cask, whose quarantined, unnotarized dylib Gatekeeper blocks.
+local cmd = vim.fn.has("mac") == 1 and "intellij-server" or "kotlin-lsp"
 
 local MAVEN_CENTRAL = "https://repo1.maven.org/maven2"
 local SOURCES_DIR = vim.fn.stdpath("cache") .. "/sources"
