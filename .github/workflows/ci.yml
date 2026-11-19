@@ -44,7 +44,7 @@ jobs:
       # The dots test runs jj in a scratch repo outside this checkout, where
       # the mise shim finds a jj version only in the global config.
       - name: Install jj
-        run: mise use -g jj@0.46.0
+        run: mise use -g jj@0.47.1
       - name: Run CI tasks
         env:
           GH_TOKEN: ${{ github.token }} # zizmor's online audits query GitHub
