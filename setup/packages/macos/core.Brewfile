@@ -28,6 +28,7 @@ brew "procs"                # modern ps replacement
 brew "ouch"                 # compress/decompress archives
 brew "delta"                # syntax-highlighting diff pager
 brew "difftastic"           # structural diff tool
+brew "mergiraf"             # syntax-aware merge driver (jj untangle)
 brew "lazygit"              # terminal UI for git
 brew "jj"                   # Jujutsu version control
 brew "jjui"                 # terminal UI for jj

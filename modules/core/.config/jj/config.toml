@@ -127,6 +127,9 @@ cat = ["file", "show"]
 # the terminal width.
 dft = ["diff", "--tool", "difft"]
 sft = ["show", "--tool", "difft"]
+# Resolve conflicts by syntax tree through jj's built-in mergiraf tool.
+# Conflicts it can't resolve keep their markers for `jj resolve`.
+untangle = ["resolve", "--tool", "mergiraf"]
 
 # Move changes
 consume = ["squash", "--into", "@", "--from"]

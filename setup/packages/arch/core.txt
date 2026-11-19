@@ -31,6 +31,7 @@ trash-cli       # move files to trash instead of rm
 ouch            # compress/decompress archives
 git-delta       # syntax-highlighting diff pager
 difftastic      # structural diff tool
+mergiraf        # syntax-aware merge driver (jj untangle)
 lazygit         # terminal UI for git
 jujutsu         # Jujutsu version control
 jjui-bin        # terminal UI for jj (AUR)
