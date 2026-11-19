@@ -24,7 +24,7 @@
     {
       "description": "rumdl tags releases with a v prefix, which Renovate otherwise copies into the bare version in .mise/config.toml",
       "matchManagers": ["mise"],
-      "matchPackageNames": ["rumdl"],
+      "matchPackageNames": ["rvben/rumdl"],
       "extractVersion": "^v(?<version>.+)$"
     }
   ],
