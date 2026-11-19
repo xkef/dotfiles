@@ -2,9 +2,9 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
 -- The python extra reads this when lazy.setup() imports its spec, so it must
--- come first. LazyVim defaults to pyright. basedpyright is the maintained fork
--- and reports the stricter diagnostics these projects type for.
-vim.g.lazyvim_python_lsp = "basedpyright"
+-- come first. LazyVim defaults to pyright. ty, from the makers of ruff and uv,
+-- checks types an order of magnitude faster.
+vim.g.lazyvim_python_lsp = "ty"
 
 -- TypeScript 7 drops the tsserver that vtsls drives. Its native compiler,
 -- tsc, serves LSP itself, from the project's node_modules or from Mason.
