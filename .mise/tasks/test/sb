@@ -67,4 +67,39 @@ fish --no-config -c "source modules/agents/.config/fish/functions/sb.fish
 grep -qx -- --dangerously-skip-permissions "$CLAUDE_LOG" || fail "VM launch kept permission prompts"
 settings=$(grep -A1 -x -- --settings "$CLAUDE_LOG" | tail -1)
 [ "$(jq -c .sandbox.enabled <<<"$settings")" = false ] || fail "VM launch kept Claude Code's sandbox"
+
+# A closed terminal kills the shell that runs sb before sb can stop the
+# denial recorder, so the recorder must stop its stream on its own. Only
+# an unsandboxed macOS process may stream the unified log.
+can_stream() {
+  local probe
+  [ "$(uname)" = Darwin ] || return 1
+  /usr/bin/log stream --predicate 'sender == "none"' >/dev/null 2>&1 &
+  probe=$!
+  sleep 1
+  kill "$probe" 2>/dev/null
+}
+
+if can_stream; then
+  sleep 300 &
+  owner=$!
+  XDG_STATE_HOME="$tmp/state" modules/agents/.local/libexec/agents/agent-trace record "$owner" &
+  recorder=$!
+  sleep 2
+  streams=$(pgrep -x -P "$recorder" log || true)
+  [ -n "$streams" ] || fail "the recorder started no log stream"
+
+  kill "$owner"
+  for _ in $(seq 15); do
+    alive=$(for pid in $recorder $streams; do kill -0 "$pid" 2>/dev/null && echo "$pid"; done)
+    [ -z "$alive" ] && break
+    sleep 1
+  done
+  if [ -n "$alive" ]; then
+    for pid in $alive; do kill "$pid" 2>/dev/null; done
+    fail "the log stream outlived the shell that started it"
+  fi
+else
+  echo "sb: recorder check skipped, log stream needs unsandboxed macOS"
+fi
 echo "sb ok"

@@ -70,10 +70,12 @@ function sb -d "Run a command inside a nono sandbox"
 
     # macOS logs the sandbox denials where only an unsandboxed process may
     # read them, so a recorder streams them while the agent runs, and
-    # `agents trace collect` caches them for `agents trace sandbox`.
+    # `agents trace collect` caches them for `agents trace sandbox`. The
+    # recorder also stops when this shell exits, which a closed terminal
+    # causes before the kill below runs.
     set -l recorder
     if test -x $libexec/agent-trace
-        $libexec/agent-trace record &
+        $libexec/agent-trace record $fish_pid &
         set recorder $last_pid
         disown
     end

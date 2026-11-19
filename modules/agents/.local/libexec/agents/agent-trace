@@ -9,7 +9,7 @@
 #   agent-trace [--all] [--since <date>] sandbox
 #   agent-trace [--all] [--since <date>] prompts [session-id]
 #   agent-trace [--all] [--since <date>] corrections [session-id]
-#   agent-trace record
+#   agent-trace record <shell-pid>
 #   agent-trace collect
 #
 # The scope is the sessions that ran inside the current repository, or
@@ -57,6 +57,9 @@ readonly SANDBOX_STREAMS="$SANDBOX_CACHE/streams"
 # Keeps file, execution, and network denials, so the many daemon denials
 # never reach jq.
 readonly SEATBELT_PREDICATE='sender == "Sandbox" AND (eventMessage CONTAINS " file-" OR eventMessage CONTAINS " process-exec" OR eventMessage CONTAINS " network-")'
+# A stream outlives its shell by at most this long. Each check forks one
+# sleep, which costs nothing next to the stream.
+readonly SHELL_CHECK_SECONDS=5
 
 # Emits one JSON object per failed tool call in a transcript. It pairs each
 # error result with the tool call that caused it, and picks the first line
@@ -262,13 +265,26 @@ own_processes() {
 }
 
 # Streams the Seatbelt denials to a file named after its start time and
-# its own PID until `sb` stops it. The log daemon filters the events as
-# they arrive, so the cost follows the denials, not the log volume.
+# its own PID until `sb` stops it or the shell that runs `sb` exits. A
+# closed terminal kills that shell before `sb` can stop the recorder, and
+# an orphaned stream runs until reboot. The log daemon filters the events
+# as they arrive, so the cost follows the denials, not the log volume.
 record() {
+  local shell_pid=${1:?record needs the PID of the shell that runs sb}
   [ "$(uname -s)" = Darwin ] || return 0
   mkdir -p "$SANDBOX_STREAMS"
-  exec /usr/bin/log stream --style ndjson --predicate "$SEATBELT_PREDICATE" \
-    >"$SANDBOX_STREAMS/$(date +%Y-%m-%dT%H:%M:%S).$$.ndjson" 2>/dev/null
+  /usr/bin/log stream --style ndjson --predicate "$SEATBELT_PREDICATE" \
+    >"$SANDBOX_STREAMS/$(date +%Y-%m-%dT%H:%M:%S).$$.ndjson" 2>/dev/null &
+  stream_pid=$!
+  trap 'kill $(jobs -p) 2>/dev/null' EXIT
+  trap 'exit 0' TERM INT HUP
+
+  # The sleep runs in the background so that a signal ends the wait
+  # instead of waiting for the sleep.
+  while kill -0 "$shell_pid" 2>/dev/null && kill -0 "$stream_pid" 2>/dev/null; do
+    sleep "$SHELL_CHECK_SECONDS" &
+    wait $!
+  done
 }
 
 # Caches the Seatbelt denials of every finished nono session not cached
@@ -331,7 +347,7 @@ denials) failures "${2:-}" | print_failures denials ;;
 sandbox) sandbox ;;
 prompts) prompts "${2:-}" ;;
 corrections) prompts "${2:-}" | awk -F '\t' -v re="$CORRECTION_PATTERN" 'tolower($5) ~ re' ;;
-record) record ;;
+record) record "${2:-}" ;;
 collect) collect ;;
 *) usage ;;
 esac
