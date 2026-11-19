@@ -20,6 +20,12 @@
     {
       "matchManagers": ["npm"],
       "groupName": "pi extensions"
+    },
+    {
+      "description": "rumdl tags releases with a v prefix, which Renovate otherwise copies into the bare version in .mise/config.toml",
+      "matchManagers": ["mise"],
+      "matchPackageNames": ["rumdl"],
+      "extractVersion": "^v(?<version>.+)$"
     }
   ],
   "customManagers": [
