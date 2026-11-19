@@ -43,8 +43,8 @@ Use `gh` for all GitHub operations. Never use `curl` against the GitHub API.
    - Example: `feat(login): add support for magic links`.
 
 6. **Draft the PR body.** Write Markdown. **Don't hard-wrap the body.** GitHub
-   renders Markdown, and a manual line break splits list items, links, and
-   blockquotes. Let the renderer handle line length. Suggested structure:
+   renders Markdown, so a manual line break in a list item, link, or blockquote
+   breaks it apart. Leave line length to the renderer. Suggested structure:
 
    ```md
    ## Summary

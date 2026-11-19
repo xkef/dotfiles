@@ -117,8 +117,8 @@ builds on a commit the repository has.
   sets a variable, and `--persist` keeps a path under the guest's home.
 - **Guest hooks:** the guest session sources every
   `~/.config/agentvm/guest.d/*.sh` in the image before the command starts.
-- **Status:** a hook may write one-line files to `$AGENTVM_STATUS`, a folder of
-  the session's own, so sessions in one VM don't mix their status. The host
+- **Status:** a hook may write one-line files to `$AGENTVM_STATUS`. That folder
+  belongs to the session, so sessions in one VM don't mix their status. The host
   passes each change to the `--on-status` command as `NAME VALUE`, and runs it
   alone when the session ends. It reads regular files only, with names from a
   fixed character set, and passes printable text only. A guest can't use it to
@@ -138,7 +138,7 @@ flowchart TD
 
 `agentvm build` builds the image in two layers. `image/prepare.sh` sets up what
 the sandbox needs, the proxy's CA, git, `socat`, and a user with the host's IDs,
-then runs the recipe's package script,
+then runs the package script of the recipe,
 [`setup/agentvm/packages`](../../setup/agentvm/packages), which installs the
 sandbox packages and the toolchains. The builder caches that layer until the
 scripts, the package list, or the CA change. The last layer runs the recipe's

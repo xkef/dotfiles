@@ -23,7 +23,7 @@ rule that you don't send code for review until you can pass a quiz about it.
    option in the labels. After each answer, say whether it matched and explain
    in one or two sentences.
 4. Report the score. 4/5 or better: ready to send. Below that: list the areas
-   the misses point at, suggest what to reread, and offer to run `/explain-diff`
-   on the change.
+   the misses point at and suggest what to reread. Then offer to run
+   `/explain-diff` on the change.
 
 Don't produce a document. The whole interaction stays in the terminal.

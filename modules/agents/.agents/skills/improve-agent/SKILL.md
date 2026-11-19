@@ -47,24 +47,25 @@ you checked.
    approach to where the agent should look instead. A silent denial, such as a
    tool skipping its config file, matters most: the tool gives wrong results
    without a visible cause.
-2. **Wrong permissions:** for the sandbox, map each needed path to the nono
-   profile (`~/.config/nono/profiles/<profile>.json`, whose source sits in the
-   dotfiles repository) and write the missing entry. For Claude's permissions,
-   find rejected tool calls (`doesn't want to proceed`), interrupts
-   (`Request interrupted by user`), and hook blocks in the transcripts. Decide
-   per case whether to fix the rule or the agent.
-3. **Confusing code:** look for files read or searched again and again within a
-   session, searches that found nothing, reads of missing paths, failed edits
-   (`String to replace not found`, `File has not been read yet`), and user
-   corrections. Rank files and directories by this friction. Fix each with a doc
-   line, an `AGENTS.md` entry, or a rename.
+2. **Wrong permissions:** for the sandbox, add an entry for each needed path to
+   the nono profile, `~/.config/nono/profiles/<profile>.json`. The dotfiles
+   repository stores its source. For Claude's permissions, search the
+   transcripts for hook blocks and for two strings: `doesn't want to proceed`
+   marks a rejected tool call, and `Request interrupted by user` marks an
+   interrupt. Decide per case whether to fix the rule or the agent.
+3. **Confusing code:** count the friction within each session. Friction includes
+   repeated reads or searches of one file, and searches or reads that found
+   nothing. It also includes user corrections and failed edits, which show
+   `String to replace not found` or `File has not been read yet`. Rank files and
+   directories by this friction. Fix each with a doc line, an `AGENTS.md` entry,
+   or a rename.
 4. **Skills to derive:** find tool sequences and user instructions that recur
    across three or more sessions. Each candidate lists its trigger and steps,
    plus the sessions it would have served.
-5. **Anti-patterns to block:** find commands that break an `AGENTS.md` rule,
-   commands the user rejected or corrected, and failure-then-workaround loops.
-   Propose a PreToolUse hook or a `hookify` rule for each, with the pattern it
-   matches.
+5. **Anti-patterns to block:** find commands that break an `AGENTS.md` rule or
+   that the user rejected or corrected. Also find loops where a failure led to a
+   workaround. Propose a PreToolUse hook or a `hookify` rule for each, with the
+   pattern it matches.
 
 ## 3. Confirm
 
