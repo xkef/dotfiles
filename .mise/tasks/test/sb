@@ -77,7 +77,21 @@ can_stream() {
   /usr/bin/log stream --predicate 'sender == "none"' >/dev/null 2>&1 &
   probe=$!
   sleep 1
-  kill "$probe" 2>/dev/null
+  kill "$probe" 2>/dev/null || return 1
+  # Reaping the probe here keeps bash's "Terminated" notice out of the
+  # output.
+  wait "$probe" 2>/dev/null || true
+}
+
+# Prints the given PIDs that still run. An if, not &&, so that a stopped
+# last PID doesn't fail the substitution under set -e.
+running() {
+  local pid
+  for pid; do
+    if kill -0 "$pid" 2>/dev/null; then
+      echo "$pid"
+    fi
+  done
 }
 
 if can_stream; then
@@ -90,8 +104,10 @@ if can_stream; then
   [ -n "$streams" ] || fail "the recorder started no log stream"
 
   kill "$owner"
+  wait "$owner" 2>/dev/null || true
   for _ in $(seq 15); do
-    alive=$(for pid in $recorder $streams; do kill -0 "$pid" 2>/dev/null && echo "$pid"; done)
+    # shellcheck disable=SC2086 # one PID per word
+    alive=$(running $recorder $streams)
     [ -z "$alive" ] && break
     sleep 1
   done
