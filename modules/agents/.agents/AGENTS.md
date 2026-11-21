@@ -140,6 +140,8 @@ Beyond the guide:
 - Never use the middle dot, `·`, as a separator. This includes artifacts and
   slides. Use a comma, a line break, or separate elements.
 - Use the same word for the same thing every time.
+- Prefer lists to tables. Use a table only to compare three or more attributes
+  across items. Write tables unpadded, and keep the spacing of existing ones.
 
 ## Artifacts
 
