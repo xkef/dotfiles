@@ -9,12 +9,13 @@ Linux. It denies by default but also grants:
 - A sandbox-only toolchain home under `$XDG_CACHE_HOME/agents-sandbox`, where
   `CARGO_HOME`, `RUSTUP_HOME`, `GOPATH`, uv, the npm cache, and the Maven
   repository point. A fresh home needs `rustup default stable` once.
-- The 1Password SSH agent socket, for commit signing.
 
 Installs into the host's `PATH` directories, such as `mise install`, fail by
 design, and so does `jj config set --repo`. Ask the user to run them. The
-keychain stays denied. nono's credential proxy injects the Claude and GitHub
-tokens, so `gh` and `git push` over HTTPS work with the placeholder `GH_TOKEN`.
+keychain and the 1Password SSH agent stay denied, so commits stay unsigned until
+the user's `jj git push` signs them. nono's credential proxy injects the Claude
+and GitHub tokens, so `gh` and `git push` over HTTPS work with the placeholder
+`GH_TOKEN`.
 
 Don't assume a path is off-limits without trying. A real denial is an ordinary
 permission error, which `nono why --path <p> --op read` explains. If a task
