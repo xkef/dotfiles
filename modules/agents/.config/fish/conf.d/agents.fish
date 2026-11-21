@@ -17,6 +17,12 @@ function claude --wraps claude --description "Claude Code in a nono sandbox"
         return
     end
 
+    # The profile turns off the updater inside the sandbox, where it can
+    # only fail, so the host updates instead. The new version takes effect
+    # at the next launch.
+    command claude update >/dev/null 2>&1 &
+    disown
+
     sb claude $argv
     set -l rc $status
 

@@ -88,5 +88,10 @@
   "security": {
     "capability_elevation": false,
     "signal_mode": "isolated"
+  },
+  "environment": {
+    "set_vars": {
+      "DISABLE_AUTOUPDATER": "1"
+    }
   }
 }
