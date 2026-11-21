@@ -3,7 +3,6 @@ test "$TERM_PROGRAM" = ghostty; or return
 set -q TMUX; and return
 command -q tmux; or return
 
-# ── tmux session ─────────────────────────────────────
 # Ghostty runs tmux as its multiplexer. The first window attaches the
 # session named main, or creates it, so a closed window detaches instead of
 # killing its shells, as WezTerm's mux domain does. Each further window,

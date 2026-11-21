@@ -562,7 +562,6 @@ function M.create(s)
   return buf
 end
 
--- Window options for the log window.
 function M.setup_win(s, win)
   s.log_win = win
   local wo = vim.wo[win]

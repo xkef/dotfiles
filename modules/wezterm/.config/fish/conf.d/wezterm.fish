@@ -1,7 +1,6 @@
 status is-interactive; or return
 set -q WEZTERM_PANE; or return
 
-# ── WezTerm tab names ────────────────────────────────
 # Publishes the running command as the WEZTERM_PROG user var, as WezTerm's
 # bash and zsh integration does. The WezTerm window reaches its panes
 # through the mux server and can't see their foreground process, so

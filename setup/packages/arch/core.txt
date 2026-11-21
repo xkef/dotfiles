@@ -4,29 +4,29 @@ xdg-utils       # xdg-open for the tmux and WezTerm URL pickers
 less            # pager (used as $PAGER)
 github-cli      # GitHub from the command line
 jq              # JSON processor
-age             # simple file encryption
+age             # file encryption
 fish            # shell
 starship        # cross-shell prompt
 atuin           # shell history search
 fzf             # fuzzy finder (yazi's z key)
 television      # fuzzy finder with channels
-zoxide          # smarter cd with frecency
+zoxide          # cd by frecency
 tmux            # terminal multiplexer
 sesh-bin        # tmux session manager (AUR; ships an aarch64 binary)
 neovim-git      # text editor (AUR nightly)
 tree-sitter-cli # parser generator CLI (nvim-treesitter build)
 presenterm      # markdown-driven terminal slides
-eza             # modern ls replacement
+eza             # ls replacement
 bat             # cat with syntax highlighting
-fd              # modern find replacement
-ripgrep         # fast recursive grep
-xh              # fast HTTP client (HTTPie-compatible)
+fd              # find replacement
+ripgrep         # recursive grep
+xh              # HTTP client (HTTPie-compatible)
 hurl            # HTTP request testing with plain text files
-sd              # intuitive find-and-replace (sed alt)
+sd              # find-and-replace (sed alt)
 scooter-bin     # interactive find-and-replace TUI (AUR)
 dust            # disk usage viewer (du alt)
 duf             # disk free viewer (df alt)
-procs           # modern ps replacement
+procs           # ps replacement
 trash-cli       # move files to trash instead of rm
 ouch            # compress/decompress archives
 git-delta       # syntax-highlighting diff pager
@@ -52,7 +52,7 @@ yazi            # terminal file manager
 vale            # prose linter for markdown
 tokei           # code statistics by language
 onefetch        # git repository summary
-tealdeer        # fast tldr client
+tealdeer        # tldr client
 htop            # interactive process viewer
 btop            # resource monitor
 bottom          # resource monitor (btm)

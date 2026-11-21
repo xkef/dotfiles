@@ -3,28 +3,28 @@ brew "less"                 # pager (used as $PAGER)
 brew "curl"                 # URL data transfer with post-quantum TLS (keg-only, PATH in env.fish)
 brew "gh"                   # GitHub from the command line
 brew "jq"                   # JSON processor
-brew "age"                  # simple file encryption
+brew "age"                  # file encryption
 brew "fish"                 # shell
 brew "starship"             # cross-shell prompt
 brew "atuin"                # shell history search
 brew "fzf"                  # fuzzy finder (yazi's z key)
 brew "television"           # fuzzy finder with channels
-brew "zoxide"               # smarter cd with frecency
+brew "zoxide"               # cd by frecency
 brew "tmux"                 # terminal multiplexer
 brew "sesh"                 # tmux session manager
 brew "neovim", args: ["HEAD"] # text editor (nightly)
 brew "tree-sitter-cli"      # parser generator CLI (nvim-treesitter build)
 brew "presenterm"           # markdown-driven terminal slides
-brew "eza"                  # modern ls replacement
+brew "eza"                  # ls replacement
 brew "bat"                  # cat with syntax highlighting
-brew "fd"                   # modern find replacement
-brew "ripgrep"              # fast recursive grep
-brew "xh"                   # fast HTTP client (HTTPie-compatible)
+brew "fd"                   # find replacement
+brew "ripgrep"              # recursive grep
+brew "xh"                   # HTTP client (HTTPie-compatible)
 brew "hurl"                 # HTTP request testing with plain text files
-brew "sd"                   # intuitive find-and-replace (sed alt)
+brew "sd"                   # find-and-replace (sed alt)
 brew "dust"                 # disk usage viewer (du alt)
 brew "duf"                  # disk free viewer (df alt)
-brew "procs"                # modern ps replacement
+brew "procs"                # ps replacement
 brew "ouch"                 # compress/decompress archives
 brew "delta"                # syntax-highlighting diff pager
 brew "difftastic"           # structural diff tool
@@ -50,7 +50,7 @@ brew "yazi"                 # terminal file manager
 brew "vale"                 # prose linter for markdown
 brew "tokei"                # code statistics by language
 brew "onefetch"             # git repository summary
-brew "tealdeer"             # fast tldr client
+brew "tealdeer"             # tldr client
 brew "htop"                 # interactive process viewer
 brew "btop"                 # resource monitor
 brew "bottom"               # resource monitor (btm)

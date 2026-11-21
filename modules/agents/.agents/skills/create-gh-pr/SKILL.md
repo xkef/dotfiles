@@ -44,7 +44,7 @@ Use `gh` for all GitHub operations. Never use `curl` against the GitHub API.
 
 6. **Draft the PR body.** Write Markdown. **Don't hard-wrap the body.** GitHub
    renders Markdown, so a manual line break in a list item, link, or blockquote
-   breaks it apart. Leave line length to the renderer. Suggested structure:
+   breaks it apart. Suggested structure:
 
    ```md
    ## Summary
@@ -88,21 +88,10 @@ Use `gh` for all GitHub operations. Never use `curl` against the GitHub API.
 
 8. **Confirm.** Print the resulting PR URL.
 
-## Wrapping rules summary
-
-| Field    | Wrap?                                |
-| -------- | ------------------------------------ |
-| Title    | Yes. At most 72 characters, one line |
-| Body     | **No.** Markdown, renderer wraps it  |
-| Trailers | One per line at the end of the body  |
-
 ## Issue reference keywords
 
 - `Closes #N`, `Fixes #N`, `Resolves #N`: GitHub closes the issue on merge.
 - `Ref #N`, `Refs #N`, `Related to #N`: links without closing.
-
-Use `Closes` only when merging the PR resolves the issue in full. Otherwise use
-`Ref`.
 
 ## Conventions shared with commits
 
@@ -112,7 +101,6 @@ Use `Closes` only when merging the PR resolves the issue in full. Otherwise use
 - Body explains why. The diff already shows what.
 - Note alternatives considered.
 - Link to relevant prior commits, PRs, or docs.
-- **Don't** include prompt logs or `Co-Authored-By:` trailers in PR bodies.
 
 See also the `commit` skill for commit message conventions and the `jj` skill
 for a Jujutsu repo.

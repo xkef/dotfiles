@@ -1,6 +1,4 @@
-# Markdown linter config.
-# rumdl respects .gitignore, so untracked generated files are skipped
-# automatically.
+# rumdl respects .gitignore, so untracked generated files are skipped.
 
 [global]
 include = ["**/*.md"]

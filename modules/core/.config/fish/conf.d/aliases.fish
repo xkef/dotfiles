@@ -4,12 +4,10 @@
 # only: an alias like `grep --color` must not leak into scripts.
 status is-interactive; or return
 
-# Quick edit
 abbr -a v nvim
 abbr -a vi nvim
 abbr -a vim nvim
 
-# Misc
 abbr -a reload 'exec fish'
 alias grep 'grep --color=auto'
 abbr -a extract 'ouch decompress'

@@ -1,4 +1,3 @@
-# ═══ [ui] ═══════════════════════════════════════════
 [ui]
 default-command = "overview"
 conflict-marker-style = "git"
@@ -17,7 +16,6 @@ env.NVIM_APPNAME = "lazyvim"
 command = ["nvim", "-c", "DiffEditor $left $right $output"]
 env.NVIM_APPNAME = "lazyvim"
 
-# ═══ [merge-tools] ══════════════════════════════════
 # A merge tool takes no env, so `env` names the config. The args are
 # jj's vimdiff defaults.
 [merge-tools.vimdiff]
@@ -43,7 +41,6 @@ merge-args = [
   "/<<<<<</+2",
 ]
 
-# ═══ [[--scope]] pager ══════════════════════════════
 # Delta applies only to commands that produce diffs, so it can't mangle
 # the output of status or bookmark list. Delta parses only git format
 # diffs and passes jj's default color-words format through as is.
@@ -53,22 +50,18 @@ merge-args = [
 pager = "delta"
 diff-formatter = ":git"
 
-# ═══ [colors] ═══════════════════════════════════════
 [colors]
 "diff removed token" = { reverse = true, underline = false }
 "diff added token" = { reverse = true, underline = false }
 "node elided" = "bright black"
 
-# ═══ [git] ══════════════════════════════════════════
 [git]
 private-commits = 'description(glob:"wip:*") | description(glob:"private:*")'
 
-# ═══ [snapshot] ═════════════════════════════════════
 [snapshot]
 auto-update-stale = true
 max-new-file-size = "2MiB"
 
-# ═══ [signing] ══════════════════════════════════════
 # Name, email, SSH signing, and the accounts by directory come from
 # conf.d/identity.toml, which setup/private/decrypt writes.
 #
@@ -81,14 +74,12 @@ behavior = "drop"
 [signing.backends.ssh]
 allowed-signers = "~/.config/git/allowed_signers"
 
-# ═══ [revsets] ══════════════════════════════════════
 [revsets]
 log = 'stack(@) | trunk()'
 git-sign-on-push = '~signed() & mine()'
 # `jj tug` targets the completed change under the empty working copy.
 bookmark-advance-to = '@-'
 
-# ═══ [revset-aliases] ═══════════════════════════════
 [revset-aliases]
 # Other authors' unmerged commits count as immutable. A stack on a
 # colleague's branch then can't rewrite their commits, and log and
@@ -97,7 +88,6 @@ bookmark-advance-to = '@-'
 'stack()' = 'stack(@)'
 'stack(x)' = 'ancestors(reachable(x, mutable()), 2)'
 
-# ═══ [template-aliases] ═════════════════════════════
 [template-aliases]
 # Show a GitHub noreply email as its username:
 # 583231+octocat@users.noreply.github.com becomes octocat.
@@ -106,7 +96,6 @@ stringify(signature.email()).replace(regex:'^(?:\d+\+)?([^@]+)@users\.noreply\.g
 '''
 'format_timestamp(timestamp)' = 'timestamp.ago()'
 
-# ═══ [aliases] ══════════════════════════════════════
 [aliases]
 # The current workspace's stack, then the other workspaces. The
 # trailing "" fills $0.

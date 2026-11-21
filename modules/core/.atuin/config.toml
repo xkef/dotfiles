@@ -1,4 +1,3 @@
-## Atuin config
 ## https://docs.atuin.sh/configuration/config/
 
 # Keep history and agent threads on this machine. Neither the shell hook

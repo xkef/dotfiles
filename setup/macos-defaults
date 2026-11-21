@@ -83,7 +83,6 @@ apply() {
       expected=$(normalize "$type" "$value")
     fi
 
-    # Normalize booleans
     if [[ "$type" == "-bool" ]]; then
       [[ "$current" == "1" || "$current" == "true" ]] && current="1" || current="0"
       [[ "$expected" == "1" || "$expected" == "true" ]] && expected="1" || expected="0"

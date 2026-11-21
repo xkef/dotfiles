@@ -128,7 +128,6 @@ human_age() { # seconds to "12s", "6m", or "2h"
   printf '%dh' $((s / 3600))
 }
 
-# ── Preview mode ─────────────────────────────────────
 if [[ "${1:-}" == preview ]]; then
   if [ "$MUX" = tmux ]; then
     tmux capture-pane -p -e -t "$2" | tail -n "$3"
@@ -138,7 +137,6 @@ if [[ "${1:-}" == preview ]]; then
   exit 0
 fi
 
-# ── Picker mode ──────────────────────────────────────
 # Each tv line is "pane<TAB>target<TAB>display". tv shows only the
 # rendered column, so a path with spaces can't break the field split.
 #
