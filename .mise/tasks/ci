@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Run everything CI runs: lint, format check, link check, tests, and perf"
-#MISE depends=["lint", "check", "test", "perf"]
+#MISE depends=["lint", "check", "test"]
+set -eu
+# perf times shell startup, so it runs once the other checks stop
+# competing for the CPU.
+mise run perf
