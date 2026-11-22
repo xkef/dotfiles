@@ -1,7 +1,7 @@
 # Agents module
 
 Claude Code and pi, their sandboxes, and the tools around them. `setup/link`
-links every file here into `~` except this file.
+links every file here into `~` except this file and files Git ignores.
 
 ## Launching an agent
 

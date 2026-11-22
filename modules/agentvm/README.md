@@ -4,7 +4,8 @@
 [`container`](https://github.com/apple/container). The VM has no network device,
 and a socket to a credential proxy on the host forms its only way out. Work
 happens on a copy of the repository and comes back as commits you review.
-`setup/link` links every file here into `~` except this file.
+`setup/link` links every file here into `~` except this file and files Git
+ignores.
 
 You use it through `agents vm`, whose `help` shows the commands. The header of
 the [`agentvm`](.local/libexec/agentvm/agentvm) script documents the engine's

@@ -29,6 +29,12 @@ backup=$(find "$state/backup" -path '*/.config/fish/config.fish')
 setup/link "$tmp/readme-state" agents >/dev/null
 [ ! -e "$HOME/README.md" ] || fail "a module README was linked"
 
+# Files Git ignores, such as the .DS_Store files Finder writes into the
+# checkout, stay out of ~. A fresh clone has none, so only a used checkout
+# exercises this.
+ignored=$(find "$HOME" -type l -exec readlink {} + | git check-ignore --stdin || true)
+[ -z "$ignored" ] || fail "linked ignored files: $ignored"
+
 # A rerun has nothing to do, and says so.
 [ "$(setup/link "$state" core)" = "no link changes" ] || fail "rerun changed links"
 

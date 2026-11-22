@@ -1,7 +1,7 @@
 #!/usr/bin/env -S fish --no-config
 # Links each file under modules/<module>/ to the same path under ~, one
 # file at a time, so apps can add their own files next to them. The
-# module's own README.md stays in the repo.
+# module's own README.md and files Git ignores stay in the repo.
 #
 #   + link    a target that is missing
 #   ! backup  a file in the way moves to <state>/backup/<time>/ first
@@ -28,7 +28,12 @@ end
 
 for module in $argv[2..-1]
     set -l root $repo/modules/$module
-    for source in (find $root -type f -o -type l | sort)
+    set -l sources (find $root -type f -o -type l | sort)
+    # Files Git ignores, such as Finder's .DS_Store, belong to the
+    # machine, not the module.
+    set -l ignored (printf '%s\n' $sources | git -C $repo check-ignore --stdin)
+    for source in $sources
+        contains -- $source $ignored; and continue
         set -l rel (string replace -- $root/ '' $source)
         # A module's README.md documents the module for the repo's readers.
         test $rel = README.md; and continue
