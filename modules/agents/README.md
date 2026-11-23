@@ -33,6 +33,7 @@ flowchart LR
 | `agents`        | `mux-agents`   | Picker across WezTerm workspaces or tmux sessions |
 | `agents state`  | `agent-state`  | Reads and writes the state the picker shows       |
 | `agents task`   | `agent-state`  | Publishes this pane's task summary                |
+| `agents name`   | `agent-state`  | Names this pane's tmux window tab and picker row  |
 | `agents trace`  | `agent-trace`  | Reports failed tool calls and sandbox denials     |
 | `agents skills` | `agent-skills` | Refreshes the shared skills from upstream         |
 | `agents vm`     | `vm-agent`     | Claude Code or a shell in the agent VM            |

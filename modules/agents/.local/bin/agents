@@ -19,6 +19,9 @@ switch "$argv[1]"
     case task
         # @key agents :: task :: Publish this pane's task summary to the picker
         $libexec/agent-state task $argv[2..-1]
+    case name
+        # @key agents :: name :: Name this pane's tmux window tab
+        $libexec/agent-state name $argv[2..-1]
     case state
         # @key agents :: state :: Set, clear, or list the agent state the picker reads
         $libexec/agent-state $argv[2..-1]

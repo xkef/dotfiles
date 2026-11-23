@@ -109,6 +109,9 @@ Permission rules deny these commands anywhere in a Bash call, in every form:
 - As the main agent in a WezTerm or tmux pane, where `WEZTERM_PANE` or
   `TMUX_PANE` is set, run `agents task "summary"` at the start and when the goal
   changes. Keep the summary under 60 characters.
+- In tmux, also run `agents name <name>` at the start to label the window tab.
+  Use the jj workspace name, or a one-word topic in the default workspace. The
+  tab shows 12 characters.
 
 ## Tone
 

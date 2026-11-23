@@ -56,13 +56,14 @@ readonly RANK_WAITING=0
 readonly RANK_BUSY=1
 readonly RANK_IDLE=2
 
-# Emits tab-separated rank, pane, target, state, agent, tool, age, dir, and task.
+# Emits tab-separated rank, pane, target, state, agent, tool, age, dir,
+# task, and name.
 collect() {
-  local now pane target agent state tool epoch cwd task rank age sandboxed
+  local now pane target agent state tool epoch cwd task name rank age sandboxed
   now=$(date +%s)
   sandboxed=" $(sandbox_panes | tr '\n' ' ') "
 
-  while IFS=$'\t' read -r pane target agent state tool epoch cwd task; do
+  while IFS=$'\t' read -r pane target agent state tool epoch cwd task name; do
     age=$(human_age $((now - epoch)))
     [[ "$sandboxed" == *" $pane "* ]] && agent="$SANDBOX_MARK $agent"
 
@@ -72,9 +73,9 @@ collect() {
     *) rank=$RANK_IDLE ;;
     esac
 
-    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
       "$rank" "$pane" "$target" "$state" "$agent" "$tool" \
-      "$age" "${cwd/#$HOME/~}" "$task"
+      "$age" "${cwd/#$HOME/~}" "$task" "$name"
   done < <(join_panes) |
     sort -n
 }
@@ -144,20 +145,22 @@ fi
 # empty for every agent disappears. Fixed widths padded one agent out to a line
 # of mostly blanks.
 render() {
-  local _rank pane target state agent tool age dir task icon display row
+  local _rank pane target state agent tool age dir task name icon display row
   local -a entries=()
   # Rows use a unit separator instead of a tab. read treats a tab as
   # whitespace and folds a run of them into one, which would shift every column
   # of an agent without a tool.
   local -r SEP=$'\x1f'
-  local w_state=0 w_agent=0 w_target=0 w_dir=0 w_tool=0 w_task=0
+  local w_state=0 w_agent=0 w_name=0 w_target=0 w_dir=0 w_tool=0 w_task=0
 
-  while IFS=$'\t' read -r _rank pane target state agent tool age dir task; do
+  while IFS=$'\t' read -r _rank pane target state agent tool age dir task name; do
     [[ "$tool" == - ]] && tool=""
     [[ "$task" == - ]] && task=""
-    entries+=("$pane$SEP$target$SEP$state$SEP$agent$SEP$tool$SEP$age$SEP$dir$SEP$task")
+    [[ "$name" == - ]] && name=""
+    entries+=("$pane$SEP$target$SEP$state$SEP$agent$SEP$name$SEP$tool$SEP$age$SEP$dir$SEP$task")
     ((${#state} > w_state)) && w_state=${#state}
     ((${#agent} > w_agent)) && w_agent=${#agent}
+    ((${#name} > w_name)) && w_name=${#name}
     ((${#target} > w_target)) && w_target=${#target}
     ((${#dir} > w_dir)) && w_dir=${#dir}
     ((${#tool} > w_tool)) && w_tool=${#tool}
@@ -166,16 +169,18 @@ render() {
 
   ((w_state > 0)) || return 0
   for row in "${entries[@]}"; do
-    IFS=$SEP read -r pane target state agent tool age dir task <<<"$row"
+    IFS=$SEP read -r pane target state agent name tool age dir task <<<"$row"
     case "$state" in
     waiting) icon=$ICON_WAITING ;;
     busy) icon=$ICON_BUSY ;;
     *) icon=$ICON_IDLE ;;
     esac
 
-    printf -v display '%s %-*s  %-*s  %-*s' \
-      "$icon" "$w_state" "$state" \
-      "$w_agent" "$agent" "$w_target" "$target"
+    printf -v display '%s %-*s  %-*s' "$icon" "$w_state" "$state" "$w_agent" "$agent"
+    if ((w_name > 0)); then
+      printf -v display '%s  %-*s' "$display" "$w_name" "$name"
+    fi
+    printf -v display '%s  %-*s' "$display" "$w_target" "$target"
     if ((w_task > 0)); then
       printf -v display '%s  %-*s' "$display" "$w_task" "$task"
     fi

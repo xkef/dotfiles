@@ -5,6 +5,8 @@
 #
 #   agent-state set <agent> <state> [tool] [cwd]
 #   agent-state task <summary>
+#   agent-state name <name>
+#   agent-state name-of <window name> <tmux pane id>...
 #   agent-state clear
 #   agent-state list [wezterm|tmux]
 #
@@ -19,16 +21,22 @@
 # The cwd goes last so a path never shifts another field. <pane>.task holds
 # the summary. It stays a separate file because the agent writes it while
 # its hooks write the record, and neither write may drop the other.
+# <pane>.name holds the short name the tmux window tab shows.
 #
-# `list` prints pane, agent, state, tool, epoch, cwd, and task per entry. An
+# `list` prints pane, agent, state, tool, epoch, cwd, task, and name per entry. An
 # empty field reads as "-", so a run of tabs never collapses under `read`.
 # Given a multiplexer, it keeps that multiplexer's entries from this host
 # and prints the multiplexer's own pane id, 12 in WezTerm or %12 in tmux,
 # in place of the key.
+#
+# `name-of` serves the tmux window tab. The sandbox keeps agents from the
+# tmux socket, so tmux pulls the name through #() instead. It prints the
+# name of the first given pane that has one, or else the window name.
 set -euo pipefail
 
 readonly STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/agents"
 readonly MAX_TASK_LENGTH=60
+readonly MAX_NAME_LENGTH=12
 readonly NONE=-
 readonly PANE_KEY='^(wezterm-[0-9]+|tmux-[A-Za-z0-9.-]+-[0-9]+)$'
 
@@ -55,7 +63,7 @@ write() {
 }
 
 list() {
-  local mux=${1:-} prefix file pane record task
+  local mux=${1:-} prefix file pane record
   case "$mux" in
   wezterm) prefix=wezterm- ;;
   tmux) prefix=$(tmux_key) ;;
@@ -72,12 +80,30 @@ list() {
       [ "$mux" = wezterm ] || pane=%$pane
     fi
     IFS= read -r record <"$file" || continue
-    task=$NONE
-    if [ -f "$file.task" ]; then
-      IFS= read -r task <"$file.task" || task=$NONE
-    fi
-    printf '%s\t%s\t%s\n' "$pane" "$record" "$(field "$task")"
+    printf '%s\t%s\t%s\t%s\n' "$pane" "$record" \
+      "$(field "$(line_of "$file.task")")" "$(field "$(line_of "$file.name")")"
   done
+}
+
+# Prints the first line of a file, or nothing when it is missing.
+line_of() {
+  local line
+  [ -f "$1" ] || return 0
+  IFS= read -r line <"$1" || :
+  printf '%s' "${line:-}"
+}
+
+name_of() {
+  local window=$1 pane name
+  shift
+  for pane in "$@"; do
+    name="$STATE_DIR/$(tmux_key)${pane#%}.name"
+    if [ -f "$name" ] && IFS= read -r name <"$name" && [ -n "$name" ]; then
+      printf '%s\n' "$name"
+      return
+    fi
+  done
+  printf '%s\n' "$window"
 }
 
 # The key prefix of this host's tmux panes.
@@ -87,9 +113,15 @@ tmux_key() {
 
 cmd=${1:-}
 case "$cmd" in
-set | task | clear) shift ;;
+set | task | name | clear) shift ;;
 list)
   list "${2:-}"
+  exit 0
+  ;;
+name-of)
+  [ $# -ge 2 ] || usage
+  shift
+  name_of "$@"
   exit 0
   ;;
 *) usage ;;
@@ -123,7 +155,12 @@ task)
   [ "$summary" != "$NONE" ] || exit 0
   write "$entry.task" "${summary:0:MAX_TASK_LENGTH}"
   ;;
+name)
+  name=$(field "$*")
+  [ "$name" != "$NONE" ] || exit 0
+  write "$entry.name" "${name:0:MAX_NAME_LENGTH}"
+  ;;
 clear)
-  rm -f "$entry" "$entry.task"
+  rm -f "$entry" "$entry.task" "$entry.name"
   ;;
 esac
