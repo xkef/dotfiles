@@ -135,7 +135,17 @@ Beyond the guide:
   dash, en dash, or semicolon. Don't rewrite existing prose to comply.
 - No idiom or metaphor. Write out "for example" and "that is."
 - Drop "simply," "just," "easy," and "obviously."
+- Prefer a precise word over "each," "every," "one," and "today." Write "the
+  three hosts" instead of "each host," and "in version 2" instead of "today."
+- Never use the middle dot, `·`, as a separator. This includes artifacts and
+  slides. Use a comma, a line break, or separate elements.
 - Use the same word for the same thing every time.
+
+## Artifacts
+
+Design artifacts for phone width first. They must also use the space of a
+desktop window, through wider columns or more columns, not a stretched phone
+layout.
 
 ## Comments
 
