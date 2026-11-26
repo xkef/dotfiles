@@ -102,6 +102,13 @@ float easeClamped(float x) {
 // Trail animation duration in seconds
 const float DURATION = 0.3;
 
+// Local changes from upstream, to calm the effect. Moves shorter than
+// MIN_JUMP cursor heights draw no trail, so typing and Enter stay still.
+// The trail starts at MAX_OPACITY and fades to zero over DURATION
+// instead of staying solid until it vanishes.
+const float MIN_JUMP = 1.5;
+const float MAX_OPACITY = 0.6;
+
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     // Calculate animation progress with easing
     float baseProgress = clamp((iTime - iTimeCursorChange) / DURATION, 0.0, 1.0);
@@ -131,6 +138,10 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
     // Determine movement direction and construct cursor quads
     vec2 deltaPos = currentPos - previousPos;
+    if (length(deltaPos) < MIN_JUMP * currentSize.y) {
+        return;
+    }
+
     Quad currentCursor = getQuad(currentPos, currentSize);
     Quad previousCursor = getQuad(previousPos, previousSize);
     vec2 selector = step(vec2(0.0), deltaPos);
@@ -154,6 +165,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec2 normCoord = fragCoord * scale - normOffset;
     float sdfHex = sdHexagon(normCoord, trailP1, trailP2, currP2, currP4, currP3, trailP3);
     float alpha = 1.0 - smoothstep(-aaWidth, aaWidth, sdfHex);
+    alpha *= MAX_OPACITY * (1.0 - easedProgress);
 
     // Compute current cursor SDF
     vec2 halfCurrentSize = currentSize * 0.5;
